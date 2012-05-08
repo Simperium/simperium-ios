@@ -47,3 +47,11 @@ nosetests.xml
 
 #Mr Developer
 .mr.developer.cfg
+
+# OS or Editor folders
+.DS_Store
+.cache
+.project
+.settings
+nbproject
+thumbs.db
