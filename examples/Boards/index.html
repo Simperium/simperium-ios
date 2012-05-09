@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Boards</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+      /* Override some defaults */
+      html, body {
+        background-color: #f5f5ff;
+      }
+      body {
+        left: 0px;
+        right: 0px;
+      }
+
+      .loader {
+          width: 940px;
+          margin-top: 200px;
+          margin-left: auto;
+          margin-right: auto;
+          zoom: 1;
+      }
+
+      .body {
+        top: 40px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+        height: 1500px;
+        overflow: hidden;
+        position: relative;
+      }
+      /* Page header tweaks */
+      .page-header {
+        background-color: #f5f5f5;
+        padding: 20px 20px 10px;
+        margin: -20px -20px 20px;
+      }
+
+      .pod {
+        background-color: #eeeeee;
+        padding: 10px;
+        margin-top: 20px;
+        border: 1px solid rgba(0,0,0,.2);
+        -webkit-border-radius: 6px 6px 6px 6px;
+           -moz-border-radius: 6px 6px 6px 6px;
+                border-radius: 6px 6px 6px 6px;
+        -webkit-box-shadow: 2px 3px 4px rgba(0,0,0,.3);
+           -moz-box-shadow: 2px 3px 4px rgba(0,0,0,.3);
+                box-shadow: 2px 3px 4px rgba(0,0,0,.3);
+        cursor: move;
+      }
+      .pod .close {
+        position: absolute;
+        top: 0px;
+        right: 2px;
+      }
+      .pod:hover .close {
+        display: block;
+      }
+      .pod .podview {
+/*        cursor: auto;*/
+      }
+      .pod textarea {
+        color: #404040;
+      }
+      #boardinput {
+        font-size: 24px;
+        height: 30px;
+      }
+      .brand {
+        margin-right: 40px;
+      }
+      .nav li p {
+        margin-right: 40px;
+      }
+      .isogo {
+        margin-top: 5px;
+        height:28px;
+        float:left;
+        margin-left: 80px;
+        margin-right: 10px;
+      }
+      .audio-view h4 {
+        color: #005FAF;
+        margin-left: 15px;
+        margin-bottom: 7px;
+      }
+      .markdown-view,
+      .markdown-view li,
+      .list-view input {
+        color: #000000;
+      }
+      .list-view .list-done {
+        color: #404040;
+        text-decoration: line-through;
+      }
+
+    /**** Isotope Filtering ****/
+
+    .isotope-item {
+      z-index: 2;
+    }
+
+    .isotope-hidden.isotope-item {
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /**** Isotope CSS3 transitions ****/
+
+    .isotope,
+    .isotope .isotope-item {
+      -webkit-transition-duration: 0.3s;
+         -moz-transition-duration: 0.3s;
+           -o-transition-duration: 0.3s;
+              transition-duration: 0.3s;
+    }
+
+    .isotope {
+      -webkit-transition-property: height, width;
+         -moz-transition-property: height, width;
+           -o-transition-property: height, width;
+              transition-property: height, width;
+    }
+
+    .isotope .isotope-item {
+      -webkit-transition-property: -webkit-transform, opacity;
+         -moz-transition-property:    -moz-transform, opacity;
+           -o-transition-property:         top, left, opacity;
+              transition-property:         transform, opacity;
+    }
+
+    /**** disabling Isotope CSS3 transitions ****/
+
+    .isotope.no-transition,
+    .isotope.no-transition .isotope-item,
+    .isotope .isotope-item.no-transition {
+      -webkit-transition-duration: 0s;
+         -moz-transition-duration: 0s;
+           -o-transition-duration: 0s;
+              transition-duration: 0s;
+    }
+    </style>
+
+    <script src="https://js.simperium.com/v0.1/"></script>
+    <script src="js/jquery-1.7.2.min.js"></script>
+    <script src="js/jquery.autoresize.js"></script>
+    <script src="js/jquery-ui-1.8.16.custom.boards.js"></script>
+    <script src="js/jquery.cookie.js"></script>
+    <script src="js/jquery.isotope.boards.js"></script>
+    <script src="js/underscore-min.js"></script>
+    <script src="js/backbone-min.js"></script>
+    <script src="js/highcharts.js"></script>
+    <script src="js/showdown.js"></script>
+    <script src="js/boards.js"></script>
+  </head>
+
+  <body>
+
+    <div class="topbar">
+      <div class="fill">
+          <button class="btn info isogo"></button>
+        <div class="container">
+          <a class="brand" href="#">Boards</a>
+          <ul class="nav">
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="body hide">
+    </div> <!-- /body -->
+
+    <div class="loader hide">
+        <div class="row show-grid">
+            <div class="span-one-third">&nbsp;</div>
+            <div class="span-one-third">
+                <input id="boardinput" class="xlarge" type="text" placeholder="name a board"></input>
+            </div>
+            <div class="span-one-third">&nbsp;</div>
+        </div>
+    </div>
+
+  </body>
+</html>
