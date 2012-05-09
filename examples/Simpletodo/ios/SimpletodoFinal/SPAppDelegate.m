@@ -42,8 +42,8 @@
     
     self.simperium = [[Simperium alloc] initWithRootViewController: _window.rootViewController];
 
-    [self.simperium startWithAppID:@"yourAppID"
-                            APIKey:@"yourAPIKey"
+    [self.simperium startWithAppID:@"SIMPERIUM_APP_ID"
+                            APIKey:@"SIMPERIUM_API_KEY"  
                              model:[self managedObjectModel]
                            context:[self managedObjectContext]
                        coordinator:[self persistentStoreCoordinator]];
