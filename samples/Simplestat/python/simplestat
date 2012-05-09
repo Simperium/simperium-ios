@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+
+import os
+import uuid
+import time
+import sys
+import urllib
+import urllib2
+import hashlib
+
+from simperium import core
+from simperium import optfunc
+
+SETTINGS_PATH = os.environ.get('HOME')+'/'+'.simplestat'
+
+APPID = 'SIMPERIUM_APP_ID'
+APIKEY = 'SIMPERIUM_API_KEY'
+
+class Account(object):
+    def __init__(self):
+        if not os.path.exists(SETTINGS_PATH):
+            print 'first run: %s init' % sys.argv[0]
+            sys.exit(1)
+        self.username = open(SETTINGS_PATH+'/username').read()
+        self.token = open(SETTINGS_PATH+'/token').read()
+        self.api = core.Api(APPID, self.token)
+
+    @classmethod
+    def create(klass, username, password):
+        if os.path.exists(SETTINGS_PATH):
+            account = klass()
+            if account.username != username:
+                print 'you have already initialized an account: %s' % account.username
+                sys.exit(1)
+
+        auth = core.Auth(APIKEY)
+        token = auth.create(APPID, username, password)
+        if not token:
+            token = auth.authorize(APPID, username, password)
+        os.mkdir(SETTINGS_PATH)
+        os.chmod(SETTINGS_PATH, 0700)
+        open(SETTINGS_PATH+'/username', 'w').write(username)
+        os.chmod(SETTINGS_PATH+'/username', 0600)
+        open(SETTINGS_PATH+'/token', 'w').write(token)
+        os.chmod(SETTINGS_PATH+'/token', 0600)
+
+        print 'Welcome %s' % username
+        return klass()
+
+
+def str_to_id(s):
+    m = hashlib.md5()
+    m.update(s)
+    return m.hexdigest()
+
+
+def init(username, password):
+    Account.create(username, password)
+
+
+def push(dashboard, rest_=['-']):
+    account = Account()
+    dashboard_id = str_to_id(dashboard)
+    if not rest_:
+        rest_ = sys.stdin.read()[:-1].split()
+    to_post = []
+    try:
+        for arg in rest_:
+            key, value = arg.split('=')
+            value = int(value)
+            to_post.append({
+                'dashboard': dashboard_id,
+                'name': key,
+                'value': value,
+                'timeStamp': time.time(),})
+    except Exception, e:
+        print e
+        print "stats should be in the format:"
+        print "\tkey=value key=value ..."
+
+    account.api.dashboard.post(dashboard_id, {'name': dashboard, 'timeStamp': time.time()})
+    for stat in to_post:
+        account.api.stat.post(dashboard_id+'-'+str_to_id(stat['name']), stat)
+
+
+def remove(dashboard):
+    account = Account()
+    dashboard_id = str_to_id(dashboard)
+    for stat in account.api.stat.index(data=True)['index']:
+        if stat['d']['dashboard'] == dashboard_id:
+            account.api.stat.delete(stat['id'])
+    account.api.dashboard.delete(dashboard_id)
+
+
+def list():
+    account = Account()
+    for dashboard in account.api.dashboard.index(data=True)['index']:
+        print dashboard['d']['name']
+
+
+optfunc.main([init, list, remove, push])
