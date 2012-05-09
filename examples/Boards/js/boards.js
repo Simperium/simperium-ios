@@ -629,18 +629,8 @@ PodView = Backbone.View.extend({
 });
 
 
-PodList = Backbone.Collection.extend({
+PodList = Backbone.SimperiumCollection.extend({
     model: Pod,
-
-    initialize: function(models, options) {
-        _.bindAll(this, "remote_update", "get_data", "ready", "highestZ");
-        this.simperium = options.simperium;
-
-        this.simperium.on('notify', this.remote_update);
-        this.simperium.on('get', this.get_data);
-        this.simperium.on('ready', this.ready);
-        this.simperium.start();
-    },
 
     highestZ: function() {
         var z = 0;
@@ -652,34 +642,7 @@ PodList = Backbone.Collection.extend({
         return z;
     },
 
-    remote_update: function(id, data, version) {
-//        console.log("podlist, remote_update called for id:"+id);
-        var pod = this.get(id);
-
-        if (data == null) {
-            if (pod) {
-                console.log("destroying pod");
-                pod.clear({silent:true});
-                this.remove(pod);
-            }
-        } else {
-            if (pod) {
-                console.log("found pod, setting data");
-                pod.set(data, {silent: true});
-                if (pod.view) {
-                    pod.view.render();
-                }
-            } else {
-                console.log("didnt find pod, creating new data");
-                pod = new Pod(data);
-                pod.id = id;
-                this.add(pod);
-            }
-        }
-    },
-
-    get_data: function(id) {
-        console.log("podlist, get_data called for id:"+id);
+    local_data: function(id) {
         var pod = this.get(id);
         if (pod) {
             if (pod.view && pod.view.textActive()) {
@@ -692,14 +655,7 @@ PodList = Backbone.Collection.extend({
             }
         }
         return null;
-    },
-
-    ready: function() {
-        console.log("podlist: ready()");
-        this.each(function(pod) {
-            pod.fixBindings();
-        });
-    },
+    }
 });
 
 AppView = Backbone.View.extend({
@@ -709,14 +665,23 @@ AppView = Backbone.View.extend({
     },
 
     initialize: function() {
-        _.bindAll(this, "createPod", "addPod", "removePod",
+        _.bindAll(this, "updatePod", "createPod", "addPod", "removePod",
             "render", "cleanup", "saveScreenPositions", "enableTransitions",
             "queue_work", "run_queue", "queue_done",
-            "qUpdateLayout", "qShuffleLayout");
+            "qUpdateLayout", "qShuffleLayout", "ready");
         console.log("initialized");
-        this.collection.bind('add', this.addPod);
-        this.collection.bind('remove', this.removePod);
+        this.collection.on('add', this.addPod);
+        this.collection.on('remove', this.removePod);
+        this.collection.on('change', this.updatePod);
+        this.collection.on('ready', this.ready);
         this.workq = [];
+    },
+
+    updatePod: function(pod) {
+        console.log("pod update");
+        if (pod.view) {
+            pod.view.render();
+        }
     },
 
     createPod: function(e) {
@@ -849,6 +814,13 @@ AppView = Backbone.View.extend({
         $(this.el).show();
     },
 
+    ready: function() {
+        console.log("podlist: ready()");
+        this.collection.each(function(pod) {
+            pod.fixBindings();
+        });
+    },
+
     cleanup: function() {
         if ($(this.el).hasClass('isotope')) {
             $(this.el).isotope('destroy');
@@ -857,60 +829,6 @@ AppView = Backbone.View.extend({
         $(this.el).hide();
     }
 });
-
-Backbone.sync = function(method, model, options) {
-    console.log("method:" +method+ " model: " +model+ "/" +JSON.stringify(model.toJSON())+
-                    " options: " +JSON.stringify(options));
-    if (!model) return;
-    var S4 = function() {
-        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-    };
-
-    var simperium = model.simperium || model.collection && model.collection.simperium;
-    if (!simperium) return;
-
-    var isModel = !(typeof model.isNew === 'undefined');
-    if (isModel) {
-        if (model.isNew()) {
-            model.id = S4()+S4()+S4()+S4()+S4();
-            model.trigger("change:id", model, model.collection, {});
-        }
-
-        switch (method) {
-            case "read"     : options.success(simperium.get(model.id)); break;
-            case "create"   :
-            case "update"   : simperium.update(model.id, model.toJSON()); options.success(); break;
-            case "delete"   : simperium.update(model.id, null); options.success(); break;
-        }
-    } else {
-        switch (method) {
-            case "read"     : {
-                var init_data = []
-//                    var data = simperium.get_all_data();
-                var data = {};
-                for (id in data) {
-                    if ('id' in data[id]) {
-                        data[id]['___id'] = data[id].id;
-                    }
-                    data[id].id = id
-                    init_data.push(data[id]);
-                }
-                options.success(init_data);
-                model.each(function(model) {
-                    var id = model.id;
-                    if (model.has('___id')) {
-                        model.set({id:model.get('___id')}, {silent: true})
-                        model.unset('___id', {silent: true});
-                    } else {
-                        model.unset('id', {silent:true});
-                    }
-                    model.id = id;
-                });
-                break;
-            }
-        }
-    }
-};
 
 LoaderView = Backbone.View.extend({
     el: ".loader",
@@ -1057,7 +975,7 @@ var BoardRouter = Backbone.Router.extend({
         updateCookieHistory(board);
 //        navview.render(getBoardArray());
         simperium = new Simperium(app_id, simperium_options);
-        podlist = new PodList([], {simperium:simperium.bucket(board)});
+        podlist = new PodList([], {bucket:simperium.bucket(board)});
         app = new AppView({collection: podlist});
         app.render();
     },

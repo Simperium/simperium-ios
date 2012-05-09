@@ -1,9 +1,10 @@
 Backbone.SimperiumCollection = Backbone.Collection.extend({
     initialize: function(models, options) {
-        _.bindAll(this, "remote_update", "local_data");
+        _.bindAll(this, "remote_update", "local_data", "ready");
         this.bucket = options.bucket;
         this.bucket.on('notify',this.remote_update);
         this.bucket.on('local',this.local_data);
+        this.bucket.on('ready',this.ready);
         this.bucket.start();
     },
 
@@ -33,6 +34,10 @@ Backbone.SimperiumCollection = Backbone.Collection.extend({
         }
         return null;
     },
+
+    ready: function() {
+        this.trigger("ready");
+    }
 });
 
 Backbone.sync = function(method, model, options) {
