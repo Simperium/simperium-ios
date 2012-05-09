@@ -11,16 +11,16 @@ collaborate.
 
 - Create a user:
 
-    `curl -H 'X-Simperium-API-Key: `*SIMPERIUM_API_KEY*`' -d \
-    '{"username":"boards@test.com", "password":"test"}' \
-    https://auth.simperium.com/1/`*SIMPERIUM_APP_ID*`/create/`
+    curl -H 'X-Simperium-API-Key: SIMPERIUM_API_KEY' -d
+    '{"username":"boards@test.com", "password":"test"}'
+    https://auth.simperium.com/1/SIMPERIUM_APP_ID/create/
 
 - Or sign in an existing user (you can use your simperium.com username/password):
 
 
-    `curl -H 'X-Simperium-API-Key: `*SIMPERIUM_API_KEY*`' -d \
+    curl -H 'X-Simperium-API-Key: SIMPERIUM_API_KEY' -d
     '{"username":"boards@test.com", "password":"test"}' \
-    https://auth.simperium.com/1/`*SIMPERIUM_APP_ID*`/authorize/
+    https://auth.simperium.com/1/SIMPERIUM_APP_ID/authorize/
 
 
 - Grab the `access_token` parameter from either the `create` or `authorize`
@@ -32,7 +32,7 @@ collaborate.
 - Deploy to a web server or you can run locally using python. From the Boards
   directory:
 
-    `python -m SimpleHTTPServer 8000`
+    python -m SimpleHTTPServer 8000
 
 
 
