@@ -311,8 +311,13 @@
     todo.title = @"";
     todo.done = [NSNumber numberWithBool:NO];
     int numRows = [self tableView:self.tableView numberOfRowsInSection:0];
-    Todo *lastTodo = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:numRows-1 inSection:0]];
-    todo.order = [NSNumber numberWithInt: [lastTodo.order integerValue] + 1];
+    
+    if (numRows > 0) {
+        Todo *lastTodo = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:numRows-1 inSection:0]];
+        todo.order = [NSNumber numberWithInt: [lastTodo.order integerValue] + 1];
+    } else {
+        todo.order = [NSNumber numberWithInt:1];
+    }
     
     [self save];
 
