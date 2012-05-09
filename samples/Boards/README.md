@@ -1,7 +1,8 @@
 # Boards
 
 Boards is a simple web only app that uses Simperium to sync.
-collaborate.
+collaborate. It uses Backbone and `backbone-simperium.js` to sync Backbone
+models.
 
 ## Running Boards
 
