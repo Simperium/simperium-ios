@@ -57,9 +57,9 @@
 	
     self.simperium = [[Simperium alloc] initWithRootViewController: container];
     
-    // Sign in and add an app at simperium.com to generate an App ID and API key
-    [self.simperium startWithAppID:@"yourAppID"
-                            APIKey:@"yourAPIKey"  
+    // Sign in at simperium.com and add an app to generate an App ID and API key
+    [self.simperium startWithAppID:@"SIMPERIUM_APP_ID"
+                            APIKey:@"SIMPERIUM_API_KEY"  
                              model:[self managedObjectModel] 
                            context:[self managedObjectContext] 
                        coordinator:[self persistentStoreCoordinator]];
