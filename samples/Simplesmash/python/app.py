@@ -5,7 +5,7 @@ from simperium import optfunc
 from simperium import core
 
 def listener():
-    simperium = core.Api("stamps-rating-4a1", "f50f04aad14a47ca870ce844333188b3")
+    simperium = core.Api('SIMPERIUM_APP_ID', 'SIMPERIUM_API_KEY')
 
     # persist the last known change version (cv) in Simperium...
     cv = None
