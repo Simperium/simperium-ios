@@ -11,10 +11,10 @@
 
 @interface NSString(NSString_Simperium)
 
-+ (NSString *)encodeBase64WithString:(NSString *)strData;
-+ (NSString *)encodeBase64WithData:(NSData *)objData;
-+ (NSString *)makeUUID;
-+ (NSString *)md5StringFromData:(NSData *)data;
-- (NSString *)urlEncodeString;
++ (NSString *)sp_encodeBase64WithString:(NSString *)strData;
++ (NSString *)sp_encodeBase64WithData:(NSData *)objData;
++ (NSString *)sp_makeUUID;
++ (NSString *)sp_md5StringFromData:(NSData *)data;
+- (NSString *)sp_urlEncodeString;
 
 @end
