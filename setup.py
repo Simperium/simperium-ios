@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='Simperium',
-    version='0.0.3',
+    version='0.0.4',
     author='Andy Gayton',
     author_email='andy@simperium.com',
     packages=['simperium', 'simperium.test'],
@@ -12,6 +12,5 @@ setup(
     description='Python client for the Simperium synchronization platform',
     long_description=open('README.md').read(),
     install_requires=[
-        "simplejson >= 2.1.1",
     ],
 )
