@@ -45,7 +45,6 @@ class BucketTest(unittest.TestCase):
 
         got = bucket.index(limit=2)
         want = {
-            'count': 3,
             'current': got['current'],
             'mark': got['mark'],
             'index': [
@@ -55,7 +54,6 @@ class BucketTest(unittest.TestCase):
 
         got2 = bucket.index(limit=2, mark=got['mark'])
         want2 = {
-            'count': 3,
             'current': got['current'],
             'index': [
                 {'id': 'item0', 'v': 1}], }
