@@ -156,9 +156,9 @@ class Bucket(object):
     def get(self, item, default=None, version=None):
         """retrieves either the latest version of item from this bucket, or the
             specific version requested"""
-        url = '%s/%s/item/%s' % (self.appname, self.bucket, item)
+        url = '%s/%s/i/%s' % (self.appname, self.bucket, item)
         if version:
-            url += '/%s' % version
+            url += '/v/%s' % version
         try:
             response = self._request(url, headers=self._auth_header())
         except urllib2.HTTPError, e:
@@ -176,9 +176,9 @@ class Bucket(object):
         """
         if not ccid:
             ccid = self._gen_ccid()
-        url = '%s/%s/item/%s' % (self.appname, self.bucket, item)
+        url = '%s/%s/i/%s' % (self.appname, self.bucket, item)
         if version:
-            url += '/%s' % version
+            url += '/v/%s' % version
         url += '?clientid=%s&ccid=%s' % (self.clientid, ccid)
         if include_response:
             url += '&response=1'
@@ -201,9 +201,9 @@ class Bucket(object):
     def delete(self, item, version=None):
         """deletes the item from bucket"""
         ccid = self._gen_ccid()
-        url = '%s/%s/item/%s' % (self.appname, self.bucket, item)
+        url = '%s/%s/i/%s' % (self.appname, self.bucket, item)
         if version:
-            url += '/%s' % version
+            url += '/v/%s' % version
         url += '?clientid=%s&ccid=%s' % (self.clientid, ccid)
         response = self._request(url, headers=self._auth_header(), method='DELETE')
         if not response.read().strip():
