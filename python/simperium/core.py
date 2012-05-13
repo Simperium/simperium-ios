@@ -1,4 +1,5 @@
 import os
+import sys
 import uuid
 import urllib
 import urllib2
@@ -110,7 +111,10 @@ class Bucket(object):
         request = urllib2.Request(url, data, headers=headers)
         if method:
             request.get_method = lambda: method
-        response = urllib2.urlopen(request, timeout=timeout)
+        if sys.version_info < (2, 6):
+            response = urllib2.urlopen(request)
+        else:
+            response = urllib2.urlopen(request, timeout=timeout)
         return response
 
     def index(self, data=False, mark=None, limit=None, since=None):
