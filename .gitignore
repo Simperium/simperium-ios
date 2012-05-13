@@ -55,3 +55,6 @@ nosetests.xml
 .settings
 nbproject
 thumbs.db
+
+#Vim
+*.swp
