@@ -176,7 +176,7 @@ class Bucket(object):
 
         return json.loads(response.read())
 
-    def post(self, item, data, version=None, ccid=None, include_response=False):
+    def post(self, item, data, version=None, ccid=None, include_response=False, replace=False):
         """posts the supplied data to item
 
             returns a unique change id on success, or None, if the post was not
@@ -190,6 +190,8 @@ class Bucket(object):
         url += '?clientid=%s&ccid=%s' % (self.clientid, ccid)
         if include_response:
             url += '&response=1'
+        if replace:
+            url += '&replace=1'
         data = json.dumps(data)
         try:
             response = self._request(url, data, headers=self._auth_header())
