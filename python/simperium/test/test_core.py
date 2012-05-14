@@ -59,6 +59,15 @@ class BucketTest(unittest.TestCase):
                 {'id': 'item0', 'v': 1}], }
         self.assertEqual(want, got)
 
+    def test_post(self):
+        bucket = core.Bucket(appname, get_auth_token(), uuid.uuid4().hex)
+        bucket.post('item1', {'a':1})
+        self.assertEqual(bucket.get('item1'), {'a':1})
+        bucket.post('item1', {'b':2})
+        self.assertEqual(bucket.get('item1'), {'a':1, 'b':2})
+        bucket.post('item1', {'c':3}, replace=True)
+        self.assertEqual(bucket.get('item1'), {'c':3})
+
 
 class UserTest(unittest.TestCase):
     def test_get(self):
