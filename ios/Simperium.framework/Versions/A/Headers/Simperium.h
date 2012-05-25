@@ -155,6 +155,9 @@
 /// A hashed, unique ID for this client.
 @property (nonatomic, readonly) NSString *clientID;
 
+/// Set this to true if you need to be able to cancel the authentication dialog
+@property (nonatomic, assign) BOOL authenticationOptional;
+
 /// Set this if for some reason you want to use multiple Simperium instances (e.g. unit testing).
 @property (copy) NSString *label;
 
