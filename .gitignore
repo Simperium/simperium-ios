@@ -31,7 +31,7 @@ var
 sdist
 develop-eggs
 .installed.cfg
-lib
+python/lib
 lib64
 
 # Installer logs
