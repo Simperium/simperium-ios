@@ -32,12 +32,10 @@ def get_auth_token():
 
 
 class AuthTest(unittest.TestCase):
-    def test_create(self):
-        get_auth_token()
-
     def test_authorize(self):
+        get_auth_token()
         auth = core.Auth(appname, api_key)
-        print auth.authorize(_username, _password)
+        auth.authorize(_username, _password)
 
 
 
