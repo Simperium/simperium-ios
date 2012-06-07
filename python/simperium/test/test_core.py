@@ -16,20 +16,29 @@ if not appname:
     sys.exit()
 
 # cache user create to cut down on the number of users created by the test suite
+_username = None
+_password = None
 _auth_token = None
 def get_auth_token():
+    global _username
+    global _password
     global _auth_token
     if not _auth_token:
         auth = core.Auth(appname, api_key)
-        username = uuid.uuid4().hex + '@foo.com'
-        password = uuid.uuid4().hex
-        _auth_token = auth.create(username, password)
+        _username = uuid.uuid4().hex + '@foo.com'
+        _password = uuid.uuid4().hex
+        _auth_token = auth.create(_username, _password)
     return _auth_token
 
 
 class AuthTest(unittest.TestCase):
     def test_create(self):
         get_auth_token()
+
+    def test_authorize(self):
+        auth = core.Auth(appname, api_key)
+        print auth.authorize(_username, _password)
+
 
 
 class BucketTest(unittest.TestCase):
