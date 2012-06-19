@@ -3,7 +3,6 @@ require 'rubygems'
 require File.join(File.dirname(__FILE__), '../simperium')
 require 'uri'
 require 'mongo'
-require 'optparse'
 
 MONGHQ_URL = ENV['MONGHQ_URL']
 
