@@ -4,10 +4,10 @@ require File.join(File.dirname(__FILE__), '../simperium')
 require 'uri'
 require 'mongo'
 
-MONGHQ_URL = ENV['MONGHQ_URL']
+MONGOHQ_URL = ENV['MONGOHQ_URL']
 
-uri = URI.parse(MONGHQ_URL)
-conn = Mongo::Connection.from_uri(MONGHQ_URL)
+uri = URI.parse(MONGOHQ_URL)
+conn = Mongo::Connection.from_uri(MONGOHQ_URL)
 $db = conn.db(uri.path.gsub(/^\//, ''))
 
 def main(appname, admin_key, bucket)
