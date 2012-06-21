@@ -1,39 +1,40 @@
+require 'rubygems'
 require 'test/unit'
 require 'uuid'
 require File.expand_path('../../lib/simperium', __FILE__)
 
-@api_key = ENV['SIMPERIUM_CLIENT_TEST_APIKEY']
-@appname = ENV['SIMPERIUM_CLIENT_TEST_APPNAME']
+@@api_key = ENV['SIMPERIUM_CLIENT_TEST_APIKEY']
+@@appname = ENV['SIMPERIUM_CLIENT_TEST_APPNAME']
 
 # cache user create to cut down on the number of users created by the test suite
 @@_auth_token = nil
 def get_auth_token
     if @@_auth_token.nil?
-    	auth = Auth.new(@@appname, @@api_key)
+        auth = Simperium::Auth.new(@@appname, @@api_key)
         uuid = UUID.new
-		username = uuid.generate(:compact) + '@foo.com'
-		password = uuid.generate(:compact)
+        username = uuid.generate(:compact) + '@foo.com'
+        password = uuid.generate(:compact)
         @@_auth_token = auth.create(username, password)
     end
     return @@_auth_token
 end
 
 class TestSimperiumRuby < Test::Unit::TestCase
-	def test_auth_create
-		get_auth_token
-	end
+    def test_auth_create
+        get_auth_token
+    end
 
-	def test_bucket_get
-		uuid = UUID.new
-		bucket = Bucket.new(@@appname, get_auth_token, uuid.generate(:compact))
+    def test_bucket_get
+        uuid = UUID.new
+        bucket = Simperium::Bucket.new(@@appname, get_auth_token, uuid.generate(:compact))
         bucket.post('item1', {'x'=> 1})
         assert_equal(bucket.get('item1'), {'x' => 1})
-	end
+    end
 
-	def test_bucket_index
-		uuid = UUID.new
-		bucket = Bucket.new(@@appname, get_auth_token, uuid.generate(:compact))
-		(0..2).each { |i| bucket.post("item#{i}", {'x' => i}) }
+    def test_bucket_index
+        uuid = UUID.new
+        bucket = Simperium::Bucket.new(@@appname, get_auth_token, uuid.generate(:compact))
+        (0..2).each { |i| bucket.post("item#{i}", {'x' => i}) }
         
         got = bucket.index(:data=>false,  :mark=>nil, :limit=>2, :since=>nil)
         want = {
@@ -49,11 +50,11 @@ class TestSimperiumRuby < Test::Unit::TestCase
             'current'=> got['current'],
             'index' => [
                 {'id' => 'item0', 'v' => 1}] }
-	end
+    end
 
-	def test_bucket_post
-		uuid = UUID.new
-		bucket = Bucket.new(@@appname, get_auth_token, uuid.generate(:compact))
+    def test_bucket_post
+        uuid = UUID.new
+        bucket = Simperium::Bucket.new(@@appname, get_auth_token, uuid.generate(:compact))
         bucket.post('item1', {'a'=>1})
         assert_equal(bucket.get('item1'), {'a'=>1})
 
@@ -62,26 +63,26 @@ class TestSimperiumRuby < Test::Unit::TestCase
 
         bucket.post('item1', {'c'=>3}, :replace=>true)
         assert_equal(bucket.get('item1'), {'c'=>3})
-	end
+    end
 
-	def test_user_get
-		user = User.new(@@appname, get_auth_token)
+    def test_user_get
+        user = Simperium::User.new(@@appname, get_auth_token)
         user.post({'x'=> 1})
         assert_equal(user.get, {'x'=> 1})
-	end
+    end
 
-	def test_api_getitem
-        api = Api.new(@@appname, get_auth_token)
-        assert_instance_of(Bucket, api['bucket'], "api[bucket] should be an instance of Bucket")
+    def test_api_getitem
+        api = Simperium::Api.new(@@appname, get_auth_token)
+        assert_instance_of(Simperium::Bucket, api['bucket'], "api[bucket] should be an instance of Bucket")
     end
 
     def test_api_getattr
-        api = Api.new(@@appname, get_auth_token)
-        assert_instance_of(Bucket, api.bucket, "api.bucket should be an instance of Bucket")
+        api = Simperium::Api.new(@@appname, get_auth_token)
+        assert_instance_of(Simperium::Bucket, api.bucket, "api.bucket should be an instance of Bucket")
     end
 
     def test_api_user
-        api = Api.new(@@appname, get_auth_token)
-        assert_instance_of(User, api.user, "api.user should be an instance of User")
+        api = Simperium::Api.new(@@appname, get_auth_token)
+        assert_instance_of(Simperium::User, api.user, "api.user should be an instance of User")
     end
 end
