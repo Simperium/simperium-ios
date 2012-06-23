@@ -366,7 +366,7 @@ module Simperium
                 options = defaults
             end
 
-            @bucket = Simperium::Bucket.new(appname, auth_token, 'user',
+            @bucket = Simperium::Bucket.new(appname, auth_token, 'spuser',
                 options=options)
 
             url = "#{appname}/user"
