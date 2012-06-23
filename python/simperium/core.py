@@ -308,7 +308,7 @@ class SPUser(object):
             scheme='https',
             clientid=None):
 
-        self.bucket = Bucket(appname, auth_token, 'user',
+        self.bucket = Bucket(appname, auth_token, 'spuser',
             host=host,
             scheme=scheme,
             clientid=clientid)
