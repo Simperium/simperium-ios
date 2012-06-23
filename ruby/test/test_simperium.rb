@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'test/unit'
 require 'uuid'
-require File.expand_path('../../lib/simperium', __FILE__)
+require 'simperium'
 
 @@api_key = ENV['SIMPERIUM_CLIENT_TEST_APIKEY']
 @@appname = ENV['SIMPERIUM_CLIENT_TEST_APPNAME']
