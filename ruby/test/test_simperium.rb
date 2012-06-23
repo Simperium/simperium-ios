@@ -66,7 +66,7 @@ class TestSimperiumRuby < Test::Unit::TestCase
     end
 
     def test_user_get
-        user = Simperium::User.new(@@appname, get_auth_token)
+        user = Simperium::SPUser.new(@@appname, get_auth_token)
         user.post({'x'=> 1})
         assert_equal(user.get, {'x'=> 1})
     end
@@ -83,6 +83,6 @@ class TestSimperiumRuby < Test::Unit::TestCase
 
     def test_api_user
         api = Simperium::Api.new(@@appname, get_auth_token)
-        assert_instance_of(Simperium::User, api.user, "api.user should be an instance of User")
+        assert_instance_of(Simperium::SPUser, api.spuser, "api.user should be an instance of User")
     end
 end

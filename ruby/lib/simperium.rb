@@ -397,9 +397,9 @@ module Simperium
             #the first argument is a Symbol, so you need to_s it you want to pattern match
             unless method_sym.to_s =~ /=$/
                 if method_sym.to_s == 'spuser'
-                    @getitem[method_sym] ||= SPUser.new(@appname, @token)
+                    @getitem[method_sym] ||= Simperoum::SPUser.new(@appname, @token)
                 else
-                    @getitem[method_sym] ||= Bucket.new(@appname, @token, method_sym)
+                    @getitem[method_sym] ||= Simperoum::Bucket.new(@appname, @token, method_sym)
                 end
             end
         end
@@ -421,7 +421,7 @@ module Simperium
         end
 
         def as_user(userid)
-            return Api.new(@appname, @token, userid=userid, @_options)
+            return Simperoum::Api.new(@appname, @token, userid=userid, @_options)
         end
     end
 end
