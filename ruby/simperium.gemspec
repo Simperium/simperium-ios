@@ -1,6 +1,6 @@
 $:.unshift(File.join(File.dirname(__FILE__), 'lib'))
 
-require File.expand_path('../lib/simperium/version', __FILE__)
+require 'simperium/version'
 
 spec = Gem::Specification.new do |s|
   s.name = 'simperium'
@@ -16,8 +16,6 @@ spec = Gem::Specification.new do |s|
   s.add_dependency('uuid')
   s.add_dependency('json')
   
-  s.files = %w{
-    lib/simperium.rb
-    lib/simperium/version.rb
-  }
+  s.files = `git ls-files`.split("\n")
+  s.require_paths = ['lib']
 end

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-require File.join(File.dirname(__FILE__), '../simperium')
+require 'simperium'
 require 'uri'
 require 'mongo'
 
@@ -11,7 +11,7 @@ conn = Mongo::Connection.from_uri(MONGOHQ_URL)
 $db = conn.db(uri.path.gsub(/^\//, ''))
 
 def main(appname, admin_key, bucket)
-    _bucket = Bucket.new(appname, admin_key, bucket)
+    _bucket = Simperium::Bucket.new(appname, admin_key, bucket)
     
     begin
         cv = $db['__meta__'].find_one

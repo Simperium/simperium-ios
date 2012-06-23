@@ -4,10 +4,11 @@ require 'rubygems'
 require 'rest_client'
 require 'json'
 require 'uuid'
-require File.join(File.dirname(__FILE__), 'simperium/error_handling')
+require 'simperium/error_handling'
 
 #state file is not shared between processes on Heroku
 UUID.state_file = false
+
 module Simperium
     class Auth
         def initialize(appname, api_key, host=nil,scheme='https')
@@ -356,7 +357,7 @@ module Simperium
         end
     end
 
-    class User
+    class SPUser
         def initialize(appname, auth_token, options={})
             defaults = {:host=>nil, :scheme=>'https', :clientid=>nil}
             unless options.empty?
@@ -365,7 +366,7 @@ module Simperium
                 options = defaults
             end
 
-            @bucket = Simperium::Bucket.new(appname, auth_token, 'user',
+            @bucket = Bucket.new(appname, auth_token, 'user',
                 options=options)
 
             url = "#{appname}/user"
@@ -375,11 +376,11 @@ module Simperium
         end
 
         def get
-            return @bucket.get(@userid)
+            return @bucket.get('info')
         end
 
         def post(data)
-            @bucket.post(@userid, data)
+            @bucket.post('info', data)
         end
     end
 
@@ -395,10 +396,10 @@ module Simperium
         def method_missing(method_sym, *arguments, &block)
             #the first argument is a Symbol, so you need to_s it you want to pattern match
             unless method_sym.to_s =~ /=$/
-                if method_sym.to_s == 'user'
-                    @getitem[method_sym] ||= Simperium::User.new(@appname, @token)
+                if method_sym.to_s == 'spuser'
+                    @getitem[method_sym] ||= SPUser.new(@appname, @token)
                 else
-                    @getitem[method_sym] ||= Simperium::Bucket.new(@appname, @token, method_sym)
+                    @getitem[method_sym] ||= Bucket.new(@appname, @token, method_sym)
                 end
             end
         end
@@ -420,7 +421,7 @@ module Simperium
         end
 
         def as_user(userid)
-            return Simperium::Api.new(@appname, @token, userid=userid, @_options)
+            return Api.new(@appname, @token, userid=userid, @_options)
         end
     end
 end

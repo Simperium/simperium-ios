@@ -1,5 +1,5 @@
 require 'test/unit'
-require File.expand_path('../../lib/simperium/listener-mirror', __FILE__)
+require 'simperium/listener-export-mongohq'
 
 @admin_key = ENV['SIMPERIUM_CLIENT_TEST_ADMINKEY']
 @appname = ENV['SIMPERIUM_CLIENT_TEST_APPNAME']
