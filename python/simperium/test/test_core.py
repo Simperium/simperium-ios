@@ -76,9 +76,9 @@ class BucketTest(unittest.TestCase):
         self.assertEqual(bucket.get('item1'), {'c':3})
 
 
-class UserTest(unittest.TestCase):
+class SPUserTest(unittest.TestCase):
     def test_get(self):
-        user = core.User(appname, get_auth_token())
+        user = core.SPUser(appname, get_auth_token())
         user.post({'x': 1})
         self.assertEqual(user.get(), {'x': 1})
 
@@ -94,4 +94,4 @@ class ApiTest(unittest.TestCase):
 
     def test_user(self):
         api = core.Api(appname, get_auth_token())
-        self.assertTrue(isinstance(api.user, core.User))
+        self.assertTrue(isinstance(api.SPUser, core.SPUser))

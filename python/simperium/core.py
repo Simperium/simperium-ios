@@ -292,12 +292,12 @@ class Bucket(object):
         return json.loads(response.read())
 
 
-class User(object):
+class SPUser(object):
     """
     example use:
 
-        >>> from simperium.core import User
-        >>> user = User('myapp', 'db3d2a64abf711e0b63012313d001a3b')
+        >>> from simperium.core import SPUser
+        >>> user = SPUser('myapp', 'db3d2a64abf711e0b63012313d001a3b')
         >>> bucket.post({'age': 23})
         True
         >>> bucket.get()
@@ -313,16 +313,11 @@ class User(object):
             scheme=scheme,
             clientid=clientid)
 
-        url = '%s/%s' % (appname, 'user')
-        response = self.bucket._request(url, headers=self.bucket._auth_header())
-        response = json.loads(response.read())
-        self.userid = response['userid']
-
     def get(self):
-        return self.bucket.get(self.userid)
+        return self.bucket.get('info')
 
     def post(self, data):
-        self.bucket.post(self.userid, data)
+        self.bucket.post('info', data)
 
 
 class Api(object):
@@ -335,8 +330,8 @@ class Api(object):
         return Api.__getitem__(self, name)
 
     def __getitem__(self, name):
-        if name == 'user':
-            return User(self.appname, self.token, **self._kw)
+        if name.lower() == 'spuser':
+            return SPUser(self.appname, self.token, **self._kw)
         return Bucket(self.appname, self.token, name, **self._kw)
 
 
