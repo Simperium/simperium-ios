@@ -25,6 +25,7 @@ def main(appname, admin_key, bucket)
             changes = _bucket.all(:cv => cv, :data=>true)
             for change in changes
                 data = change['d']
+                print change['d']
                 # update mongo with the latest version of the data
                 if data
                     data['_id'] = change['id']
