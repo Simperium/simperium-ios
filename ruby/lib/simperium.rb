@@ -274,7 +274,7 @@ module Simperium
             end
         end
 
-        def new(data, ccid=nil)
+        def new(data, ccid={})
             uuid = UUID.new
             return self.post(uuid.generate(:compact), data, ccid=ccid)
         end
