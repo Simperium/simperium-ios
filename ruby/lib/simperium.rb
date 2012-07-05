@@ -274,7 +274,7 @@ module Simperium
             end
         end
 
-        def new(data, ccid=nil)
+        def new(data, ccid={})
             uuid = UUID.new
             return self.post(uuid.generate(:compact), data, ccid=ccid)
         end
@@ -285,7 +285,7 @@ module Simperium
 
         def delete(item, version=nil)
             ccid = self._gen_ccid()
-            url = "#{@appname}/#{@bucket}/i/{item}"
+            url = "#{@appname}/#{@bucket}/i/#{item}"
             
             if version
                 url += "/v/#{version}"
