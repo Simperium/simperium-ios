@@ -299,15 +299,15 @@ module Simperium
         end
 
         def changes(options={})
-            defautls = {:cv=>nil, :timeout=>nil}
+            defaults = {:cv=>nil, :timeout=>nil}
             unless options.empty?
                 options = defaults.merge(options)
             else
                 options = defaults
             end
 
-            cv = option[:cv]
-            timeout = option[:timeout]
+            cv = options[:cv]
+            timeout = options[:timeout]
 
             url = "#{@appname}/#{@bucket}/changes?clientid=#{@clientid}"
             unless cv.nil?
