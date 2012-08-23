@@ -20,6 +20,8 @@
 		26156AEA14EC3D4C003332BA /* SPMasterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 26156AE914EC3D4C003332BA /* SPMasterViewController.m */; };
 		26156AED14EC3D4C003332BA /* SPDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 26156AEC14EC3D4C003332BA /* SPDetailViewController.m */; };
 		26156AF714EC405F003332BA /* Todo.m in Sources */ = {isa = PBXBuildFile; fileRef = 26156AF614EC405F003332BA /* Todo.m */; };
+		266F06E215E60C3700308C5D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 266F06E115E60C3700308C5D /* Security.framework */; };
+		266F06E515E60C3F00308C5D /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 266F06E415E60C3F00308C5D /* libicucore.dylib */; };
 		268EDE311559A85F006B566F /* LoginView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 268EDE301559A85F006B566F /* LoginView.xib */; };
 		268EDE331559A866006B566F /* Simperium.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 268EDE321559A866006B566F /* Simperium.framework */; };
 		26C93A7514F86D1800BE99F5 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 26C93A7214F86D1800BE99F5 /* icon.png */; };
@@ -51,6 +53,8 @@
 		26156AEC14EC3D4C003332BA /* SPDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SPDetailViewController.m; sourceTree = "<group>"; };
 		26156AF514EC405F003332BA /* Todo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Todo.h; sourceTree = "<group>"; };
 		26156AF614EC405F003332BA /* Todo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Todo.m; sourceTree = "<group>"; };
+		266F06E115E60C3700308C5D /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		266F06E415E60C3F00308C5D /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		268EDE301559A85F006B566F /* LoginView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = LoginView.xib; path = ../../../ios/LoginView.xib; sourceTree = "<group>"; };
 		268EDE321559A866006B566F /* Simperium.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Simperium.framework; path = ../../../ios/Simperium.framework; sourceTree = "<group>"; };
 		26C93A7214F86D1800BE99F5 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
@@ -66,6 +70,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				266F06E515E60C3F00308C5D /* libicucore.dylib in Frameworks */,
+				266F06E215E60C3700308C5D /* Security.framework in Frameworks */,
 				26CEF5FE14EC41AD00BEC0BF /* libz.dylib in Frameworks */,
 				26CEF5FC14EC419100BEC0BF /* SystemConfiguration.framework in Frameworks */,
 				26CEF5FA14EC418A00BEC0BF /* MobileCoreServices.framework in Frameworks */,
@@ -84,6 +90,8 @@
 		26156ABC14EC3D4C003332BA = {
 			isa = PBXGroup;
 			children = (
+				266F06E415E60C3F00308C5D /* libicucore.dylib */,
+				266F06E115E60C3700308C5D /* Security.framework */,
 				268EDE321559A866006B566F /* Simperium.framework */,
 				26C93A7214F86D1800BE99F5 /* icon.png */,
 				26C93A7314F86D1800BE99F5 /* icon@2x.png */,
