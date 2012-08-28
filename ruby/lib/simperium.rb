@@ -236,7 +236,7 @@ module Simperium
         
         def post(item, data, options={})
             defaults = {:version=>nil, :ccid=>nil, :include_response=>false, :replace=>false}
-            unless options.empty?
+            unless options.nil? || options.empty?
                 options = defaults.merge(options)
             else
                 options = defaults
