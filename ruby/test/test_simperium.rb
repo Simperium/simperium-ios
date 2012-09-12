@@ -5,6 +5,7 @@ require 'simperium'
 
 @@api_key = ENV['SIMPERIUM_CLIENT_TEST_APIKEY']
 @@appname = ENV['SIMPERIUM_CLIENT_TEST_APPNAME']
+@@admin_token = ENV['SIMPERIUM_CLIENT_TEST_ADMIN_TOKEN']
 
 # cache user create to cut down on the number of users created by the test suite
 @@_auth_token = nil
@@ -35,7 +36,7 @@ class TestSimperiumRuby < Test::Unit::TestCase
         uuid = UUID.new
         bucket = Simperium::Bucket.new(@@appname, get_auth_token, uuid.generate(:compact))
         (0..2).each { |i| bucket.post("item#{i}", {'x' => i}) }
-        
+
         got = bucket.index(:data=>false,  :mark=>nil, :limit=>2, :since=>nil)
         want = {
             'current' => got['current'],
@@ -84,5 +85,11 @@ class TestSimperiumRuby < Test::Unit::TestCase
     def test_api_user
         api = Simperium::Api.new(@@appname, get_auth_token)
         assert_instance_of(Simperium::SPUser, api.spuser, "api.user should be an instance of User")
+    end
+
+    def test_admin
+        api_admin = Simperium::Api.new(@@appname, @@admin_token)
+        buckets = api_admin.list_buckets()
+        assert(buckets.length > 0)
     end
 end

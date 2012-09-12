@@ -10,12 +10,61 @@ require 'simperium/error_handling'
 UUID.state_file = false
 
 module Simperium
+    def self._request(url, data=nil, headers=nil, method=nil, timeout=nil)
+        opts = {:url => url,
+                :method => :post,
+                :open_timeout => 30,
+                :timeout => 80}
+
+        if data
+            opts = opts.merge({:payload => data})
+        end
+
+        if headers.nil?
+            headers = {}
+        end
+        opts = opts.merge({:headers => headers})
+
+        if method
+            opts = opts.merge({:method => method})
+        end
+
+        if timeout
+            opts = opts.merge({:timeout => timeout})
+        end
+
+        puts opts
+        begin
+            response = RestClient::Request.execute(opts)
+        rescue SocketError => e
+            ErrorHandling.handle_restclient_error(e)
+        rescue NoMethodError => e
+            if e.message =~ /\WRequestFailed\W/
+                e = StandardError.new('Unexpected HTTP response code')
+                ErrorHandling.handle_restclient_error(e)
+            else
+                raise
+            end
+        rescue RestClient::ExceptionWithResponse => e
+            if rcode = e.http_code and rbody = e.http_body
+                ErrorHandling.handle_api_error(rcode, rbody)
+            else
+                ErrorHandling.handle_restclient_error(e)
+            end
+        rescue RestClient::Exception, Errno::ECONNREFUSED => e
+            ErrorHandling.handle_restclient_error(e)
+        end
+
+        return response
+    end
+
+
     class Auth
         def initialize(appname, api_key, host=nil,scheme='https')
             if host == nil
                 host = ENV['SIMPERIUM_AUTHHOST'] || 'auth.simperium.com'
             end
-            
+
             @appname = appname
             @api_key = api_key
             @host = host
@@ -28,46 +77,7 @@ module Simperium
 
         def _request(url, data=nil, headers=nil, method=nil)
             url = "#{@scheme}://#{@host}/1/#{url}"
-            opts = {:url => url,
-                    :method => :post,
-                    :open_timeout => 30, 
-                    :timeout => 80}
-            
-            if data
-                opts = opts.merge({:payload => data})
-            end
-            
-            if headers.nil?
-                headers = {}
-            end
-            opts = opts.merge({:headers => headers})
-            
-            if method
-                opts = opts.merge({:method => method})
-            end
-            
-            begin
-                response = RestClient::Request.execute(opts)
-            rescue SocketError => e
-                ErrorHandling.handle_restclient_error(e)
-            rescue NoMethodError => e
-                if e.message =~ /\WRequestFailed\W/
-                    e = StandardError.new('Unexpected HTTP response code')
-                    ErrorHandling.handle_restclient_error(e)
-                else
-                    raise
-                end
-            rescue RestClient::ExceptionWithResponse => e
-                if rcode = e.http_code and rbody = e.http_body
-                    ErrorHandling.handle_api_error(rcode, rbody)
-                else
-                    ErrorHandling.handle_restclient_error(e)
-                end
-            rescue RestClient::Exception, Errno::ECONNREFUSED => e
-                ErrorHandling.handle_restclient_error(e)
-            end
-            
-            return response
+            return Simperium._request(url, data=data, headers=headers, method=method, timeout=nil)
         end
 
         def create(username, password)
@@ -75,11 +85,11 @@ module Simperium
                 'client_id' => @api_key,
                 'username' => username,
                 'password'=> password }
-            
+
             response = self._request(@appname+'/create/', data)
             return JSON.load(response.body)['access_token']
         end
-                
+
         def authorize(username, password)
             data = {
                 'username' => username,
@@ -118,6 +128,11 @@ module Simperium
             end
         end
 
+        def _request(url, data=nil, headers=nil, method=nil)
+            url = "#{@scheme}://#{@host}/1/#{url}"
+            return Simperium._request(url, data=data, headers=headers, method=method, timeout=nil)
+        end
+
         def _auth_header
             headers = {"X-Simperium-Token" => "#{@auth_token}"}
             unless @userid.nil?
@@ -131,55 +146,6 @@ module Simperium
             return ccid.generate(:compact)
         end
 
-        def _request(url, data=nil, headers=nil, method=nil, timeout=nil)
-            url = "#{@scheme}://#{@host}/1/#{url}"
-            opts = {:url => url,
-                    :method => :post,
-                    :open_timeout => 30, 
-                    :timeout => 80}
-            
-            if data
-                opts = opts.merge({:payload => data})
-            end
-            
-            if headers.nil?
-                headers = {}
-            end
-            opts = opts.merge({:headers => headers})
-            
-            if method
-                opts = opts.merge({:method => method})
-            end
-            
-            if timeout
-                opts = opts.merge({:timeout => timeout})
-            end
-            
-            puts opts
-            begin
-                response = RestClient::Request.execute(opts)
-            rescue SocketError => e
-                ErrorHandling.handle_restclient_error(e)
-            rescue NoMethodError => e
-                if e.message =~ /\WRequestFailed\W/
-                    e = StandardError.new('Unexpected HTTP response code')
-                    ErrorHandling.handle_restclient_error(e)
-                else
-                    raise
-                end
-            rescue RestClient::ExceptionWithResponse => e
-                if rcode = e.http_code and rbody = e.http_body
-                    ErrorHandling.handle_api_error(rcode, rbody)
-                else
-                    ErrorHandling.handle_restclient_error(e)
-                end
-            rescue RestClient::Exception, Errno::ECONNREFUSED => e
-                ErrorHandling.handle_restclient_error(e)
-            end
-
-            return response
-        end
-          
         def index(options={})
             defaults = {:data=>nil, :mark=>nil, :limit=>nil, :since=>nil}
             unless options.empty?
@@ -194,7 +160,7 @@ module Simperium
             since = options[:since]
 
             url = "#{@appname}/#{@bucket}/index?"
-            
+
             if data
                 url += "&data=1"
             end
@@ -210,7 +176,7 @@ module Simperium
             if since
                 url += "&since=#{since.to_str}"
             end
-            
+
             response = self._request(url, data=nil, headers=_auth_header(), method='GET')
             return JSON.load(response.body)
         end
@@ -233,7 +199,7 @@ module Simperium
             response = self._request(url, data=nil, headers=_auth_header(), method='GET')
             return JSON.load(response.body)
         end
-        
+
         def post(item, data, options={})
             defaults = {:version=>nil, :ccid=>nil, :include_response=>false, :replace=>false}
             unless options.nil? || options.empty?
@@ -251,21 +217,21 @@ module Simperium
                 ccid = self._gen_ccid()
             end
             url = "#{@appname}/#{@bucket}/i/#{item}"
-            
+
             if version
                 url += "/v/#{version}"
             end
             url += "?clientid=#{@clientid}&ccid=#{ccid}"
-            
+
             if include_response
                 url += "&response=1"
             end
-            
+
             if replace
                 url += "&replace=1"
             end
             data = JSON.dump(data)
-            
+
             response = self._request(url, data, headers=_auth_header())
             if include_response
                 return item, JSON.load(response.body)
@@ -286,7 +252,7 @@ module Simperium
         def delete(item, version=nil)
             ccid = self._gen_ccid()
             url = "#{@appname}/#{@bucket}/i/#{item}"
-            
+
             if version
                 url += "/v/#{version}"
             end
@@ -314,7 +280,7 @@ module Simperium
                 url += "&cv=#{cv}"
             end
             headers = _auth_header()
-            
+
             response = self._request(url, data=nil, headers=headers, method='GET', timeout=timeout)
             return JSON.load(response.body)
         end
@@ -345,13 +311,13 @@ module Simperium
             if data
                 url += "&data=1"
             end
-            
+
             if most_recent
                 url += "&most_recent=1"
             end
-            
+
             headers = _auth_header()
-            
+
             response = self._request(url, data=nil, headers=headers, method='GET', timeout=timeout)
             return JSON.load(response.body)
         end
@@ -402,6 +368,12 @@ module Simperium
                     @getitem[method_sym] ||= Simperium::Bucket.new(@appname, @token, method_sym)
                 end
             end
+        end
+
+        def list_buckets()
+            bucket = Bucket.new(@appname, @token, 'buckets')
+            response = bucket._request("#{@appname}/buckets", data=nil, headers=bucket._auth_header(), method='GET')
+            return JSON.load(response.body)['buckets']
         end
 
         def respond_to?(method_sym, include_private = false)
