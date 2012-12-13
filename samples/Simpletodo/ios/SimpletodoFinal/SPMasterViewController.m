@@ -285,7 +285,7 @@
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
     Todo *todo = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    cell.textLabel.text = todo.title;
+    cell.textLabel.text = todo.title.length > 0 ? todo.title : @"New Item";
     
     // If we're in editing mode, show a discolosure arrow so you can change the text for the todo item
     cell.editingAccessoryType = UITableViewCellAccessoryDisclosureIndicator;
