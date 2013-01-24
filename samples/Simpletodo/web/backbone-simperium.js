@@ -1,1 +1,0 @@
-../../../javascript/backbone-simperium.js
