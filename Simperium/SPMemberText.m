@@ -27,14 +27,6 @@
 	return @"";
 }
 
--(id)defaultValueAsStringForSQL {
-	return @"''";
-}
-
--(NSString *)typeAsStringForSQL {
-	return @"TEXT";
-}
-
 -(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
 	NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
 			 @"Simperium error: couldn't diff strings because their classes weren't NSString");
@@ -101,17 +93,5 @@
 	
 	return [NSDictionary dictionary];
 }
-
-//-(id)sqlLoadWithStatement:(sqlite3_stmt *)statement queryPosition:(int)position
-//{
-//	char *str = (char *)sqlite3_column_text(statement, position);
-//	return str == NULL ? @"" : [NSString stringWithUTF8String:str];
-//}
-//
-//-(void)sqlBind:(id)data withStatement:(sqlite3_stmt *)statement queryPosition:(int)position
-//{
-//	sqlite3_bind_text(statement, position, [data UTF8String], -1, SQLITE_TRANSIENT);	
-//}
-
 
 @end

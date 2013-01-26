@@ -91,14 +91,6 @@
     [dict setValue:convertedValue forKey:key];
 }
 
--(NSString *)defaultValueAsStringForSQL {
-	return @"''";
-}
-
--(NSString *)typeAsStringForSQL {
-	return @"TEXT";
-}
-
 -(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
     NSString *otherKey = [self toJSON:otherValue];
     

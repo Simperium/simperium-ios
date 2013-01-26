@@ -45,10 +45,4 @@ extern NSString * const OP_STRING;
 -(id)applyDiff:(id)thisValue otherValue:(id)otherValue;
 -(NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue;
 
-// Could potentially support raw SQL
-//-(NSString *)defaultValueAsStringForSQL;
-//-(NSString *)typeAsStringForSQL;
-//-(id)sqlLoadWithStatement:(sqlite3_stmt *) statement queryPosition:(int)position;
-//-(void)sqlBind:(id)data withStatement:(sqlite3_stmt *)statement queryPosition:(int)position;
-
 @end

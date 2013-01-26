@@ -114,27 +114,6 @@ NSString * const OP_STRING			= @"d";
 
 @end
 
-// Could support raw SQL
-
-//-(id)defaultValueAsStringForSQL {
-//	return @"NULL";
-//}
-//
-//-(NSString *)typeAsStringForSQL {
-//	return @"NULL";
-//}
-//
-//-(void)sqlBind:(id)data withStatement:(sqlite3_stmt *)statement queryPosition:(int)position {
-//}
-//
-//
-//-(id)sqlLoadWithStatement:(sqlite3_stmt *) statement queryPosition:(int)position
-//{
-//	// Needs to be overridden by subclasses, one for each type that we support
-//	return nil;
-//}
-
-
 
 /* Could make SPEntity itself a supported member class, and perform diff this way:
  

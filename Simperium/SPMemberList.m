@@ -36,14 +36,6 @@
 	return [value JSONString];
 }
 
-//-(id)defaultValueAsStringForSQL {
-//	return @"0";
-//}
-//
-//-(NSString *)typeAsStringForSQL {
-//	return @"REAL";
-//}
-
 -(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
 	NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
 			 @"Simperium error: couldn't diff dates because their classes weren't NSString");
@@ -70,18 +62,5 @@
 	// TODO: Not sure if this should be a copy or not
 	return otherValue;
 }
-
-//-(id)sqlLoadWithStatement:(sqlite3_stmt *)statement queryPosition:(int)position
-//{
-//	return [NSNumber numberWithDouble: sqlite3_column_double(statement, position)];
-//    //	return [NSDate dateWithTimeIntervalSince1970:sqlite3_column_double(statement, position)];
-//}
-//
-//-(void)sqlBind:(id)data withStatement:(sqlite3_stmt *)statement queryPosition:(int)position
-//{
-//	sqlite3_bind_double(statement, position, [data doubleValue]);
-//    //	sqlite3_bind_double(statement, position, [data timeIntervalSince1970]);
-//}
-
 
 @end
