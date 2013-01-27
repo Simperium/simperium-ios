@@ -1275,7 +1275,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
-					"\"$(SRCROOT)/../../../simperium-ios-private/External\"",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SimperiumTests/SimperiumTests-Prefix.pch";
@@ -1300,7 +1299,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
-					"\"$(SRCROOT)/../../../simperium-ios-private/External\"",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SimperiumTests/SimperiumTests-Prefix.pch";
