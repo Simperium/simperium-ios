@@ -16,7 +16,7 @@
 	return nil;
 }
 
--(id)toJSON:(id)value {
+-(NSString *)stringValueFromTransformable:(id)value {
     if (value == nil)
         return @"";
     
@@ -48,7 +48,7 @@
 }
 
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self toJSON: value];
+    id convertedValue = [self stringValueFromTransformable: value];
     [dict setValue:convertedValue forKey:key];
 }
 
@@ -60,15 +60,15 @@
     // Some binary data, like UIImages, won't detect equality with isEqual:
     // Therefore, compare base64 instead; this can be very slow
     // TODO: think of better ways to handle this
-    NSString *thisStr = [self toJSON:thisValue];
-    NSString *otherStr = [self toJSON:otherValue];
+    NSString *thisStr = [self stringValueFromTransformable:thisValue];
+    NSString *otherStr = [self stringValueFromTransformable:otherValue];
     if ([thisStr compare:otherStr] == NSOrderedSame)
         return [NSDictionary dictionary];
     
 	// Construct the diff in the expected format
 	return [NSDictionary dictionaryWithObjectsAndKeys:
 			OP_REPLACE, OP_OP,
-			[self toJSON: otherValue], OP_VALUE, nil];
+			[self stringValueFromTransformable: otherValue], OP_VALUE, nil];
 }
 
 -(id)applyDiff:(id)thisValue otherValue:(id)otherValue {

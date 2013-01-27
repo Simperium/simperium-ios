@@ -32,7 +32,7 @@
 	return nil;
 }
 
--(id)toJSON:(id)value {
+-(id)simperiumKeyForObject:(id)value {
     NSString *simperiumKey = [value simperiumKey];
 	return simperiumKey == nil ? @"" : simperiumKey;
 }
@@ -80,17 +80,17 @@
 }
 
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self toJSON: value];
+    id convertedValue = [self simperiumKeyForObject: value];
     [dict setValue:convertedValue forKey:key];
 }
 
 -(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
-    NSString *otherKey = [self toJSON:otherValue];
+    NSString *otherKey = [self simperiumKeyForObject:otherValue];
     
 	NSAssert([thisValue isKindOfClass:[SPManagedObject class]] && [otherValue isKindOfClass:[SPManagedObject class]],
 			 @"Simperium error: couldn't diff objects because their classes weren't SPManagedObject");
     
-    NSString *thisKey = [self toJSON:thisValue];
+    NSString *thisKey = [self simperiumKeyForObject:thisValue];
     
     // No change if the entity keys are equal
     if ([thisKey isEqualToString:otherKey])

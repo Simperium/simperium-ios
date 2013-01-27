@@ -15,7 +15,7 @@
 	return @"[]";
 }
 
--(id)toJSON:(id)value {
+-(id)stringValueFromArray:(id)value {
     if ([value length] == 0)
         return [[self defaultValue] objectFromJSONString];
 	return [value objectFromJSONString];
@@ -27,7 +27,7 @@
 }
 
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self toJSON: value];
+    id convertedValue = [self stringValueFromArray: value];
     [dict setValue:convertedValue forKey:key];
 }
 
@@ -43,7 +43,7 @@
 	// Construct the diff in the expected format
 	return [NSDictionary dictionaryWithObjectsAndKeys:
 			OP_REPLACE, OP_OP,
-			[self toJSON: otherValue], OP_VALUE, nil];
+			[self stringValueFromArray: otherValue], OP_VALUE, nil];
 }
 
 -(id)applyDiff:(id)thisValue otherValue:(id)otherValue {

@@ -14,7 +14,7 @@
 	return [NSDate date];
 }
 
--(id)toJSON:(id)value {
+-(id)dateValueFromNumber:(id)value {
 	if ([value isKindOfClass:[NSNumber class]])
 		return value;
 	
@@ -37,7 +37,7 @@
 }
 
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self toJSON: value];
+    id convertedValue = [self dateValueFromNumber: value];
     [dict setValue:convertedValue forKey:key];
 }
 
@@ -55,7 +55,7 @@
 	// Construct the diff in the expected format
 	return [NSDictionary dictionaryWithObjectsAndKeys:
 			OP_REPLACE, OP_OP,
-			[self toJSON: otherValue], OP_VALUE, nil];
+			[self dateValueFromNumber: otherValue], OP_VALUE, nil];
 }
 
 -(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
