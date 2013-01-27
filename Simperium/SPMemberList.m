@@ -15,25 +15,20 @@
 	return @"[]";
 }
 
--(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
-    id value = [dict objectForKey: key];
-    value = [self fromJSON: value];
-    return value;
-}
-
--(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self toJSON: value];
-    [dict setValue:convertedValue forKey:key];
-}
-
 -(id)toJSON:(id)value {
     if ([value length] == 0)
         return [[self defaultValue] objectFromJSONString];
 	return [value objectFromJSONString];
 }
 
--(id)fromJSON:(id)value {
+-(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
+    id value = [dict objectForKey: key];
 	return [value JSONString];
+}
+
+-(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
+    id convertedValue = [self toJSON: value];
+    [dict setValue:convertedValue forKey:key];
 }
 
 -(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {

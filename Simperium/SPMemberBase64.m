@@ -16,7 +16,19 @@
 	return nil;
 }
 
--(id)fromJSON:(id)value {
+-(id)toJSON:(id)value {
+    if (value == nil)
+        return @"";
+    
+    // Convert from a Transformable class to a base64 string
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:value];
+    NSString *base64 = [NSString sp_encodeBase64WithData:data];
+    //NSLog(@"Simperium transformed base64 (%@) %@ to %@", keyName, value, base64);
+	return base64;
+}
+
+-(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
+    id value = [dict objectForKey: key];
 	if (![value isKindOfClass:[NSString class]])
 		return value;
     
@@ -33,23 +45,6 @@
     //NSAssert2(obj != nil, @"Simperium error: Transformable %@ couldn't be parsed from base64: %@", keyName, value);
     
     return obj;
-}
-
--(id)toJSON:(id)value {
-    if (value == nil)
-        return @"";
-    
-    // Convert from a Transformable class to a base64 string
-    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:value];
-    NSString *base64 = [NSString sp_encodeBase64WithData:data];
-    //NSLog(@"Simperium transformed base64 (%@) %@ to %@", keyName, value, base64);
-	return base64;
-}
-
--(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
-    id value = [dict objectForKey: key];
-    value = [self fromJSON: value];
-    return value;
 }
 
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {

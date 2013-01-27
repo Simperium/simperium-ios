@@ -84,11 +84,6 @@ NSString * const OP_STRING			= @"d";
 	return value;
 }
 
--(id)fromJSON:(id)value {
-	return value;
-}
-
-
 -(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
     id value = [dict objectForKey: key];
     return value;

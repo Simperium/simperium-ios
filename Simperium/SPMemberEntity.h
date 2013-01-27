@@ -7,13 +7,11 @@
 //
 
 #import "SPMember.h"
-#import "SPStorageProvider.h"
 
 @interface SPMemberEntity : SPMember {
     NSString *entityName;
 }
 
 @property (nonatomic, copy) NSString *entityName;
-@property (assign) id<SPStorageProvider>storage;
 
 @end

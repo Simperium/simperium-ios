@@ -14,18 +14,6 @@
 	return [NSDate date];
 }
 
--(id)fromJSON:(id)value {
-    if (!value)
-        return nil;
-    
-	if ([value isKindOfClass:[NSDate class]])
-		return value;
-	
-	// Convert from NSNumber to NSDate
-	//NSInteger gmtOffset = [[NSTimeZone localTimeZone] secondsFromGMT];
-	return [NSDate dateWithTimeIntervalSince1970:[(NSString *)value doubleValue]];//-gmtOffset];
-}
-
 -(id)toJSON:(id)value {
 	if ([value isKindOfClass:[NSNumber class]])
 		return value;
@@ -37,8 +25,15 @@
 
 -(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
     id value = [dict objectForKey: key];
-    value = [self fromJSON: value];
-    return value;
+    if (!value)
+        return nil;
+    
+	if ([value isKindOfClass:[NSDate class]])
+		return value;
+	
+	// Convert from NSNumber to NSDate
+	//NSInteger gmtOffset = [[NSTimeZone localTimeZone] secondsFromGMT];
+	return [NSDate dateWithTimeIntervalSince1970:[(NSString *)value doubleValue]];//-gmtOffset];
 }
 
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {

@@ -39,7 +39,6 @@ extern NSString * const OP_STRING;
 -(NSDictionary *)diffForRemoval;
 -(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object;
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict;
--(id)fromJSON:(id)value;
 -(id)toJSON:(id)value;
 -(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue;
 -(id)applyDiff:(id)thisValue otherValue:(id)otherValue;

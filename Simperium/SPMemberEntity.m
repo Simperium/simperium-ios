@@ -8,13 +8,11 @@
 
 #import "SPMemberEntity.h"
 #import "SPManagedObject.h"
-#import "SPStorage.h"
 #import "SPBucket.h"
 #import "SPReferenceManager.h"
 
 @implementation SPMemberEntity
 @synthesize entityName;
-@synthesize storage;
 
 -(id)initFromDictionary:(NSDictionary *)dict
 {
@@ -32,11 +30,6 @@
 
 -(id)defaultValue {
 	return nil;
-}
-
--(id)fromJSON:(id)value {
-    id<SPStorageProvider>threadSafeStorage = [storage threadSafeStorage];
-    return [threadSafeStorage objectForKey:value bucketName: entityName];
 }
 
 -(id)toJSON:(id)value {
