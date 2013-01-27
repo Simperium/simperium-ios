@@ -61,7 +61,7 @@
 }
 
 - (void) dealloc {
-    [simperium clearLocalData];
+    [simperium signOutAndRemoveLocalData:YES];
     [simperium release];
     [config release];
     [super dealloc];
