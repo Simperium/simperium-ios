@@ -2,7 +2,7 @@
 //  SPS3Manager.m
 //  Simperium
 //
-//  Created by Michael Johnston on 11-05-31.
+//  Created by John Carter on 11-05-31.
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
