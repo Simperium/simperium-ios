@@ -28,23 +28,22 @@
 		26CEF5FA14EC418A00BEC0BF /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5F914EC418A00BEC0BF /* MobileCoreServices.framework */; };
 		26CEF5FC14EC419100BEC0BF /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5FB14EC419100BEC0BF /* SystemConfiguration.framework */; };
 		26CEF5FE14EC41AD00BEC0BF /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5FD14EC41AD00BEC0BF /* libz.dylib */; };
-		46CC657316AE299000D5DC22 /* Simperium.xcodeproj in Resources */ = {isa = PBXBuildFile; fileRef = 46CC657216AE299000D5DC22 /* Simperium.xcodeproj */; };
+		46B787EA16B70429001AA908 /* libSimperium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 46B787E716B70402001AA908 /* libSimperium.a */; };
 		46CC658916B09A6800D5DC22 /* LoginView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 46CC658816B09A6800D5DC22 /* LoginView.xib */; };
-		46CC658D16B09AB500D5DC22 /* libSimperium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 46CC658C16B09AB500D5DC22 /* libSimperium.a */; };
 		46CC658F16B09C7700D5DC22 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		46CC659C16B0B51700D5DC22 /* PBXContainerItemProxy */ = {
+		46B787E616B70402001AA908 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 46CC657216AE299000D5DC22 /* Simperium.xcodeproj */;
+			containerPortal = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 264CD8FB135DFD7A00C51BAD;
 			remoteInfo = Simperium;
 		};
-		46CC659E16B0B51700D5DC22 /* PBXContainerItemProxy */ = {
+		46B787E816B70402001AA908 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 46CC657216AE299000D5DC22 /* Simperium.xcodeproj */;
+			containerPortal = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 264CD908135DFD7A00C51BAD;
 			remoteInfo = SimperiumTests;
@@ -80,9 +79,8 @@
 		26CEF5F914EC418A00BEC0BF /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		26CEF5FB14EC419100BEC0BF /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		26CEF5FD14EC41AD00BEC0BF /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
-		46CC657216AE299000D5DC22 /* Simperium.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Simperium.xcodeproj; path = ../../Simperium.xcodeproj; sourceTree = "<group>"; };
+		46B787DD16B70402001AA908 /* Simperium.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Simperium.xcodeproj; path = ../../Simperium.xcodeproj; sourceTree = "<group>"; };
 		46CC658816B09A6800D5DC22 /* LoginView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = LoginView.xib; path = ../../Resources/LoginView.xib; sourceTree = "<group>"; };
-		46CC658C16B09AB500D5DC22 /* libSimperium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libSimperium.a; path = "../../build/Release-iphoneos/libSimperium.a"; sourceTree = "<group>"; };
 		46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -91,7 +89,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46CC658D16B09AB500D5DC22 /* libSimperium.a in Frameworks */,
+				46B787EA16B70429001AA908 /* libSimperium.a in Frameworks */,
 				266F06E515E60C3F00308C5D /* libicucore.dylib in Frameworks */,
 				266F06E215E60C3700308C5D /* Security.framework in Frameworks */,
 				26CEF5FE14EC41AD00BEC0BF /* libz.dylib in Frameworks */,
@@ -111,9 +109,8 @@
 		26156ABC14EC3D4C003332BA = {
 			isa = PBXGroup;
 			children = (
-				46CC658C16B09AB500D5DC22 /* libSimperium.a */,
+				46B787DD16B70402001AA908 /* Simperium.xcodeproj */,
 				46CC658816B09A6800D5DC22 /* LoginView.xib */,
-				46CC657216AE299000D5DC22 /* Simperium.xcodeproj */,
 				266F06E415E60C3F00308C5D /* libicucore.dylib */,
 				26C93A7214F86D1800BE99F5 /* icon.png */,
 				26C93A7314F86D1800BE99F5 /* icon@2x.png */,
@@ -179,11 +176,11 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		46CC659716B0B51700D5DC22 /* Products */ = {
+		46B787DE16B70402001AA908 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				46CC659D16B0B51700D5DC22 /* libSimperium.a */,
-				46CC659F16B0B51700D5DC22 /* SimperiumTests.octest */,
+				46B787E716B70402001AA908 /* libSimperium.a */,
+				46B787E916B70402001AA908 /* SimperiumTests.octest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -228,8 +225,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 46CC659716B0B51700D5DC22 /* Products */;
-					ProjectRef = 46CC657216AE299000D5DC22 /* Simperium.xcodeproj */;
+					ProductGroup = 46B787DE16B70402001AA908 /* Products */;
+					ProjectRef = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -240,18 +237,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		46CC659D16B0B51700D5DC22 /* libSimperium.a */ = {
+		46B787E716B70402001AA908 /* libSimperium.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libSimperium.a;
-			remoteRef = 46CC659C16B0B51700D5DC22 /* PBXContainerItemProxy */;
+			remoteRef = 46B787E616B70402001AA908 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		46CC659F16B0B51700D5DC22 /* SimperiumTests.octest */ = {
+		46B787E916B70402001AA908 /* SimperiumTests.octest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = SimperiumTests.octest;
-			remoteRef = 46CC659E16B0B51700D5DC22 /* PBXContainerItemProxy */;
+			remoteRef = 46B787E816B70402001AA908 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -266,7 +263,6 @@
 				26156AE414EC3D4C003332BA /* MainStoryboard_iPad.storyboard in Resources */,
 				26C93A7514F86D1800BE99F5 /* icon.png in Resources */,
 				26C93A7614F86D1800BE99F5 /* icon@2x.png in Resources */,
-				46CC657316AE299000D5DC22 /* Simperium.xcodeproj in Resources */,
 				46CC658916B09A6800D5DC22 /* LoginView.xib in Resources */,
 				46CC658F16B09C7700D5DC22 /* Default-568h@2x.png in Resources */,
 			);
