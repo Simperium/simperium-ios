@@ -7,33 +7,33 @@ You can [sign up](http://simperium.com) for a hosted version of Simperium. There
 
 Adding Simperium to your project
 --------------------------------
-The easiest way to use the library is to [download the binary framework](https://docs.google.com/uc?export=download&id=0B_WOy42eJTXtMl90cHN1YVUzRlk) and [follow these instructions](http://simperium.com/docs/ios/).
+The easiest way to add Simperium is to [download the binary framework](https://docs.google.com/uc?export=download&id=0B_WOy42eJTXtMl90cHN1YVUzRlk) and [follow these instructions](http://simperium.com/docs/ios/).
 
-To use the source code instead, drag and drop Simperium.xcodeproj into your project, then add libSimperium.a in your target's Build Phase tab (under Link Binary with Libraries). You'll still need to [add some dependencies](http://simperium.com/docs/ios/#add). Note that you shouldn't have Simperium.xcodeproj open in another window at the same time. Xcode doesn't like this.
+To use the source code instead, drag and drop Simperium.xcodeproj into your application's project, then add libSimperium.a in your target's Build Phase tab (under Link Binary with Libraries). You'll still need to [add some dependencies](http://simperium.com/docs/ios/#add). Note that you shouldn't have Simperium.xcodeproj open in another window at the same time. Xcode doesn't like this.
 
-If for some reason you want to build the binary framework yourself, open Simperium.xcodeproj, then select and build the Framework target for iOS Device. You can build a release version of the Framework target by choosing Product | Build for Archiving.
+If for some reason you want to build the binary framework yourself, open Simperium.xcodeproj, then select and build the Framework target for iOS Device. You can build a release version of the Framework target by choosing Product -> Build for Archiving.
 
 Folder structure
 ----------------
-*Simperium*. Everything is accessed from a `Simperium` class instance. The `Simperium` class can be safely instantiated more than once in the same app (e.g. for unit testing).
+_Simperium_. Everything is accessed from a `Simperium` instance. This class can be safely instantiated more than once in the same app (e.g. for unit testing).
 
-*Object*. Diffing is at the heart of Simperium. Any object class that conforms to the `SPDiffable` protocol can be supported. `SPManagedObject` is for Core Data and `SPObject` is a container for raw JSON (not yet supported). `SPGhost` is an object's opinion of its own state on the server (name borrowed from the [Tribes Networking Model](http://www.pingz.com/wordpress/wp-content/uploads/2009/11/tribes_networking_model.pdf)).
+_Object_. Simperium does a lot of diffing in order to send only data that changes. Any object class that conforms to the `SPDiffable` protocol can be supported. `SPManagedObject` is for Core Data, and `SPObject` is a container for raw JSON (not yet supported). `SPGhost` is an object's opinion of its own state on the server (the name "ghost" was borrowed from the [Tribes Networking Model](http://www.pingz.com/wordpress/wp-content/uploads/2009/11/tribes_networking_model.pdf)).
 
-*Diffing*. An `SPDiffer` can perform diffs on any `SPDiffable` object. Each differ adheres to an `SPSchema`. The schema stores a list of members/properties (`SPMember`) for an object of a particular type. Each subclass of `SPMember` knows how to diff itself and in the future will be parameterized for alternate conflict resolution, validation, etc.
+_Diffing_. An `SPDiffer` can perform diffs on any `SPDiffable` object. Each differ adheres to an `SPSchema`. The schema stores a list of members/properties (of type `SPMember`) for an object of a particular type. Each subclass of `SPMember` corresponds to a data type, and knows how to diff itself. In the future these will be parameterized for custom diffing, conflict resolution, validation, etc.
 
-*System*. An `SPBucket` provides access to a synchronized bucket of objects of a particular type. The `SPBucket` has an `SPDiffer` to perform diffs, an `SPStorageProvider` for locally reading and writing data, an `SPChangeProcessor` for processing incoming and outgoing changes, and an `SPIndexProcessor` for processing indexes retrieved from the server. The processors run in their own threads.
+_System_. An `SPBucket` provides access to a synchronized bucket of objects of a particular type. The `SPBucket` has an `SPDiffer` to perform diffs, an `SPStorageProvider` for locally reading and writing data, an `SPChangeProcessor` for processing incoming and outgoing changes, and an `SPIndexProcessor` for processing indexes retrieved from the server. The processors run in their own threads.
 
-*Storage*. An `SPStorageProvider` defines an interface for local reading and writing of objects. In particular it defines a `threadSafeStorage` method that returns a thread safe instance. `SPCoreDataProvider` is currently the only fully functional storage provider.
+_Storage_. An `SPStorageProvider` defines an interface for local reading and writing of objects. In particular it defines a `threadSafeStorage` method that returns a thread safe instance. `SPCoreDataProvider` is currently the only fully functional storage provider.
 
-*Networking*. An `SPNetworkProvider` defines an interface for remote reading and writing of objects in a `SPBucket`. The network provider sends local data and receives remote data in the background, passing it through threaded processors as necessary. Although there is an HTTP provider, the WebSockets provider is intended to become the default (but is still under development).
+_Networking_. An `SPNetworkProvider` defines an interface for remote reading and writing of objects in an `SPBucket`. The network provider sends local data and receives remote data in the background, passing it through threaded processors as necessary. Although there is an HTTP provider, the WebSockets provider is intended to become the default (but is still under development).
 
-*User*. Basic access to a user's data. In the future this will hold custom properties and presence information.
+_User_. Basic access to a user's data. In the future this will hold custom properties and presence information.
 
-*Helpers*. Exporter, keychain, etc.
+_Helpers_. Exporter, keychain, etc.
 
-*UI*. Some default user interfaces for common needs like authentication.
+_UI_. Some default user interfaces for common needs like authentication.
 
-*Binary*. Basic support for moving binary files, either between client devices or potentially from a server to clients. Currently works by syncing a file URI and then using that to upload/download the corresponding data to/from S3. Still under development.
+_Binary_. Basic support for moving binary files, either between client devices or potentially from a server to clients. Currently works by syncing a file URI and then using that to upload/download the corresponding data to/from S3. Still under development.
 
 Known transgressions
 --------------------
@@ -50,7 +50,7 @@ If you decide to dig into the source code, please expect problems and violations
 * Auth UI is in a .xib but could live more happily as code instead
 * External libraries are included as source files instead of submodules
 
-If you spot more transgressions that you don't feel like fixing yourself, please add an issue, append to this list via a pull request, or [contact us](http://simperium.com/contact/).
+If you spot more transgressions that you don't feel like fixing yourself, you can add an issue, append to this list via a pull request, or [contact us](http://simperium.com/contact/).
 
 License
 -------
