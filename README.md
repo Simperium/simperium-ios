@@ -15,25 +15,25 @@ If for some reason you want to build the binary framework yourself, open Simperi
 
 Folder structure
 ----------------
-_Simperium_. Everything is accessed from a `Simperium` instance. This class can be safely instantiated more than once in the same app (e.g. for unit testing).
+**Simperium**. Everything is accessed from a `Simperium` instance. This class can be safely instantiated more than once in the same app (e.g. for unit testing).
 
-_Object_. Simperium does a lot of diffing in order to send only data that changes. Any object class that conforms to the `SPDiffable` protocol can be supported. `SPManagedObject` is for Core Data, and `SPObject` is a container for raw JSON (not yet supported). `SPGhost` is an object's opinion of its own state on the server (the name "ghost" was borrowed from the [Tribes Networking Model](http://www.pingz.com/wordpress/wp-content/uploads/2009/11/tribes_networking_model.pdf)).
+**Object**. Simperium does a lot of diffing in order to send only data that changes. Any object class that conforms to the `SPDiffable` protocol can be supported. `SPManagedObject` is for Core Data, and `SPObject` is a container for raw JSON (not yet supported). `SPGhost` is an object's opinion of its own state on the server (the name "ghost" was borrowed from the [Tribes Networking Model](http://www.pingz.com/wordpress/wp-content/uploads/2009/11/tribes_networking_model.pdf)).
 
-_Diffing_. An `SPDiffer` can perform diffs on any `SPDiffable` object. Each differ adheres to an `SPSchema`. The schema stores a list of members/properties (of type `SPMember`) for an object of a particular type. Each subclass of `SPMember` corresponds to a data type, and knows how to diff itself. In the future these will be parameterized for custom diffing, conflict resolution, validation, etc.
+**Diffing**. An `SPDiffer` can perform diffs on any `SPDiffable` object. Each differ adheres to an `SPSchema`. The schema stores a list of members/properties (of type `SPMember`) for an object of a particular type. Each subclass of `SPMember` corresponds to a data type, and knows how to diff itself. In the future these will be parameterized for custom diffing, conflict resolution, validation, etc.
 
-_System_. An `SPBucket` provides access to a synchronized bucket of objects of a particular type. The `SPBucket` has an `SPDiffer` to perform diffs, an `SPStorageProvider` for locally reading and writing data, an `SPChangeProcessor` for processing incoming and outgoing changes, and an `SPIndexProcessor` for processing indexes retrieved from the server. The processors run in their own threads.
+**System**. An `SPBucket` provides access to a synchronized bucket of objects of a particular type. The `SPBucket` has an `SPDiffer` to perform diffs, an `SPStorageProvider` for locally reading and writing data, an `SPChangeProcessor` for processing incoming and outgoing changes, and an `SPIndexProcessor` for processing indexes retrieved from the server. The processors run in their own threads.
 
-_Storage_. An `SPStorageProvider` defines an interface for local reading and writing of objects. In particular it defines a `threadSafeStorage` method that returns a thread safe instance. `SPCoreDataProvider` is currently the only fully functional storage provider.
+**Storage**. An `SPStorageProvider` defines an interface for local reading and writing of objects. In particular it defines a `threadSafeStorage` method that returns a thread safe instance. `SPCoreDataProvider` is currently the only fully functional storage provider.
 
-_Networking_. An `SPNetworkProvider` defines an interface for remote reading and writing of objects in an `SPBucket`. The network provider sends local data and receives remote data in the background, passing it through threaded processors as necessary. Although there is an HTTP provider, the WebSockets provider is intended to become the default (but is still under development).
+**Networking**. An `SPNetworkProvider` defines an interface for remote reading and writing of objects in an `SPBucket`. The network provider sends local data and receives remote data in the background, passing it through threaded processors as necessary. Although there is an HTTP provider, the WebSockets provider is intended to become the default (but is still under development).
 
-_User_. Basic access to a user's data. In the future this will hold custom properties and presence information.
+**User**. Basic access to a user's data. In the future this will hold custom properties and presence information.
 
-_Helpers_. Exporter, keychain, etc.
+**Helpers**. Exporter, keychain, etc.
 
-_UI_. Some default user interfaces for common needs like authentication.
+**UI**. Some default user interfaces for common needs like authentication.
 
-_Binary_. Basic support for moving binary files, either between client devices or potentially from a server to clients. Currently works by syncing a file URI and then using that to upload/download the corresponding data to/from S3. Still under development.
+**Binary**. Basic support for moving binary files, either between client devices or potentially from a server to clients. Currently works by syncing a file URI and then using that to upload/download the corresponding data to/from S3. Still under development.
 
 Known transgressions
 --------------------
