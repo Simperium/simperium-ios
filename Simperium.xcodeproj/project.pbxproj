@@ -145,7 +145,6 @@
 		267CE907156C0FD20028801C /* SPSchema.h in Headers */ = {isa = PBXBuildFile; fileRef = 267CE8F8156C0FD20028801C /* SPSchema.h */; };
 		267CE908156C0FD20028801C /* SPSchema.m in Sources */ = {isa = PBXBuildFile; fileRef = 267CE8F9156C0FD20028801C /* SPSchema.m */; };
 		267CE90D156C351B0028801C /* SPStorageProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 267CE90C156C351B0028801C /* SPStorageProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		268F749014F380D10080C1B8 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 268F748F14F380D10080C1B8 /* libsqlite3.dylib */; };
 		26905D9C142CF97D001ACF20 /* DDAbstractDatabaseLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 26905D92142CF97D001ACF20 /* DDAbstractDatabaseLogger.h */; };
 		26905D9E142CF97D001ACF20 /* DDASLLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 26905D94142CF97D001ACF20 /* DDASLLogger.h */; };
 		26905DA0142CF97D001ACF20 /* DDFileLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 26905D96142CF97D001ACF20 /* DDFileLogger.h */; };
@@ -349,7 +348,6 @@
 		267CE8F8156C0FD20028801C /* SPSchema.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSchema.h; sourceTree = "<group>"; };
 		267CE8F9156C0FD20028801C /* SPSchema.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSchema.m; sourceTree = "<group>"; };
 		267CE90C156C351B0028801C /* SPStorageProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStorageProvider.h; sourceTree = "<group>"; };
-		268F748F14F380D10080C1B8 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		26905D92142CF97D001ACF20 /* DDAbstractDatabaseLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDAbstractDatabaseLogger.h; sourceTree = "<group>"; };
 		26905D93142CF97D001ACF20 /* DDAbstractDatabaseLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DDAbstractDatabaseLogger.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		26905D94142CF97D001ACF20 /* DDASLLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = DDASLLogger.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
@@ -367,7 +365,6 @@
 		269A7F3E147355D100CB29EE /* SPChangeProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPChangeProcessor.m; sourceTree = "<group>"; };
 		269A7F4214743A9C00CB29EE /* SPIndexProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPIndexProcessor.h; sourceTree = "<group>"; };
 		269A7F4314743A9C00CB29EE /* SPIndexProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPIndexProcessor.m; sourceTree = "<group>"; };
-		26B16EFC13AFEB3800BEB3E5 /* buildNumber.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = buildNumber.plist; sourceTree = SOURCE_ROOT; };
 		26B16EFD13B1B78C00BEB3E5 /* NSData+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Simperium.h"; sourceTree = "<group>"; };
 		26B16EFE13B1B78F00BEB3E5 /* NSData+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Simperium.m"; sourceTree = "<group>"; };
 		26B16F0113B1B85200BEB3E5 /* NSString+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Simperium.h"; sourceTree = "<group>"; };
@@ -424,7 +421,6 @@
 				264AE59D15DC67C900E5E04E /* libicucore.dylib in Frameworks */,
 				264AE59C15DC67C300E5E04E /* Security.framework in Frameworks */,
 				26C93A6A14F8159300BE99F5 /* libSimperium.a in Frameworks */,
-				268F749014F380D10080C1B8 /* libsqlite3.dylib in Frameworks */,
 				26ED43DE146CD89600C3D7D6 /* libz.dylib in Frameworks */,
 				26ED43DC146CD87000C3D7D6 /* CoreData.framework in Frameworks */,
 				26ED43DB146CD86700C3D7D6 /* SystemConfiguration.framework in Frameworks */,
@@ -474,9 +470,13 @@
 			name = Binary;
 			sourceTree = "<group>";
 		};
-		2622FCFF147F225800C8EEB4 /* Members */ = {
+		2622FCFF147F225800C8EEB4 /* Diffing */ = {
 			isa = PBXGroup;
 			children = (
+				267CE8F2156C0FD20028801C /* SPDiffer.h */,
+				267CE8F3156C0FD20028801C /* SPDiffer.m */,
+				267CE8F8156C0FD20028801C /* SPSchema.h */,
+				267CE8F9156C0FD20028801C /* SPSchema.m */,
 				264CD934135DFE6D00C51BAD /* SPMember.h */,
 				264CD935135DFE6D00C51BAD /* SPMember.m */,
 				2622FD06147F249300C8EEB4 /* SPMemberText.h */,
@@ -498,20 +498,20 @@
 				2622FD1E147F250200C8EEB4 /* SPMemberBinary.h */,
 				2622FD1F147F250200C8EEB4 /* SPMemberBinary.m */,
 			);
-			name = Members;
+			name = Diffing;
 			sourceTree = "<group>";
 		};
 		2622FD00147F227E00C8EEB4 /* Storage */ = {
 			isa = PBXGroup;
 			children = (
 				267CE90C156C351B0028801C /* SPStorageProvider.h */,
-				267CE8F4156C0FD20028801C /* SPJSONStorage.h */,
-				267CE8F5156C0FD20028801C /* SPJSONStorage.m */,
 				265D80071475C2F400002A19 /* SPStorage.h */,
 				265D80081475C2F500002A19 /* SPStorage.m */,
-				265D80131476461800002A19 /* SPStorageObserver.h */,
+				267CE8F4156C0FD20028801C /* SPJSONStorage.h */,
+				267CE8F5156C0FD20028801C /* SPJSONStorage.m */,
 				265D800B1476188100002A19 /* SPCoreDataStorage.h */,
 				265D800C1476188200002A19 /* SPCoreDataStorage.m */,
+				265D80131476461800002A19 /* SPStorageObserver.h */,
 			);
 			name = Storage;
 			sourceTree = "<group>";
@@ -519,27 +519,16 @@
 		2622FD01147F237800C8EEB4 /* System */ = {
 			isa = PBXGroup;
 			children = (
-				267CE8EB156C0FD20028801C /* NSMutableDictionary+Simperium.h */,
-				267CE8EC156C0FD20028801C /* NSMutableDictionary+Simperium.m */,
 				267CE8EF156C0FD20028801C /* SPBucket.h */,
 				267CE8F0156C0FD20028801C /* SPBucket.m */,
-				267CE8F2156C0FD20028801C /* SPDiffer.h */,
-				267CE8F3156C0FD20028801C /* SPDiffer.m */,
 				269A7F3D147355D100CB29EE /* SPChangeProcessor.h */,
 				269A7F3E147355D100CB29EE /* SPChangeProcessor.m */,
 				269A7F4214743A9C00CB29EE /* SPIndexProcessor.h */,
 				269A7F4314743A9C00CB29EE /* SPIndexProcessor.m */,
-				264CD936135DFE6D00C51BAD /* SPHttpManager.h */,
-				264CD937135DFE6D00C51BAD /* SPHttpManager.m */,
-				2618988315D2EC130013CBC9 /* SPWebSocketManager.h */,
-				2618988415D2EC130013CBC9 /* SPWebSocketManager.m */,
-				264AE51815D45E2A00E5E04E /* SPWebSocketChannel.h */,
-				264AE51915D45E2A00E5E04E /* SPWebSocketChannel.m */,
-				2622FD2B147F32A500C8EEB4 /* SPNetworkProvider.h */,
-				26563AE214FC3BDE0081C8C1 /* SPAuthenticationManager.h */,
-				26563AE314FC3BDE0081C8C1 /* SPAuthenticationManager.m */,
 				26B733EE15E585620081CF4A /* SPReferenceManager.h */,
 				26B733EF15E585620081CF4A /* SPReferenceManager.m */,
+				267CE8EB156C0FD20028801C /* NSMutableDictionary+Simperium.h */,
+				267CE8EC156C0FD20028801C /* NSMutableDictionary+Simperium.m */,
 			);
 			name = System;
 			sourceTree = "<group>";
@@ -557,15 +546,12 @@
 			isa = PBXGroup;
 			children = (
 				267CE8F1156C0FD20028801C /* SPDiffable.h */,
-				267CE8F6156C0FD20028801C /* SPObject.h */,
-				267CE8F7156C0FD20028801C /* SPObject.m */,
-				267CE8F8156C0FD20028801C /* SPSchema.h */,
-				267CE8F9156C0FD20028801C /* SPSchema.m */,
 				264CD92C135DFE6D00C51BAD /* SPManagedObject.h */,
 				264CD92D135DFE6D00C51BAD /* SPManagedObject.m */,
+				267CE8F6156C0FD20028801C /* SPObject.h */,
+				267CE8F7156C0FD20028801C /* SPObject.m */,
 				264CD932135DFE6D00C51BAD /* SPGhost.h */,
 				264CD933135DFE6D00C51BAD /* SPGhost.m */,
-				2622FCFF147F225800C8EEB4 /* Members */,
 			);
 			name = Object;
 			sourceTree = "<group>";
@@ -579,15 +565,16 @@
 			name = UI;
 			sourceTree = "<group>";
 		};
-		2622FD05147F241500C8EEB4 /* Auxiliary */ = {
+		2622FD05147F241500C8EEB4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
 				26E83C2413985DBB00195758 /* SPCoreDataExporter.h */,
 				26E83C2513985DBC00195758 /* SPCoreDataExporter.m */,
 				2693F85415C99E4300797A5E /* SPSimpleKeyChain.h */,
 				2693F85515C99E4300797A5E /* SPSimpleKeyChain.m */,
+				26905DA7142D344C001ACF20 /* DDLogDebug.h */,
 			);
-			name = Auxiliary;
+			name = Helpers;
 			sourceTree = "<group>";
 		};
 		264CD8F0135DFD7900C51BAD = {
@@ -635,10 +622,12 @@
 				264CD930135DFE6D00C51BAD /* SPEnvironment.h */,
 				264CD931135DFE6D00C51BAD /* SPEnvironment.m */,
 				2622FD03147F23D400C8EEB4 /* Object */,
+				2622FCFF147F225800C8EEB4 /* Diffing */,
 				2622FD01147F237800C8EEB4 /* System */,
 				2622FD00147F227E00C8EEB4 /* Storage */,
+				46B7880216B709AD001AA908 /* Networking */,
 				2622FD02147F23BE00C8EEB4 /* User */,
-				2622FD05147F241500C8EEB4 /* Auxiliary */,
+				2622FD05147F241500C8EEB4 /* Helpers */,
 				2622FD04147F23FB00C8EEB4 /* UI */,
 				2622FCFE147F224200C8EEB4 /* Binary */,
 				264CD901135DFD7A00C51BAD /* Supporting Files */,
@@ -650,9 +639,7 @@
 		264CD901135DFD7A00C51BAD /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				26B16EFC13AFEB3800BEB3E5 /* buildNumber.plist */,
 				264CD902135DFD7A00C51BAD /* Simperium-Prefix.pch */,
-				26905DA7142D344C001ACF20 /* DDLogDebug.h */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -660,21 +647,20 @@
 		264CD911135DFD7A00C51BAD /* SimperiumTests */ = {
 			isa = PBXGroup;
 			children = (
-				2678E4C11656D5A10018EE35 /* SimperiumTypeTests.h */,
-				2678E4C21656D5A10018EE35 /* SimperiumTypeTests.m */,
-				268F748F14F380D10080C1B8 /* libsqlite3.dylib */,
-				2673D71C1479F5DB00B7B6B3 /* SimperiumSimpleTests.h */,
-				2673D71D1479F5DB00B7B6B3 /* SimperiumSimpleTests.m */,
-				2673D7171479F42000B7B6B3 /* SimperiumRelationshipTests.h */,
-				2673D7181479F42000B7B6B3 /* SimperiumRelationshipTests.m */,
-				265EF73615B8E26700115E19 /* SimperiumBinaryTests.h */,
-				265EF73715B8E26700115E19 /* SimperiumBinaryTests.m */,
-				26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */,
+				26ED441C146CFAF100C3D7D6 /* TestParams.h */,
 				26ED4419146CF8E500C3D7D6 /* Farm.h */,
 				26ED441A146CF8E500C3D7D6 /* Farm.m */,
 				264CD918135DFD7A00C51BAD /* SimperiumTests.h */,
 				264CD91A135DFD7A00C51BAD /* SimperiumTests.m */,
-				26ED441C146CFAF100C3D7D6 /* TestParams.h */,
+				2673D71C1479F5DB00B7B6B3 /* SimperiumSimpleTests.h */,
+				2673D71D1479F5DB00B7B6B3 /* SimperiumSimpleTests.m */,
+				2673D7171479F42000B7B6B3 /* SimperiumRelationshipTests.h */,
+				2673D7181479F42000B7B6B3 /* SimperiumRelationshipTests.m */,
+				2678E4C11656D5A10018EE35 /* SimperiumTypeTests.h */,
+				2678E4C21656D5A10018EE35 /* SimperiumTypeTests.m */,
+				265EF73615B8E26700115E19 /* SimperiumBinaryTests.h */,
+				265EF73715B8E26700115E19 /* SimperiumBinaryTests.m */,
+				26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */,
 				2673D71F147A00B300B7B6B3 /* Models */,
 				264CD912135DFD7A00C51BAD /* Supporting Files */,
 			);
@@ -825,6 +811,22 @@
 				26D4D3B2156C3DA300E822E9 /* JRSwizzle.m */,
 			);
 			path = jrswizzle;
+			sourceTree = "<group>";
+		};
+		46B7880216B709AD001AA908 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				2622FD2B147F32A500C8EEB4 /* SPNetworkProvider.h */,
+				264CD936135DFE6D00C51BAD /* SPHttpManager.h */,
+				264CD937135DFE6D00C51BAD /* SPHttpManager.m */,
+				2618988315D2EC130013CBC9 /* SPWebSocketManager.h */,
+				2618988415D2EC130013CBC9 /* SPWebSocketManager.m */,
+				264AE51815D45E2A00E5E04E /* SPWebSocketChannel.h */,
+				264AE51915D45E2A00E5E04E /* SPWebSocketChannel.m */,
+				26563AE214FC3BDE0081C8C1 /* SPAuthenticationManager.h */,
+				26563AE314FC3BDE0081C8C1 /* SPAuthenticationManager.m */,
+			);
+			name = Networking;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
