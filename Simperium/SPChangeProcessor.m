@@ -445,10 +445,14 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
     id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
     id<SPDiffable> object = [storage objectForKey:key bucketName:bucket.name];
     
-    // If the object no longer exists, it might have been previously deleted, in which case this change is no longer
+    // If the object no longer exists, it was likely previously deleted, in which case this change is no longer
     // relevant
     if (!object) {
-        DDLogWarn(@"Simperium warning: couldn't processLocalObjectWithKey %@ because the object no longer exists", key);
+        //DDLogWarn(@"Simperium warning: couldn't processLocalObjectWithKey %@ because the object no longer exists", key);
+        [changesPending removeObjectForKey:key];
+        [keysForObjectsWithMoreChanges removeObject:key];
+        [self serializeChangesPending];
+        [self serializeKeysForObjectsWithMoreChanges];
         return nil;
     }
     
@@ -538,7 +542,6 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
     NSMutableArray *newChangesPending = [NSMutableArray arrayWithCapacity:3];
     if ([keysForObjectsWithMoreChanges count] > 0) {
         DDLogVerbose(@"Simperium found %u objects with more changes to send (%@)", [keysForObjectsWithMoreChanges count], bucket.name);
-        // TODO: OFFLINE DELETIONS?
         
         NSMutableSet *keysProcessed = [NSMutableSet setWithCapacity:[keysForObjectsWithMoreChanges count]];
         // Create changes for any objects that have more changes

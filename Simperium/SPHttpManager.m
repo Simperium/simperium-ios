@@ -174,10 +174,10 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     }
     
     dispatch_async(bucket.processorQueue, ^{
-        if (started) {
-            NSDictionary *change = [bucket.changeProcessor processLocalDeletionWithKey: key];
-            [self sendChange: change forKey: key];
-        }
+        NSDictionary *change = [bucket.changeProcessor processLocalDeletionWithKey: key];
+        
+        // If client is offline and another change is pending, this will overwrite it, which is OK since the object won't exist anymore
+        [self sendChange: change forKey: key];
     });
 }
 
