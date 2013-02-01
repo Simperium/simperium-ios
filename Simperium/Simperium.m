@@ -183,6 +183,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     self.binaryManager = nil;
     self.user = nil;
     self.authManager = nil;
+    [self.coreDataStorage setDelegate:nil];
     self.coreDataStorage = nil;
     self.JSONStorage = nil;
     self.bucketOverrides = nil;

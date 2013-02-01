@@ -54,9 +54,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 -(void)dealloc {
-    [super dealloc];
     self.failedBlock = nil;
     self.succeededBlock = nil;
+  
+    [super dealloc];
 }
 
 // Open a UI to handle authentication if necessary
