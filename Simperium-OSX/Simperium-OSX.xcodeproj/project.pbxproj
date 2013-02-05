@@ -167,6 +167,7 @@
 		26F1C6FD1562E75E002172D5 /* SPSpotLightView.m in Sources */ = {isa = PBXBuildFile; fileRef = 26F1C6F31562E75E002172D5 /* SPSpotLightView.m */; };
 		26F1C6FE1562E75E002172D5 /* SPToggleAuthCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 26F1C6F41562E75E002172D5 /* SPToggleAuthCell.h */; };
 		26F1C6FF1562E75E002172D5 /* SPToggleAuthCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 26F1C6F51562E75E002172D5 /* SPToggleAuthCell.m */; };
+		46E54BDF16C0B3B500D1A3B2 /* SPNetworkProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 46E54BDE16C0B3B500D1A3B2 /* SPNetworkProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -334,6 +335,7 @@
 		26F1C6F31562E75E002172D5 /* SPSpotLightView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSpotLightView.m; sourceTree = "<group>"; };
 		26F1C6F41562E75E002172D5 /* SPToggleAuthCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPToggleAuthCell.h; sourceTree = "<group>"; };
 		26F1C6F51562E75E002172D5 /* SPToggleAuthCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPToggleAuthCell.m; sourceTree = "<group>"; };
+		46E54BDE16C0B3B500D1A3B2 /* SPNetworkProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPNetworkProvider.h; path = ../../Simperium/SPNetworkProvider.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -392,6 +394,7 @@
 		268EDED2155F06D5006B566F /* Simperium-OSX */ = {
 			isa = PBXGroup;
 			children = (
+				46E54BDE16C0B3B500D1A3B2 /* SPNetworkProvider.h */,
 				26C3E14B1666FE7400620306 /* SPReferenceManager.h */,
 				26C3E14C1666FE7400620306 /* SPReferenceManager.m */,
 				26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */,
@@ -726,6 +729,7 @@
 				26C3E1611666FE9300620306 /* NSData+SRB64Additions.h in Headers */,
 				26C3E1631666FE9300620306 /* SocketRocket-Prefix.pch in Headers */,
 				26C3E1641666FE9300620306 /* SRWebSocket.h in Headers */,
+				46E54BDF16C0B3B500D1A3B2 /* SPNetworkProvider.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
