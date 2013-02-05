@@ -62,8 +62,6 @@
 		268EDF63155F08A2006B566F /* SPMemberList.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDF18155F08A1006B566F /* SPMemberList.m */; };
 		268EDF64155F08A2006B566F /* SPMemberText.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDF19155F08A1006B566F /* SPMemberText.h */; };
 		268EDF65155F08A2006B566F /* SPMemberText.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDF1A155F08A1006B566F /* SPMemberText.m */; };
-		268EDF66155F08A2006B566F /* SPNetworkManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDF1B155F08A1006B566F /* SPNetworkManager.h */; };
-		268EDF67155F08A2006B566F /* SPNetworkManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDF1C155F08A1006B566F /* SPNetworkManager.m */; };
 		268EDF6C155F08A2006B566F /* SPS3Manager.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDF21155F08A1006B566F /* SPS3Manager.h */; };
 		268EDF70155F08A2006B566F /* SPStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDF25155F08A2006B566F /* SPStorage.h */; };
 		268EDF71155F08A2006B566F /* SPStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDF26155F08A2006B566F /* SPStorage.m */; };
@@ -233,8 +231,6 @@
 		268EDF18155F08A1006B566F /* SPMemberList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMemberList.m; path = ../../Simperium/SPMemberList.m; sourceTree = "<group>"; };
 		268EDF19155F08A1006B566F /* SPMemberText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMemberText.h; path = ../../Simperium/SPMemberText.h; sourceTree = "<group>"; };
 		268EDF1A155F08A1006B566F /* SPMemberText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMemberText.m; path = ../../Simperium/SPMemberText.m; sourceTree = "<group>"; };
-		268EDF1B155F08A1006B566F /* SPNetworkManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPNetworkManager.h; path = ../../Simperium/SPNetworkManager.h; sourceTree = "<group>"; };
-		268EDF1C155F08A1006B566F /* SPNetworkManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPNetworkManager.m; path = ../../Simperium/SPNetworkManager.m; sourceTree = "<group>"; };
 		268EDF21155F08A1006B566F /* SPS3Manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPS3Manager.h; path = ../../Simperium/SPS3Manager.h; sourceTree = "<group>"; };
 		268EDF22155F08A1006B566F /* SPS3Manager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPS3Manager.m; path = ../../Simperium/SPS3Manager.m; sourceTree = "<group>"; };
 		268EDF25155F08A2006B566F /* SPStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPStorage.h; path = ../../Simperium/SPStorage.h; sourceTree = "<group>"; };
@@ -472,8 +468,6 @@
 				268EDF18155F08A1006B566F /* SPMemberList.m */,
 				268EDF19155F08A1006B566F /* SPMemberText.h */,
 				268EDF1A155F08A1006B566F /* SPMemberText.m */,
-				268EDF1B155F08A1006B566F /* SPNetworkManager.h */,
-				268EDF1C155F08A1006B566F /* SPNetworkManager.m */,
 				268EDF21155F08A1006B566F /* SPS3Manager.h */,
 				268EDF22155F08A1006B566F /* SPS3Manager.m */,
 				268EDF25155F08A2006B566F /* SPStorage.h */,
@@ -679,7 +673,6 @@
 				268EDF60155F08A2006B566F /* SPMemberInt.h in Headers */,
 				268EDF62155F08A2006B566F /* SPMemberList.h in Headers */,
 				268EDF64155F08A2006B566F /* SPMemberText.h in Headers */,
-				268EDF66155F08A2006B566F /* SPNetworkManager.h in Headers */,
 				268EDF6C155F08A2006B566F /* SPS3Manager.h in Headers */,
 				268EDF70155F08A2006B566F /* SPStorage.h in Headers */,
 				268EDF72155F08A2006B566F /* SPStorageObserver.h in Headers */,
@@ -826,7 +819,6 @@
 				268EDF61155F08A2006B566F /* SPMemberInt.m in Sources */,
 				268EDF63155F08A2006B566F /* SPMemberList.m in Sources */,
 				268EDF65155F08A2006B566F /* SPMemberText.m in Sources */,
-				268EDF67155F08A2006B566F /* SPNetworkManager.m in Sources */,
 				268EDF71155F08A2006B566F /* SPStorage.m in Sources */,
 				268EDF74155F08A2006B566F /* SPUser.m in Sources */,
 				268EDFCA155F36B7006B566F /* ASIDataCompressor.m in Sources */,
