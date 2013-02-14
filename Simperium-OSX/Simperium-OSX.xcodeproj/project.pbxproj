@@ -16,7 +16,7 @@
 		268EDF30155F08A2006B566F /* NSDate+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDEE5155F089C006B566F /* NSDate+Simperium.m */; };
 		268EDF31155F08A2006B566F /* NSString+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEE6155F089C006B566F /* NSString+Simperium.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		268EDF32155F08A2006B566F /* NSString+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDEE7155F089C006B566F /* NSString+Simperium.m */; };
-		268EDF33155F08A2006B566F /* Simperium-complete.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEE8155F089C006B566F /* Simperium-complete.h */; };
+		268EDF33155F08A2006B566F /* Simperium-complete.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEE8155F089C006B566F /* Simperium-complete.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		268EDF35155F08A2006B566F /* Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEEA155F089D006B566F /* Simperium.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		268EDF36155F08A2006B566F /* Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDEEB155F089D006B566F /* Simperium.m */; };
 		268EDF37155F08A2006B566F /* SPAuthenticationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEEC155F089D006B566F /* SPAuthenticationManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -167,6 +167,7 @@
 		26F1C6FD1562E75E002172D5 /* SPSpotLightView.m in Sources */ = {isa = PBXBuildFile; fileRef = 26F1C6F31562E75E002172D5 /* SPSpotLightView.m */; };
 		26F1C6FE1562E75E002172D5 /* SPToggleAuthCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 26F1C6F41562E75E002172D5 /* SPToggleAuthCell.h */; };
 		26F1C6FF1562E75E002172D5 /* SPToggleAuthCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 26F1C6F51562E75E002172D5 /* SPToggleAuthCell.m */; };
+		A2546DC316CD663C00E29B80 /* SPNetworkProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = A2546DC216CD663C00E29B80 /* SPNetworkProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -334,6 +335,8 @@
 		26F1C6F31562E75E002172D5 /* SPSpotLightView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSpotLightView.m; sourceTree = "<group>"; };
 		26F1C6F41562E75E002172D5 /* SPToggleAuthCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPToggleAuthCell.h; sourceTree = "<group>"; };
 		26F1C6F51562E75E002172D5 /* SPToggleAuthCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPToggleAuthCell.m; sourceTree = "<group>"; };
+		A2546DC216CD663C00E29B80 /* SPNetworkProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SPNetworkProvider.h; path = ../Simperium/SPNetworkProvider.h; sourceTree = "<group>"; };
+		A2ACCF2F16CD6A0300779D83 /* Simperium-complete.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Simperium-complete.h"; path = "../Simperium/Simperium-complete.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -358,6 +361,8 @@
 		268EDEBD155F06D5006B566F = {
 			isa = PBXGroup;
 			children = (
+				A2ACCF2F16CD6A0300779D83 /* Simperium-complete.h */,
+				A2546DC216CD663C00E29B80 /* SPNetworkProvider.h */,
 				268EDF82155F36B7006B566F /* External */,
 				268EDF7C155F3674006B566F /* libz.dylib */,
 				26F1C6E91562E297002172D5 /* AuthWindow.xib */,
@@ -648,12 +653,13 @@
 				268EDF2C155F08A2006B566F /* DDLogDebug.h in Headers */,
 				268EDF2D155F08A2006B566F /* NSData+Simperium.h in Headers */,
 				268EDF2F155F08A2006B566F /* NSDate+Simperium.h in Headers */,
-				268EDF31155F08A2006B566F /* NSString+Simperium.h in Headers */,
 				268EDF33155F08A2006B566F /* Simperium-complete.h in Headers */,
+				268EDF31155F08A2006B566F /* NSString+Simperium.h in Headers */,
 				268EDF35155F08A2006B566F /* Simperium.h in Headers */,
 				268EDF37155F08A2006B566F /* SPAuthenticationManager.h in Headers */,
 				268EDF39155F08A2006B566F /* SPAuthWindowController.h in Headers */,
 				268EDF3B155F08A2006B566F /* SPBinaryManager.h in Headers */,
+				A2546DC316CD663C00E29B80 /* SPNetworkProvider.h in Headers */,
 				268EDF3D155F08A2006B566F /* SPBinaryTransportDelegate.h in Headers */,
 				268EDF3E155F08A2006B566F /* SPChangeProcessor.h in Headers */,
 				268EDF40155F08A2006B566F /* SPCoreDataExporter.h in Headers */,
