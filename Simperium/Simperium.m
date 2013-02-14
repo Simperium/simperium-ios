@@ -43,7 +43,6 @@
 @property (nonatomic, retain) SPCoreDataStorage *coreDataStorage;
 @property (nonatomic, retain) SPJSONStorage *JSONStorage;
 @property (nonatomic, retain) NSMutableDictionary *buckets;
-@property (nonatomic, retain) SPAuthenticationManager *authManager;
 @property (nonatomic, retain) id<SPNetworkProvider> network;
 @property (nonatomic, retain) SPReferenceManager *referenceManager;
 @property (nonatomic, assign) BOOL skipContextProcessing;

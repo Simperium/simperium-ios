@@ -44,6 +44,7 @@
     id<SimperiumDelegate> delegate;  
     SPBinaryManager *binaryManager;
     Class loginViewControllerClass;
+    SPAuthenticationManager *authManager;
 }
 
 // Initializes Simperium.
@@ -147,6 +148,8 @@
 @property (nonatomic, copy) NSDictionary *bucketOverrides;
 
 @property (nonatomic, retain) SPBinaryManager *binaryManager;
+
+@property (nonatomic, retain) SPAuthenticationManager *authManager;
 
 
 #if TARGET_OS_IPHONE
