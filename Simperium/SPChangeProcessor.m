@@ -511,21 +511,31 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
     if ([keysForObjectsWithMoreChanges count] > 0) {
         DDLogVerbose(@"Simperium found %u objects with more changes to send (%@)", [keysForObjectsWithMoreChanges count], bucket.name);
         // TODO: Robust handling of offline deletions
-        
+      
         NSMutableSet *keysProcessed = [NSMutableSet setWithCapacity:[keysForObjectsWithMoreChanges count]];
-        // Create changes for any objects that have more changes
+        NSMutableSet *pendingKeys = [NSMutableSet setWithCapacity:[keysForObjectsWithMoreChanges count]];
+      
+        //Create a list of the keys to be processed
         for (NSString *key in keysForObjectsWithMoreChanges) {
             // If there are already changes pending, don't add any more
             // Importantly, this prevents a potential mutation of keysForObjectsWithMoreChanges in processLocalObjectWithKey:later:
             if ([changesPending objectForKey: key] != nil)
                 continue;
-            
-            NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
-            
-            if (change)
-                [changesPending setObject:change forKey: key];
-            [keysProcessed addObject:key];
+          
+          [pendingKeys addObject:key];
         }
+      
+        // Create changes for any objects that have more changes
+        [pendingKeys enumerateObjectsUsingBlock:^(NSString *key, BOOL *stop) {
+          NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
+          
+          if (change)
+              [changesPending setObject:change forKey: key];
+          
+          [keysProcessed addObject:key];
+        }];
+      
+      
         // Clear any keys that were processed into pending changes
         [keysForObjectsWithMoreChanges minusSet:keysProcessed];
     }
