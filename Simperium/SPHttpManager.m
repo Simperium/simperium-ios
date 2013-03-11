@@ -638,6 +638,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
                 [networkQueue go];
             });
         }
+        [indexArrayCopy release];
     });
 
 }
