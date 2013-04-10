@@ -9,11 +9,6 @@
 #import "NSString+Simperium.h"
 #import <CommonCrypto/CommonDigest.h>
 
-@interface FIXCATEGORYBUGSPSTR;
-@end
-@implementation FIXCATEGORYBUGSPSTR;
-@end
-
 static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 @implementation NSString(NSString_Simperium)

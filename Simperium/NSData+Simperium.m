@@ -8,11 +8,6 @@
 
 #import "NSData+Simperium.h"
 
-@interface FIXCATEGORYBUGDATA;
-@end
-@implementation FIXCATEGORYBUGDATA;
-@end
-
 // From https://github.com/mikeho/QSUtilities
 static const short _base64DecodingTable[256] = {
     -2, -2, -2, -2, -2, -2, -2, -2, -2, -1, -1, -2, -1, -1, -2, -2,

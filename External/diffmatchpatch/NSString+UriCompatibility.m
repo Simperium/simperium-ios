@@ -22,12 +22,6 @@
 
 #import "NSString+UriCompatibility.h"
 
-@interface FIXCATEGORYBUGDMPURI;
-@end
-@implementation FIXCATEGORYBUGDMPURI;
-@end
-
-
 @implementation NSString (UriCompatibility)
 
 /**
