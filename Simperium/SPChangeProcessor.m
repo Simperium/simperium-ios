@@ -362,7 +362,7 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
     DDLogVerbose(@"Simperium client %@ received change (%@) %@: %@", clientID, bucket.name, changeClientID, change);
     
     BOOL clientMatches = [changeClientID compare:clientID] == NSOrderedSame;
-    BOOL remove = [operation compare: CH_REMOVE] == NSOrderedSame;
+    BOOL remove = operation && [operation compare: CH_REMOVE] == NSOrderedSame;
     BOOL acknowledged = [self awaitingAcknowledgementForKey:key] && clientMatches;
     
     // If the entity already exists locally, or it's being removed, then check for an ack
@@ -387,12 +387,12 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
     {
         if (object || acknowledged)
             return [self processRemoteDelete: object acknowledged:acknowledged bucket:bucket storage:threadSafeStorage];
-    } else if ([operation compare: CH_MODIFY] == NSOrderedSame) {
+    } else if (operation && [operation compare: CH_MODIFY] == NSOrderedSame) {
         return [self processRemoteModify: object bucket:bucket change: change acknowledged:acknowledged storage:threadSafeStorage];
     }
     
     // invalid
-    DDLogError(@"Simperium error (%@), received an invalid change for (%@)", bucket.name, key);
+    DDLogError(@"Simperium error (%@), received an invalid change for (%@): %@", bucket.name, key, change);
     return NO;
 }
 
