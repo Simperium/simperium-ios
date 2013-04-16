@@ -12,15 +12,6 @@
 
 @implementation SimperiumBinaryTests
 
-- (NSDictionary *)bucketOverrides {
-    // Each farm for each test case should share bucket overrides
-    if (overrides == nil) {
-        self.overrides = [NSDictionary dictionaryWithObjectsAndKeys:
-                          [self uniqueBucketFor:@"Config"], @"Config", nil];
-    }
-    return overrides;
-}
-
 - (void)setUp {
     [super setUp];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);

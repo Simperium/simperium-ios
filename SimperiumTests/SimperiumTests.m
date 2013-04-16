@@ -92,8 +92,12 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (NSDictionary *)bucketOverrides {
-    // Implemented by subclasses
-    return nil;
+    // Each farm for each test case should share bucket overrides
+    if (overrides == nil) {
+        self.overrides = [NSDictionary dictionaryWithObjectsAndKeys:
+                          [self uniqueBucketFor:@"Config"], @"Config", nil];
+    }
+    return overrides;
 }
 
 - (Farm *)createFarm:(NSString *)label {

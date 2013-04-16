@@ -18,8 +18,8 @@
     // Each farm for each test case should share bucket overrides
     if (overrides == nil) {
         self.overrides = [NSDictionary dictionaryWithObjectsAndKeys:
-                                [self uniqueBucketFor:@"Post"], @"Post",
-                                [self uniqueBucketFor:@"Comment"], @"Comment", nil];
+                          [self uniqueBucketFor:@"Post"], @"Post",
+                          [self uniqueBucketFor:@"Comment"], @"Comment", nil];
     }
     return overrides;
 }

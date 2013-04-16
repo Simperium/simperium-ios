@@ -25,8 +25,7 @@ enum {
     SPBucketChangeDelete = 2,
 	SPBucketChangeMove = 3, // not yet implemented
 	SPBucketChangeUpdate = 4,
-    SPBucketChangeWillUpdate = 5,
-    SPBucketChangeAcknowledge = 6
+    SPBucketChangeAcknowledge = 5
 };
 typedef NSUInteger SPBucketChangeType;
 
@@ -37,7 +36,7 @@ typedef NSUInteger SPBucketChangeType;
  */
 @protocol SPBucketDelegate <NSObject>
 @optional
--(void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)change;
+-(void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)changeType;
 -(void)bucket:(SPBucket *)bucket willChangeObjectsForKeys:(NSSet *)keys;
 -(void)bucketWillStartIndexing:(SPBucket *)bucket;
 -(void)bucketDidFinishIndexing:(SPBucket *)bucket;
