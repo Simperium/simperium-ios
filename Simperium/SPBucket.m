@@ -248,7 +248,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 -(void)objectsWillChange:(NSNotification *)notification  {
-    if ([delegate respondsToSelector:@selector(bucket:willChangeObjectsForKeys:forChangeType:)]) {
+    if ([delegate respondsToSelector:@selector(bucket:willChangeObjectsForKeys:)]) {
         NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
         [delegate bucket:self willChangeObjectsForKeys:set];
     }
