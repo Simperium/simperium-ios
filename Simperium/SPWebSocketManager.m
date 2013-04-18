@@ -24,6 +24,7 @@ NSString * const COM_AUTH = @"auth";
 NSString * const COM_INDEX = @"i";
 NSString * const COM_CHANGE = @"c";
 NSString * const COM_ENTITY = @"e";
+NSString * const COM_REINDEX = @"?";
 
 //static NSUInteger numTransfers = 0;
 static BOOL useNetworkActivityIndicator = 0;
@@ -98,7 +99,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 -(SPWebSocketChannel *)loadChannelForBucket:(SPBucket *)bucket {
-    int channelNumber = [self.channels count];
+    int channelNumber = (int)[self.channels count];
     SPWebSocketChannel *channel = [[SPWebSocketChannel alloc] initWithSimperium:simperium clientID:clientID];
     channel.number = channelNumber;
     channel.name = bucket.name;
@@ -239,7 +240,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message;
 {
-    //DDLogVerbose(@"Received \"%@\"", message);
+    DDLogVerbose(@"Received \"%@\"", message);
     
     // Parse CHANNELNUM:COMMAND:DATA
     NSRange range = [message rangeOfString:@":"];
@@ -268,7 +269,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         // todo: handle ? if bad command
         [channel handleIndexResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_CHANGE]) {
-        // todo: handle ? if cv doesn't exist
         NSArray *changes = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
         if ([changes count] > 0) {
             DDLogVerbose(@"Simperium handling changes %@", changes);
@@ -277,6 +277,9 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     } else if ([command isEqualToString:COM_ENTITY]) {
         // todo: handle ? if entity doesn't exist or it has been deleted
         [channel handleVersionResponse:data bucket:bucket];
+    } else if ([command isEqualToString:COM_REINDEX]) {
+        // todo: handle ? if cv doesn't exist
+        
     }
 }
 
@@ -285,7 +288,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     if (open) {
         // Closed unexpectedly, retry
         [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
-        DDLogVerbose(@"Simperium connection closed (will retry): %d, %@", code, reason);
+        DDLogVerbose(@"Simperium connection closed (will retry): %ld, %@", (long)code, reason);
     } else {
         // Closed on purpose
         DDLogInfo(@"Simperium connection closed");

@@ -87,7 +87,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             
             // Store versions as strings, but if they come off the wire as numbers, then handle that too
             if ([version isKindOfClass:[NSNumber class]])
-                version = [NSString stringWithFormat:@"%d", [version integerValue]];
+                version = [NSString stringWithFormat:@"%ld", (long)[version integerValue]];
             
             // Check to see if this entity already exists locally and is up to date
             id<SPDiffable> object = [objects objectForKey:key];

@@ -24,7 +24,7 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
     char * strResult;
     
     // Get the Raw Data length and ensure we actually have data
-    int intLength = [objData length];
+    int intLength = (int)[objData length];
     if (intLength == 0) return nil;
     
     // Setup the String-based Result placeholder and pointer within that placeholder
@@ -84,7 +84,7 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
     unsigned char resultCString[16];
     [data getBytes:cData length:[data length]];
 	
-    CC_MD5(cData, [data length], resultCString);
+    CC_MD5(cData, (int)[data length], resultCString);
     free(cData);
 	
     NSString *result = [NSString stringWithFormat:

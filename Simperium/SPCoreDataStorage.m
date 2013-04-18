@@ -126,7 +126,7 @@ static char const * const BucketListKey = "bucketList";
     NSDictionary *definitionDict = [exporter exportModel:__managedObjectModel classMappings:classMappings];
     [exporter release];
     
-    DDLogInfo(@"Simperium loaded %u entity definitions", [definitionDict count]);
+    DDLogInfo(@"Simperium loaded %lu entity definitions", (unsigned long)[definitionDict count]);
     
     NSUInteger numEntities = [[definitionDict allKeys] count];
     NSMutableArray *schemas = [NSMutableArray arrayWithCapacity:numEntities];
@@ -337,7 +337,7 @@ static char const * const BucketListKey = "bucketList";
         }
     }
     
-    NSLog(@"Simperium managing %u %@ object instances", [results count], bucketName);
+    NSLog(@"Simperium managing %lu %@ object instances", (unsigned long)[results count], bucketName);
     
     [request release];    
 }
@@ -385,7 +385,7 @@ static char const * const BucketListKey = "bucketList";
     NSArray *entitiesToStash = [self allUpdatedAndInsertedObjects];
     
     if ([entitiesToStash count] > 0) {
-        DDLogVerbose(@"Simperium stashing changes for %u entities", [entitiesToStash count]);
+        DDLogVerbose(@"Simperium stashing changes for %lu entities", (unsigned long)[entitiesToStash count]);
         [stashedObjects addObjectsFromArray: entitiesToStash];
     }
 }

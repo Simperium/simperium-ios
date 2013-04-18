@@ -120,7 +120,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         
         dispatch_async(dispatch_get_main_queue(), ^{
             if (started) {
-                DDLogVerbose(@"Simperium sending all changes (%d) for bucket %@", [changes count], bucket.name);
+                DDLogVerbose(@"Simperium sending all changes (%lu) for bucket %@", (unsigned long)[changes count], bucket.name);
                 for (NSString *change in changes) {
                     NSString *jsonStr = [change JSONString];
                     NSString *message = [NSString stringWithFormat:@"%d:c:%@", number, jsonStr];
@@ -142,7 +142,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         
         dispatch_async(dispatch_get_main_queue(), ^{
             if (started) {
-                DDLogVerbose(@"Simperium sending all changes (%d) for bucket %@", [changes count], bucket.name);
+                DDLogVerbose(@"Simperium sending all changes (%lu) for bucket %@", (unsigned long)[changes count], bucket.name);
                 for (NSString *change in changes) {
                     NSString *jsonStr = [change JSONString];
                     NSString *message = [NSString stringWithFormat:@"%d:c:%@", number, jsonStr];
@@ -221,7 +221,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                 //} else {
                     // Nothing to send, so start getting changes right away
                     NSString *message = [NSString stringWithFormat:@"%d:cv:%@", number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
-                    DDLogVerbose(@"Simperium sending cv %@", message);
+                    DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, message);
                     [self.webSocket send:message];
                 
                 if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
@@ -327,7 +327,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     self.responseBatch = [NSMutableArray arrayWithCapacity:INDEX_BATCH_SIZE];
 
     // Get all the latest versions
-    DDLogInfo(@"Simperium processing %d objects from index (%@)", [currentIndexArray count], self.name);
+    DDLogInfo(@"Simperium processing %lu objects from index (%@)", (unsigned long)[currentIndexArray count], self.name);
 
     __block NSArray *indexArrayCopy = [currentIndexArray copy];
     __block int numVersionRequests = 0;
@@ -374,7 +374,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
     if ([current isKindOfClass:[NSNumber class]])
-        current = [NSString stringWithFormat:@"%d", [current integerValue]];
+        current = [NSString stringWithFormat:@"%ld", (long)[current integerValue]];
     self.pendingLastChangeSignature = [current length] > 0 ? [NSString stringWithFormat:@"%@", current] : nil;
     self.nextMark = [responseDict objectForKey:@"mark"];
     numTransfers--;
@@ -498,7 +498,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if ([self.versionsWithErrors count] > 0) {
         // Try the index refresh again; this could be more efficient since we could know which version requests
         // failed, but it should happen rarely so take the easy approach for now
-        DDLogWarn(@"Index refresh complete (%@) but %d versions didn't load, retrying...", self.name, [self.versionsWithErrors count]);
+        DDLogWarn(@"Index refresh complete (%@) but %lu versions didn't load, retrying...", self.name, (unsigned long)[self.versionsWithErrors count]);
 
         // Create an array in the expected format
         NSMutableArray *errorArray = [NSMutableArray arrayWithCapacity: [self.versionsWithErrors count]];

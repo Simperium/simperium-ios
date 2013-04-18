@@ -166,8 +166,8 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
     BOOL repostNeeded = NO;
     for (NSDictionary *change in changes) {
         if ([change objectForKey:CH_ERROR] != nil) {
-            int errorCode = [[change objectForKey:CH_ERROR] integerValue];
-            DDLogError(@"Simperium POST returned error %d for change %@", errorCode, change);
+            long errorCode = [[change objectForKey:CH_ERROR] integerValue];
+            DDLogError(@"Simperium POST returned error %ld for change %@", errorCode, change);
             
             // 440: invalid diff
             // 417: expectation failed (e.g. foreign key doesn't exist just yet)
@@ -275,9 +275,9 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
     
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
     if ([startVersion isKindOfClass:[NSNumber class]])
-        startVersion = [NSString stringWithFormat:@"%d", [startVersion integerValue]];
+        startVersion = [NSString stringWithFormat:@"%ld", (long)[startVersion integerValue]];
     if ([endVersion isKindOfClass:[NSNumber class]])
-        endVersion = [NSString stringWithFormat:@"%d", [endVersion integerValue]];
+        endVersion = [NSString stringWithFormat:@"%ld", (long)[endVersion integerValue]];
     
     DDLogVerbose(@"Simperium received version = %@, previous version = %@", startVersion, oldVersion);
     // If the versions are equal or there's no start version (new object), process the change
@@ -480,7 +480,7 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
         
         // Get a diff of the object (in dictionary form)
         newData = [bucket.differ diff:object withDictionary: [object.ghost memberData]];
-        DDLogVerbose(@"Simperium entity diff found %d changed members", [newData count]);
+        DDLogVerbose(@"Simperium entity diff found %lu changed members", (unsigned long)[newData count]);
         if ([newData count] > 0) {
             change = [self createChangeForKey: object.simperiumKey operation: CH_MODIFY version:object.ghost.version data: newData];
         } else {
@@ -515,7 +515,7 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
 {
     // Check if there are more changes that need to be sent
     if ([keysForObjectsWithMoreChanges count] > 0) {
-        DDLogVerbose(@"Simperium found %u objects with more changes to send (%@)", [keysForObjectsWithMoreChanges count], bucket.name);
+        DDLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)[keysForObjectsWithMoreChanges count], bucket.name);
         // TODO: Robust handling of offline deletions
       
         NSMutableSet *keysProcessed = [NSMutableSet setWithCapacity:[keysForObjectsWithMoreChanges count]];
@@ -557,7 +557,7 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
     // Check if there are more changes that need to be sent
     NSMutableArray *newChangesPending = [NSMutableArray arrayWithCapacity:3];
     if ([keysForObjectsWithMoreChanges count] > 0) {
-        DDLogVerbose(@"Simperium found %u objects with more changes to send (%@)", [keysForObjectsWithMoreChanges count], bucket.name);
+        DDLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)[keysForObjectsWithMoreChanges count], bucket.name);
         
         NSMutableSet *keysProcessed = [NSMutableSet setWithCapacity:[keysForObjectsWithMoreChanges count]];
         // Create changes for any objects that have more changes
@@ -588,11 +588,11 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
 
 
 -(int)numChangesPending {
-    return [changesPending count];
+    return (int)[changesPending count];
 }
 
 -(int)numKeysForObjectsWithMoreChanges {
-    return [keysForObjectsWithMoreChanges count];
+    return (int)[keysForObjectsWithMoreChanges count];
 }
 
 @end

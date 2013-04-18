@@ -10,8 +10,7 @@
 
 @implementation SPSigninButtonCell
 
-- (void)drawBezelWithFrame:(NSRect)frame inView:(NSView *)controlView
-{
+- (void)drawBezelWithFrame:(NSRect)frame inView:(NSView *)controlView {
     NSGraphicsContext *ctx = [NSGraphicsContext currentContext];
     
     CGFloat roundedRadius = 3.0f;
@@ -56,7 +55,6 @@
     [ctx restoreGraphicsState];
     
     // Dark stroke
-    
     [ctx saveGraphicsState];
     [[NSColor colorWithDeviceWhite:0.12f alpha:1.0f] setStroke];
     [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 1.5f, 1.5f) 
@@ -65,7 +63,6 @@
     [ctx restoreGraphicsState];
     
     // Inner light stroke
-    
     [ctx saveGraphicsState];
     [[NSColor colorWithDeviceWhite:1.0f alpha:0.05f] setStroke];
     [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 2.5f, 2.5f) 
@@ -74,8 +71,7 @@
     [ctx restoreGraphicsState];        
     
     // Draw darker overlay if button is pressed
-    
-    if([self isHighlighted]) {
+    if ([self isHighlighted]) {
         [ctx saveGraphicsState];
         [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 2.0f, 2.0f) 
                                          xRadius:roundedRadius 
@@ -92,7 +88,7 @@
     CGContextRef contextRef = [ctx graphicsPort];
     
     NSData *data = [image TIFFRepresentation]; // open for suggestions
-    CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
+    CGImageSourceRef source = CGImageSourceCreateWithData((CFDataRef)data, NULL);
     if(source) {
         CGImageRef imageRef = CGImageSourceCreateImageAtIndex(source, 0, NULL);
         CFRelease(source);

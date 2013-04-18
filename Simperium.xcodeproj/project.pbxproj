@@ -200,6 +200,7 @@
 		46EE3D3E171C934300E6F0A5 /* SimperiumOfflineTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D3B171C934300E6F0A5 /* SimperiumOfflineTests.m */; };
 		46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */; };
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
+		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -408,6 +409,8 @@
 		46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumComplexTests.m; sourceTree = "<group>"; };
 		46EE3D42171C978D00E6F0A5 /* SimperiumAuxiliaryTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumAuxiliaryTests.h; sourceTree = "<group>"; };
 		46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumAuxiliaryTests.m; sourceTree = "<group>"; };
+		46EE3D55171D0C8E00E6F0A5 /* SimperiumErrorTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumErrorTests.h; sourceTree = "<group>"; };
+		46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumErrorTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -659,6 +662,8 @@
 		264CD911135DFD7A00C51BAD /* SimperiumTests */ = {
 			isa = PBXGroup;
 			children = (
+				46EE3D55171D0C8E00E6F0A5 /* SimperiumErrorTests.h */,
+				46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */,
 				46EE3D42171C978D00E6F0A5 /* SimperiumAuxiliaryTests.h */,
 				46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */,
 				46EE3D3F171C975D00E6F0A5 /* SimperiumComplexTests.h */,
@@ -1167,6 +1172,7 @@
 				46EE3D3E171C934300E6F0A5 /* SimperiumOfflineTests.m in Sources */,
 				46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */,
 				46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */,
+				46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -12,8 +12,7 @@
 @implementation SPAuthWindowController
 @synthesize authManager = _authManager;
 
-- (id)initWithWindowNibName:(NSString *)windowName;
-{
+- (id)initWithWindowNibName:(NSString *)windowName; {
     self = [super initWithWindowNibName:windowName];
     if (self) {
     }
@@ -26,27 +25,26 @@
     [super dealloc];
 }
 
-- (void)windowDidLoad
-{
+- (void)windowDidLoad {
     [super windowDidLoad];
     
     // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
     
-    //Header
+    // Header
     [signinText setBackgroundStyle:NSBackgroundStyleLowered];
 
-    //Button
+    // Button
     [[signinButton cell]setBackgroundStyle:NSBackgroundStyleLowered];
     
     
 }
 
-- (IBAction)signinClicked:(id)sender{
+- (IBAction)signinClicked:(id)sender {
     [self.authManager authenticateWithUsername:[emailField stringValue] password:[passwordField stringValue]
                        success:^{
                            
                        }
-                       failure:^(int responseCode, NSString *responseString){
+                       failure:^(int responseCode, NSString *responseString) {
                        }
      ];
 }

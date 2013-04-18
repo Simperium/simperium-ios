@@ -412,7 +412,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
         return;
     }
     NSArray *changes = [responseString objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
-    DDLogVerbose(@"GET response received (%@), handling %d changes...", bucket.name, [changes count] );
+    DDLogVerbose(@"GET response received (%@), handling %lu changes...", bucket.name, (unsigned long)[changes count] );
     DDLogDebug(@"  GET response was: %@", responseString);
     
     [self resetRetryDelay];
@@ -602,7 +602,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     [networkQueue setRequestDidFailSelector:@selector(getVersionFailed:)];
     [networkQueue setMaxConcurrentOperationCount:INDEX_QUEUE_SIZE];
     
-    DDLogInfo(@"Simperium processing %d objects from index (%@)", [currentIndexArray count], bucket.name);
+    DDLogInfo(@"Simperium processing %lu objects from index (%@)", (unsigned long)[currentIndexArray count], bucket.name);
     
     __block NSArray *indexArrayCopy = [currentIndexArray copy];
     __block int numVersionRequests = 0;
@@ -658,7 +658,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
     if ([current isKindOfClass:[NSNumber class]])
-        current = [NSString stringWithFormat:@"%d", [current integerValue]];
+        current = [NSString stringWithFormat:@"%ld", (long)[current integerValue]];
     self.pendingLastChangeSignature = [current length] > 0 ? [NSString stringWithFormat:@"%@", current] : nil;
     self.nextMark = [responseDict objectForKey:@"mark"];
     numTransfers--;
@@ -794,7 +794,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     if ([self.versionsWithErrors count] > 0) {
         // Try the index refresh again; this could be more efficient since we could know which version requests
         // failed, but it should happen rarely so take the easy approach for now
-        DDLogWarn(@"Index refresh complete (%@) but %d versions didn't load, retrying...", bucket.name, [self.versionsWithErrors count]);
+        DDLogWarn(@"Index refresh complete (%@) but %lu versions didn't load, retrying...", bucket.name, (unsigned long)[self.versionsWithErrors count]);
         
         // Create an array in the expected format
         NSMutableArray *errorArray = [NSMutableArray arrayWithCapacity: [self.versionsWithErrors count]];
@@ -868,7 +868,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     
     NSInteger startVersion = [object.ghost.version integerValue]-1;
     for (NSInteger i=startVersion; i>=1 && i>=startVersion-numVersions; i--) {
-        NSString *versionStr = [NSString stringWithFormat:@"%d", i];
+        NSString *versionStr = [NSString stringWithFormat:@"%ld", (long)i];
         ASIHTTPRequest *versionRequest = [self getRequestForKey:[object simperiumKey] version:versionStr];
         if (!versionRequest)
             return;

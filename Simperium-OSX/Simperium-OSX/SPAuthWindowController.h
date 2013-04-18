@@ -23,6 +23,6 @@
 @property (nonatomic, retain) SPAuthenticationManager *authManager;
 
 - (IBAction)signinClicked:(id)sender;
-
 - (id)initWithWindowNibName:(NSString *)windowName;
+
 @end
