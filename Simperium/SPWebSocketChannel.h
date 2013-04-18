@@ -10,7 +10,7 @@
 
 @class Simperium;
 @class SPBucket;
-@class SRWebSocket;
+@class SPWebSocketManager;
 @protocol SPDiffable;
 
 @interface SPWebSocketChannel : NSObject
@@ -21,13 +21,13 @@
     NSString *nextMark;
     NSMutableArray *indexArray;
     NSString *pendingLastChangeSignature;
-    SRWebSocket *webSocket;
+    SPWebSocketManager *webSocketManager;
     NSString *name;
     int number;
     NSInteger numTransfers;
 }
 
-@property (nonatomic, assign) SRWebSocket *webSocket;
+@property (nonatomic, assign) SPWebSocketManager *webSocketManager;
 @property (nonatomic, copy) NSString *nextMark;
 @property (nonatomic, retain) NSMutableArray *indexArray;
 @property (nonatomic, copy) NSString *pendingLastChangeSignature;

@@ -52,7 +52,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 @implementation SPWebSocketChannel
 @synthesize simperium;
-@synthesize webSocket;
+@synthesize webSocketManager;
 @synthesize responseBatch;
 @synthesize versionsWithErrors;
 @synthesize nextMark;
@@ -100,7 +100,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)dealloc
 {
-    self.webSocket = nil;
+    self.webSocketManager = nil;
     self.clientID = nil;
     self.indexArray = nil;
     self.responseBatch = nil;
@@ -125,7 +125,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                     NSString *jsonStr = [change JSONString];
                     NSString *message = [NSString stringWithFormat:@"%d:c:%@", number, jsonStr];
                     DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
-                    [self.webSocket send:message];
+                    [self.webSocketManager send:message];
                 }
             }
         });
@@ -147,7 +147,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                     NSString *jsonStr = [change JSONString];
                     NSString *message = [NSString stringWithFormat:@"%d:c:%@", number, jsonStr];
                     DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
-                    [self.webSocket send:message];
+                    [self.webSocketManager send:message];
                 }
             }
         });
@@ -164,7 +164,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSString *jsonStr = [change JSONString];
         NSString *message = [NSString stringWithFormat:@"%d:c:%@", number, jsonStr];
         DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
-        [self.webSocket send:message];
+        [self.webSocketManager send:message];
     });
 }
 
@@ -222,7 +222,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                     // Nothing to send, so start getting changes right away
                     NSString *message = [NSString stringWithFormat:@"%d:cv:%@", number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
                     DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, message);
-                    [self.webSocket send:message];
+                    [self.webSocketManager send:message];
                 
                 if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
                     // Send the offline changes
@@ -291,7 +291,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     NSString *message = [NSString stringWithFormat:@"%d:i::%@::%d", number, mark ? mark : @"", INDEX_PAGE_SIZE];
     DDLogVerbose(@"Simperium requesting index (%@): %@", self.name, message);
-    [self.webSocket send:message];
+    [self.webSocketManager send:message];
 }
 
 -(void)getLatestVersionsForBucket:(SPBucket *)bucket {
@@ -343,7 +343,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                     [[self class] updateNetworkActivityIndictator];
                     NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", number, key, version];
                     DDLogVerbose(@"Simperium sending object request (%@): %@", self.name, message);
-                    [self.webSocket send:message];
+                    [self.webSocketManager send:message];
                 });
             }];
 
