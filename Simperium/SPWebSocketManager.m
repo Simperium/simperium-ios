@@ -19,6 +19,7 @@
 #define INDEX_PAGE_SIZE 500
 #define INDEX_BATCH_SIZE 10
 #define INDEX_QUEUE_SIZE 5
+#define HEARTBEAT 30
 
 NSString * const COM_AUTH = @"auth";
 NSString * const COM_INDEX = @"i";
@@ -208,8 +209,20 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     // TODO: Consider ensuring threads are done their work and sending a notification
 }
 
+- (void)resetHeartbeatTimer {
+    if (heartbeatTimer != nil)
+		[heartbeatTimer invalidate];
+	heartbeatTimer = [NSTimer scheduledTimerWithTimeInterval:HEARTBEAT target:self selector:@selector(sendHeartbeat:) userInfo:nil repeats:NO];
+}
+
 - (void)send:(NSString *)message {
     [self.webSocket send:message];
+    [self resetHeartbeatTimer];
+}
+
+- (void)sendHeartbeat:(NSTimer *)timer {
+    // Send it (will also schedule another one)
+    [self send:@"h:1"];
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
@@ -221,6 +234,8 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         channel.webSocketManager = self;
         [self authenticateChannel:channel];
     }
+    
+    [self resetHeartbeatTimer];
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
@@ -232,14 +247,26 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
 }
 
-// todo: send h:# for heartbeat
-
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    DDLogVerbose(@"Received \"%@\"", message);
-    
+- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {    
     // Parse CHANNELNUM:COMMAND:DATA
     NSRange range = [message rangeOfString:@":"];
+    
+    if (range.location == NSNotFound) {
+        DDLogError(@"Simperium websocket received invalid message: %@", message);
+        return;
+    }
+    
     NSString *channelStr = [message substringToIndex:range.location];
+    
+    // Handle heartbeat
+    if ([channelStr isEqualToString:@"h"]) {
+        //DDLogVerbose(@"Simperium heartbeat acknowledged");
+        return;
+    }
+    
+    DDLogVerbose(@"Received \"%@\"", message);
+    
+    // It's an actual message; parse/handle it
     NSNumber *channelNumber = [NSNumber numberWithInt:[channelStr intValue]];
     SPWebSocketChannel *channel = [self channelForNumber:channelNumber];
     SPBucket *bucket = [self.simperium bucketForName:channel.name];
@@ -261,7 +288,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         } else
             [channel startProcessingChangesForBucket:bucket];
     } else if ([command isEqualToString:COM_INDEX]) {
-        // todo: handle ? if bad command
         [channel handleIndexResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_CHANGE]) {
         NSArray *changes = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];

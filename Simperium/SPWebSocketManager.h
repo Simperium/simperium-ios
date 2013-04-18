@@ -18,6 +18,7 @@
     BOOL open;
     NSMutableArray *webSocketChannels;
     SRWebSocket *webSocket;
+    NSTimer *heartbeatTimer;
 }
 
 @property (nonatomic, retain) SRWebSocket *webSocket;
