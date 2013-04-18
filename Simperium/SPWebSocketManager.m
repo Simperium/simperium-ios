@@ -230,10 +230,12 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error;
 {
-    NSLog(@"Simperium websocket failed with error %@", error);
+    DDLogVerbose(@"Simperium websocket failed (will retry) with error %@", error);
     
     self.webSocket = nil;
     open = NO;
+    
+    [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
 }
 
 // todo: send h:# for heartbeat

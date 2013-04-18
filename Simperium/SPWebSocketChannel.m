@@ -516,7 +516,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // All versions were received successfully, so update the lastChangeSignature
     [bucket setLastChangeSignature:pendingLastChangeSignature];
     self.pendingLastChangeSignature = nil;
-
+    self.nextMark = nil;
     gettingVersions = NO;
 
     // There could be some processing happening on the queue still, so don't start until they're done
