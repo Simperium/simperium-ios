@@ -71,8 +71,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
-+ (void)updateNetworkActivityIndictator
-{
++ (void)updateNetworkActivityIndictator {
 #if TARGET_OS_IPHONE
     //BOOL visible = useNetworkActivityIndicator && numTransfers > 0;
 	//[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:visible];
@@ -80,13 +79,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #endif
 }
 
-+ (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled
-{
++ (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled {
     useNetworkActivityIndicator = enabled;
 }
 
--(id)initWithSimperium:(Simperium *)s clientID:(NSString *)cid
-{
+- (id)initWithSimperium:(Simperium *)s clientID:(NSString *)cid {
 	if ((self = [super init])) {
         self.simperium = s;
         self.indexArray = [NSMutableArray arrayWithCapacity:200];
@@ -98,8 +95,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	return self;
 }
 
--(void)dealloc
-{
+- (void)dealloc {
     self.webSocketManager = nil;
     self.clientID = nil;
     self.indexArray = nil;
@@ -110,13 +106,17 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[super dealloc];
 }
 
--(void)sendAllChangesForBucket:(SPBucket *)bucket
-{
+- (void)sendAllChangesForBucket:(SPBucket *)bucket completionBlock:(void(^)())completionBlock {
     // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
     dispatch_async(bucket.processorQueue, ^{
         NSArray *changes = [bucket.changeProcessor processPendingChanges:bucket];
-        if ([changes count] == 0)
+        if ([changes count] == 0) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completionBlock)
+                    completionBlock();
+            });
             return;
+        }
         
         dispatch_async(dispatch_get_main_queue(), ^{
             if (started) {
@@ -127,36 +127,19 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                     DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
                     [self.webSocketManager send:message];
                 }
+                if (completionBlock)
+                    completionBlock();
             }
         });
     });
 }
 
--(void)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket
-{
-    // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
-    dispatch_async(bucket.processorQueue, ^{
-        NSArray *changes = [bucket.changeProcessor processKeysForObjectsWithMoreChanges:bucket];
-        if ([changes count] == 0)
-            return;
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (started) {
-                DDLogVerbose(@"Simperium sending all changes (%lu) for bucket %@", (unsigned long)[changes count], bucket.name);
-                for (NSString *change in changes) {
-                    NSString *jsonStr = [change JSONString];
-                    NSString *message = [NSString stringWithFormat:@"%d:c:%@", number, jsonStr];
-                    DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
-                    [self.webSocketManager send:message];
-                }
-            }
-        });
-    });
+- (void)sendAllChangesForBucket:(SPBucket *)bucket {
+    [self sendAllChangesForBucket:bucket completionBlock:nil];
 }
 
 
--(void)sendChange:(NSDictionary *)change forKey:(NSString *)key bucket:(SPBucket *)bucket
-{
+- (void)sendChange:(NSDictionary *)change forKey:(NSString *)key bucket:(SPBucket *)bucket {
     DDLogVerbose(@"Simperium adding pending change (%@): %@", self.name, key);
     
     [bucket.changeProcessor processLocalChange:change key:key];
@@ -168,8 +151,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     });
 }
 
--(void)sendObjectDeletion:(id<SPDiffable>)object
-{
+- (void)sendObjectDeletion:(id<SPDiffable>)object {
     NSString *key = [object simperiumKey];
     DDLogVerbose(@"Simperium sending entity DELETION change: %@/%@", self.name, key);
     
@@ -187,7 +169,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     });
 }
 
--(void)sendObjectChanges:(id<SPDiffable>)object
+- (void)sendObjectChanges:(id<SPDiffable>)object
 {
     // Consider being more careful about faulting here (since only the simperiumKey is needed)
     NSString *key = [object simperiumKey];
@@ -213,24 +195,21 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
 
             dispatch_async(dispatch_get_main_queue(), ^{
-//                if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
-//                    // Send the offline changes
-//                    DDLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
-//                    [self sendAllChangesForBucket:bucket];
-//                    [self postChanges];
-                //} else {
-                    // Nothing to send, so start getting changes right away
-                    NSString *message = [NSString stringWithFormat:@"%d:cv:%@", number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
-                    DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, message);
-                    [self.webSocketManager send:message];
-                
+                NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
                 if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
                     // Send the offline changes
                     DDLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
-                    [self sendAllChangesForBucket:bucket];
+                    [self sendAllChangesForBucket:bucket completionBlock:^{
+                        // Start getting changes after all pending local changes have been sent
+                        DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, getMessage);
+                        [self.webSocketManager send:getMessage];
+                        
+                    }];
+                } else {
+                    // No pending local changes, start getting changes right away
+                    DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, getMessage);
+                    [self.webSocketManager send:getMessage];
                 }
-//                    [self getChanges];
-                //}
             });
         }
     });
@@ -250,7 +229,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     retryDelay = 2;
 }
 
--(void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket
+- (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket
 {
     // Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
     // sync will still work for any unsaved changes.
@@ -265,7 +244,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             dispatch_async(dispatch_get_main_queue(), ^{
                 numTransfers--;
                 [[self class] updateNetworkActivityIndictator];
-                [self processKeysForObjectsWithMoreChanges:bucket];
+                
+                // After remote changes have been processed, check to see if any local changes were attempted in
+                // the meantime, and send them
+                [self sendAllChangesForBucket:bucket];
             });
         }
     });
@@ -273,7 +255,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 #pragma mark Index handling
 
--(void)getLatestVersionsForBucket:(SPBucket *)bucket mark:(NSString *)mark
+- (void)getLatestVersionsForBucket:(SPBucket *)bucket mark:(NSString *)mark
 {
     if (!simperium.user) {
         DDLogError(@"Simperium critical error: tried to retrieve index with no user set");
@@ -299,7 +281,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (gettingVersions)
         return;
     
-    [self getLatestVersionsForBucket:bucket mark:nil];
+    // Send any pending changes first
+    [self sendAllChangesForBucket:bucket completionBlock: ^{
+        [self getLatestVersionsForBucket:bucket mark:nil];
+    }];
 }
 
 //-(ASIHTTPRequest *)getRequestForKey:(NSString *)key version:(NSString *)version

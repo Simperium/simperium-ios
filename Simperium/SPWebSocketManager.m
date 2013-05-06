@@ -299,8 +299,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         // todo: handle ? if entity doesn't exist or it has been deleted
         [channel handleVersionResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_REINDEX]) {
-        // todo: handle ? if cv doesn't exist
-        
+        [channel getLatestVersionsForBucket:bucket];
     }
 }
 
