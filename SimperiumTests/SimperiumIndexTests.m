@@ -93,5 +93,57 @@
     NSLog(@"%@ end", self.name);    
 }
 
+- (void)testReindex
+{
+    NSLog(@"%@ start", self.name);
+    // Leader sends an object to a follower, follower goes offline, both make changes, follower reconnects
+    Farm *leader = [self createFarm:@"leader"];
+    Farm *follower = [self createFarm:@"follower"];
+    [leader start];
+    [follower start];
+    
+    NSArray *farmArray = [NSArray arrayWithObjects:leader, follower, nil];
+    [leader connect];
+    [follower connect];
+    [self waitFor:1.0];
+    
+    // Add one object
+    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config.simperiumKey = @"config";
+    leader.config.captainsLog = @"1";
+    [leader.simperium save];
+    leader.expectedAcknowledgments = 1;
+    follower.expectedAdditions = 1;
+    STAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding one)");
+    [self resetExpectations: farmArray];
+    [self ensureFarmsEqual:farmArray entityName:@"Config"];
+    NSLog(@"****************************DISCONNECT*************************");
+    [follower disconnect];
+
+    // Add 50 objects to push the cv off the back of the queue (max 50 versions)
+    int numConfigs = 50;
+    NSLog(@"****************************ADD*************************");
+    for (int i=0; i<numConfigs; i++) {
+        Config *config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+        config.warpSpeed = [NSNumber numberWithInt:2];
+        config.captainsLog = @"Hi";
+        config.shieldPercent = [NSNumber numberWithFloat:3.14];
+    }
+    [leader.simperium save];
+    [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
+    STAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:farmArray], @"timed out (adding many)");
+    
+    NSLog(@"****************************RECONNECT*************************");
+    [self resetExpectations:farmArray];
+    [follower connect];
+    
+    // Expect 404 and reindex?
+    follower.expectedAdditions = numConfigs;
+    STAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:farmArray], @"timed out (receiving many)");
+    [self ensureFarmsEqual:farmArray entityName:@"Config"];
+    
+    NSLog(@"%@ end", self.name);
+}
+
 
 @end
