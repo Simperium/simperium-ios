@@ -26,6 +26,7 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
     FailedBlockType failedBlock;
 }
 
+@property(nonatomic, assign) Simperium *simperium;
 @property(nonatomic, copy) SucceededBlockType succeededBlock;
 @property(nonatomic, copy) FailedBlockType failedBlock;
 

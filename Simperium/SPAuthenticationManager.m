@@ -36,6 +36,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 @implementation SPAuthenticationManager
 @synthesize succeededBlock;
 @synthesize failedBlock;
+@synthesize simperium;
 
 + (int)ddLogLevel {
     return ddLogLevel;
