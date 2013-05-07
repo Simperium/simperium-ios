@@ -79,7 +79,6 @@
 @synthesize network;
 @synthesize referenceManager;
 @synthesize binaryManager;
-@synthesize loginViewControllerClass;
 @synthesize buckets;
 @synthesize appID;
 @synthesize APIKey;
@@ -93,9 +92,11 @@
 #if TARGET_OS_IPHONE
 @synthesize rootViewController;
 @synthesize loginViewController;
+@synthesize loginViewControllerClass;
 #else
 @synthesize window;
 @synthesize authWindowController;
+@synthesize authWindowControllerClass;
 #endif
 
 
@@ -144,7 +145,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 #if TARGET_OS_IPHONE
         loginViewControllerClass = [SPLoginViewController class];
-#endif        
+#else
+        authWindowControllerClass = [SPAuthWindowController class];
+#endif
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(authenticationDidFail)
                                                      name:@"AuthenticationDidFailNotification" object:nil];
     }
@@ -673,7 +676,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [controller release];
 #else
     if (!authWindowController) {
-        SPAuthWindowController *anAuthWindowController = [[SPAuthWindowController alloc] initWithWindowNibName:@"AuthWindow"];
+        SPAuthWindowController *anAuthWindowController = [[self.authWindowControllerClass alloc] initWithWindowNibName:@"AuthWindow"];
         anAuthWindowController.authManager = self.authManager;
         
         authWindowController = [anAuthWindowController retain];
