@@ -257,10 +257,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (void)resetExpectations:(NSArray *)farmArray
 {
     for (Farm *farm in farmArray) {
-        farm.expectedAcknowledgments = 0;
-        farm.expectedAdditions = 0;
-        farm.expectedChanges = 0;
-        farm.expectedDeletions = 0;
+        [farm resetExpectations];
     }
 }
 

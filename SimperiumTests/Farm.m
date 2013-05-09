@@ -19,6 +19,7 @@
 @synthesize expectedAdditions;
 @synthesize expectedChanges;
 @synthesize expectedDeletions;
+@synthesize expectedVersions;
 @synthesize managedObjectContext = __managedObjectContext;
 @synthesize managedObjectModel = __managedObjectModel;
 @synthesize persistentStoreCoordinator = __persistentStoreCoordinator;
@@ -60,15 +61,14 @@
     simperium.user = [[SPUser alloc] initWithEmail:USERNAME token:token];
 }
 
-- (void) dealloc {
+- (void)dealloc {
     [simperium signOutAndRemoveLocalData:YES];
     [simperium release];
     [config release];
     [super dealloc];
 }
 
-- (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs
-{
+- (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs {
 	NSDate	*timeoutDate = [NSDate dateWithTimeIntervalSinceNow:timeoutSecs];
     
 	do {
@@ -80,20 +80,28 @@
 	return done;
 }
 
-- (BOOL) isDone {
-    return expectedAcknowledgments == 0 && expectedChanges == 0 && expectedAdditions == 0 && expectedDeletions == 0;
+- (BOOL)isDone {
+    return expectedAcknowledgments == 0 && expectedChanges == 0 && expectedAdditions == 0 && expectedDeletions == 0 && expectedVersions == 0;
 }
 
-- (void) logUnfulfilledExpectations {
+- (void)resetExpectations {
+    self.expectedAcknowledgments = 0;
+    self.expectedAdditions = 0;
+    self.expectedChanges = 0;
+    self.expectedDeletions = 0;
+    self.expectedVersions = 0;
+}
+
+- (void)logUnfulfilledExpectations {
     if (![self isDone])
         NSLog(@"acks: %d changes: %d adds: %d dels: %d", expectedAcknowledgments, expectedChanges, expectedAdditions, expectedDeletions);
 }
 
-- (void) connect {
+- (void)connect {
     [simperium performSelector:@selector(startNetworkManagers)];
 }
 
-- (void) disconnect {
+- (void)disconnect {
     [simperium performSelector:@selector(stopNetworkManagers)];
 }
 
@@ -113,23 +121,23 @@
     }
 }
 
--(void)bucket:(SPBucket *)bucket willChangeObjectsForKeys:(NSSet *)keys {
+- (void)bucket:(SPBucket *)bucket willChangeObjectsForKeys:(NSSet *)keys {
     
 }
 
--(void)bucketWillStartIndexing:(SPBucket *)bucket {
+- (void)bucketWillStartIndexing:(SPBucket *)bucket {
 }
 
--(void)bucketDidFinishIndexing:(SPBucket *)bucket {
+- (void)bucketDidFinishIndexing:(SPBucket *)bucket {
     
 }
 
--(void)bucketDidAcknowledgeDelete:(SPBucket *)bucket {
+- (void)bucketDidAcknowledgeDelete:(SPBucket *)bucket {
     expectedAcknowledgments -= 1;
 }
 
--(void)bucket:(SPBucket *)bucket didReceiveObjectForKey:(NSString *)key version:(NSString *)version data:(NSDictionary *)data {
-    
+- (void)bucket:(SPBucket *)bucket didReceiveObjectForKey:(NSString *)key version:(NSString *)version data:(NSDictionary *)data {
+    expectedVersions -= 1;
 }
 
 

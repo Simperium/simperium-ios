@@ -25,6 +25,7 @@
     NSString *name;
     int number;
     NSInteger numTransfers;
+    int numVersionsPending;
 }
 
 @property (nonatomic, assign) SPWebSocketManager *webSocketManager;
@@ -35,16 +36,16 @@
 @property (nonatomic, copy) NSString *name;
 @property (nonatomic) BOOL started;
 
-+(void)setNetworkActivityIndicatorEnabled:(BOOL)enabled;
--(id)initWithSimperium:(Simperium *)s clientID:(NSString *)cid;
--(void)getVersions:(int)numVersions forObject:(id<SPDiffable>)object;
--(void)getLatestVersionsForBucket:(SPBucket *)bucket;
--(void)sendObjectDeletion:(id<SPDiffable>)object;
--(void)sendObjectChanges:(id<SPDiffable>)object;
--(void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
--(void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
--(void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
--(void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
--(void)startProcessingChangesForBucket:(SPBucket *)bucket;
++ (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled;
+- (id)initWithSimperium:(Simperium *)s clientID:(NSString *)cid;
+- (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
+- (void)requestLatestVersionsForBucket:(SPBucket *)bucket;
+- (void)sendObjectDeletion:(id<SPDiffable>)object;
+- (void)sendObjectChanges:(id<SPDiffable>)object;
+- (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
+- (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
+- (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
+- (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
+- (void)startProcessingChangesForBucket:(SPBucket *)bucket;
 
 @end

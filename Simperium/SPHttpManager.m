@@ -331,7 +331,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     // TODO: Is this the best and only way to detect when an index of latest versions is needed?
     BOOL bFirstStart = bucket.lastChangeSignature == nil;
     if (bFirstStart) {
-        [self getLatestVersionsForBucket:startBucket];
+        [self requestLatestVersionsForBucket:startBucket];
     } else
         [self startProcessingChanges];
 }
@@ -399,7 +399,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     if (responseCode == 404) {
         // Perform a re-indexing here
         DDLogVerbose(@"Simperium version not found, initiating re-indexing (%@)", [request originalURL]);
-        [self getLatestVersionsForBucket:self.bucket];
+        [self requestLatestVersionsForBucket:self.bucket];
         return;
     }
 
@@ -509,7 +509,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
 
 #pragma mark Index handling
 
--(void)getLatestVersionsMark:(NSString *)mark
+-(void)requestLatestVersionsMark:(NSString *)mark
 {
     if (!simperium.user) {
         DDLogError(@"Simperium critical error: tried to retrieve index with no user set");
@@ -551,7 +551,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     [indexRequest startAsynchronous];
 }
 
--(void)getLatestVersionsForBucket:(SPBucket *)b {
+-(void)requestLatestVersionsForBucket:(SPBucket *)b {
     // Multiple errors could try to trigger multiple index refreshes
     if (gettingVersions)
         return;
@@ -562,7 +562,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
         return;
     }
     
-    [self getLatestVersionsMark:nil];
+    [self requestLatestVersionsMark:nil];
 }
 
 -(ASIHTTPRequest *)getRequestForKey:(NSString *)key version:(NSString *)version
@@ -677,7 +677,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     // If there's another page, get those too (this will repeat until there are none left)
     if (self.nextMark.length > 0) {
         DDLogVerbose(@"Simperium found another index page mark (%@): %@", bucket.name, self.nextMark);
-        [self getLatestVersionsMark:self.nextMark];
+        [self requestLatestVersionsMark:self.nextMark];
         return;
     }
 
@@ -774,7 +774,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
 {
     if (self.nextMark.length > 0)
         // More index pages to get
-        [self getLatestVersionsMark:self.nextMark];
+        [self requestLatestVersionsMark:self.nextMark];
     else
         // The entire index has been retrieved
         [self allVersionsFinished:networkQueue];
@@ -805,7 +805,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
             [errorArray addObject:versionDict];
         }
         [self performSelector:@selector(getVersionsForKeys:) withObject: errorArray afterDelay:1];
-        //[self performSelector:@selector(getLatestVersions) withObject:nil afterDelay:10];
+        //[self performSelector:@selector(requestLatestVersions) withObject:nil afterDelay:10];
         return;
     }
     
@@ -850,12 +850,12 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     numTransfers--;
     [[self class] updateNetworkActivityIndictator];
     
-    [self performSelector:@selector(getLatestVersionsForBucket:) withObject:self.bucket afterDelay:retry];
+    [self performSelector:@selector(requestLatestVersionsForBucket:) withObject:self.bucket afterDelay:retry];
 }
 
 
 #pragma mark Versions
--(void)getVersions:(int)numVersions forObject:(id<SPDiffable>)object
+-(void)requestVersions:(int)numVersions object:(id<SPDiffable>)object
 {
     // Get all the latest versions
     ASINetworkQueue *networkQueue = [[ASINetworkQueue queue] retain];

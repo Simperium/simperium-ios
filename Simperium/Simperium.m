@@ -303,12 +303,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return bucket;
 }
 
--(void)getVersions:(int)numVersions forObject:(id<SPDiffable>)object
-{
-    SPBucket *bucket = [object bucket];
-    [bucket.network getVersions: numVersions forObject: object];
-}
-
 -(void)shareObject:(SPManagedObject *)object withEmail:(NSString *)email
 {
     SPBucket *bucket = [buckets objectForKey:object.bucket.name];

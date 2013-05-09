@@ -89,17 +89,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acknowledgedObjectDeletion:)
                                                      name:ProcessorDidAcknowledgeDeleteNotification object:self];        
 
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(getLatestVersions)
-                                                     name:@"simperiumIndexRefreshNeeded" object:self];
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsAdded:) 
-                                                     name:@"SimperiumObjectAdded" object:self];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(requestLatestVersions)
+                                                     name:ProcessorRequestsReindexing object:self];
     }
     return self;
 }
 
 -(void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"simperiumIndexRefreshNeeded" object:self];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:ProcessorRequestsReindexing object:self];
     [name release];
     name = nil;
     self.storage = nil;
@@ -111,10 +108,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [super dealloc];
 }
 
--(id)objectForKey:(NSString *)key
+-(id)objectForKey:(NSString *)simperiumKey
 {
     // Typically used on startup to get a dictionary from storage; Simperium doesn't keep it in memory though
-    id<SPDiffable>diffable = [storage objectForKey:key bucketName:self.name];
+    id<SPDiffable>diffable = [storage objectForKey:simperiumKey bucketName:self.name];
     return [diffable object];
 }
 
@@ -122,6 +119,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     id<SPDiffable>diffable = [storage objectAtIndex:index bucketName:self.name];
     return [diffable object];
 }
+
+-(void)requestVersions:(int)numVersions key:(NSString *)simperiumKey {
+    id<SPDiffable>diffable = [storage objectForKey:simperiumKey bucketName:self.name];
+    [network requestVersions:numVersions object:diffable];
+}
+
 
 -(NSArray *)allObjects {
     return [storage objectsForBucketName:self.name];
@@ -260,8 +263,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }    
 }
 
--(void)getLatestVersions {
-    [network getLatestVersionsForBucket:self];
+-(void)requestLatestVersions {
+    [network requestLatestVersionsForBucket:self];
 }
 
 -(SPSchema *)schema {

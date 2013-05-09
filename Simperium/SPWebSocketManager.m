@@ -284,7 +284,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         channel.started = YES;
         BOOL bFirstStart = bucket.lastChangeSignature == nil;
         if (bFirstStart) {
-            [channel getLatestVersionsForBucket:bucket];
+            [channel requestLatestVersionsForBucket:bucket];
         } else
             [channel startProcessingChangesForBucket:bucket];
     } else if ([command isEqualToString:COM_INDEX]) {
@@ -299,7 +299,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         // todo: handle ? if entity doesn't exist or it has been deleted
         [channel handleVersionResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_REINDEX]) {
-        [channel getLatestVersionsForBucket:bucket];
+        [channel requestLatestVersionsForBucket:bucket];
     }
 }
 
@@ -330,9 +330,9 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 //    [[self class] updateNetworkActivityIndictator];
 }
 
--(void)getVersions:(int)numVersions forObject:(id<SPDiffable>)object {
+-(void)requestVersions:(int)numVersions object:(id<SPDiffable>)object {
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
-    [channel getVersions:numVersions forObject:object];
+    [channel requestVersions:numVersions object:object];
 }
 
 -(void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email {
@@ -340,7 +340,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     [channel shareObject:object withEmail:email];
 }
 
--(void)getLatestVersionsForBucket:(SPBucket *)b {
+-(void)requestLatestVersionsForBucket:(SPBucket *)b {
     // Not yet implemented
 }
 

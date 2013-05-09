@@ -40,6 +40,7 @@ NSString * const ProcessorDidDeleteObjectKeysNotification = @"ProcessorDidDelete
 NSString * const ProcessorDidAcknowledgeObjectsNotification = @"ProcessorDidAcknowledgeObjectsNotification";
 NSString * const ProcessorWillChangeObjectsNotification = @"ProcessorWillChangeObjectsNotification";
 NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAcknowledgeDeleteNotification";
+NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNotification";
 
 @interface SPChangeProcessor()
 -(void)loadSerializedChanges;
@@ -341,7 +342,7 @@ NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAckno
     } else {
         DDLogWarn(@"Simperium warning: couldn't apply change due to version mismatch (duplicate? start %@, old %@): change %@", startVersion, oldVersion, change);
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"simperiumIndexRefreshNeeded" object:bucket];
+            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsReindexing object:bucket];
         });
     }
     

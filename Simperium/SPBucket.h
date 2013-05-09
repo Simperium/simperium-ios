@@ -36,14 +36,14 @@ typedef NSUInteger SPBucketChangeType;
  */
 @protocol SPBucketDelegate <NSObject>
 @optional
--(void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)changeType;
--(void)bucket:(SPBucket *)bucket willChangeObjectsForKeys:(NSSet *)keys;
--(void)bucketWillStartIndexing:(SPBucket *)bucket;
--(void)bucketDidFinishIndexing:(SPBucket *)bucket;
--(void)bucket:(SPBucket *)bucket didReceiveObjectForKey:(NSString *)key version:(NSString *)version data:(NSDictionary *)data;
--(void)bucketDidAcknowledgeDelete:(SPBucket *)bucket;
--(void)bucket:(SPBucket *)bucket didFailWithError:(NSError *)error;
--(void)bucket:(SPBucket *)bucket didShareObjectForKey:(NSString *)key withEmail:(NSString *)email;
+- (void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)changeType;
+- (void)bucket:(SPBucket *)bucket willChangeObjectsForKeys:(NSSet *)keys;
+- (void)bucketWillStartIndexing:(SPBucket *)bucket;
+- (void)bucketDidFinishIndexing:(SPBucket *)bucket;
+- (void)bucket:(SPBucket *)bucket didReceiveObjectForKey:(NSString *)key version:(NSString *)version data:(NSDictionary *)data;
+- (void)bucketDidAcknowledgeDelete:(SPBucket *)bucket;
+- (void)bucket:(SPBucket *)bucket didFailWithError:(NSError *)error;
+- (void)bucket:(SPBucket *)bucket didShareObjectForKey:(NSString *)key withEmail:(NSString *)email;
 @end
 
 /** An SPBucket instance is conceptually a collection of all objects of a particular type. If you're using Core Data, there is one SPBucket per Entity in your model, and it's used to track all objects corresponding to that Entity type.
@@ -72,27 +72,31 @@ typedef NSUInteger SPBucketChangeType;
  */
 
 // Retrieve an object that has a particular simperiumKey
--(id)objectForKey:(NSString *)key;
+- (id)objectForKey:(NSString *)simperiumKey;
 
 // Retrieve all objects in the bucket
--(NSArray *)allObjects;
+- (NSArray *)allObjects;
 
 // Insert a new object in the bucket (and optionally specify a particular simperiumKey)
--(id)insertNewObject;
--(id)insertNewObjectForKey:(NSString *)simperiumKey;
+- (id)insertNewObject;
+- (id)insertNewObjectForKey:(NSString *)simperiumKey;
 
 // Retrieve objects for a particular set of keys
--(NSArray *)objectsForKeys:(NSSet *)keys;
+- (NSArray *)objectsForKeys:(NSSet *)keys;
+
+// Retrieve a certain number of past versions for a particular object key
+// (will result in didReceiveObjectForKey:version:data: getting fired)
+- (void)requestVersions:(int)numVersions key:(NSString *)simperiumKey;
 
 // Delete a particular object
--(void)deleteObject:(id)object;
+- (void)deleteObject:(id)object;
 
 // Delete all objects in the bucket
--(void)deleteAllObjects;
+- (void)deleteAllObjects;
 
 // Efficiently returns the number of objects in the bucket (optionally specifying a predicate).
--(NSInteger)numObjects;
--(NSInteger)numObjectsForPredicate:(NSPredicate *)predicate;
+- (NSInteger)numObjects;
+- (NSInteger)numObjectsForPredicate:(NSPredicate *)predicate;
 
 
 /** For internal use
@@ -107,8 +111,12 @@ typedef NSUInteger SPBucketChangeType;
 @property (assign) dispatch_queue_t processorQueue;
 @property (nonatomic, copy) NSString *lastChangeSignature;
 
--(id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkProvider:(id<SPNetworkProvider>)netProvider referenceManager:(SPReferenceManager *)refManager label:(NSString *)label;
--(void)validateObjects;
--(void)unloadAllObjects;
+- (id)initWithSchema:(SPSchema *)aSchema
+             storage:(id<SPStorageProvider>)aStorage
+     networkProvider:(id<SPNetworkProvider>)netProvider
+    referenceManager:(SPReferenceManager *)refManager
+               label:(NSString *)label;
+- (void)validateObjects;
+- (void)unloadAllObjects;
 
 @end

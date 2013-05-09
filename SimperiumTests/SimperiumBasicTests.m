@@ -167,4 +167,40 @@
     NSLog(@"%@ end", self.name);
 }
 
+- (void)testObjectVersions
+{
+    NSLog(@"%@ start", self.name);
+    [self createAndStartFarms];
+    
+    // Leader sends an object to followers, then changes a string repeatedly
+    Farm *leader = [farms objectAtIndex:0];
+    [self connectFarms];
+    
+    int changeNumber = 0;
+    NSString *refString = [NSString stringWithFormat:@"%d", changeNumber];
+    SPBucket *bucket = [leader.simperium bucketForName:@"Config"];
+    leader.config = [bucket insertNewObject];
+    leader.config.simperiumKey = @"config";
+    leader.config.captainsLog = refString;
+    [leader.simperium save];
+    [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
+    STAssertTrue([self waitForCompletion], @"timed out (adding)");
+
+    int numChanges = 11;
+    for (changeNumber=1; changeNumber<numChanges+1; changeNumber++) {
+        [self expectAdditions:0 deletions:0 changes:1 fromLeader:leader expectAcks:YES];
+        refString = [NSString stringWithFormat:@"%@.%d", refString, changeNumber];
+        leader.config.captainsLog = [NSString stringWithFormat:@"%@.%d", leader.config.captainsLog, changeNumber];
+        [leader.simperium save];
+        STAssertTrue([self waitForCompletion], @"timed out (changing)");
+    }
+    
+    // Request object versions
+    leader.expectedVersions = 10;
+    [bucket requestVersions:10 key:leader.config.simperiumKey];
+    STAssertTrue([self waitForCompletion], @"timed out (changing)");
+
+    NSLog(@"%@ end", self.name);
+}
+
 @end

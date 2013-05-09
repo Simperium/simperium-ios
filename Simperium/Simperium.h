@@ -89,9 +89,6 @@
 // Shares an object with a particular user's email address (forthcoming).
 //- (void)shareObject:(SPManagedObject *)object withEmail:(NSString *)email;
 
-// Retrieve past versions of data for a particular object.
-- (void)getVersions:(int)numVersions forObject:(SPManagedObject *)object;
-
 // Alternative to setting delegates on each individual bucket (if you want a single handler
 // for everything). If you need to, call this after starting Simperium.
 - (void)setAllBucketDelegates:(id<SPBucketDelegate>)aDelegate;
