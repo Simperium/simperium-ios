@@ -414,7 +414,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // If retrieving object versions (e.g. for going back in time), return the result directly to the delegate
     if (numVersionsPending > 0) {
         // TODO: make sure this can't clash with a re-indexing
-        [bucket.delegate bucket:bucket didReceiveObjectForKey:key version:version data:dataDict];
+        if ([bucket.delegate respondsToSelector:@selector(bucket:didReceiveObjectForKey:version:data:)])
+            [bucket.delegate bucket:bucket didReceiveObjectForKey:key version:version data:dataDict];
         numVersionsPending--;
     } else {
         // Otherwise, process the result for indexing
