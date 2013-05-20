@@ -203,17 +203,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [threadSafeStorage refaultObjects:[objects allValues]];
     
     // Do all main thread work afterwards as well
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSDictionary *userInfoAdded = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  bucket.name, @"bucketName",
-                                  addedKeys, @"keys", nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidAddObjectsNotification" object:bucket userInfo:userInfoAdded];
-
-        NSDictionary *userInfoChanged = [NSDictionary dictionaryWithObjectsAndKeys:
-                                       bucket.name, @"bucketName",
-                                       changedKeys, @"keys", nil];        
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidChangeObjectsNotification" object:bucket userInfo:userInfoChanged];
-    });
+    // TODO: revisit this if there is demand. Currently it's too slow when lots of data is being indexed across buckets
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//        NSDictionary *userInfoAdded = [NSDictionary dictionaryWithObjectsAndKeys:
+//                                  bucket.name, @"bucketName",
+//                                  addedKeys, @"keys", nil];
+//        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidAddObjectsNotification" object:bucket userInfo:userInfoAdded];
+//
+//        NSDictionary *userInfoChanged = [NSDictionary dictionaryWithObjectsAndKeys:
+//                                       bucket.name, @"bucketName",
+//                                       changedKeys, @"keys", nil];        
+//        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidChangeObjectsNotification" object:bucket userInfo:userInfoChanged];
+//    });
     
     [pool release];
 }

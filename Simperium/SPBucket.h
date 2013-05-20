@@ -32,7 +32,8 @@ typedef NSUInteger SPBucketChangeType;
 
 /** Delegate protocol for Simperium bucket notifications.
  
- You can use this delegate to respond to object changes and errors that happen as a result of data moving over the network.
+ You can use this delegate to respond to object changes and errors that happen as a result of data moving over the network. Note
+ that these are currently NOT fired during indexing (i.e. on a clean install when there is data already stored in Simperium).
  */
 @protocol SPBucketDelegate <NSObject>
 @optional
