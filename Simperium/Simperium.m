@@ -220,8 +220,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         agentPrefix = @"osx";
 #endif
         // Unique client ID per session is sufficient
-        NSString *udid = [NSString sp_makeUUID];
-        clientID = [[NSString stringWithFormat:@"%@-%@",agentPrefix, clientID] copy];
+        NSString *uuid = [NSString sp_makeUUID];
+        clientID = [[NSString stringWithFormat:@"%@-%@", agentPrefix, uuid] copy];
     }
     return clientID;
 }
