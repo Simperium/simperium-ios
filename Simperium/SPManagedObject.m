@@ -43,8 +43,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 
--(void)configureBucket
-{
+- (void)configureBucket {
     char const * const bucketListKey = [SPCoreDataStorage bucketListKey];
     NSDictionary *bucketList = objc_getAssociatedObject(self.managedObjectContext, bucketListKey);
     
@@ -53,8 +52,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     bucket = [bucketList objectForKey:[[self entity] name]];
 }
 
--(void)awakeFromFetch
-{
+- (void)awakeFromFetch {
     [super awakeFromFetch];
     SPGhost *newGhost = [[SPGhost alloc] initFromDictionary: [self.ghostData objectFromJSONString]];
     self.ghost = newGhost;
@@ -63,14 +61,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self configureBucket];
 }
 
--(void)awakeFromInsert
-{
+- (void)awakeFromInsert {
     [super awakeFromInsert];
     [self configureBucket];   
 }
 
--(void)didTurnIntoFault
-{
+- (void)didTurnIntoFault {
     [ghost release];
     ghost = nil;
     [super didTurnIntoFault];
@@ -80,8 +76,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 //{
 //}
 
--(void)willSave
-{
+- (void)willSave {
     // When the entity is saved, check to see if its ghost has changed, in which case its data needs to be converted
     // to a string for storage
     if (ghost.needsSave) {
@@ -120,16 +115,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self didChangeValueForKey:@"simperiumKey"];
 }
 
-- (NSString *)localID
-{
+- (NSString *)localID {
     NSManagedObjectID *key = [self objectID];
     if ([key isTemporaryID])
         return nil;
     return [[key URIRepresentation] absoluteString];
 }
 
--(void)loadMemberData:(NSDictionary *)memberData
-{    
+- (void)loadMemberData:(NSDictionary *)memberData {    
 	// Copy data for each member from the dictionary
     for (NSString *memberKey in [memberData allKeys]) {
         SPMember *member = [bucket.differ.schema memberForKey:memberKey];
@@ -142,14 +135,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	}
 }
 
--(void)willBeRead {
+- (void)willBeRead {
     // Bit of a hack to force fire the fault
     if ([self isFault])
         [self simperiumKey];
 }
 
--(NSDictionary *)dictionary
-{
+- (NSDictionary *)dictionary {
 	// Return a dictionary that contains member names as keys and actual member data as values
 	// This can be used for diffing, serialization, networking, etc.
 	
@@ -166,11 +158,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	return dict;
 }
 
--(NSString *)version {
+- (NSString *)version {
     return ghost.version;
 }
 
--(id)object {
+- (id)object {
     return self;
 }
 

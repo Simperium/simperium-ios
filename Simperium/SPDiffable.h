@@ -11,12 +11,12 @@
 @property (nonatomic, copy) NSString *simperiumKey;
 @property (nonatomic, assign) SPBucket *bucket;
 
--(void)simperiumSetValue:(id)value forKey:(NSString *)key;
--(id)simperiumValueForKey:(NSString *)key;
--(void)loadMemberData:(NSDictionary *)data;
--(void)willBeRead;
--(NSDictionary *)dictionary;
--(NSString *)version;
--(id)object;
+- (void)simperiumSetValue:(id)value forKey:(NSString *)key;
+- (id)simperiumValueForKey:(NSString *)key;
+- (void)loadMemberData:(NSDictionary *)data;
+- (void)willBeRead;
+- (NSDictionary *)dictionary;
+- (NSString *)version;
+- (id)object;
 
 @end

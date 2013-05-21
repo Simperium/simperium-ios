@@ -34,8 +34,8 @@
 @property (copy, nonatomic) NSString *simperiumKey;
 @property (assign, nonatomic) BOOL updateWaiting;
 
--(void)loadMemberData:(NSDictionary *)dictionary;
--(NSDictionary *)dictionary;
--(NSString *)version;
+- (void)loadMemberData:(NSDictionary *)dictionary;
+- (NSDictionary *)dictionary;
+- (NSString *)version;
 
 @end

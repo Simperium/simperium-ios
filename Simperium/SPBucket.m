@@ -45,7 +45,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
--(id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkProvider:(id<SPNetworkProvider>)netProvider
+- (id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkProvider:(id<SPNetworkProvider>)netProvider
 relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 {
     if ((self = [super init])) {
@@ -96,7 +96,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     return self;
 }
 
--(void)dealloc {
+- (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:ProcessorRequestsReindexing object:self];
     [name release];
     name = nil;
@@ -109,53 +109,52 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     [super dealloc];
 }
 
--(id)objectForKey:(NSString *)simperiumKey
-{
+- (id)objectForKey:(NSString *)simperiumKey {
     // Typically used on startup to get a dictionary from storage; Simperium doesn't keep it in memory though
     id<SPDiffable>diffable = [storage objectForKey:simperiumKey bucketName:self.name];
     return [diffable object];
 }
 
--(id)objectAtIndex:(NSUInteger)index {
+- (id)objectAtIndex:(NSUInteger)index {
     id<SPDiffable>diffable = [storage objectAtIndex:index bucketName:self.name];
     return [diffable object];
 }
 
--(void)requestVersions:(int)numVersions key:(NSString *)simperiumKey {
+- (void)requestVersions:(int)numVersions key:(NSString *)simperiumKey {
     id<SPDiffable>diffable = [storage objectForKey:simperiumKey bucketName:self.name];
     [network requestVersions:numVersions object:diffable];
 }
 
 
--(NSArray *)allObjects {
+- (NSArray *)allObjects {
     return [storage objectsForBucketName:self.name];
 }
 
--(id)insertNewObject {
+- (id)insertNewObject {
     id<SPDiffable>diffable = [storage insertNewObjectForBucketName:self.name simperiumKey:nil];
     diffable.bucket = self;
     return [diffable object];
 }
 
--(id)insertNewObjectForKey:(NSString *)simperiumKey {
+- (id)insertNewObjectForKey:(NSString *)simperiumKey {
     id<SPDiffable>diffable = [storage insertNewObjectForBucketName:self.name simperiumKey:simperiumKey];
     diffable.bucket = self;
     return [diffable object];
 }
 
--(void)insertObject:(id)object {
+- (void)insertObject:(id)object {
     //id<SPDiffable>diffable = [storage insertObject:object bucketName:self.name];
 }
 
--(void)deleteAllObjects {
+- (void)deleteAllObjects {
     [storage deleteAllObjectsForBucketName:self.name];
 }
 
--(void)deleteObject:(id)object {
+- (void)deleteObject:(id)object {
     [storage deleteObject:object];
 }
 
--(void)updateDictionaryForKey:(NSString *)key {
+- (void)updateDictionaryForKey:(NSString *)key {
 //    id<SPDiffable>object = [storage objectForKey:key entityName:self.name];
 //    if (!object) {
 //        object = [storage insertNewObjectForEntityForName:self.name simperiumKey:key];
@@ -163,36 +162,35 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 //    [object loadMemberData:data];
 }
 
--(void)validateObjects
-{
+- (void)validateObjects {
     // Allow the storage to determine the most efficient way to validate everything
     [storage validateObjectsForBucketName: name];
 
     [storage save];
 }
 
--(void)unloadAllObjects {
+- (void)unloadAllObjects {
     [storage unloadAllObjects];
     [relationshipResolver reset:storage];
 }
 
--(void)insertObject:(NSDictionary *)object atIndex:(NSUInteger)index {
+- (void)insertObject:(NSDictionary *)object atIndex:(NSUInteger)index {
     
 }
 
--(NSArray *)objectsForKeys:(NSSet *)keys {
+- (NSArray *)objectsForKeys:(NSSet *)keys {
     return [storage objectsForKeys:keys bucketName:name];
 }
 
--(NSInteger)numObjects {
+- (NSInteger)numObjects {
     return [storage numObjectsForBucketName:name predicate:nil];
 }
 
--(NSInteger)numObjectsForPredicate:(NSPredicate *)predicate {
+- (NSInteger)numObjectsForPredicate:(NSPredicate *)predicate {
     return [storage numObjectsForBucketName:name predicate:predicate];
 }
 
--(NSString *)lastChangeSignature {
+- (NSString *)lastChangeSignature {
     if (!lastChangeSignature) {
         // Load it
         NSString *sigKey = [NSString stringWithFormat:@"lastChangeSignature-%@", self.instanceLabel];
@@ -202,7 +200,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 	return lastChangeSignature;
 }
 
--(void)setLastChangeSignature:(NSString *)signature {
+- (void)setLastChangeSignature:(NSString *)signature {
 	[lastChangeSignature release];
 	lastChangeSignature = [signature copy];
     
@@ -214,7 +212,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 
 #pragma mark Notifications
 
--(void)objectsDidChange:(NSNotification *)notification {
+- (void)objectsDidChange:(NSNotification *)notification {
     if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:)]) {
         NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
         for (NSString *key in set) {
@@ -223,7 +221,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     }
 }
 
--(void)objectsAdded:(NSNotification *)notification {
+- (void)objectsAdded:(NSNotification *)notification {
     // When objects are added, resolve any references to them that hadn't yet been fulfilled
     // Note: this notification isn't currently triggered from SPIndexProcessor when adding objects from the index. Instead,
     // references are resolved from within SPIndexProcessor itself
@@ -236,7 +234,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     }
 }
 
--(void)objectKeysDeleted:(NSNotification *)notification  {
+- (void)objectKeysDeleted:(NSNotification *)notification  {
     NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
     BOOL delegateRespondsToSelector = [delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:)];
 
@@ -247,7 +245,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     }
 }
 
--(void)objectsAcknowledged:(NSNotification *)notification  {
+- (void)objectsAcknowledged:(NSNotification *)notification  {
     if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:)]) {
         NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
         for (NSString *key in set) {
@@ -256,46 +254,34 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     }
 }
 
--(void)objectsWillChange:(NSNotification *)notification  {
+- (void)objectsWillChange:(NSNotification *)notification  {
     if ([delegate respondsToSelector:@selector(bucket:willChangeObjectsForKeys:)]) {
         NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
         [delegate bucket:self willChangeObjectsForKeys:set];
     }
 }
 
--(void)acknowledgedObjectDeletion:(NSNotification *)notification {
+- (void)acknowledgedObjectDeletion:(NSNotification *)notification {
     if ([delegate respondsToSelector:@selector(bucketDidAcknowledgeDelete:)]) {
         [delegate bucketDidAcknowledgeDelete:self];
     }    
 }
 
--(void)requestLatestVersions {
+- (void)requestLatestVersions {
     [network requestLatestVersionsForBucket:self];
 }
 
--(SPSchema *)schema {
+- (SPSchema *)schema {
     return differ.schema;
 }
 
--(void)setSchema:(SPSchema *)aSchema {
+- (void)setSchema:(SPSchema *)aSchema {
     differ.schema = aSchema;
 }
 
--(void)resolvePendingRelationshipsToKeys:(NSSet *)keys {
+- (void)resolvePendingRelationshipsToKeys:(NSSet *)keys {
     for (NSString *key in keys)
         [self.relationshipResolver resolvePendingRelationshipsToKey:key bucketName:self.name storage:self.storage];
 }
-
-
-// Potential future support for multiple delegates
-//-(void)addDelegate:(id)delegate {
-//    if (![delegates containsObject:delegate])
-//        [delegates addObject: delegate];
-//}
-//
-//-(void)removeDelegate:(id)delegate {
-//    [delegates removeObject: delegate];
-//}
-
 
 @end

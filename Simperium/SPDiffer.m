@@ -31,7 +31,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 
--(id)initWithSchema:(SPSchema *)aSchema {
+- (id)initWithSchema:(SPSchema *)aSchema {
     if ((self = [super init])) {
         self.schema = aSchema;
     }
@@ -39,14 +39,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return self;
 }
 
--(void)dealloc {
+- (void)dealloc {
     [super dealloc];
     self.schema = nil;
 }
 
 // Construct a diff for newly added entities
--(NSMutableDictionary *)diffForAddition:(id<SPDiffable>)object
-{
+- (NSMutableDictionary *)diffForAddition:(id<SPDiffable>)object {
     NSMutableDictionary *diff = [NSMutableDictionary dictionaryWithCapacity: [schema.members count]];
     
     for (SPMember *member in [schema.members allValues]) {
@@ -62,8 +61,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 // Construct a diff against a particular dictionary of data, such as a ghost dictionary
--(NSDictionary *)diff:(id<SPDiffable>)object withDictionary:(NSDictionary *)dict
-{
+- (NSDictionary *)diff:(id<SPDiffable>)object withDictionary:(NSDictionary *)dict {
 	// changes contains the operations for every key that is different
 	NSMutableDictionary *changes = [NSMutableDictionary dictionaryWithCapacity:3];
 	
@@ -115,8 +113,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 // Apply an incoming diff to this entity instance
--(void)applyDiff:(NSDictionary *)diff to:(id<SPDiffable>)object
-{
+- (void)applyDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
 	// Process each change in the diff
 	for (NSString *key in [diff allKeys]) {
 		NSDictionary *change = [diff objectForKey:key];
@@ -158,8 +155,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 // Same strategy as applyDiff, but do it to the ghost's memberData
 // Note that no conversions are necessary here since all data is in JSON-compatible format already
--(void)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object
-{
+- (void)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
 	// Create a copy of the ghost's data and update any members that have changed
 	NSMutableDictionary *ghostMemberData = [[object ghost] memberData];
 	NSMutableDictionary *newMemberData = ghostMemberData ? [[ghostMemberData mutableCopy] autorelease] : [NSMutableDictionary dictionaryWithCapacity: [diff count]];
@@ -209,8 +205,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[object ghost].memberData = newMemberData;
 }
 
--(NSDictionary *)transform:(id<SPDiffable>)object diff:(NSDictionary *)diff oldDiff:(NSDictionary *)oldDiff oldGhost:(SPGhost *)oldGhost
-{
+- (NSDictionary *)transform:(id<SPDiffable>)object diff:(NSDictionary *)diff oldDiff:(NSDictionary *)oldDiff oldGhost:(SPGhost *)oldGhost {
 	NSMutableDictionary *newDiff = [NSMutableDictionary dictionary];
 	// Transform diff first, and then apply it
 	for (NSString *key in [diff allKeys]) {
