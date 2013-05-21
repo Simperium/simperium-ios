@@ -172,7 +172,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)unloadAllObjects {
     [storage unloadAllObjects];
-    [referenceManager reset];
+    [referenceManager reset:storage];
 }
 
 -(void)insertObject:(NSDictionary *)object atIndex:(NSUInteger)index {
@@ -223,9 +223,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 -(void)objectsAdded:(NSNotification *)notification {
+    // When objects are added, resolve any references to them that hadn't yet been fulfilled
+    // Note: this notification isn't currently triggered from SPIndexProcessor when adding objects from the index. Instead,
+    // references are resolved from within SPIndexProcessor itself
     NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
+    [self resolvePendingReferencesToKeys:set];
+
+    // Also notify the delegate since the referenced objects are now accessible
     for (NSString *key in set) {
-        [self.referenceManager resolvePendingReferencesToKey:key bucketName:self.name storage:storage]; // references must be intra-storage only
         [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeInsert];
     }
 }
@@ -275,8 +280,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     differ.schema = aSchema;
 }
 
--(void)resolvePendingReferencesToKeys:(NSSet *)keys
-{
+-(void)resolvePendingReferencesToKeys:(NSSet *)keys {
     for (NSString *key in keys)
         [self.referenceManager resolvePendingReferencesToKey:key bucketName:self.name storage:self.storage];
 }

@@ -9,6 +9,7 @@
 #import "SPReferenceManager.h"
 #import "SPDiffable.h"
 #import "SPStorage.h"
+#import "SPStorageProvider.h"
 #import "JSONKit.h"
 #import "SPGhost.h"
 #import "DDLog.h"
@@ -19,14 +20,19 @@
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
-@interface SPReferenceManager()
--(void)loadPendingReferences;
--(void)savePendingReferences;
+@interface SPReferenceManager() {
+    dispatch_queue_t queue;
+}
+
+@property (nonatomic, retain) NSMutableDictionary *pendingReferences;
+@property (assign) dispatch_queue_t queue;
+
 @end
 
 
 @implementation SPReferenceManager
 @synthesize pendingReferences;
+@synthesize queue;
 
 + (int)ddLogLevel {
     return ddLogLevel;
@@ -36,43 +42,40 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
--(id)init
-{
+- (id)init {
     if ((self = [super init])) {
-        self.pendingReferences = [NSMutableDictionary dictionaryWithCapacity:10];
-        [self loadPendingReferences];
+        self.pendingReferences = [NSMutableDictionary dictionaryWithCapacity:10];        
+        NSString *queueLabel = [@"com.simperium." stringByAppendingString:[[self class] description]];
+        queue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
     }
     
     return self;
 }
 
--(void)dealloc {
+- (void)dealloc {
     self.pendingReferences = nil;
     [super dealloc];
 }
 
--(void)savePendingReferences
-{
+- (void)writePendingReferences:(id<SPStorageProvider>)storage {
     if ([pendingReferences count] == 0) {
         // If there's already nothing there, save some CPU by not writing anything
+        NSDictionary *metadata = [storage metadata];
         NSString *pendingKey = [NSString stringWithFormat:@"SPPendingReferences"];
-        NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
-        if (!pendingJSON)
+        NSDictionary *pendingDict = [metadata objectForKey:pendingKey];
+        if (!pendingDict)
             return;
     }
     
-    NSString *json = [pendingReferences JSONString];
+    NSMutableDictionary *metadata = [[storage metadata] mutableCopy];
     NSString *key = [NSString stringWithFormat:@"SPPendingReferences"];
-	[[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+	[metadata setObject:pendingReferences forKey: key];
 }
 
--(void)loadPendingReferences
-{
+- (void)loadPendingReferences:(id<SPStorageProvider>)storage {
     // Load changes that didn't get a chance to send
     NSString *pendingKey = [NSString stringWithFormat:@"SPPendingReferences"];
-	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
-    NSDictionary *pendingDict = [pendingJSON objectFromJSONString];
+	NSDictionary *pendingDict = [[storage metadata] objectForKey:pendingKey];
     for (NSString *key in [pendingDict allKeys]) {
         // Manually create mutable children
         NSArray *loadPaths = [pendingDict objectForKey:key];
@@ -82,12 +85,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 
--(BOOL)hasPendingReferenceToKey:(NSString *)key {
+- (BOOL)hasPendingReferenceToKey:(NSString *)key {
     return [pendingReferences objectForKey:key] != nil;
 }
 
--(void)addPendingReferenceToKey:(NSString *)key fromKey:(NSString *)fromKey bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName
-{
+- (void)addPendingReferenceToKey:(NSString *)key fromKey:(NSString *)fromKey bucketName:(NSString *)bucketName
+                   attributeName:(NSString *)attributeName storage:(id<SPStorageProvider>)storage {
     if (key.length == 0) {
         DDLogWarn(@"Simperium warning: received empty pending reference to attribute %@", attributeName);
         return;
@@ -106,46 +109,79 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [pendingReferences setObject: paths forKey: key];
     }
     [paths addObject:path];
-    [self savePendingReferences];
+    [self writePendingReferences:storage];
 }
 
--(void)resolvePendingReferencesToKey:(NSString *)toKey bucketName:(NSString *)bucketName storage:(id<SPStorageProvider>)storage;
-{
+- (void)resolvePendingReferencesToKey:(NSString *)toKey bucketName:(NSString *)bucketName storage:(id<SPStorageProvider>)storage {
     // The passed entity is now synced, so check for any pending references to it that can now be resolved
     NSMutableArray *paths = [pendingReferences objectForKey: toKey];
     if (paths != nil) {
-        id<SPDiffable>toObject = [storage objectForKey:toKey bucketName:bucketName];
         
-        if (!toObject) {
-            DDLogError(@"Simperium error, tried to resolve reference to an object that doesn't exist yet (%@): %@", bucketName, toKey);
-            return;
-        }
-        
+    // The following code could batch fault all the objects that will be touched, but is probably overkill
+/*
+        // Construct lists of keys from the paths for batch faulting
+        NSMutableDictionary *batchDict = [NSMutableDictionary dictionaryWithCapacity:3];
         for (NSDictionary *path in paths) {
-            // There'd be no way to get the entityName here since there's no way to look at an instance's members
-            // Get it from the "path" instead
             NSString *fromKey = [path objectForKey:PATH_KEY];
             NSString *fromBucketName = [path objectForKey:PATH_BUCKET];
-            NSString *attributeName = [path objectForKey:PATH_ATTRIBUTE];
-            id<SPDiffable> fromObject = [storage objectForKey:fromKey bucketName:fromBucketName];
-            DDLogVerbose(@"Simperium resolving pending reference for %@.%@=%@", fromKey, attributeName, toKey);
-            [fromObject simperiumSetValue:toObject forKey: attributeName];
-            
-            // Get the key reference into the ghost as well
-            [fromObject.ghost.memberData setObject:toKey forKey: attributeName];
-            fromObject.ghost.needsSave = YES;
+
+            NSMutableArray *keyList = [batchDict objectForKey:fromBucketName];
+            if (keyList == nil) {
+                keyList = [NSMutableArray arrayWithCapacity:3];
+                [batchDict setObject:keyList forKey: fromBucketName];
+            }
+            [keyList addObject:fromKey];
         }
         
-        // All references to entity were resolved above, so remove it from the pending array
-        [pendingReferences removeObjectForKey:toKey];
+        // Do the faulting for each bucket
+        NSMutableDictionary *faultedObjects = [NSMutableDictionary dictionaryWithCapacity:[paths count]];
+        for (NSString *key in [batchDict allKeys]) {
+            NSDictionary *fromObjects = [threadSafeStorage faultObjectsForKeys:[batchDict objectForKey:key] bucketName:key];
+            [faultedObjects addEntriesFromDictionary:fromObjects];
+        }
+*/
+        // Resolve the references but do it in the background
+        dispatch_async(queue, ^{
+            id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
+            id<SPDiffable>toObject = [threadSafeStorage objectForKey:toKey bucketName:bucketName];
+            
+            if (!toObject) {
+                DDLogError(@"Simperium error, tried to resolve reference to an object that doesn't exist yet (%@): %@", bucketName, toKey);
+                return;
+            }
+
+            for (NSDictionary *path in paths) {
+                // There'd be no way to get the entityName here since there's no way to look at an instance's members
+                // Get it from the "path" instead
+                NSString *fromKey = [path objectForKey:PATH_KEY];
+                NSString *fromBucketName = [path objectForKey:PATH_BUCKET];
+                NSString *attributeName = [path objectForKey:PATH_ATTRIBUTE];
+                id<SPDiffable> fromObject = [threadSafeStorage objectForKey:fromKey bucketName:fromBucketName];
+                DDLogVerbose(@"Simperium resolving pending reference for %@.%@=%@", fromKey, attributeName, toKey);
+                [fromObject simperiumSetValue:toObject forKey: attributeName];
+                
+                // Get the key reference into the ghost as well
+                [fromObject.ghost.memberData setObject:toKey forKey: attributeName];
+                fromObject.ghost.needsSave = YES;
+            }
+            [threadSafeStorage save];
+        
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // All references to entity were resolved above, so remove it from the pending array
+                [pendingReferences removeObjectForKey:toKey];
+                [self writePendingReferences:storage];
+                
+                // Expect the context to be saved elsewhere
+                //[storage save];
+            });
+        });
     }
-    [storage save];
-    [self savePendingReferences];
 }
 
--(void)reset {
+- (void)reset:(id<SPStorageProvider>)storage {
     [self.pendingReferences removeAllObjects];
-    [self savePendingReferences];
+    [self writePendingReferences:storage];
+    [storage save];
 }
 
 @end

@@ -209,7 +209,6 @@ static char const * const BucketListKey = "bucketList";
     // Not supported
 }
 
-
 -(NSDictionary *)faultObjectsForKeys:(NSArray *)keys bucketName:(NSString *)bucketName {
     // Batch fault a bunch of objects for efficiency
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simperiumKey IN %@", keys];
@@ -363,6 +362,16 @@ static char const * const BucketListKey = "bucketList";
         }
     }  
     return YES;
+}
+
+-(void)setMetadata:(NSDictionary *)metadata {
+    NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores objectAtIndex:0];
+    [self.persistentStoreCoordinator setMetadata:metadata forPersistentStore:store];
+}
+
+-(NSDictionary *)metadata {
+    NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores objectAtIndex:0];
+    return [store metadata];
 }
 
 // CD specific

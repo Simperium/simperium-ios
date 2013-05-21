@@ -24,7 +24,8 @@
 -(void)validateObjectsForBucketName:(NSString *)bucketName;
 -(void)stopManagingObjectWithKey:(NSString *)key;
 -(id<SPStorageProvider>)threadSafeStorage;
-
+-(void)setMetadata:(NSDictionary *)metadata;
+-(NSDictionary *)metadata;
 -(void)stashUnsavedObjects;
 -(NSArray *)stashedObjects;
 -(void)unstashUnsavedObjects;

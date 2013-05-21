@@ -478,6 +478,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Each NSManagedObject stores a reference to the bucket in which it's stored
     [self.coreDataStorage setBucketList: self.buckets];
     
+    // Load metadata for pending references among objects
+    [self.referenceManager loadPendingReferences:self.coreDataStorage];
+    
     if (self.binaryManager)
         [self configureBinaryManager:self.binaryManager];
     

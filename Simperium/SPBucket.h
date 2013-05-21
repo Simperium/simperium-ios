@@ -119,5 +119,6 @@ typedef NSUInteger SPBucketChangeType;
                label:(NSString *)label;
 - (void)validateObjects;
 - (void)unloadAllObjects;
+- (void)resolvePendingReferencesToKeys:(NSSet *)keys;
 
 @end

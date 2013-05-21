@@ -180,6 +180,15 @@
     });
 }
 
+-(void)setMetadata:(NSDictionary *)metadata {
+    // TODO: support metadata for JSON store
+    // [[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
+    // [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+-(NSDictionary *)metadata {
+    return nil;
+}
 
 -(void)deleteObject:(id)dict
 {

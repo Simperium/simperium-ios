@@ -7,17 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #import "SPStorageProvider.h"
 
 @interface SPReferenceManager : NSObject {
     NSMutableDictionary *pendingReferences;
 }
 
-@property (nonatomic, retain) NSMutableDictionary *pendingReferences;
-
--(void)addPendingReferenceToKey:(NSString *)key fromKey:(NSString *)fromKey bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
--(void)resolvePendingReferencesToKey:(NSString *)toKey bucketName:(NSString *)bucketName storage:(id<SPStorageProvider>)storage;
--(void)reset;
+- (void)loadPendingReferences:(id<SPStorageProvider>)storage;
+- (void)addPendingReferenceToKey:(NSString *)key fromKey:(NSString *)fromKey bucketName:(NSString *)bucketName
+                   attributeName:(NSString *)attributeName storage:(id<SPStorageProvider>)storage;
+- (void)resolvePendingReferencesToKey:(NSString *)toKey bucketName:(NSString *)bucketName storage:(id<SPStorageProvider>)storage;
+- (void)reset:(id<SPStorageProvider>)storage;
 
 @end

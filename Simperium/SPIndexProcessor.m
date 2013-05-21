@@ -203,8 +203,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [threadSafeStorage refaultObjects:[objects allValues]];
     
     // Do all main thread work afterwards as well
-    // TODO: revisit this if there is demand. Currently it's too slow when lots of data is being indexed across buckets
-//    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Manually resolve any pending references to added objects
+        [bucket resolvePendingReferencesToKeys:addedKeys];
+        [bucket.storage save];
+
+        // Revisit the use of NSNotification if there is demand. Currently it's too slow when lots of data is being
+        // indexed across buckets
 //        NSDictionary *userInfoAdded = [NSDictionary dictionaryWithObjectsAndKeys:
 //                                  bucket.name, @"bucketName",
 //                                  addedKeys, @"keys", nil];
@@ -214,7 +219,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 //                                       bucket.name, @"bucketName",
 //                                       changedKeys, @"keys", nil];        
 //        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidChangeObjectsNotification" object:bucket userInfo:userInfoChanged];
-//    });
+    });
     
     [pool release];
 }
