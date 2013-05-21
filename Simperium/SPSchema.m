@@ -55,12 +55,12 @@
     if (self = [super init]) {
         bucketName = [name copy];
         NSArray *memberList = [definition valueForKey:@"members"];
-        members = [[NSMutableArray arrayWithCapacity:3] retain];
+        members = [[NSMutableDictionary dictionaryWithCapacity:3] retain];
         binaryMembers = [[NSMutableArray arrayWithCapacity:3] retain];
         for (NSDictionary *memberDict in memberList) {
             NSString *typeStr = [memberDict valueForKey:@"type"];
             SPMember *member = [[[self memberClassForType:typeStr] alloc] initFromDictionary:memberDict];
-            [members addObject: member];
+            [members setObject:member forKey:member.keyName];
             
             if ([member isKindOfClass:[SPMemberBinary class]])
                 [binaryMembers addObject: member];
@@ -85,8 +85,7 @@
     if (!dynamic)
         return;
     
-    // Make this faster via dictionary lookup
-    if ([self memberNamed:key])
+    if ([self memberForKey:key])
         return;
     
     NSString *type = @"unsupported";
@@ -99,18 +98,13 @@
                                 type, @"type",
                                 key, @"name", nil];
     SPMember *member = [[[self memberClassForType:type] alloc] initFromDictionary:memberDict];
-    [members addObject:member];
+    [members setObject:member forKey:member.keyName];
     [member release];
     
 }
 
--(SPMember *)memberNamed:(NSString *)memberName {
-	// Would be more efficient to use NSSet?
-	for (SPMember *member in self.members) {
-		if ([[member keyName] compare: memberName] == NSOrderedSame)
-			return member;
-	}		
-	return nil;
+-(SPMember *)memberForKey:(NSString *)memberName {
+    return [members objectForKey:memberName];
 }
 
 -(void)setDefaults:(id<SPDiffable>)object
@@ -118,7 +112,7 @@
     // Set default values for all members that don't already have them
     // This now gets called after some data might already have been set, so be careful
     // not to overwrite it
-    for (SPMember *member in members) {
+    for (SPMember *member in [members allValues]) {
         if (member.modelDefaultValue == nil && [object simperiumValueForKey:member.keyName] == nil)
             [object simperiumSetValue:[member defaultValue] forKey:member.keyName];
     }

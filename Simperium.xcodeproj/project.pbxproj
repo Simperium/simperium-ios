@@ -163,8 +163,8 @@
 		26B16EFF13B1B79100BEB3E5 /* NSData+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 26B16EFD13B1B78C00BEB3E5 /* NSData+Simperium.h */; };
 		26B16F0013B1B79100BEB3E5 /* NSData+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 26B16EFE13B1B78F00BEB3E5 /* NSData+Simperium.m */; };
 		26B473F714A116B100397E7F /* SPBinaryTransportDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 26B473F614A116B100397E7F /* SPBinaryTransportDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		26B733F015E585630081CF4A /* SPReferenceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 26B733EE15E585620081CF4A /* SPReferenceManager.h */; };
-		26B733F115E585630081CF4A /* SPReferenceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 26B733EF15E585620081CF4A /* SPReferenceManager.m */; };
+		26B733F015E585630081CF4A /* SPRelationshipResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 26B733EE15E585620081CF4A /* SPRelationshipResolver.h */; };
+		26B733F115E585630081CF4A /* SPRelationshipResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 26B733EF15E585620081CF4A /* SPRelationshipResolver.m */; };
 		26C93A6A14F8159300BE99F5 /* libSimperium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 264CD8FB135DFD7A00C51BAD /* libSimperium.a */; };
 		26C93A6D14F850EA00BE99F5 /* SPLoginViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 26C93A6B14F850EA00BE99F5 /* SPLoginViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		26C93A6E14F850EA00BE99F5 /* SPLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 26C93A6C14F850EA00BE99F5 /* SPLoginViewController.m */; };
@@ -371,8 +371,8 @@
 		26B16EFD13B1B78C00BEB3E5 /* NSData+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Simperium.h"; sourceTree = "<group>"; };
 		26B16EFE13B1B78F00BEB3E5 /* NSData+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Simperium.m"; sourceTree = "<group>"; };
 		26B473F614A116B100397E7F /* SPBinaryTransportDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBinaryTransportDelegate.h; sourceTree = "<group>"; };
-		26B733EE15E585620081CF4A /* SPReferenceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPReferenceManager.h; sourceTree = "<group>"; };
-		26B733EF15E585620081CF4A /* SPReferenceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPReferenceManager.m; sourceTree = "<group>"; };
+		26B733EE15E585620081CF4A /* SPRelationshipResolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPRelationshipResolver.h; sourceTree = "<group>"; };
+		26B733EF15E585620081CF4A /* SPRelationshipResolver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPRelationshipResolver.m; sourceTree = "<group>"; };
 		26C93A6B14F850EA00BE99F5 /* SPLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPLoginViewController.h; sourceTree = "<group>"; };
 		26C93A6C14F850EA00BE99F5 /* SPLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPLoginViewController.m; sourceTree = "<group>"; };
 		26D4D3B1156C3DA300E822E9 /* JRSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JRSwizzle.h; sourceTree = "<group>"; };
@@ -540,8 +540,8 @@
 				269A7F3E147355D100CB29EE /* SPChangeProcessor.m */,
 				269A7F4214743A9C00CB29EE /* SPIndexProcessor.h */,
 				269A7F4314743A9C00CB29EE /* SPIndexProcessor.m */,
-				26B733EE15E585620081CF4A /* SPReferenceManager.h */,
-				26B733EF15E585620081CF4A /* SPReferenceManager.m */,
+				26B733EE15E585620081CF4A /* SPRelationshipResolver.h */,
+				26B733EF15E585620081CF4A /* SPRelationshipResolver.m */,
 				267CE8EB156C0FD20028801C /* NSMutableDictionary+Simperium.h */,
 				267CE8EC156C0FD20028801C /* NSMutableDictionary+Simperium.m */,
 			);
@@ -936,7 +936,7 @@
 				2618988015D2EB310013CBC9 /* SRWebSocket.h in Headers */,
 				2618988515D2EC130013CBC9 /* SPWebSocketManager.h in Headers */,
 				264AE51A15D45E2A00E5E04E /* SPWebSocketChannel.h in Headers */,
-				26B733F015E585630081CF4A /* SPReferenceManager.h in Headers */,
+				26B733F015E585630081CF4A /* SPRelationshipResolver.h in Headers */,
 				26653CFB15FE5DEA00461A28 /* Reachability.h in Headers */,
 				46A16A8117289FE2003AED55 /* NSString+Simperium.h in Headers */,
 			);
@@ -1148,7 +1148,7 @@
 				2618988115D2EB310013CBC9 /* SRWebSocket.m in Sources */,
 				2618988615D2EC130013CBC9 /* SPWebSocketManager.m in Sources */,
 				264AE51B15D45E2A00E5E04E /* SPWebSocketChannel.m in Sources */,
-				26B733F115E585630081CF4A /* SPReferenceManager.m in Sources */,
+				26B733F115E585630081CF4A /* SPRelationshipResolver.m in Sources */,
 				26653CFC15FE5DEA00461A28 /* Reachability.m in Sources */,
 				46A16A8217289FE2003AED55 /* NSString+Simperium.m in Sources */,
 			);

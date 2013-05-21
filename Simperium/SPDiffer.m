@@ -49,7 +49,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
     NSMutableDictionary *diff = [NSMutableDictionary dictionaryWithCapacity: [schema.members count]];
     
-    for (SPMember *member in schema.members) {
+    for (SPMember *member in [schema.members allValues]) {
         NSString *key = [member keyName];
 		id data = [object simperiumValueForKey: key];
         
@@ -76,7 +76,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     {
         NSString *key = [member keyName];
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *thisMember = [schema memberNamed: key];
+		SPMember *thisMember = [schema memberForKey: key];
 		if (!thisMember) {
 			DDLogWarn(@"Simperium warning: trying to diff a member that doesn't exist (%@) from ghost: %@", key, [dict description]);
 			continue;
@@ -123,7 +123,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		NSString *operation = [change objectForKey:OP_OP];
 		
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *member = [schema memberNamed: key];
+		SPMember *member = [schema memberForKey: key];
 		if (!member) {
 			DDLogWarn(@"Simperium warning: applyDiff for a member that doesn't exist (%@): %@", key, [change description]);
 			continue;
@@ -171,7 +171,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             continue;
         
 		NSString *operation = [change objectForKey:OP_OP];
-        SPMember *member = [schema memberNamed: key];
+        SPMember *member = [schema memberForKey: key];
 
         // Make sure the member exists and is tracked by Simperium
         if (!member) {
@@ -218,7 +218,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		NSDictionary *oldChange = [oldDiff objectForKey:key];
 		
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *member = [schema memberNamed: key];
+		SPMember *member = [schema memberForKey: key];
 		id ghostValue = [member getValueFromDictionary:oldGhost.memberData key:key object:object];
 		if (!member) {
 			DDLogError(@"Simperium error: transform diff for a member that doesn't exist (%@): %@", key, [change description]);

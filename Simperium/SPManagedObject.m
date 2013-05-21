@@ -131,13 +131,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)loadMemberData:(NSDictionary *)memberData
 {    
 	// Copy data for each member from the dictionary
-	for (SPMember *member in bucket.differ.schema.members) {
-        NSString *memberKey = [member keyName];
-		id data = [member getValueFromDictionary:memberData key:memberKey object:self];
-		
-		// This sets the actual instance data
-		[self setValue: data forKey: [member keyName]];
-	}	
+    for (NSString *memberKey in [memberData allKeys]) {
+        SPMember *member = [bucket.differ.schema memberForKey:memberKey];
+        if (member) {
+            id data = [member getValueFromDictionary:memberData key:memberKey object:self];
+            
+            // This sets the actual instance data
+            [self setValue: data forKey: [member keyName]];
+        }
+	}
 }
 
 -(void)willBeRead {
@@ -153,7 +155,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	
 	NSMutableDictionary *dict = [NSMutableDictionary dictionary];
 	
-	for (SPMember *member in bucket.differ.schema.members) {
+	for (SPMember *member in [bucket.differ.schema.members allValues]) {
 		id data = [self valueForKey:[member keyName]];
         
         // The setValue:forKey:inDictionary: method can perform conversions to JSON-compatible formats
