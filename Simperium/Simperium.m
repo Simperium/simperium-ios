@@ -213,18 +213,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(NSString *)clientID {
     if (!clientID || clientID.length == 0) {
-        // Hashed UDID
-        // TODO: revisit due to iOS 5 deprecation
         NSString *agentPrefix;
 #if TARGET_OS_IPHONE
-        NSString *udid = [[UIDevice currentDevice] uniqueIdentifier];
         agentPrefix = @"ios";
 #else
-        // TODO: how should a Mac be identified?
-        NSString *udid = [NSString sp_makeUUID];
         agentPrefix = @"osx";
 #endif
-        clientID = [NSString sp_md5StringFromData:[udid dataUsingEncoding:NSUTF8StringEncoding]];
+        // Unique client ID per session is sufficient
+        NSString *udid = [NSString sp_makeUUID];
         clientID = [[NSString stringWithFormat:@"%@-%@",agentPrefix, clientID] copy];
     }
     return clientID;
