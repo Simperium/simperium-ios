@@ -17,7 +17,7 @@
 #import "DDLog.h"
 #import "SPGhost.h"
 #import "JSONKit.h"
-#import "SPReferenceManager.h"
+#import "SPRelationshipResolver.h"
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
@@ -31,7 +31,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 @synthesize storage;
 @synthesize differ;
 @synthesize network;
-@synthesize referenceManager;
+@synthesize relationshipResolver;
 @synthesize changeProcessor;
 @synthesize indexProcessor;
 @synthesize processorQueue;
@@ -45,13 +45,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
--(id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkProvider:(id<SPNetworkProvider>)netProvider referenceManager:(SPReferenceManager *)refManager label:(NSString *)label
+-(id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkProvider:(id<SPNetworkProvider>)netProvider
+relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 {
     if ((self = [super init])) {
         name = [aSchema.bucketName copy];
         self.storage = aStorage;
         self.network = netProvider;
-        self.referenceManager = refManager;
+        self.relationshipResolver = resolver;
 
         SPDiffer *aDiffer = [[SPDiffer alloc] initWithSchema:aSchema];
         self.differ = aDiffer;
@@ -172,7 +173,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)unloadAllObjects {
     [storage unloadAllObjects];
-    [referenceManager reset:storage];
+    [relationshipResolver reset:storage];
 }
 
 -(void)insertObject:(NSDictionary *)object atIndex:(NSUInteger)index {
@@ -227,7 +228,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Note: this notification isn't currently triggered from SPIndexProcessor when adding objects from the index. Instead,
     // references are resolved from within SPIndexProcessor itself
     NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
-    [self resolvePendingReferencesToKeys:set];
+    [self resolvePendingRelationshipsToKeys:set];
 
     // Also notify the delegate since the referenced objects are now accessible
     for (NSString *key in set) {
@@ -280,9 +281,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     differ.schema = aSchema;
 }
 
--(void)resolvePendingReferencesToKeys:(NSSet *)keys {
+-(void)resolvePendingRelationshipsToKeys:(NSSet *)keys {
     for (NSString *key in keys)
-        [self.referenceManager resolvePendingReferencesToKey:key bucketName:self.name storage:self.storage];
+        [self.relationshipResolver resolvePendingRelationshipsToKey:key bucketName:self.name storage:self.storage];
 }
 
 

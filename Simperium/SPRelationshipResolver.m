@@ -1,12 +1,12 @@
 //
-//  SPReferenceManager.m
+//  SPRelationshipResolver.m
 //  Simperium
 //
 //  Created by Michael Johnston on 2012-08-22.
 //  Copyright (c) 2012 Simperium. All rights reserved.
 //
 
-#import "SPReferenceManager.h"
+#import "SPRelationshipResolver.H"
 #import "SPDiffable.h"
 #import "SPStorage.h"
 #import "SPStorageProvider.h"
@@ -20,18 +20,18 @@
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
-@interface SPReferenceManager() {
+@interface SPRelationshipResolver() {
     dispatch_queue_t queue;
 }
 
-@property (nonatomic, retain) NSMutableDictionary *pendingReferences;
+@property (nonatomic, retain) NSMutableDictionary *pendingRelationships;
 @property (assign) dispatch_queue_t queue;
 
 @end
 
 
-@implementation SPReferenceManager
-@synthesize pendingReferences;
+@implementation SPRelationshipResolver
+@synthesize pendingRelationships;
 @synthesize queue;
 
 + (int)ddLogLevel {
@@ -44,7 +44,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (id)init {
     if ((self = [super init])) {
-        self.pendingReferences = [NSMutableDictionary dictionaryWithCapacity:10];        
+        self.pendingRelationships = [NSMutableDictionary dictionaryWithCapacity:10];
         NSString *queueLabel = [@"com.simperium." stringByAppendingString:[[self class] description]];
         queue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
     }
@@ -53,12 +53,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)dealloc {
-    self.pendingReferences = nil;
+    self.pendingRelationships = nil;
     [super dealloc];
 }
 
 - (void)writePendingReferences:(id<SPStorageProvider>)storage {
-    if ([pendingReferences count] == 0) {
+    if ([pendingRelationships count] == 0) {
         // If there's already nothing there, save some CPU by not writing anything
         NSDictionary *metadata = [storage metadata];
         NSString *pendingKey = [NSString stringWithFormat:@"SPPendingReferences"];
@@ -69,10 +69,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     NSMutableDictionary *metadata = [[storage metadata] mutableCopy];
     NSString *key = [NSString stringWithFormat:@"SPPendingReferences"];
-	[metadata setObject:pendingReferences forKey: key];
+	[metadata setObject:pendingRelationships forKey: key];
 }
 
-- (void)loadPendingReferences:(id<SPStorageProvider>)storage {
+- (void)loadPendingRelationships:(id<SPStorageProvider>)storage {
     // Load changes that didn't get a chance to send
     NSString *pendingKey = [NSString stringWithFormat:@"SPPendingReferences"];
 	NSDictionary *pendingDict = [[storage metadata] objectForKey:pendingKey];
@@ -80,16 +80,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         // Manually create mutable children
         NSArray *loadPaths = [pendingDict objectForKey:key];
         NSMutableArray *paths = [NSMutableArray arrayWithArray:loadPaths];
-        [pendingReferences setValue:paths forKey:key];
+        [pendingRelationships setValue:paths forKey:key];
     }
 }
 
 
 - (BOOL)hasPendingReferenceToKey:(NSString *)key {
-    return [pendingReferences objectForKey:key] != nil;
+    return [pendingRelationships objectForKey:key] != nil;
 }
 
-- (void)addPendingReferenceToKey:(NSString *)key fromKey:(NSString *)fromKey bucketName:(NSString *)bucketName
+- (void)addPendingRelationshipToKey:(NSString *)key fromKey:(NSString *)fromKey bucketName:(NSString *)bucketName
                    attributeName:(NSString *)attributeName storage:(id<SPStorageProvider>)storage {
     if (key.length == 0) {
         DDLogWarn(@"Simperium warning: received empty pending reference to attribute %@", attributeName);
@@ -103,18 +103,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     DDLogVerbose(@"Simperium adding pending reference from %@ (%@) to %@ (%@)", fromKey, attributeName, key, bucketName);
     
     // Check to see if any references are already being tracked for this entity
-    NSMutableArray *paths = [pendingReferences objectForKey: key];
+    NSMutableArray *paths = [pendingRelationships objectForKey: key];
     if (paths == nil) {
         paths = [NSMutableArray arrayWithCapacity:3];
-        [pendingReferences setObject: paths forKey: key];
+        [pendingRelationships setObject: paths forKey: key];
     }
     [paths addObject:path];
     [self writePendingReferences:storage];
 }
 
-- (void)resolvePendingReferencesToKey:(NSString *)toKey bucketName:(NSString *)bucketName storage:(id<SPStorageProvider>)storage {
+- (void)resolvePendingRelationshipsToKey:(NSString *)toKey bucketName:(NSString *)bucketName storage:(id<SPStorageProvider>)storage {
     // The passed entity is now synced, so check for any pending references to it that can now be resolved
-    NSMutableArray *paths = [pendingReferences objectForKey: toKey];
+    NSMutableArray *paths = [pendingRelationships objectForKey: toKey];
     if (paths != nil) {
         
     // The following code could batch fault all the objects that will be touched, but is probably overkill
@@ -168,7 +168,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         
             dispatch_async(dispatch_get_main_queue(), ^{
                 // All references to entity were resolved above, so remove it from the pending array
-                [pendingReferences removeObjectForKey:toKey];
+                [pendingRelationships removeObjectForKey:toKey];
                 [self writePendingReferences:storage];
                 
                 // Expect the context to be saved elsewhere
@@ -179,7 +179,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)reset:(id<SPStorageProvider>)storage {
-    [self.pendingReferences removeAllObjects];
+    [self.pendingRelationships removeAllObjects];
     [self writePendingReferences:storage];
     [storage save];
 }

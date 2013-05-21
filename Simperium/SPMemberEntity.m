@@ -9,7 +9,7 @@
 #import "SPMemberEntity.h"
 #import "SPManagedObject.h"
 #import "SPBucket.h"
-#import "SPReferenceManager.h"
+#import "SPRelationshipResolver.h"
 
 @implementation SPMemberEntity
 @synthesize entityName;
@@ -74,7 +74,7 @@
         NSString *fromKey = [object.simperiumKey copy];
         dispatch_async(dispatch_get_main_queue(), ^{
             // Let Simperium store the reference so it can be properly resolved when the object gets synced
-            [bucket.referenceManager addPendingReferenceToKey:simperiumKey fromKey:fromKey bucketName:bucket.name
+            [bucket.relationshipResolver addPendingRelationshipToKey:simperiumKey fromKey:fromKey bucketName:bucket.name
                                                 attributeName:self.keyName storage:bucket.storage];
             [fromKey release];
         });

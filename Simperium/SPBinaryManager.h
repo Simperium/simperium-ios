@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "SPBinaryTransportDelegate.h"
 
-// TODO: consider best way to move this to SPReferenceManager
 #define BIN_KEY @"SPPathKey"
 #define BIN_BUCKET @"SPPathBucket"
 #define BIN_ATTRIBUTE @"SPPathAttribute"

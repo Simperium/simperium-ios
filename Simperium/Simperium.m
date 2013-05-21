@@ -28,7 +28,7 @@
 #import "SPCoreDataStorage.h"
 #import "SPAuthenticationManager.h"
 #import "SPBucket.h"
-#import "SPReferenceManager.h"
+#import "SPRelationshipResolver.h"
 #import "Reachability.h"
 
 #if TARGET_OS_IPHONE
@@ -44,7 +44,7 @@
 @property (nonatomic, retain) SPJSONStorage *JSONStorage;
 @property (nonatomic, retain) NSMutableDictionary *buckets;
 @property (nonatomic, retain) id<SPNetworkProvider> network;
-@property (nonatomic, retain) SPReferenceManager *referenceManager;
+@property (nonatomic, retain) SPRelationshipResolver *relationshipResolver;
 @property (nonatomic, assign) BOOL skipContextProcessing;
 @property (nonatomic, assign) BOOL networkManagersStarted;
 @property (nonatomic, assign) BOOL dynamicSchemaEnabled;
@@ -77,7 +77,7 @@
 @synthesize useWebSockets = _useWebSockets;
 @synthesize authManager;
 @synthesize network;
-@synthesize referenceManager;
+@synthesize relationshipResolver;
 @synthesize binaryManager;
 @synthesize buckets;
 @synthesize appID;
@@ -139,9 +139,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         self.authManager = manager;
         [manager release];
         
-        SPReferenceManager *refManager = [[SPReferenceManager alloc] init];
-        self.referenceManager = refManager;
-        [refManager release];
+        SPRelationshipResolver *resolver = [[SPRelationshipResolver alloc] init];
+        self.relationshipResolver = resolver;
+        [resolver release];
 
 #if TARGET_OS_IPHONE
         loginViewControllerClass = [SPLoginViewController class];
@@ -189,7 +189,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     self.coreDataStorage = nil;
     self.JSONStorage = nil;
     self.bucketOverrides = nil;
-    self.referenceManager = nil;
+    self.relationshipResolver = nil;
     self.rootURL = nil;
     self.reachability = nil;
     [appID release];
@@ -283,7 +283,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             SPHttpManager *netManager = [[SPHttpManager alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
             
             // New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkProvider:network referenceManager:self.referenceManager label:self.label];
+            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkProvider:network relationshipResolver:self.relationshipResolver label:self.label];
             [netManager setBucket:bucket overrides:self.bucketOverrides];
             [buckets setObject:bucket forKey:name];
             [netManager start:bucket name:bucket.name];
@@ -389,15 +389,17 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             // For websockets, one network manager for all buckets
             if (!self.network)
                 self.network = [[SPWebSocketManager alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkProvider:self.network referenceManager:self.referenceManager label:self.label];
+            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkProvider:self.network
+                                 relationshipResolver:self.relationshipResolver label:self.label];
         } else {
             // For http, each bucket has its own network manager
             SPHttpManager *netProvider = [[SPHttpManager alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkProvider:netProvider referenceManager:self.referenceManager label:self.label];
+            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkProvider:netProvider
+                                 relationshipResolver:self.relationshipResolver label:self.label];
             [(SPHttpManager *)netProvider setBucket:bucket overrides:self.bucketOverrides]; // tightly coupled for now; will fix in websockets netmanager
             [netProvider release];
         }
-                
+        
         [bucketList setObject:bucket forKey:schema.bucketName];
         [bucket release];
     }
@@ -479,7 +481,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.coreDataStorage setBucketList: self.buckets];
     
     // Load metadata for pending references among objects
-    [self.referenceManager loadPendingReferences:self.coreDataStorage];
+    [self.relationshipResolver loadPendingRelationships:self.coreDataStorage];
     
     if (self.binaryManager)
         [self configureBinaryManager:self.binaryManager];

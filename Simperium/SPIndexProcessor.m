@@ -205,7 +205,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Do all main thread work afterwards as well
     dispatch_async(dispatch_get_main_queue(), ^{
         // Manually resolve any pending references to added objects
-        [bucket resolvePendingReferencesToKeys:addedKeys];
+        [bucket resolvePendingRelationshipsToKeys:addedKeys];
         [bucket.storage save];
 
         // Revisit the use of NSNotification if there is demand. Currently it's too slow when lots of data is being
