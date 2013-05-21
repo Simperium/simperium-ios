@@ -72,7 +72,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	// but not the other; ignore this functionality for now
 	
 	NSDictionary *currentDiff = nil;
-	for (SPMember *member in schema.members)
+	for (SPMember *member in [schema.members allValues])
     {
         NSString *key = [member keyName];
 		// Make sure the member exists and is tracked by Simperium
