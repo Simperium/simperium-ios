@@ -70,6 +70,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSMutableDictionary *metadata = [[storage metadata] mutableCopy];
     NSString *key = [NSString stringWithFormat:@"SPPendingReferences"];
 	[metadata setObject:pendingRelationships forKey: key];
+    [storage setMetadata:metadata];
+    [metadata release];
 }
 
 - (void)loadPendingRelationships:(id<SPStorageProvider>)storage {
