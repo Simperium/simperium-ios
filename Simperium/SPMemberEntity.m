@@ -71,12 +71,11 @@
         // The object isn't here YET...but it will be LATER
         // This is a convenient place to track references because it's guaranteed to be called from loadMemberData in
         // SPManagedObject when it arrives off the wire.
-        NSString *fromKey = [object.simperiumKey copy];
+        NSString *fromKey = object.simperiumKey;
         dispatch_async(dispatch_get_main_queue(), ^{
             // Let Simperium store the reference so it can be properly resolved when the object gets synced
             [bucket.relationshipResolver addPendingRelationshipToKey:simperiumKey fromKey:fromKey bucketName:bucket.name
                                                 attributeName:self.keyName storage:bucket.storage];
-            [fromKey release];
         });
     }
     return value;
