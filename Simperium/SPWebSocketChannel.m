@@ -67,11 +67,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 + (void)updateNetworkActivityIndictator {
-#if TARGET_OS_IPHONE
-    //BOOL visible = useNetworkActivityIndicator && numTransfers > 0;
-	//[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:visible];
-    //DDLogInfo(@"Simperium numTransfers = %d", numTransfers);
-#endif
+    // For now at least, don't display the indicator when using WebSockets
 }
 
 + (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled {
@@ -84,7 +80,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         self.indexArray = [NSMutableArray arrayWithCapacity:200];
         self.clientID = cid;
         self.versionsWithErrors = [NSMutableDictionary dictionaryWithCapacity:3];
-        numTransfers = 0;
     }
 	
 	return self;
@@ -172,7 +167,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     dispatch_async(object.bucket.processorQueue, ^{
-        NSDictionary *change = [object.bucket.changeProcessor processLocalObjectWithKey:key bucket:object.bucket later:gettingVersions || !started];
+        NSDictionary *change = [object.bucket.changeProcessor processLocalObjectWithKey:key bucket:object.bucket later:indexing || !started];
         if (change)
             [self sendChange: change forKey: key bucket:object.bucket];
     });
@@ -226,16 +221,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // sync will still work for any unsaved changes.
     [bucket.storage stashUnsavedObjects];
     
-    numTransfers++;
-    [[self class] updateNetworkActivityIndictator];
-    
     dispatch_async(bucket.processorQueue, ^{
         if (started) {
             [bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:clientID];
             dispatch_async(dispatch_get_main_queue(), ^{
-                numTransfers--;
-                [[self class] updateNetworkActivityIndictator];
-                
                 // After remote changes have been processed, check to see if any local changes were attempted in
                 // the meantime, and send them
                 [self sendAllChangesForBucket:bucket];
@@ -259,7 +248,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     //    }
     //
     //    // Get an index of all objects and fetch their latest versions
-    gettingVersions = YES;
+    indexing = YES;
     
     NSString *message = [NSString stringWithFormat:@"%d:i::%@::%d", number, mark ? mark : @"", INDEX_PAGE_SIZE];
     DDLogVerbose(@"Simperium requesting index (%@): %@", self.name, message);
@@ -268,7 +257,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)requestLatestVersionsForBucket:(SPBucket *)bucket {
     // Multiple errors could try to trigger multiple index refreshes
-    if (gettingVersions)
+    if (indexing)
         return;
     
     // Send any pending changes first
@@ -293,17 +282,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     DDLogInfo(@"Simperium processing %lu objects from index (%@)", (unsigned long)[currentIndexArray count], self.name);
 
     __block NSArray *indexArrayCopy = [currentIndexArray copy];
-    __block int numVersionRequests = 0;
+    __block int objectRequests = 0;
     dispatch_async(bucket.processorQueue, ^{
         if (started) {
             [bucket.indexProcessor processIndex:indexArrayCopy bucket:bucket versionHandler: ^(NSString *key, NSString *version) {
-                numVersionRequests++;
+                objectRequests++;
 
                 // For each version that is processed, create a network request
-                
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    numTransfers += 1;
-                    [[self class] updateNetworkActivityIndictator];
                     NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", number, key, version];
                     DDLogVerbose(@"Simperium sending object request (%@): %@", self.name, message);
                     [self.webSocketManager send:message];
@@ -312,7 +298,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 // If no requests need to be queued, then all is good; back to processing
-                if (numVersionRequests == 0) {
+                objectVersionsPending = objectRequests;
+                if (objectVersionsPending == 0) {
                     if (self.nextMark.length > 0)
                     // More index pages to get
                         [self requestLatestVersionsForBucket: bucket mark:self.nextMark];
@@ -322,7 +309,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                     return;
                 }
 
-                DDLogInfo(@"Simperium enqueuing %d object requests (%@)", numVersionRequests, bucket.name);
+                DDLogInfo(@"Simperium enqueuing %d object requests (%@)", objectVersionsPending, bucket.name);
             });
         }
     });
@@ -339,15 +326,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         current = [NSString stringWithFormat:@"%ld", (long)[current integerValue]];
     self.pendingLastChangeSignature = [current length] > 0 ? [NSString stringWithFormat:@"%@", current] : nil;
     self.nextMark = [responseDict objectForKey:@"mark"];
-    numTransfers--;
-
+    
     // Remember all the retrieved data in case there's more to get
     [self.indexArray addObjectsFromArray:currentIndexArray];
 
     // If there aren't any instances remotely, just start getting changes
     if ([self.indexArray count] == 0) {
-        gettingVersions = NO;
-        [[self class] updateNetworkActivityIndictator];
         [self allVersionsFinishedForBucket:bucket];
         return;
     }
@@ -376,6 +360,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                 // Local version was different, so process it as a local change
                 [bucket.changeProcessor processLocalObjectWithKey:key bucket:bucket later:YES];
             }];
+            
+            // Now check if indexing is complete
+            if (objectVersionsPending == 0) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self allVersionsFinishedForBucket:bucket];
+                });
+            }
         }
     });
     [batch release];
@@ -384,13 +375,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
-    numTransfers--;
-    [[self class] updateNetworkActivityIndictator];
-    
+    if (objectVersionsPending > 0)
+        objectVersionsPending--;
+
     if ([responseString isEqualToString:@"?"]) {
         DDLogError(@"Simperium error: version not found during version retrieval (%@)", bucket.name);
-        if (numVersionsPending > 0)
-            numVersionsPending--;
         return;
     }
 
@@ -412,11 +401,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.versionsWithErrors removeObjectForKey:key];
 
     // If retrieving object versions (e.g. for going back in time), return the result directly to the delegate
-    if (numVersionsPending > 0) {
-        // TODO: make sure this can't clash with a re-indexing
+    if (retrievingObjectHistory) {
         if ([bucket.delegate respondsToSelector:@selector(bucket:didReceiveObjectForKey:version:data:)])
             [bucket.delegate bucket:bucket didReceiveObjectForKey:key version:version data:dataDict];
-        numVersionsPending--;
     } else {
         // Otherwise, process the result for indexing
         // Marshal stuff into an array for later processing
@@ -425,7 +412,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
         // Batch responses for more efficient processing
         // (process the last handful individually though)
-        if (numTransfers < INDEX_BATCH_SIZE || [self.responseBatch count] % INDEX_BATCH_SIZE == 0)
+        if (objectVersionsPending < INDEX_BATCH_SIZE || [self.responseBatch count] % INDEX_BATCH_SIZE == 0)
             [self processBatchForBucket:bucket];
     }
 }
@@ -461,27 +448,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [bucket setLastChangeSignature:pendingLastChangeSignature];
     self.pendingLastChangeSignature = nil;
     self.nextMark = nil;
-    gettingVersions = NO;
+    indexing = NO;
 
     // There could be some processing happening on the queue still, so don't start until they're done
-    // Fake a network transfer so the progress indicator stays up until completion
-    numTransfers += 1;
-    [[self class] updateNetworkActivityIndictator];
     dispatch_async(bucket.processorQueue, ^{
         if (started) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                numTransfers -= 1;
-                [[self class] updateNetworkActivityIndictator];
-
                 if ([bucket.delegate respondsToSelector:@selector(bucketDidFinishIndexing:)])
                     [bucket.delegate bucketDidFinishIndexing:bucket];
 
                 [self startProcessingChangesForBucket:bucket];
             });
-        } else dispatch_async(dispatch_get_main_queue(), ^{
-            numTransfers = 0;
-            [[self class] updateNetworkActivityIndictator];
-        });
+        }
     });
 }
 //
@@ -499,10 +477,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark Object Versions
 - (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object {
     // If already retrieving versions on this channel, don't do it again
-    if (numVersionsPending > 0)
+    if (retrievingObjectHistory)
         return;
     
-    numVersionsPending = numVersions;
+    retrievingObjectHistory = YES;
+    objectVersionsPending = numVersions;
     
     NSInteger startVersion = [object.ghost.version integerValue]-1;
     for (NSInteger i=startVersion; i>=1 && i>=startVersion-numVersions; i--) {

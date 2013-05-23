@@ -95,9 +95,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                 continue;
             
             // Allow caller to use the key and version
-            dispatch_async(dispatch_get_main_queue(), ^{
-                versionHandler(key, version);
-            });
+            versionHandler(key, version);
         }
         
         // Refault to free up the memory

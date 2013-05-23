@@ -15,8 +15,9 @@
 
 @interface SPWebSocketChannel : NSObject
 {
-    BOOL gettingVersions;
+    BOOL indexing;
     BOOL started;
+    BOOL retrievingObjectHistory;
     int retryDelay;
     NSString *nextMark;
     NSMutableArray *indexArray;
@@ -24,8 +25,7 @@
     SPWebSocketManager *webSocketManager;
     NSString *name;
     int number;
-    NSInteger numTransfers;
-    int numVersionsPending;
+    int objectVersionsPending;
 }
 
 @property (nonatomic, assign) SPWebSocketManager *webSocketManager;
