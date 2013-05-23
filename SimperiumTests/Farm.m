@@ -20,6 +20,7 @@
 @synthesize expectedChanges;
 @synthesize expectedDeletions;
 @synthesize expectedVersions;
+@synthesize expectedIndexCompletions;
 @synthesize managedObjectContext = __managedObjectContext;
 @synthesize managedObjectModel = __managedObjectModel;
 @synthesize persistentStoreCoordinator = __persistentStoreCoordinator;
@@ -81,7 +82,8 @@
 }
 
 - (BOOL)isDone {
-    return expectedAcknowledgments == 0 && expectedChanges == 0 && expectedAdditions == 0 && expectedDeletions == 0 && expectedVersions == 0;
+    return expectedAcknowledgments == 0 && expectedChanges == 0 && expectedAdditions == 0 && expectedDeletions == 0
+        && expectedVersions == 0 && expectedIndexCompletions == 0;
 }
 
 - (void)resetExpectations {
@@ -90,11 +92,13 @@
     self.expectedChanges = 0;
     self.expectedDeletions = 0;
     self.expectedVersions = 0;
+    self.expectedIndexCompletions = 0;
 }
 
 - (void)logUnfulfilledExpectations {
     if (![self isDone])
-        NSLog(@"acks: %d changes: %d adds: %d dels: %d", expectedAcknowledgments, expectedChanges, expectedAdditions, expectedDeletions);
+        NSLog(@"acks: %d changes: %d adds: %d dels: %d idxs: %d", expectedAcknowledgments, expectedChanges, expectedAdditions,
+              expectedDeletions, expectedIndexCompletions);
 }
 
 - (void)connect {
@@ -129,7 +133,11 @@
 }
 
 - (void)bucketDidFinishIndexing:(SPBucket *)bucket {
+    NSLog(@"Simperium bucketDidFinishIndexing: %@", bucket.name);
     
+    // These aren't always used in the tests, so only decrease it if it's been set
+    if (expectedIndexCompletions > 0)
+        expectedIndexCompletions -= 1;
 }
 
 - (void)bucketDidAcknowledgeDelete:(SPBucket *)bucket {

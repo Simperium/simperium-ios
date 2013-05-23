@@ -101,20 +101,21 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (Farm *)createFarm:(NSString *)label {
+    if (!farms) {
+        farms = [[NSMutableArray arrayWithCapacity:NUM_FARMS] retain];
+    }
     Farm *farm = [[[Farm alloc] initWithToken: token bucketOverrides:[self bucketOverrides] label:label] autorelease];
+    [farms addObject:farm];
     return farm;
 }
 
-- (void)createFarms {
-    farms = [[NSMutableArray arrayWithCapacity:NUM_FARMS] retain];
-    
+- (void)createFarms {    
     // Use a different bucket for each test so it's always starting fresh
     // (We should periodically Delete All Data in the test app to clean stuff up)
     
     for (int i=0; i<NUM_FARMS; i++) {
         NSString *label = [NSString stringWithFormat:@"client%d", i];
-        Farm *farm = [self createFarm: label];
-        [farms addObject:farm];
+        [self createFarm: label];
     }
 }
 

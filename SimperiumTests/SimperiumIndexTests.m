@@ -17,12 +17,14 @@
 - (void)testIndex
 {
     NSLog(@"%@ start", self.name);
-    [self createAndStartFarms];
 
-    // Leader sends an object to followers, but make followers get it from the index
-    Farm *leader = [farms objectAtIndex:0];
+    // Leader sends an object to follower, but make follower get it from the index
+    Farm *leader = [self createFarm:@"leader"];
+    Farm *follower = [self createFarm:@"follower"];
+    [leader start];
     [leader connect];
-    [self waitFor:1.0];
+    leader.expectedIndexCompletions = 1;
+    STAssertTrue([self waitForCompletion], @"timed out");
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
@@ -43,14 +45,13 @@
     leader.expectedAcknowledgments = 1;
     STAssertTrue([self waitForCompletion], @"timed out (changing)");
 
-    // The object was synced, now connect with the followers
-    for (Farm *farm in farms) {
-        if (farm == leader)
-            continue;
-        [farm connect];
-    }
+    // The object was synced, now connect with the follower
+    [follower start];
+    
     [self resetExpectations: farms];
+    follower.expectedIndexCompletions = 1;
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:NO];
+    [follower connect];
     
     STAssertTrue([self waitForCompletion], @"timed out");
     
@@ -102,7 +103,6 @@
     [leader start];
     [follower start];
     
-    NSArray *farmArray = [NSArray arrayWithObjects:leader, follower, nil];
     [leader connect];
     [follower connect];
     [self waitFor:1.0];
@@ -114,9 +114,9 @@
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
     follower.expectedAdditions = 1;
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding one)");
-    [self resetExpectations: farmArray];
-    [self ensureFarmsEqual:farmArray entityName:@"Config"];
+    STAssertTrue([self waitForCompletion: 4.0 farmArray:farms], @"timed out (adding one)");
+    [self resetExpectations: farms];
+    [self ensureFarmsEqual:farms entityName:@"Config"];
     NSLog(@"****************************DISCONNECT*************************");
     [follower disconnect];
 
@@ -131,16 +131,16 @@
     }
     [leader.simperium save];
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
-    STAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:farmArray], @"timed out (adding many)");
+    STAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:farms], @"timed out (adding many)");
     
     NSLog(@"****************************RECONNECT*************************");
-    [self resetExpectations:farmArray];
+    [self resetExpectations:farms];
     [follower connect];
     
     // Expect 404 and reindex?
     follower.expectedAdditions = numConfigs;
-    STAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:farmArray], @"timed out (receiving many)");
-    [self ensureFarmsEqual:farmArray entityName:@"Config"];
+    STAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:farms], @"timed out (receiving many)");
+    [self ensureFarmsEqual:farms entityName:@"Config"];
     
     NSLog(@"%@ end", self.name);
 }

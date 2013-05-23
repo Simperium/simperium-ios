@@ -22,6 +22,7 @@
     int expectedDeletions;
     int expectedChanges;
     int expectedVersions;
+    int expectedIndexCompletions;
 }
 
 @property (nonatomic, retain) Simperium *simperium;
@@ -33,6 +34,7 @@
 @property (nonatomic) int expectedDeletions;
 @property (nonatomic) int expectedChanges;
 @property (nonatomic) int expectedVersions;
+@property (nonatomic) int expectedIndexCompletions;
 @property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
