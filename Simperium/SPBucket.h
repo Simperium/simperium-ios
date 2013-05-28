@@ -52,6 +52,7 @@ typedef NSUInteger SPBucketChangeType;
 @interface SPBucket : NSObject {
     NSString *name;
     NSString *instanceLabel;
+    BOOL notifyWhileIndexing;
     id<SPNetworkProvider> network;
     SPRelationshipResolver *relationshipResolver;
     SPDiffer *differ;
@@ -67,6 +68,9 @@ typedef NSUInteger SPBucketChangeType;
 /// Assign this delegate to be notified when objects in this bucket change (see SPBucketDelegate above)
 @property (assign) id<SPBucketDelegate> delegate;
 @property (nonatomic, readonly) NSString *name;
+
+/// Enable this to receive SPBucketDelegate notifications during indexing (disabled by default because it's slow)
+@property (assign) BOOL notifyWhileIndexing;
 
 
 /** The following are convenience methods for accessing, inserting and deleting objects. If you're using Core Data, you can instead just access your context directly and Simperium will identify any changes accordingly.

@@ -207,16 +207,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [bucket.storage save];
 
         // Revisit the use of NSNotification if there is demand. Currently it's too slow when lots of data is being
-        // indexed across buckets
-//        NSDictionary *userInfoAdded = [NSDictionary dictionaryWithObjectsAndKeys:
-//                                  bucket.name, @"bucketName",
-//                                  addedKeys, @"keys", nil];
-//        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidAddObjectsNotification" object:bucket userInfo:userInfoAdded];
-//
-//        NSDictionary *userInfoChanged = [NSDictionary dictionaryWithObjectsAndKeys:
-//                                       bucket.name, @"bucketName",
-//                                       changedKeys, @"keys", nil];        
-//        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidChangeObjectsNotification" object:bucket userInfo:userInfoChanged];
+        // indexed across buckets, so it's not done by default
+        if (bucket.notifyWhileIndexing) {
+            NSDictionary *userInfoAdded = [NSDictionary dictionaryWithObjectsAndKeys:
+                                      bucket.name, @"bucketName",
+                                      addedKeys, @"keys", nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidAddObjectsNotification" object:bucket userInfo:userInfoAdded];
+
+            NSDictionary *userInfoChanged = [NSDictionary dictionaryWithObjectsAndKeys:
+                                           bucket.name, @"bucketName",
+                                           changedKeys, @"keys", nil];        
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidChangeObjectsNotification" object:bucket userInfo:userInfoChanged];
+        }
     });
     
     [pool release];

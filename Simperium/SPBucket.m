@@ -27,6 +27,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 @implementation SPBucket
 @synthesize delegate;
 @synthesize name;
+@synthesize notifyWhileIndexing;
 @synthesize instanceLabel;
 @synthesize storage;
 @synthesize differ;
