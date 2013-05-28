@@ -387,8 +387,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         
         if (self.useWebSockets) {
             // For websockets, one network manager for all buckets
-            if (!self.network)
-                self.network = [[SPWebSocketManager alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
+            if (!self.network) {
+                SPWebSocketManager *webSocketManager = [[SPWebSocketManager alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
+                self.network = webSocketManager;
+                [webSocketManager release];
+            }
             bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkProvider:self.network
                                  relationshipResolver:self.relationshipResolver label:self.label];
         } else {
@@ -652,8 +655,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (self.loginViewController && self.rootViewController.presentedViewController == self.loginViewController)
         return;
     
-    self.loginViewController = [[self.loginViewControllerClass alloc] initWithNibName:@"LoginView" bundle:nil];
+    SPLoginViewController *loginController =  [[self.loginViewControllerClass alloc] initWithNibName:@"LoginView" bundle:nil];
+    self.loginViewController = loginController;
     self.loginViewController.authManager = self.authManager;
+    [loginController release];
     
     if (!self.rootViewController) {
         UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
@@ -662,13 +667,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     UIViewController *controller = self.loginViewController;
+    UINavigationController *navController = nil;
     if (self.authenticationOptional) {
-        UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController: self.loginViewController];
+        navController = [[UINavigationController alloc] initWithRootViewController: self.loginViewController];
         controller = navController;
     }
     
     [self.rootViewController presentModalViewController:controller animated:animated];
-    [controller release];
+    [navController release];
 #else
     if (!authWindowController) {
         SPAuthWindowController *anAuthWindowController = [[self.authWindowControllerClass alloc] initWithWindowNibName:@"AuthWindow"];

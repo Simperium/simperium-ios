@@ -102,8 +102,9 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     channel.number = channelNumber;
     channel.name = bucket.name;
     [self.channels setObject:channel forKey:bucket.name];
+    [channel release];
     
-    return channel;
+    return [self.channels objectForKey:bucket.name];
 }
 
 - (void)loadChannelsForBuckets:(NSDictionary *)bucketList overrides:(NSDictionary *)overrides {
