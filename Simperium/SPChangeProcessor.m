@@ -58,7 +58,7 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     ddLogLevel = logLevel;
 }
 
--(id)initWithLabel:(NSString *)label {
+- (id)initWithLabel:(NSString *)label {
     if (self = [super init]) {
         self.instanceLabel = label;
 		changesPending = [[NSMutableDictionary dictionaryWithCapacity:3] retain];
@@ -71,37 +71,14 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     return self;
 }
 
--(void)dealloc {
+- (void)dealloc {
     self.instanceLabel = nil;
     [changesPending release];
     [keysForObjectsWithMoreChanges release];
     [super dealloc];
 }
 
--(NSMutableDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version data:(NSDictionary *)data
-{
-	// The change applies to this particular entity instance, so use its unique key as an identifier
-	NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:key forKey:CH_KEY];	
-	
-	// Every change must be marked with a unique ID
-	NSString *uuid = [NSString sp_makeUUID];
-	[change setObject:uuid forKey: CH_LOCAL_ID];
-	
-	// Set the change's operation
-	[change setObject:operation forKey:CH_OPERATION];
-    
-	// Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
-    if (data)
-        [change setObject:data forKey:CH_VALUE];
-	
-	// If it's a modify operation, also include the object's version as the last known version
-	if (operation == CH_MODIFY && version != nil && [version intValue] != 0)
-        [change setObject: version forKey: CH_START_VERSION];
-	
-	return change;
-}
-
--(BOOL)awaitingAcknowledgementForKey:(NSString *)key {
+- (BOOL)awaitingAcknowledgementForKey:(NSString *)key {
     if (key == nil)
         return NO;
     
@@ -109,24 +86,21 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     return awaitingAcknowledgement;
 }
 
--(void)serializeChangesPending
-{
+- (void)serializeChangesPending {
     NSString *pendingJSON = [changesPending JSONString];
     NSString *key = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
 	[[NSUserDefaults standardUserDefaults] setObject:pendingJSON forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
--(void)serializeKeysForObjectsWithMoreChanges
-{
+- (void)serializeKeysForObjectsWithMoreChanges {
     NSString *json = [[keysForObjectsWithMoreChanges allObjects] JSONString];
     NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", instanceLabel];
 	[[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
--(void)loadSerializedChanges
-{    
+- (void)loadSerializedChanges {
     // Load changes that didn't get a chance to send
     NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
 	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
@@ -135,8 +109,7 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
         [changesPending setValuesForKeysWithDictionary:pendingDict];
 }
 
--(void)loadKeysForObjectsWithMoreChanges
-{    
+- (void)loadKeysForObjectsWithMoreChanges {
     // Load keys for entities that have more changes to send
     NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", instanceLabel];
 	NSString *json = [[NSUserDefaults standardUserDefaults] objectForKey:key];
@@ -145,8 +118,7 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
         [keysForObjectsWithMoreChanges addObjectsFromArray:list];
 }
 
--(void)reset
-{
+- (void)reset {
     [changesPending removeAllObjects];
     [keysForObjectsWithMoreChanges removeAllObjects];
     [self serializeChangesPending];
@@ -154,16 +126,22 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
 }
 
 // For debugging
--(void)softReset
-{
+- (void)softReset {
     [changesPending removeAllObjects];
     [keysForObjectsWithMoreChanges removeAllObjects];
     [self loadSerializedChanges];
     [self loadKeysForObjectsWithMoreChanges];
 }
 
--(BOOL)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket
-{
+
+#pragma mark Remote changes
+
+- (BOOL)change:(NSDictionary *)change equals:(NSDictionary *)anotherChange {
+	return [[change objectForKey:CH_KEY] compare:[anotherChange objectForKey:CH_KEY]] == NSOrderedSame &&
+    [[change objectForKey:CH_LOCAL_ID] compare:[anotherChange objectForKey:CH_LOCAL_ID]] == NSOrderedSame;
+}
+
+- (BOOL)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
     BOOL repostNeeded = NO;
     for (NSDictionary *change in changes) {
         if ([change objectForKey:CH_ERROR] != nil) {
@@ -199,13 +177,8 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     return repostNeeded;
 }
 
--(BOOL)change:(NSDictionary *)change equals:(NSDictionary *)anotherChange
-{
-	return [[change objectForKey:CH_KEY] compare:[anotherChange objectForKey:CH_KEY]] == NSOrderedSame &&
-    [[change objectForKey:CH_LOCAL_ID] compare:[anotherChange objectForKey:CH_LOCAL_ID]] == NSOrderedSame;
-}
-
--(BOOL)processRemoteDelete:(id<SPDiffable>)object acknowledged:(BOOL)acknowledged bucket:(SPBucket *)bucket storage:(id<SPStorageProvider>)threadSafeStorage
+- (BOOL)processRemoteDelete:(id<SPDiffable>)object acknowledged:(BOOL)acknowledged bucket:(SPBucket *)bucket
+                   storage:(id<SPStorageProvider>)threadSafeStorage
 {
     // REMOVE operation
     // If this wasn't just an ack, perform the deletion
@@ -234,14 +207,14 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     return YES;
 }
 
--(BOOL)processRemoteModify:(id<SPDiffable>)object bucket:(SPBucket *)bucket change:(NSDictionary *)change acknowledged:(BOOL)acknowledged storage:(id<SPStorageProvider>)threadSafeStorage
+- (BOOL)processRemoteModify:(id<SPDiffable>)object bucket:(SPBucket *)bucket change:(NSDictionary *)change
+              acknowledged:(BOOL)acknowledged storage:(id<SPStorageProvider>)threadSafeStorage
 {
     BOOL newlyAdded = NO;
     NSString *key = [change objectForKey:CH_KEY];
     
     // MODIFY operation
-    if (!object)
-    {
+    if (!object) {
         newlyAdded = YES;
         // It doesn't exist yet, so ADD it
         
@@ -349,8 +322,7 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     return YES;
 }
 
--(BOOL)processRemoteChange:(NSDictionary *)change bucket:(SPBucket *)bucket clientID:(NSString *)clientID
-{
+- (BOOL)processRemoteChange:(NSDictionary *)change bucket:(SPBucket *)bucket clientID:(NSString *)clientID {
     // Create a new context (to be thread-safe) and fetch the entity from it
     id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
 
@@ -384,8 +356,7 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     
     DDLogVerbose(@"Simperium performing change operation: %@", operation);
     
-    if (remove)
-    {
+    if (remove) {
         if (object || acknowledged)
             return [self processRemoteDelete: object acknowledged:acknowledged bucket:bucket storage:threadSafeStorage];
     } else if (operation && [operation compare: CH_MODIFY] == NSOrderedSame) {
@@ -397,8 +368,7 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     return NO;
 }
 
--(void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID
-{
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID {
     NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:[changes count]];
     for (NSDictionary *change in changes) {
         NSString *key = [change objectForKey:CH_KEY];
@@ -434,20 +404,42 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
 
 }
 
--(void)processLocalChange:(NSDictionary *)change key:(NSString *)key
-{
+
+#pragma mark Local changes
+
+- (NSMutableDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version data:(NSDictionary *)data {
+	// The change applies to this particular entity instance, so use its unique key as an identifier
+	NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:key forKey:CH_KEY];
+	
+	// Every change must be marked with a unique ID
+	NSString *uuid = [NSString sp_makeUUID];
+	[change setObject:uuid forKey: CH_LOCAL_ID];
+	
+	// Set the change's operation
+	[change setObject:operation forKey:CH_OPERATION];
+    
+	// Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
+    if (data)
+        [change setObject:data forKey:CH_VALUE];
+	
+	// If it's a modify operation, also include the object's version as the last known version
+	if (operation == CH_MODIFY && version != nil && [version intValue] != 0)
+        [change setObject: version forKey: CH_START_VERSION];
+	
+	return change;
+}
+
+- (void)processLocalChange:(NSDictionary *)change key:(NSString *)key {
     [changesPending setObject:change forKey: key];
     [self serializeChangesPending];
 }
 
--(NSDictionary *)processLocalDeletionWithKey:(NSString *)key
-{
+- (NSDictionary *)processLocalDeletionWithKey:(NSString *)key {
     NSDictionary *change = [self createChangeForKey:key operation:CH_REMOVE version:nil data:nil];
     return change;
 }
 
--(NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later
-{
+- (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later {
     // Create a new context (to be thread-safe) and fetch the entity from it
     id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
     id<SPDiffable> object = [storage objectForKey:key bucketName:bucket.name];
@@ -512,8 +504,7 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     return change;
 }
 
--(NSArray *)processPendingChanges:(SPBucket *)bucket
-{
+- (NSArray *)processPendingChanges:(SPBucket *)bucket {
     // Check if there are more changes that need to be sent
     if ([keysForObjectsWithMoreChanges count] > 0) {
         DDLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)[keysForObjectsWithMoreChanges count], bucket.name);
@@ -553,8 +544,7 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     return [changesPending allValues];
 }
 
--(NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket
-{
+- (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket {
     // Check if there are more changes that need to be sent
     NSMutableArray *newChangesPending = [NSMutableArray arrayWithCapacity:3];
     if ([keysForObjectsWithMoreChanges count] > 0) {
@@ -588,11 +578,11 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
 }
 
 
--(int)numChangesPending {
+- (int)numChangesPending {
     return (int)[changesPending count];
 }
 
--(int)numKeysForObjectsWithMoreChanges {
+- (int)numKeysForObjectsWithMoreChanges {
     return (int)[keysForObjectsWithMoreChanges count];
 }
 

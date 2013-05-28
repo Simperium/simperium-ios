@@ -36,15 +36,15 @@ extern NSString * const ProcessorWillChangeObjectsNotification;
 extern NSString * const ProcessorDidAcknowledgeDeleteNotification;
 extern NSString * const ProcessorRequestsReindexing;
 
--(id)initWithLabel:(NSString *)label;
--(void)reset;
--(BOOL)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
--(void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
--(void)processLocalChange:(NSDictionary *)change key:(NSString *)key;
--(NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later;
--(NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
--(int)numChangesPending;
--(int)numKeysForObjectsWithMoreChanges;
--(NSArray *)processPendingChanges:(SPBucket *)bucket;
--(NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket;
+- (id)initWithLabel:(NSString *)label;
+- (void)reset;
+- (BOOL)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
+- (void)processLocalChange:(NSDictionary *)change key:(NSString *)key;
+- (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later;
+- (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
+- (int)numChangesPending;
+- (int)numKeysForObjectsWithMoreChanges;
+- (NSArray *)processPendingChanges:(SPBucket *)bucket;
+- (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket;
 @end
