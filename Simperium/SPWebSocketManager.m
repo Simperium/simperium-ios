@@ -25,7 +25,7 @@ NSString * const COM_AUTH = @"auth";
 NSString * const COM_INDEX = @"i";
 NSString * const COM_CHANGE = @"c";
 NSString * const COM_ENTITY = @"e";
-NSString * const COM_REINDEX = @"?";
+NSString * const COM_ERROR = @"?";
 
 //static NSUInteger numTransfers = 0;
 static BOOL useNetworkActivityIndicator = 0;
@@ -291,16 +291,23 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     } else if ([command isEqualToString:COM_INDEX]) {
         [channel handleIndexResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_CHANGE]) {
-        NSArray *changes = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
-        if ([changes count] > 0) {
-            DDLogVerbose(@"Simperium handling changes %@", changes);
-            [channel handleRemoteChanges: changes bucket:bucket];
+        if ([data isEqualToString:@"?"]) {
+            // The requested change version didn't exist, so re-index
+            DDLogVerbose(@"Simperium change version is out of date (%@), re-indexing", bucket.name);
+            [channel requestLatestVersionsForBucket:bucket];
+        } else {
+            // Incoming changes, handle them
+            NSArray *changes = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+            if ([changes count] > 0) {
+                DDLogVerbose(@"Simperium handling changes %@", changes);
+                [channel handleRemoteChanges: changes bucket:bucket];
+            }
         }
     } else if ([command isEqualToString:COM_ENTITY]) {
         // todo: handle ? if entity doesn't exist or it has been deleted
         [channel handleVersionResponse:data bucket:bucket];
-    } else if ([command isEqualToString:COM_REINDEX]) {
-        [channel requestLatestVersionsForBucket:bucket];
+    } else if ([command isEqualToString:COM_ERROR]) {
+        DDLogVerbose(@"Simperium returned a command error (?) for bucket %@", bucket.name);
     }
 }
 

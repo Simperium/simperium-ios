@@ -242,7 +242,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
         return;
     
     dispatch_async(bucket.processorQueue, ^{
-        NSArray *changes = [bucket.changeProcessor processPendingChanges:bucket];
+        NSArray *changes = [bucket.changeProcessor processPendingChanges:bucket onlyQueuedChanges:NO];
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([changes count] == 0) {
                 [self getChanges];

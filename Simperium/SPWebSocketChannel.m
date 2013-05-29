@@ -96,10 +96,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[super dealloc];
 }
 
-- (void)sendAllChangesForBucket:(SPBucket *)bucket completionBlock:(void(^)())completionBlock {
+- (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(void(^)())completionBlock {
     // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
     dispatch_async(bucket.processorQueue, ^{
-        NSArray *changes = [bucket.changeProcessor processPendingChanges:bucket];
+        NSArray *changes = [bucket.changeProcessor processPendingChanges:bucket onlyQueuedChanges:onlyQueuedChanges];
         if ([changes count] == 0) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (completionBlock)
@@ -122,10 +122,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             }
         });
     });
-}
-
-- (void)sendAllChangesForBucket:(SPBucket *)bucket {
-    [self sendAllChangesForBucket:bucket completionBlock:nil];
 }
 
 - (void)sendChange:(NSDictionary *)change forKey:(NSString *)key bucket:(SPBucket *)bucket {
@@ -186,7 +182,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                 if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
                     // Send the offline changes
                     DDLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
-                    [self sendAllChangesForBucket:bucket completionBlock:^{
+                    [self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:^{
                         // Start getting changes after all pending local changes have been sent
                         DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, getMessage);
                         [self.webSocketManager send:getMessage];
@@ -225,9 +221,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         if (started) {
             [bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:clientID];
             dispatch_async(dispatch_get_main_queue(), ^{
-                // After remote changes have been processed, check to see if any local changes were attempted in
-                // the meantime, and send them
-                [self sendAllChangesForBucket:bucket];
+                // After remote changes have been processed, check to see if any local changes were attempted (and
+                // queued) in the meantime, and send them
+                [self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:nil];
             });
         }
     });
@@ -261,7 +257,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         return;
     
     // Send any pending changes first
-    [self sendAllChangesForBucket:bucket completionBlock: ^{
+    // This could potentially lead to some duplicate changes being sent if there are some that are awaiting
+    // acknowledgment, but the server will safely ignore them
+    [self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock: ^{
         [self requestLatestVersionsForBucket:bucket mark:nil];
     }];
 }

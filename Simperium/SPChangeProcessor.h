@@ -45,6 +45,6 @@ extern NSString * const ProcessorRequestsReindexing;
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
 - (int)numChangesPending;
 - (int)numKeysForObjectsWithMoreChanges;
-- (NSArray *)processPendingChanges:(SPBucket *)bucket;
+- (NSArray *)processPendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges;
 - (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket;
 @end

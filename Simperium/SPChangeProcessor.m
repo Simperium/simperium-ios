@@ -504,15 +504,14 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     return change;
 }
 
-- (NSArray *)processPendingChanges:(SPBucket *)bucket {
+- (NSArray *)processPendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges {
     // Check if there are more changes that need to be sent
+    NSMutableDictionary *queuedChanges = [NSMutableDictionary dictionaryWithCapacity:[keysForObjectsWithMoreChanges count]];
+
     if ([keysForObjectsWithMoreChanges count] > 0) {
         DDLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)[keysForObjectsWithMoreChanges count], bucket.name);
-        // TODO: Robust handling of offline deletions
-      
-        NSMutableSet *keysProcessed = [NSMutableSet setWithCapacity:[keysForObjectsWithMoreChanges count]];
         NSMutableSet *pendingKeys = [NSMutableSet setWithCapacity:[keysForObjectsWithMoreChanges count]];
-      
+
         //Create a list of the keys to be processed
         for (NSString *key in keysForObjectsWithMoreChanges) {
             // If there are already changes pending, don't add any more
@@ -525,23 +524,22 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
       
         // Create changes for any objects that have more changes
         [pendingKeys enumerateObjectsUsingBlock:^(NSString *key, BOOL *stop) {
-          NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
+            NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
           
-          if (change)
-              [changesPending setObject:change forKey: key];
-          
-          [keysProcessed addObject:key];
+            if (change) {
+                [changesPending setObject:change forKey: key];
+                [queuedChanges setObject:change forKey:key];
+            }
         }];
-      
-      
+
         // Clear any keys that were processed into pending changes
-        [keysForObjectsWithMoreChanges minusSet:keysProcessed];
+        [keysForObjectsWithMoreChanges minusSet: [NSSet setWithArray:[queuedChanges allKeys]]];
     }
 
     [self serializeChangesPending];
     [self serializeKeysForObjectsWithMoreChanges];
     
-    return [changesPending allValues];
+    return onlyQueuedChanges ? [queuedChanges allValues] : [changesPending allValues];
 }
 
 - (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket {
