@@ -94,6 +94,10 @@
     NSLog(@"%@ end", self.name);    
 }
 
+// This test is known to break for the HTTP implementation. The reason is that POST responses aren't processed
+// directly for acknowledgments. Instead, the response from a subsequent GET is used for acks. The problem
+// is this subsequent GET uses the last known cv, which this test purposely breaks by exceeding the 50 change
+// limit. The GET will 404, triggering a re-index before changes have even been acknowledged.
 - (void)testReindex
 {
     NSLog(@"%@ start", self.name);
@@ -102,27 +106,30 @@
     Farm *follower = [self createFarm:@"follower"];
     [leader start];
     [follower start];
-    
+    leader.expectedIndexCompletions = 1;
+    follower.expectedIndexCompletions = 1;    
     [leader connect];
     [follower connect];
-    [self waitFor:1.0];
+    STAssertTrue([self waitForCompletion: 4.0 farmArray:farms], @"timed out (initial index)");
+    [self resetExpectations:farms];
     
+    NSLog(@"****************************ADD ONE*************************");
     // Add one object
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
     leader.config.simperiumKey = @"config";
-    leader.config.captainsLog = @"1";
+    leader.config.captainsLog = @"a";
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
     follower.expectedAdditions = 1;
     STAssertTrue([self waitForCompletion: 4.0 farmArray:farms], @"timed out (adding one)");
     [self resetExpectations: farms];
     [self ensureFarmsEqual:farms entityName:@"Config"];
-    NSLog(@"****************************DISCONNECT*************************");
+    NSLog(@"*********************FOLLOWER DISCONNECT*********************");
     [follower disconnect];
 
     // Add 50 objects to push the cv off the back of the queue (max 50 versions)
     int numConfigs = 50;
-    NSLog(@"****************************ADD*************************");
+    NSLog(@"****************************ADD MANY*************************");
     for (int i=0; i<numConfigs; i++) {
         Config *config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
         config.warpSpeed = [NSNumber numberWithInt:2];
@@ -131,12 +138,12 @@
     }
     [leader.simperium save];
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
-    STAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:farms], @"timed out (adding many)");
+    STAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:[NSArray arrayWithObject:leader]], @"timed out (adding many)");
     
-    NSLog(@"****************************RECONNECT*************************");
+    NSLog(@"**********************FOLLOWER RECONNECT********************");
     [self resetExpectations:farms];
     [follower connect];
-    
+
     // Expect 404 and reindex?
     follower.expectedAdditions = numConfigs;
     STAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:farms], @"timed out (receiving many)");

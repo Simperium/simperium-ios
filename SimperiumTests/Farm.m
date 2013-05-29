@@ -60,6 +60,9 @@
     //[simperium clearLocalData];
     
     simperium.user = [[SPUser alloc] initWithEmail:USERNAME token:token];
+    for (NSString *bucketName in [simperium.bucketOverrides allKeys]) {
+        [simperium bucketForName:bucketName].notifyWhileIndexing = YES;
+    }
 }
 
 - (void)dealloc {
