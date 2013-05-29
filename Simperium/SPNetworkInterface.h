@@ -11,7 +11,7 @@
 
 @class SPBucket;
 
-@protocol SPNetworkProvider <NSObject>
+@protocol SPNetworkInterface <NSObject>
 -(void)start:(SPBucket *)bucket name:(NSString *)name;
 -(void)stop:(SPBucket *)bucket;
 -(void)resetBucketAndWait:(SPBucket *)bucket;

@@ -8,7 +8,7 @@
 
 #define DEBUG_REQUEST_STATUS
 #import "SPEnvironment.h"
-#import "SPHttpManager.h"
+#import "SPHttpInterface.h"
 #import "Simperium.h"
 #import "SPDiffer.h"
 #import "SPBucket.h"
@@ -37,7 +37,7 @@ static BOOL networkActivity = NO;
 static int ddLogLevel = LOG_LEVEL_INFO;
 NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
 
-@interface SPHttpManager()
+@interface SPHttpInterface()
 @property (nonatomic, assign) Simperium *simperium;
 @property (nonatomic, assign) SPBucket *bucket;
 @property (nonatomic, retain) NSMutableArray *responseBatch;
@@ -51,7 +51,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
 -(void)getVersionFailed:(ASIHTTPRequest *)request;
 @end
 
-@implementation SPHttpManager
+@implementation SPHttpInterface
 @synthesize simperium;
 @synthesize bucket;
 @synthesize responseBatch;

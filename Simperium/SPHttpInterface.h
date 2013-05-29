@@ -7,13 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SPNetworkProvider.h"
+#import "SPNetworkInterface.h"
 
 @class Simperium;
 @class ASIHTTPRequest;
 @class SPBucket;
 
-@interface SPHttpManager : NSObject <SPNetworkProvider> {
+@interface SPHttpInterface : NSObject <SPNetworkInterface> {
     SPBucket *bucket;
 	ASIHTTPRequest *getRequest;
 	ASIHTTPRequest *postRequest;

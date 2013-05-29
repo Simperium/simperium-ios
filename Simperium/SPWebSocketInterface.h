@@ -7,14 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SPNetworkProvider.h"
+#import "SPNetworkInterface.h"
 
 @class Simperium;
 @class SPBucket;
 @class SRWebSocket;
 @class SRWebSocketChannel;
 
-@interface SPWebSocketManager : NSObject <SPNetworkProvider> {
+@interface SPWebSocketInterface : NSObject <SPNetworkInterface> {
     BOOL open;
     NSMutableArray *webSocketChannels;
     SRWebSocket *webSocket;

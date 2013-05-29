@@ -34,8 +34,8 @@
 		2618987F15D2EB310013CBC9 /* SocketRocket-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 2618987815D2EB310013CBC9 /* SocketRocket-Prefix.pch */; };
 		2618988015D2EB310013CBC9 /* SRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 2618987915D2EB310013CBC9 /* SRWebSocket.h */; };
 		2618988115D2EB310013CBC9 /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 2618987A15D2EB310013CBC9 /* SRWebSocket.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		2618988515D2EC130013CBC9 /* SPWebSocketManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2618988315D2EC130013CBC9 /* SPWebSocketManager.h */; };
-		2618988615D2EC130013CBC9 /* SPWebSocketManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2618988415D2EC130013CBC9 /* SPWebSocketManager.m */; };
+		2618988515D2EC130013CBC9 /* SPWebSocketInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 2618988315D2EC130013CBC9 /* SPWebSocketInterface.h */; };
+		2618988615D2EC130013CBC9 /* SPWebSocketInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 2618988415D2EC130013CBC9 /* SPWebSocketInterface.m */; };
 		2622FD08147F249400C8EEB4 /* SPMemberText.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD06147F249300C8EEB4 /* SPMemberText.h */; };
 		2622FD09147F249400C8EEB4 /* SPMemberText.m in Sources */ = {isa = PBXBuildFile; fileRef = 2622FD07147F249400C8EEB4 /* SPMemberText.m */; };
 		2622FD0C147F24A700C8EEB4 /* SPMemberDate.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD0A147F24A700C8EEB4 /* SPMemberDate.h */; };
@@ -54,7 +54,7 @@
 		2622FD25147F251200C8EEB4 /* SPMemberList.m in Sources */ = {isa = PBXBuildFile; fileRef = 2622FD23147F251100C8EEB4 /* SPMemberList.m */; };
 		2622FD28147F251D00C8EEB4 /* SPMemberBase64.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD26147F251C00C8EEB4 /* SPMemberBase64.h */; };
 		2622FD29147F251D00C8EEB4 /* SPMemberBase64.m in Sources */ = {isa = PBXBuildFile; fileRef = 2622FD27147F251D00C8EEB4 /* SPMemberBase64.m */; };
-		2622FD2D147F32A500C8EEB4 /* SPNetworkProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD2B147F32A500C8EEB4 /* SPNetworkProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2622FD2D147F32A500C8EEB4 /* SPNetworkInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD2B147F32A500C8EEB4 /* SPNetworkInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		264AE50E15D3092200E5E04E /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 264AE50D15D3092200E5E04E /* libicucore.dylib */; };
 		264AE51115D3094D00E5E04E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 264AE51015D3094D00E5E04E /* Security.framework */; };
 		264AE51A15D45E2A00E5E04E /* SPWebSocketChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 264AE51815D45E2A00E5E04E /* SPWebSocketChannel.h */; };
@@ -77,8 +77,8 @@
 		264CD943135DFE6D00C51BAD /* SPGhost.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD933135DFE6D00C51BAD /* SPGhost.m */; };
 		264CD944135DFE6D00C51BAD /* SPMember.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD934135DFE6D00C51BAD /* SPMember.h */; };
 		264CD945135DFE6D00C51BAD /* SPMember.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD935135DFE6D00C51BAD /* SPMember.m */; };
-		264CD946135DFE6D00C51BAD /* SPHttpManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD936135DFE6D00C51BAD /* SPHttpManager.h */; };
-		264CD947135DFE6D00C51BAD /* SPHttpManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD937135DFE6D00C51BAD /* SPHttpManager.m */; };
+		264CD946135DFE6D00C51BAD /* SPHttpInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD936135DFE6D00C51BAD /* SPHttpInterface.h */; };
+		264CD947135DFE6D00C51BAD /* SPHttpInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD937135DFE6D00C51BAD /* SPHttpInterface.m */; };
 		264CD980135DFE7E00C51BAD /* ASIAuthenticationDialog.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD94D135DFE7E00C51BAD /* ASIAuthenticationDialog.h */; };
 		264CD981135DFE7E00C51BAD /* ASIAuthenticationDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD94E135DFE7E00C51BAD /* ASIAuthenticationDialog.m */; };
 		264CD982135DFE7E00C51BAD /* ASICacheDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD94F135DFE7E00C51BAD /* ASICacheDelegate.h */; };
@@ -230,8 +230,8 @@
 		2618987815D2EB310013CBC9 /* SocketRocket-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SocketRocket-Prefix.pch"; sourceTree = "<group>"; };
 		2618987915D2EB310013CBC9 /* SRWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SRWebSocket.h; sourceTree = "<group>"; };
 		2618987A15D2EB310013CBC9 /* SRWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SRWebSocket.m; sourceTree = "<group>"; };
-		2618988315D2EC130013CBC9 /* SPWebSocketManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWebSocketManager.h; sourceTree = "<group>"; };
-		2618988415D2EC130013CBC9 /* SPWebSocketManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWebSocketManager.m; sourceTree = "<group>"; };
+		2618988315D2EC130013CBC9 /* SPWebSocketInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWebSocketInterface.h; sourceTree = "<group>"; };
+		2618988415D2EC130013CBC9 /* SPWebSocketInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWebSocketInterface.m; sourceTree = "<group>"; };
 		2622FD06147F249300C8EEB4 /* SPMemberText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberText.h; sourceTree = "<group>"; };
 		2622FD07147F249400C8EEB4 /* SPMemberText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMemberText.m; sourceTree = "<group>"; };
 		2622FD0A147F24A700C8EEB4 /* SPMemberDate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberDate.h; sourceTree = "<group>"; };
@@ -250,7 +250,7 @@
 		2622FD23147F251100C8EEB4 /* SPMemberList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMemberList.m; sourceTree = "<group>"; };
 		2622FD26147F251C00C8EEB4 /* SPMemberBase64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberBase64.h; sourceTree = "<group>"; };
 		2622FD27147F251D00C8EEB4 /* SPMemberBase64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMemberBase64.m; sourceTree = "<group>"; };
-		2622FD2B147F32A500C8EEB4 /* SPNetworkProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNetworkProvider.h; sourceTree = "<group>"; };
+		2622FD2B147F32A500C8EEB4 /* SPNetworkInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNetworkInterface.h; sourceTree = "<group>"; };
 		264AE50D15D3092200E5E04E /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		264AE51015D3094D00E5E04E /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		264AE51815D45E2A00E5E04E /* SPWebSocketChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWebSocketChannel.h; sourceTree = "<group>"; };
@@ -276,8 +276,8 @@
 		264CD933135DFE6D00C51BAD /* SPGhost.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGhost.m; sourceTree = "<group>"; };
 		264CD934135DFE6D00C51BAD /* SPMember.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMember.h; sourceTree = "<group>"; };
 		264CD935135DFE6D00C51BAD /* SPMember.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMember.m; sourceTree = "<group>"; };
-		264CD936135DFE6D00C51BAD /* SPHttpManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHttpManager.h; sourceTree = "<group>"; };
-		264CD937135DFE6D00C51BAD /* SPHttpManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHttpManager.m; sourceTree = "<group>"; };
+		264CD936135DFE6D00C51BAD /* SPHttpInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHttpInterface.h; sourceTree = "<group>"; };
+		264CD937135DFE6D00C51BAD /* SPHttpInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHttpInterface.m; sourceTree = "<group>"; };
 		264CD94D135DFE7E00C51BAD /* ASIAuthenticationDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASIAuthenticationDialog.h; sourceTree = "<group>"; };
 		264CD94E135DFE7E00C51BAD /* ASIAuthenticationDialog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ASIAuthenticationDialog.m; sourceTree = "<group>"; };
 		264CD94F135DFE7E00C51BAD /* ASICacheDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASICacheDelegate.h; sourceTree = "<group>"; };
@@ -841,11 +841,11 @@
 		46B7880216B709AD001AA908 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
-				2622FD2B147F32A500C8EEB4 /* SPNetworkProvider.h */,
-				264CD936135DFE6D00C51BAD /* SPHttpManager.h */,
-				264CD937135DFE6D00C51BAD /* SPHttpManager.m */,
-				2618988315D2EC130013CBC9 /* SPWebSocketManager.h */,
-				2618988415D2EC130013CBC9 /* SPWebSocketManager.m */,
+				2622FD2B147F32A500C8EEB4 /* SPNetworkInterface.h */,
+				264CD936135DFE6D00C51BAD /* SPHttpInterface.h */,
+				264CD937135DFE6D00C51BAD /* SPHttpInterface.m */,
+				2618988315D2EC130013CBC9 /* SPWebSocketInterface.h */,
+				2618988415D2EC130013CBC9 /* SPWebSocketInterface.m */,
 				264AE51815D45E2A00E5E04E /* SPWebSocketChannel.h */,
 				264AE51915D45E2A00E5E04E /* SPWebSocketChannel.m */,
 				26563AE214FC3BDE0081C8C1 /* SPAuthenticationManager.h */,
@@ -866,7 +866,7 @@
 				264CD940135DFE6D00C51BAD /* SPEnvironment.h in Headers */,
 				264CD942135DFE6D00C51BAD /* SPGhost.h in Headers */,
 				264CD944135DFE6D00C51BAD /* SPMember.h in Headers */,
-				264CD946135DFE6D00C51BAD /* SPHttpManager.h in Headers */,
+				264CD946135DFE6D00C51BAD /* SPHttpInterface.h in Headers */,
 				264CD980135DFE7E00C51BAD /* ASIAuthenticationDialog.h in Headers */,
 				264CD982135DFE7E00C51BAD /* ASICacheDelegate.h in Headers */,
 				264CD983135DFE7E00C51BAD /* ASIDataCompressor.h in Headers */,
@@ -915,7 +915,7 @@
 				2622FD20147F250400C8EEB4 /* SPMemberBinary.h in Headers */,
 				2622FD24147F251200C8EEB4 /* SPMemberList.h in Headers */,
 				2622FD28147F251D00C8EEB4 /* SPMemberBase64.h in Headers */,
-				2622FD2D147F32A500C8EEB4 /* SPNetworkProvider.h in Headers */,
+				2622FD2D147F32A500C8EEB4 /* SPNetworkInterface.h in Headers */,
 				2611E805149FB91100121D6E /* JSONKit.h in Headers */,
 				26B473F714A116B100397E7F /* SPBinaryTransportDelegate.h in Headers */,
 				26C93A6D14F850EA00BE99F5 /* SPLoginViewController.h in Headers */,
@@ -934,7 +934,7 @@
 				2618987D15D2EB310013CBC9 /* NSData+SRB64Additions.h in Headers */,
 				2618987F15D2EB310013CBC9 /* SocketRocket-Prefix.pch in Headers */,
 				2618988015D2EB310013CBC9 /* SRWebSocket.h in Headers */,
-				2618988515D2EC130013CBC9 /* SPWebSocketManager.h in Headers */,
+				2618988515D2EC130013CBC9 /* SPWebSocketInterface.h in Headers */,
 				264AE51A15D45E2A00E5E04E /* SPWebSocketChannel.h in Headers */,
 				26B733F015E585630081CF4A /* SPRelationshipResolver.h in Headers */,
 				26653CFB15FE5DEA00461A28 /* Reachability.h in Headers */,
@@ -1093,7 +1093,7 @@
 				264CD941135DFE6D00C51BAD /* SPEnvironment.m in Sources */,
 				264CD943135DFE6D00C51BAD /* SPGhost.m in Sources */,
 				264CD945135DFE6D00C51BAD /* SPMember.m in Sources */,
-				264CD947135DFE6D00C51BAD /* SPHttpManager.m in Sources */,
+				264CD947135DFE6D00C51BAD /* SPHttpInterface.m in Sources */,
 				264CD981135DFE7E00C51BAD /* ASIAuthenticationDialog.m in Sources */,
 				264CD984135DFE7E00C51BAD /* ASIDataCompressor.m in Sources */,
 				264CD986135DFE7E00C51BAD /* ASIDataDecompressor.m in Sources */,
@@ -1146,7 +1146,7 @@
 				2618987B15D2EB310013CBC9 /* base64.c in Sources */,
 				2618987E15D2EB310013CBC9 /* NSData+SRB64Additions.m in Sources */,
 				2618988115D2EB310013CBC9 /* SRWebSocket.m in Sources */,
-				2618988615D2EC130013CBC9 /* SPWebSocketManager.m in Sources */,
+				2618988615D2EC130013CBC9 /* SPWebSocketInterface.m in Sources */,
 				264AE51B15D45E2A00E5E04E /* SPWebSocketChannel.m in Sources */,
 				26B733F115E585630081CF4A /* SPRelationshipResolver.m in Sources */,
 				26653CFC15FE5DEA00461A28 /* Reachability.m in Sources */,

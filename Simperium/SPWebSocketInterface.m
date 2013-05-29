@@ -5,7 +5,7 @@
 //  Created by Michael Johnston on 11-03-07.
 //  Copyright 2011 Simperium. All rights reserved.
 //
-#import "SPWebSocketManager.h"
+#import "SPWebSocketInterface.h"
 #import "Simperium.h"
 #import "SPUser.h"
 #import "SPBucket.h"
@@ -32,14 +32,14 @@ static BOOL useNetworkActivityIndicator = 0;
 static int ddLogLevel = LOG_LEVEL_INFO;
 NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
 
-@interface SPWebSocketManager() <SRWebSocketDelegate>
+@interface SPWebSocketInterface() <SRWebSocketDelegate>
 @property (nonatomic, assign) Simperium *simperium;
 @property (nonatomic, retain) NSMutableDictionary *channels;
 @property (nonatomic, copy) NSString *clientID;
 @property (nonatomic, retain) NSDictionary *bucketNameOverrides;
 @end
 
-@implementation SPWebSocketManager
+@implementation SPWebSocketInterface
 @synthesize simperium;
 @synthesize channels;
 @synthesize clientID;

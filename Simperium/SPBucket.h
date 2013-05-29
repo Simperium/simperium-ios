@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "SPStorageProvider.h"
-#import "SPNetworkProvider.h"
+#import "SPNetworkInterface.h"
 
 @class SPDiffer;
 @class SPSchema;
@@ -53,7 +53,7 @@ typedef NSUInteger SPBucketChangeType;
     NSString *name;
     NSString *instanceLabel;
     BOOL notifyWhileIndexing;
-    id<SPNetworkProvider> network;
+    id<SPNetworkInterface> network;
     SPRelationshipResolver *relationshipResolver;
     SPDiffer *differ;
     id<SPStorageProvider> storage;
@@ -108,7 +108,7 @@ typedef NSUInteger SPBucketChangeType;
  */
 @property (nonatomic, copy) NSString *instanceLabel;
 @property (nonatomic, retain) id<SPStorageProvider> storage;
-@property (nonatomic, retain) id<SPNetworkProvider> network;
+@property (nonatomic, retain) id<SPNetworkInterface> network;
 @property (nonatomic, retain) SPDiffer *differ;
 @property (nonatomic, retain) SPRelationshipResolver *relationshipResolver;
 @property (retain) SPChangeProcessor* changeProcessor;
@@ -118,7 +118,7 @@ typedef NSUInteger SPBucketChangeType;
 
 - (id)initWithSchema:(SPSchema *)aSchema
              storage:(id<SPStorageProvider>)aStorage
-     networkProvider:(id<SPNetworkProvider>)netProvider
+     networkInterface:(id<SPNetworkInterface>)netInterface
 relationshipResolver:(SPRelationshipResolver *)resolver
                label:(NSString *)label;
 - (void)validateObjects;

@@ -17,8 +17,8 @@
 #import "SPDiffer.h"
 #import "SPGhost.h"
 #import "SPEnvironment.h"
-#import "SPHttpManager.h"
-#import "SPWebSocketManager.h"
+#import "SPHttpInterface.h"
+#import "SPWebSocketInterface.h"
 #import "ASIHTTPRequest.h"
 #import "JSONKit.h"
 #import "NSString+Simperium.h"
@@ -43,7 +43,7 @@
 @property (nonatomic, retain) SPCoreDataStorage *coreDataStorage;
 @property (nonatomic, retain) SPJSONStorage *JSONStorage;
 @property (nonatomic, retain) NSMutableDictionary *buckets;
-@property (nonatomic, retain) id<SPNetworkProvider> network;
+@property (nonatomic, retain) id<SPNetworkInterface> network;
 @property (nonatomic, retain) SPRelationshipResolver *relationshipResolver;
 @property (nonatomic, assign) BOOL skipContextProcessing;
 @property (nonatomic, assign) BOOL networkManagersStarted;
@@ -280,10 +280,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             // Create and start a network manager for it
             SPSchema *schema = [[SPSchema alloc] initWithBucketName:name data:nil];
             schema.dynamic = YES;
-            SPHttpManager *netManager = [[SPHttpManager alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
+            SPHttpInterface *netManager = [[SPHttpInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
             
             // New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkProvider:network relationshipResolver:self.relationshipResolver label:self.label];
+            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkInterface:network
+                                 relationshipResolver:self.relationshipResolver label:self.label];
             [netManager setBucket:bucket overrides:self.bucketOverrides];
             [buckets setObject:bucket forKey:name];
             [netManager start:bucket name:bucket.name];
@@ -388,19 +389,19 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         if (self.useWebSockets) {
             // For websockets, one network manager for all buckets
             if (!self.network) {
-                SPWebSocketManager *webSocketManager = [[SPWebSocketManager alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
+                SPWebSocketInterface *webSocketManager = [[SPWebSocketInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
                 self.network = webSocketManager;
                 [webSocketManager release];
             }
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkProvider:self.network
+            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
                                  relationshipResolver:self.relationshipResolver label:self.label];
         } else {
             // For http, each bucket has its own network manager
-            SPHttpManager *netProvider = [[SPHttpManager alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkProvider:netProvider
+            SPHttpInterface *netInterface = [[SPHttpInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
+            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:netInterface
                                  relationshipResolver:self.relationshipResolver label:self.label];
-            [(SPHttpManager *)netProvider setBucket:bucket overrides:self.bucketOverrides]; // tightly coupled for now; will fix in websockets netmanager
-            [netProvider release];
+            [(SPHttpInterface *)netInterface setBucket:bucket overrides:self.bucketOverrides]; // tightly coupled for now; will fix in websockets netmanager
+            [netInterface release];
         }
         
         [bucketList setObject:bucket forKey:schema.bucketName];
@@ -408,7 +409,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     if (self.useWebSockets) {
-        [(SPWebSocketManager *)self.network loadChannelsForBuckets:bucketList overrides:self.bucketOverrides];
+        [(SPWebSocketInterface *)self.network loadChannelsForBuckets:bucketList overrides:self.bucketOverrides];
     }
     
     return bucketList;
