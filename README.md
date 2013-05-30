@@ -9,6 +9,8 @@ Adding Simperium to your project
 --------------------------------
 The easiest way to add Simperium is to [download the binary framework](https://docs.google.com/uc?export=download&id=0B_WOy42eJTXtMl90cHN1YVUzRlk) and [follow these instructions](http://simperium.com/docs/ios/).
 
+Alternatively, you can install using cocoapods by adding `pod 'Simperium' path: '{path to a cloned version of this repo}'`. Once submitted to the spec repo the path can be omitted.
+
 To use the source code instead, drag and drop Simperium.xcodeproj into your application's project, then add libSimperium.a in your target's Build Phase tab (under Link Binary with Libraries). You'll still need to [add some dependencies](http://simperium.com/docs/ios/#add). Note that you shouldn't have Simperium.xcodeproj open in another window at the same time. Xcode doesn't like this.
 
 If for some reason you want to build the binary framework yourself, open Simperium.xcodeproj, then select and build the Framework target for iOS Device. You can build a release version of the Framework target by choosing Product -> Build for Archiving.
@@ -44,7 +46,6 @@ If you decide to dig into the source code, please expect problems and violations
 * Core Data threading is currently messy (iOS 4 was originally targeted)
 * Full WebSockets support is still being fleshed out
 * Support for raw JSON (without Core Data) is still being fleshed out
-* No CocoaPods support yet
 * Some TODOs and hacks remain in the code
 * Some support for binary files and collaboration is committed, but not finished
 * Auth UI is in a .xib but could live more happily as code instead

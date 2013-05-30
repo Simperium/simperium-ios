@@ -1,0 +1,44 @@
+PODS:
+  - ASIHTTPRequest (1.8.1):
+    - ASIHTTPRequest/ASIWebPageRequest
+    - ASIHTTPRequest/CloudFiles
+    - ASIHTTPRequest/S3
+    - Reachability
+  - ASIHTTPRequest/ASIWebPageRequest (1.8.1):
+    - Reachability
+  - ASIHTTPRequest/CloudFiles (1.8.1):
+    - Reachability
+  - ASIHTTPRequest/S3 (1.8.1):
+    - Reachability
+  - CocoaLumberjack (1.6.2)
+  - Google-Diff-Match-Patch (0.0.1)
+  - JRSwizzle (1.0)
+  - JSONKit (1.5pre)
+  - Reachability (3.1.0)
+  - Simperium (0.5.0):
+    - ASIHTTPRequest (~> 1.8.1)
+    - CocoaLumberjack
+    - Google-Diff-Match-Patch
+    - JRSwizzle
+    - JSONKit
+    - SocketRocket
+  - SocketRocket (0.2.0)
+
+DEPENDENCIES:
+  - Simperium (from `../../Simperium.podspec`)
+
+EXTERNAL SOURCES:
+  Simperium:
+    :path: ../../Simperium.podspec
+
+SPEC CHECKSUMS:
+  ASIHTTPRequest: a411b8d0f006ed8fc24248be6a0c4ad2abc9b101
+  CocoaLumberjack: d73e1e317ced14ab930797dda6c17156ff17aaa1
+  Google-Diff-Match-Patch: a4f62e11af850bea98689c8f24e382e47c46bf59
+  JRSwizzle: 6242ff38485d870fc2636899048ee1ab883ae587
+  JSONKit: 409734ab3407fce90ef7eaa95d7168f38d9a6601
+  Reachability: ba94ecd4eaa037be3d0588b38956672588530c5b
+  Simperium: 5c880ee04e9f0814aa22c69896be030fa4eb5f16
+  SocketRocket: bca43a94bd9aac3a629df42c06843402399ee67b
+
+COCOAPODS: 0.20.2

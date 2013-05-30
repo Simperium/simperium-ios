@@ -1,0 +1,12 @@
+
+target :iOS, exclusive: true do
+	platform :ios
+	podspec :path => '../Simperium.podspec'
+	link_with 'Simperium'
+end
+
+target :OSX, exclusive: true do
+	platform :osx
+	podspec :path => '../Simperium.podspec'
+	link_with 'Simperium-OSX'
+end
