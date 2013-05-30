@@ -21,34 +21,15 @@
 		26156AED14EC3D4C003332BA /* SPDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 26156AEC14EC3D4C003332BA /* SPDetailViewController.m */; };
 		26156AF714EC405F003332BA /* Todo.m in Sources */ = {isa = PBXBuildFile; fileRef = 26156AF614EC405F003332BA /* Todo.m */; };
 		266F06E215E60C3700308C5D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 266F06E115E60C3700308C5D /* Security.framework */; };
-		266F06E515E60C3F00308C5D /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 266F06E415E60C3F00308C5D /* libicucore.dylib */; };
 		26C93A7514F86D1800BE99F5 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 26C93A7214F86D1800BE99F5 /* icon.png */; };
 		26C93A7614F86D1800BE99F5 /* icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 26C93A7314F86D1800BE99F5 /* icon@2x.png */; };
 		26CEF5F814EC418300BEC0BF /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5F714EC418300BEC0BF /* CFNetwork.framework */; };
 		26CEF5FA14EC418A00BEC0BF /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5F914EC418A00BEC0BF /* MobileCoreServices.framework */; };
 		26CEF5FC14EC419100BEC0BF /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5FB14EC419100BEC0BF /* SystemConfiguration.framework */; };
 		26CEF5FE14EC41AD00BEC0BF /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5FD14EC41AD00BEC0BF /* libz.dylib */; };
-		46B787EA16B70429001AA908 /* libSimperium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 46B787E716B70402001AA908 /* libSimperium.a */; };
-		46CC658916B09A6800D5DC22 /* LoginView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 46CC658816B09A6800D5DC22 /* LoginView.xib */; };
 		46CC658F16B09C7700D5DC22 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */; };
+		A83750BA8FD64C30BF05EAD2 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C85873A77B647108C0A8A4D /* libPods.a */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		46B787E616B70402001AA908 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 264CD8FB135DFD7A00C51BAD;
-			remoteInfo = Simperium;
-		};
-		46B787E816B70402001AA908 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 264CD908135DFD7A00C51BAD;
-			remoteInfo = SimperiumTests;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		26156AC714EC3D4C003332BA /* SimpletodoFinal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpletodoFinal.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -72,16 +53,15 @@
 		26156AF514EC405F003332BA /* Todo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Todo.h; sourceTree = "<group>"; };
 		26156AF614EC405F003332BA /* Todo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Todo.m; sourceTree = "<group>"; };
 		266F06E115E60C3700308C5D /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		266F06E415E60C3F00308C5D /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		26C93A7214F86D1800BE99F5 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		26C93A7314F86D1800BE99F5 /* icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon@2x.png"; sourceTree = "<group>"; };
 		26CEF5F714EC418300BEC0BF /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		26CEF5F914EC418A00BEC0BF /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		26CEF5FB14EC419100BEC0BF /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		26CEF5FD14EC41AD00BEC0BF /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
-		46B787DD16B70402001AA908 /* Simperium.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Simperium.xcodeproj; path = ../../Simperium.xcodeproj; sourceTree = "<group>"; };
-		46CC658816B09A6800D5DC22 /* LoginView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = LoginView.xib; path = ../../Resources/LoginView.xib; sourceTree = "<group>"; };
 		46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		4C85873A77B647108C0A8A4D /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E50F5BB1725C4A8E9BC59264 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,8 +69,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46B787EA16B70429001AA908 /* libSimperium.a in Frameworks */,
-				266F06E515E60C3F00308C5D /* libicucore.dylib in Frameworks */,
 				266F06E215E60C3700308C5D /* Security.framework in Frameworks */,
 				26CEF5FE14EC41AD00BEC0BF /* libz.dylib in Frameworks */,
 				26CEF5FC14EC419100BEC0BF /* SystemConfiguration.framework in Frameworks */,
@@ -100,6 +78,7 @@
 				26156ACE14EC3D4C003332BA /* Foundation.framework in Frameworks */,
 				26156AD014EC3D4C003332BA /* CoreGraphics.framework in Frameworks */,
 				26156AD214EC3D4C003332BA /* CoreData.framework in Frameworks */,
+				A83750BA8FD64C30BF05EAD2 /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -109,15 +88,13 @@
 		26156ABC14EC3D4C003332BA = {
 			isa = PBXGroup;
 			children = (
-				46B787DD16B70402001AA908 /* Simperium.xcodeproj */,
-				46CC658816B09A6800D5DC22 /* LoginView.xib */,
-				266F06E415E60C3F00308C5D /* libicucore.dylib */,
 				26C93A7214F86D1800BE99F5 /* icon.png */,
 				26C93A7314F86D1800BE99F5 /* icon@2x.png */,
 				46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */,
 				26156AD314EC3D4C003332BA /* Simpletodo */,
 				26156ACA14EC3D4C003332BA /* Frameworks */,
 				26156AC814EC3D4C003332BA /* Products */,
+				E50F5BB1725C4A8E9BC59264 /* Pods.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -141,6 +118,7 @@
 				26156ACD14EC3D4C003332BA /* Foundation.framework */,
 				26156ACF14EC3D4C003332BA /* CoreGraphics.framework */,
 				26156AD114EC3D4C003332BA /* CoreData.framework */,
+				4C85873A77B647108C0A8A4D /* libPods.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -176,15 +154,6 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		46B787DE16B70402001AA908 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				46B787E716B70402001AA908 /* libSimperium.a */,
-				46B787E916B70402001AA908 /* SimperiumTests.octest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -192,9 +161,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 26156AF014EC3D4C003332BA /* Build configuration list for PBXNativeTarget "SimpletodoFinal" */;
 			buildPhases = (
+				F2A40EE00F154DDDB2018ED3 /* Check Pods Manifest.lock */,
 				26156AC314EC3D4C003332BA /* Sources */,
 				26156AC414EC3D4C003332BA /* Frameworks */,
 				26156AC514EC3D4C003332BA /* Resources */,
+				957B786DE4534C8CA9376D7B /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -223,35 +194,12 @@
 			mainGroup = 26156ABC14EC3D4C003332BA;
 			productRefGroup = 26156AC814EC3D4C003332BA /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 46B787DE16B70402001AA908 /* Products */;
-					ProjectRef = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				26156AC614EC3D4C003332BA /* SimpletodoFinal */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		46B787E716B70402001AA908 /* libSimperium.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libSimperium.a;
-			remoteRef = 46B787E616B70402001AA908 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		46B787E916B70402001AA908 /* SimperiumTests.octest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = SimperiumTests.octest;
-			remoteRef = 46B787E816B70402001AA908 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		26156AC514EC3D4C003332BA /* Resources */ = {
@@ -263,12 +211,42 @@
 				26156AE414EC3D4C003332BA /* MainStoryboard_iPad.storyboard in Resources */,
 				26C93A7514F86D1800BE99F5 /* icon.png in Resources */,
 				26C93A7614F86D1800BE99F5 /* icon@2x.png in Resources */,
-				46CC658916B09A6800D5DC22 /* LoginView.xib in Resources */,
 				46CC658F16B09C7700D5DC22 /* Default-568h@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		957B786DE4534C8CA9376D7B /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+		};
+		F2A40EE00F154DDDB2018ED3 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		26156AC314EC3D4C003332BA /* Sources */ = {
@@ -363,6 +341,7 @@
 		};
 		26156AF114EC3D4C003332BA /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E50F5BB1725C4A8E9BC59264 /* Pods.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -372,7 +351,7 @@
 				GCC_PREFIX_HEADER = "SimpletodoFinal/SimpletodoFinal-Prefix.pch";
 				INFOPLIST_FILE = "SimpletodoFinal/SimpletodoFinal-Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_NAME = SimpletodoFinal;
 				PUBLIC_HEADERS_FOLDER_PATH = "";
 				WRAPPER_EXTENSION = app;
@@ -381,6 +360,7 @@
 		};
 		26156AF214EC3D4C003332BA /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E50F5BB1725C4A8E9BC59264 /* Pods.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -390,7 +370,7 @@
 				GCC_PREFIX_HEADER = "SimpletodoFinal/SimpletodoFinal-Prefix.pch";
 				INFOPLIST_FILE = "SimpletodoFinal/SimpletodoFinal-Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_NAME = SimpletodoFinal;
 				PUBLIC_HEADERS_FOLDER_PATH = "";
 				WRAPPER_EXTENSION = app;
