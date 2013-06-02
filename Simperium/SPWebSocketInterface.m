@@ -182,6 +182,9 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     if (!channel)
         channel = [self loadChannelForBucket:bucket];
     
+    if (channel.started)
+        return;
+    
     if (self.webSocket == nil) {
         [self openWebSocket];
         // Channels will get setup after successfully connection
@@ -206,6 +209,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     // Mark it closed so it doesn't reopen
     open = NO;
     [self.webSocket close];
+    self.webSocket = nil;
     
     // TODO: Consider ensuring threads are done their work and sending a notification
 }
@@ -240,6 +244,9 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
+    if (!open)
+        return;
+    
     DDLogVerbose(@"Simperium websocket failed (will retry) with error %@", error);
     
     self.webSocket = nil;
