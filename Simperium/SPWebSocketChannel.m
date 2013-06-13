@@ -360,22 +360,19 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             }];
             
             // Now check if indexing is complete
-            if (objectVersionsPending == 0) {
-                dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (objectVersionsPending > 0)
+                    objectVersionsPending--;
+                if (objectVersionsPending == 0)
                     [self allVersionsFinishedForBucket:bucket];
-                });
-            }
+            });
         }
     });
     [batch release];
-
     [self.responseBatch removeAllObjects];
 }
 
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
-    if (objectVersionsPending > 0)
-        objectVersionsPending--;
-
     if ([responseString isEqualToString:@"?"]) {
         DDLogError(@"Simperium error: version not found during version retrieval (%@)", bucket.name);
         return;
@@ -410,7 +407,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
         // Batch responses for more efficient processing
         // (process the last handful individually though)
-        if (objectVersionsPending < INDEX_BATCH_SIZE || [self.responseBatch count] % INDEX_BATCH_SIZE == 0)
+        if ([self.responseBatch count] < INDEX_BATCH_SIZE || [self.responseBatch count] % INDEX_BATCH_SIZE == 0)
             [self processBatchForBucket:bucket];
     }
 }

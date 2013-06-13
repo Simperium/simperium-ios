@@ -159,7 +159,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
                               //@"i", @"cmd",
                               nil];
     
-    DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, remoteBucketName);
+    DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
     NSString *message = [NSString stringWithFormat:@"%d:init:%@", channel.number, [jsonData JSONString]];
     [self.webSocket send:message];
 }
