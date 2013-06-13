@@ -370,9 +370,12 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
 
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID {
     NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:[changes count]];
+    
+    // Construct a list of keys for a willChange notification (and ignore acks)
     for (NSDictionary *change in changes) {
         NSString *key = [change objectForKey:CH_KEY];
-        [changedKeys addObject:key];
+        if (![self awaitingAcknowledgementForKey:key])
+            [changedKeys addObject:key];
     }
 
     NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -527,8 +530,10 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
             NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
           
             if (change) {
-                [changesPending setObject:change forKey: key];
+                [changesPending setObject:change forKey:key];
                 [queuedChanges setObject:change forKey:key];
+            } else {
+                [keysForObjectsWithMoreChanges removeObject:key];
             }
         }];
 
