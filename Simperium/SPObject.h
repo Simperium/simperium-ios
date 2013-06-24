@@ -14,8 +14,8 @@
     NSString *simperiumKey;
 }
 
-@property (nonatomic, retain) NSMutableDictionary *dict;
-@property (nonatomic, retain) SPGhost *ghost;
+@property (nonatomic, strong) NSMutableDictionary *dict;
+@property (nonatomic, strong) SPGhost *ghost;
 @property (nonatomic, copy) NSString *ghostData;
 @property (nonatomic, copy) NSString *simperiumKey;
 @property (nonatomic, copy) NSString *version;

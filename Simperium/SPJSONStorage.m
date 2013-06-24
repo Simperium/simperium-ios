@@ -45,14 +45,6 @@
     return self;
 }
 
--(void)dealloc
-{
-    [super dealloc];
-    self.objects = nil;
-    self.objectList = nil;
-    self.allObjects = nil;
-    self.ghosts = nil;
-}
 
 -(void)object:(id)object forKey:(NSString *)simperiumKey didChangeValue:(id)value forKey:(NSString *)key {
     // Update the schema if applicable
@@ -207,7 +199,6 @@
 //    
 //    NSError *error;
 //    NSArray *items = [context executeFetchRequest:fetchRequest error:&error];
-//    [fetchRequest release];
 //    
 //    for (NSManagedObject *managedObject in items) {
 //        [context deleteObject:managedObject];
@@ -229,7 +220,7 @@
 //    
 //    // Execute a targeted fetch to preserve faults so that only simperiumKeys are loaded in to memory
 //    // http://stackoverflow.com/questions/3956406/core-data-how-to-get-nsmanagedobjects-objectid-when-nsfetchrequest-returns-nsdi
-//    NSExpressionDescription* objectIdDesc = [[NSExpressionDescription new] autorelease];
+//    NSExpressionDescription* objectIdDesc = [NSExpressionDescription new];
 //    objectIdDesc.name = @"objectID";
 //    objectIdDesc.expression = [NSExpression expressionForEvaluatedObject];
 //    objectIdDesc.expressionResultType = NSObjectIDAttributeType;
@@ -272,9 +263,7 @@
 //        }
 //    }
 //    
-//    NSLog(@"Simperium managing %u %@ object instances", [results count], entityName);
-//    
-//    [request release];    
+//    NSLog(@"Simperium managing %u %@ object instances", [results count], entityName); 
 }
 
 -(BOOL)save

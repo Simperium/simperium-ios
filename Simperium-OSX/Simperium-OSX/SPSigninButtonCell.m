@@ -88,7 +88,7 @@
     CGContextRef contextRef = [ctx graphicsPort];
     
     NSData *data = [image TIFFRepresentation]; // open for suggestions
-    CGImageSourceRef source = CGImageSourceCreateWithData((CFDataRef)data, NULL);
+    CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
     if(source) {
         CGImageRef imageRef = CGImageSourceCreateImageAtIndex(source, 0, NULL);
         CFRelease(source);

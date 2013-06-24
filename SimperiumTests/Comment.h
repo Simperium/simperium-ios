@@ -14,7 +14,7 @@
 
 @interface Comment : TestObject
 
-@property (nonatomic, retain) NSString * content;
-@property (nonatomic, retain) Post *post;
+@property (nonatomic, strong) NSString * content;
+@property (nonatomic, strong) Post *post;
 
 @end

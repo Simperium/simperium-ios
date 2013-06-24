@@ -22,18 +22,18 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		260722A315BF26A300786BD4 /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D95142CF97D001ACF20 /* DDASLLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		260722A515BF26A700786BD4 /* DDAbstractDatabaseLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D93142CF97D001ACF20 /* DDAbstractDatabaseLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		260722A615BF26AB00786BD4 /* DDFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D97142CF97D001ACF20 /* DDFileLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		260722A315BF26A300786BD4 /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D95142CF97D001ACF20 /* DDASLLogger.m */; };
+		260722A515BF26A700786BD4 /* DDAbstractDatabaseLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D93142CF97D001ACF20 /* DDAbstractDatabaseLogger.m */; };
+		260722A615BF26AB00786BD4 /* DDFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D97142CF97D001ACF20 /* DDFileLogger.m */; };
 		2611E805149FB91100121D6E /* JSONKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 2611E803149FB91100121D6E /* JSONKit.h */; };
-		2611E806149FB91100121D6E /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 2611E804149FB91100121D6E /* JSONKit.m */; };
-		2618987B15D2EB310013CBC9 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 2618987415D2EB310013CBC9 /* base64.c */; };
+		2611E806149FB91100121D6E /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 2611E804149FB91100121D6E /* JSONKit.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		2618987B15D2EB310013CBC9 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 2618987415D2EB310013CBC9 /* base64.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		2618987C15D2EB310013CBC9 /* base64.h in Headers */ = {isa = PBXBuildFile; fileRef = 2618987515D2EB310013CBC9 /* base64.h */; };
 		2618987D15D2EB310013CBC9 /* NSData+SRB64Additions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2618987615D2EB310013CBC9 /* NSData+SRB64Additions.h */; };
-		2618987E15D2EB310013CBC9 /* NSData+SRB64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2618987715D2EB310013CBC9 /* NSData+SRB64Additions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		2618987E15D2EB310013CBC9 /* NSData+SRB64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2618987715D2EB310013CBC9 /* NSData+SRB64Additions.m */; };
 		2618987F15D2EB310013CBC9 /* SocketRocket-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 2618987815D2EB310013CBC9 /* SocketRocket-Prefix.pch */; };
 		2618988015D2EB310013CBC9 /* SRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 2618987915D2EB310013CBC9 /* SRWebSocket.h */; };
-		2618988115D2EB310013CBC9 /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 2618987A15D2EB310013CBC9 /* SRWebSocket.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		2618988115D2EB310013CBC9 /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 2618987A15D2EB310013CBC9 /* SRWebSocket.m */; };
 		2618988515D2EC130013CBC9 /* SPWebSocketInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 2618988315D2EC130013CBC9 /* SPWebSocketInterface.h */; };
 		2618988615D2EC130013CBC9 /* SPWebSocketInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 2618988415D2EC130013CBC9 /* SPWebSocketInterface.m */; };
 		2622FD08147F249400C8EEB4 /* SPMemberText.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD06147F249300C8EEB4 /* SPMemberText.h */; };
@@ -80,40 +80,40 @@
 		264CD946135DFE6D00C51BAD /* SPHttpInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD936135DFE6D00C51BAD /* SPHttpInterface.h */; };
 		264CD947135DFE6D00C51BAD /* SPHttpInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD937135DFE6D00C51BAD /* SPHttpInterface.m */; };
 		264CD980135DFE7E00C51BAD /* ASIAuthenticationDialog.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD94D135DFE7E00C51BAD /* ASIAuthenticationDialog.h */; };
-		264CD981135DFE7E00C51BAD /* ASIAuthenticationDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD94E135DFE7E00C51BAD /* ASIAuthenticationDialog.m */; };
+		264CD981135DFE7E00C51BAD /* ASIAuthenticationDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD94E135DFE7E00C51BAD /* ASIAuthenticationDialog.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD982135DFE7E00C51BAD /* ASICacheDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD94F135DFE7E00C51BAD /* ASICacheDelegate.h */; };
 		264CD983135DFE7E00C51BAD /* ASIDataCompressor.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD950135DFE7E00C51BAD /* ASIDataCompressor.h */; };
-		264CD984135DFE7E00C51BAD /* ASIDataCompressor.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD951135DFE7E00C51BAD /* ASIDataCompressor.m */; };
+		264CD984135DFE7E00C51BAD /* ASIDataCompressor.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD951135DFE7E00C51BAD /* ASIDataCompressor.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD985135DFE7E00C51BAD /* ASIDataDecompressor.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD952135DFE7E00C51BAD /* ASIDataDecompressor.h */; };
-		264CD986135DFE7E00C51BAD /* ASIDataDecompressor.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD953135DFE7E00C51BAD /* ASIDataDecompressor.m */; };
+		264CD986135DFE7E00C51BAD /* ASIDataDecompressor.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD953135DFE7E00C51BAD /* ASIDataDecompressor.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD987135DFE7E00C51BAD /* ASIDownloadCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD954135DFE7E00C51BAD /* ASIDownloadCache.h */; };
-		264CD988135DFE7E00C51BAD /* ASIDownloadCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD955135DFE7E00C51BAD /* ASIDownloadCache.m */; };
+		264CD988135DFE7E00C51BAD /* ASIDownloadCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD955135DFE7E00C51BAD /* ASIDownloadCache.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD989135DFE7E00C51BAD /* ASIFormDataRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD956135DFE7E00C51BAD /* ASIFormDataRequest.h */; };
-		264CD98A135DFE7E00C51BAD /* ASIFormDataRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD957135DFE7E00C51BAD /* ASIFormDataRequest.m */; };
+		264CD98A135DFE7E00C51BAD /* ASIFormDataRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD957135DFE7E00C51BAD /* ASIFormDataRequest.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD98B135DFE7E00C51BAD /* ASIHTTPRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD958135DFE7E00C51BAD /* ASIHTTPRequest.h */; };
-		264CD98C135DFE7E00C51BAD /* ASIHTTPRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD959135DFE7E00C51BAD /* ASIHTTPRequest.m */; };
+		264CD98C135DFE7E00C51BAD /* ASIHTTPRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD959135DFE7E00C51BAD /* ASIHTTPRequest.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD98D135DFE7E00C51BAD /* ASIHTTPRequestConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD95A135DFE7E00C51BAD /* ASIHTTPRequestConfig.h */; };
 		264CD98E135DFE7E00C51BAD /* ASIHTTPRequestDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD95B135DFE7E00C51BAD /* ASIHTTPRequestDelegate.h */; };
 		264CD98F135DFE7E00C51BAD /* ASIInputStream.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD95C135DFE7E00C51BAD /* ASIInputStream.h */; };
-		264CD990135DFE7E00C51BAD /* ASIInputStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD95D135DFE7E00C51BAD /* ASIInputStream.m */; };
+		264CD990135DFE7E00C51BAD /* ASIInputStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD95D135DFE7E00C51BAD /* ASIInputStream.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD991135DFE7E00C51BAD /* ASINetworkQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD95E135DFE7E00C51BAD /* ASINetworkQueue.h */; };
-		264CD992135DFE7E00C51BAD /* ASINetworkQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD95F135DFE7E00C51BAD /* ASINetworkQueue.m */; };
+		264CD992135DFE7E00C51BAD /* ASINetworkQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD95F135DFE7E00C51BAD /* ASINetworkQueue.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD993135DFE7E00C51BAD /* ASIProgressDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD960135DFE7E00C51BAD /* ASIProgressDelegate.h */; };
 		264CD994135DFE7E00C51BAD /* ASIReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD962135DFE7E00C51BAD /* ASIReachability.h */; };
-		264CD995135DFE7E00C51BAD /* ASIReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD963135DFE7E00C51BAD /* ASIReachability.m */; };
+		264CD995135DFE7E00C51BAD /* ASIReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD963135DFE7E00C51BAD /* ASIReachability.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD996135DFE7E00C51BAD /* DiffMatchPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD965135DFE7E00C51BAD /* DiffMatchPatch.h */; };
-		264CD997135DFE7E00C51BAD /* DiffMatchPatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD966135DFE7E00C51BAD /* DiffMatchPatch.m */; };
-		264CD998135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.c in Sources */ = {isa = PBXBuildFile; fileRef = 264CD967135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.c */; };
+		264CD997135DFE7E00C51BAD /* DiffMatchPatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD966135DFE7E00C51BAD /* DiffMatchPatch.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		264CD998135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.c in Sources */ = {isa = PBXBuildFile; fileRef = 264CD967135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD999135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD968135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.h */; };
 		264CD99A135DFE7E00C51BAD /* MinMaxMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD969135DFE7E00C51BAD /* MinMaxMacros.h */; };
 		264CD99B135DFE7E00C51BAD /* NSMutableDictionary+DMPExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD96A135DFE7E00C51BAD /* NSMutableDictionary+DMPExtensions.h */; };
-		264CD99C135DFE7E00C51BAD /* NSMutableDictionary+DMPExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD96B135DFE7E00C51BAD /* NSMutableDictionary+DMPExtensions.m */; };
+		264CD99C135DFE7E00C51BAD /* NSMutableDictionary+DMPExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD96B135DFE7E00C51BAD /* NSMutableDictionary+DMPExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD99D135DFE7E00C51BAD /* NSString+JavaSubstring.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD96C135DFE7E00C51BAD /* NSString+JavaSubstring.h */; };
-		264CD99E135DFE7E00C51BAD /* NSString+JavaSubstring.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD96D135DFE7E00C51BAD /* NSString+JavaSubstring.m */; };
+		264CD99E135DFE7E00C51BAD /* NSString+JavaSubstring.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD96D135DFE7E00C51BAD /* NSString+JavaSubstring.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD99F135DFE7E00C51BAD /* NSString+UnicharUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD96E135DFE7E00C51BAD /* NSString+UnicharUtilities.h */; };
-		264CD9A0135DFE7E00C51BAD /* NSString+UnicharUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD96F135DFE7E00C51BAD /* NSString+UnicharUtilities.m */; };
+		264CD9A0135DFE7E00C51BAD /* NSString+UnicharUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD96F135DFE7E00C51BAD /* NSString+UnicharUtilities.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD9A1135DFE7E00C51BAD /* NSString+UriCompatibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD970135DFE7E00C51BAD /* NSString+UriCompatibility.h */; };
-		264CD9A2135DFE7E00C51BAD /* NSString+UriCompatibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD971135DFE7E00C51BAD /* NSString+UriCompatibility.m */; };
+		264CD9A2135DFE7E00C51BAD /* NSString+UriCompatibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD971135DFE7E00C51BAD /* NSString+UriCompatibility.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD9B1135DFFFF00C51BAD /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 264CD9B0135DFFFF00C51BAD /* CoreData.framework */; };
 		26563AE414FC3BDE0081C8C1 /* SPAuthenticationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 26563AE214FC3BDE0081C8C1 /* SPAuthenticationManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		26563AE514FC3BDE0081C8C1 /* SPAuthenticationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 26563AE314FC3BDE0081C8C1 /* SPAuthenticationManager.m */; };
@@ -123,7 +123,7 @@
 		265D800E1476188200002A19 /* SPCoreDataStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 265D800C1476188200002A19 /* SPCoreDataStorage.m */; };
 		265D80141476461800002A19 /* SPStorageObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 265D80131476461800002A19 /* SPStorageObserver.h */; settings = {ATTRIBUTES = (); }; };
 		26653CFB15FE5DEA00461A28 /* Reachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 26653CF915FE5DE900461A28 /* Reachability.h */; };
-		26653CFC15FE5DEA00461A28 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 26653CFA15FE5DE900461A28 /* Reachability.m */; };
+		26653CFC15FE5DEA00461A28 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 26653CFA15FE5DE900461A28 /* Reachability.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		2669E6E1144D5CA100C33988 /* UIImage+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 2669E6DF144D5CA000C33988 /* UIImage+Simperium.h */; };
 		2673D71B1479F4C000B7B6B3 /* SimperiumRelationshipTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D7181479F42000B7B6B3 /* SimperiumRelationshipTests.m */; };
 		2673D722147A018000B7B6B3 /* Post.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D721147A018000B7B6B3 /* Post.m */; };
@@ -148,9 +148,9 @@
 		26905D9E142CF97D001ACF20 /* DDASLLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 26905D94142CF97D001ACF20 /* DDASLLogger.h */; };
 		26905DA0142CF97D001ACF20 /* DDFileLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 26905D96142CF97D001ACF20 /* DDFileLogger.h */; };
 		26905DA2142CF97D001ACF20 /* DDLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 26905D98142CF97D001ACF20 /* DDLog.h */; };
-		26905DA3142CF97D001ACF20 /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D99142CF97D001ACF20 /* DDLog.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		26905DA3142CF97D001ACF20 /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D99142CF97D001ACF20 /* DDLog.m */; };
 		26905DA4142CF97D001ACF20 /* DDTTYLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 26905D9A142CF97D001ACF20 /* DDTTYLogger.h */; };
-		26905DA5142CF97D001ACF20 /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D9B142CF97D001ACF20 /* DDTTYLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		26905DA5142CF97D001ACF20 /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D9B142CF97D001ACF20 /* DDTTYLogger.m */; };
 		26905DA8142D344C001ACF20 /* DDLogDebug.h in Headers */ = {isa = PBXBuildFile; fileRef = 26905DA7142D344C001ACF20 /* DDLogDebug.h */; };
 		269A7F3F147355D100CB29EE /* SPChangeProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 269A7F3D147355D100CB29EE /* SPChangeProcessor.h */; };
 		269A7F4414743A9C00CB29EE /* SPIndexProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 269A7F4214743A9C00CB29EE /* SPIndexProcessor.h */; };
@@ -167,7 +167,7 @@
 		26C93A6D14F850EA00BE99F5 /* SPLoginViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 26C93A6B14F850EA00BE99F5 /* SPLoginViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		26C93A6E14F850EA00BE99F5 /* SPLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 26C93A6C14F850EA00BE99F5 /* SPLoginViewController.m */; };
 		26D4D3B3156C3DA300E822E9 /* JRSwizzle.h in Headers */ = {isa = PBXBuildFile; fileRef = 26D4D3B1156C3DA300E822E9 /* JRSwizzle.h */; };
-		26D4D3B4156C3DA300E822E9 /* JRSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 26D4D3B2156C3DA300E822E9 /* JRSwizzle.m */; };
+		26D4D3B4156C3DA300E822E9 /* JRSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 26D4D3B2156C3DA300E822E9 /* JRSwizzle.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		26E83A811395A1FC00195758 /* SPS3Manager.h in Headers */ = {isa = PBXBuildFile; fileRef = 26E83A7F1395A1FC00195758 /* SPS3Manager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		26E83C2613985DBE00195758 /* SPCoreDataExporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 26E83C2413985DBB00195758 /* SPCoreDataExporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		26E83C2713985DBE00195758 /* SPCoreDataExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 26E83C2513985DBC00195758 /* SPCoreDataExporter.m */; };
@@ -1227,7 +1227,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_PROFILING_CODE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PUBLIC_HEADERS_FOLDER_PATH = Headers;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1248,7 +1248,7 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PUBLIC_HEADERS_FOLDER_PATH = Headers;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1261,6 +1261,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DSTROOT = /tmp/Simperium.dst;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1272,7 +1273,6 @@
 				GCC_PREFIX_HEADER = "Simperium/Simperium-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
 				INSTALL_PATH = "$(BUILT_PRODUCTS_DIR)";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1287,6 +1287,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Codality, Inc.";
 				DSTROOT = /tmp/Simperium.dst;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1298,7 +1299,6 @@
 				GCC_PREFIX_HEADER = "Simperium/Simperium-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
 				INSTALL_PATH = "$(BUILT_PRODUCTS_DIR)";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "CB4714D5-E48A-4B4A-95A4-9755CA700199";
@@ -1312,6 +1312,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
@@ -1336,6 +1337,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
@@ -1361,7 +1363,6 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				GCC_THUMB_SUPPORT = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = "armv7 armv7s i386";
 			};
@@ -1372,7 +1373,6 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				GCC_THUMB_SUPPORT = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = "armv7 armv7s i386";
 			};

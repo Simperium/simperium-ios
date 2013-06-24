@@ -19,7 +19,7 @@
 @property (copy, nonatomic) NSString *key;
 @property (copy, nonatomic) NSMutableDictionary *memberData;
 @property (copy, nonatomic) NSString *version;
-@property (assign, nonatomic) BOOL needsSave;
+@property (nonatomic) BOOL needsSave;
 
 -(id)initFromDictionary:(NSDictionary *)dict;
 -(id)initWithKey:(NSString *)k memberData:(NSMutableDictionary *)data;

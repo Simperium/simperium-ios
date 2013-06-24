@@ -21,9 +21,9 @@
 }
 
 @property (nonatomic, copy) NSString *bucketName;
-@property (nonatomic, retain) NSMutableDictionary *members;
-@property (nonatomic, retain) NSMutableArray *binaryMembers;
-@property (assign) BOOL dynamic;
+@property (nonatomic, strong) NSMutableDictionary *members;
+@property (nonatomic, strong) NSMutableArray *binaryMembers;
+@property BOOL dynamic;
 
 -(id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition;
 -(SPMember *)memberForKey:(NSString *)memberName;

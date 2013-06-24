@@ -23,10 +23,6 @@
     return self;
 }
 
--(void)dealloc {
-    [super dealloc];
-    [entityName release];
-}
 
 -(id)defaultValue {
 	return nil;
@@ -48,7 +44,6 @@
     
     NSError *error;
     NSArray *items = [context executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
     
     if ([items count] == 0)
         return nil;

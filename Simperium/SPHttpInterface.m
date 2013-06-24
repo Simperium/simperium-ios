@@ -38,10 +38,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
 
 @interface SPHttpInterface()
-@property (nonatomic, assign) Simperium *simperium;
-@property (nonatomic, assign) SPBucket *bucket;
-@property (nonatomic, retain) NSMutableArray *responseBatch;
-@property (nonatomic, retain) NSMutableDictionary *versionsWithErrors;
+@property (nonatomic, weak) Simperium *simperium;
+@property (nonatomic, weak) SPBucket *bucket;
+@property (nonatomic, strong) NSMutableArray *responseBatch;
+@property (nonatomic, strong) NSMutableDictionary *versionsWithErrors;
 @property (nonatomic, copy) NSString *clientID;
 @property (nonatomic, copy) NSString *remoteBucketName;
 
@@ -110,16 +110,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
 -(void)dealloc
 {
 	[getRequest clearDelegatesAndCancel];
-	[getRequest release];
 	[postRequest clearDelegatesAndCancel];
-	[postRequest release];
-    self.clientID = nil;
-    self.indexArray = nil;
-    self.responseBatch = nil;
-    self.versionsWithErrors = nil;
-    self.nextMark = nil;
-    self.remoteBucketName = nil;
-	[super dealloc];
 }
 
 -(void)setBucket:(SPBucket *)aBucket overrides:(NSDictionary *)overrides {
@@ -222,10 +213,8 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
 	// PERFORM GET Content/json on retrieveURL, but it's a long poll
 	// Need callbacks for when changes come in, and when there's an error (or cancelled)
 	NSURL *url = [NSURL URLWithString:getURL];
-    [getURL release];
     
-	[getRequest release];
-	getRequest = [[ASIHTTPRequest requestWithURL:url] retain];
+	getRequest = [ASIHTTPRequest requestWithURL:url];
 	[getRequest addRequestHeader:@"Content-Type" value:@"application/json"];
 	[getRequest addRequestHeader:@"X-Simperium-Token" value:[simperium.user authToken]];
 	[getRequest setDelegate:self]; 
@@ -259,13 +248,11 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
 
             // PERFORM GET
             NSURL *url = [NSURL URLWithString:sendURL];
-            [sendURL release];
             
             NSString *jsonStr = [changes JSONString];
             DDLogVerbose(@"  post data = %@", jsonStr);
             
-            [postRequest release];
-            postRequest = [[ASIHTTPRequest requestWithURL:url] retain];
+            postRequest = [ASIHTTPRequest requestWithURL:url];
             [postRequest appendPostData:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
             //[sendRequest addRequestHeader:@"Content-Type" value:@"application/json"];
             [postRequest addRequestHeader:@"X-Simperium-Token" value:[simperium.user authToken]];
@@ -345,10 +332,8 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     started = NO;
     // TODO: Make sure it's safe to arbitrarily cancel these requests
     [getRequest clearDelegatesAndCancel];
-	[getRequest release];
     getRequest = nil;
 	[postRequest clearDelegatesAndCancel];
-	[postRequest release];
     postRequest = nil;
     
     // TODO: Consider ensuring threads are done their work and sending a notification
@@ -595,7 +580,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     self.responseBatch = [NSMutableArray arrayWithCapacity:INDEX_BATCH_SIZE];
     
     // Get all the latest versions
-    __block ASINetworkQueue *networkQueue = [[ASINetworkQueue queue] retain];
+    ASINetworkQueue *networkQueue = [ASINetworkQueue queue];
     [networkQueue setDelegate:self];
     [networkQueue setQueueDidFinishSelector:@selector(indexQueueFinished:)];
     [networkQueue setRequestDidFinishSelector:@selector(getVersionFinished:)];
@@ -604,7 +589,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     
     DDLogInfo(@"Simperium processing %lu objects from index (%@)", (unsigned long)[currentIndexArray count], bucket.name);
     
-    __block NSArray *indexArrayCopy = [currentIndexArray copy];
+    NSArray *indexArrayCopy = [currentIndexArray copy];
     __block int numVersionRequests = 0;
     dispatch_async(bucket.processorQueue, ^{
         if (started) {
@@ -638,7 +623,6 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
                 [networkQueue go];
             });
         }
-        [indexArrayCopy release];
     });
 
 }
@@ -700,7 +684,6 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
             }];
         }
     });
-    [batch release];
     
     [self.responseBatch removeAllObjects];
 }
@@ -783,7 +766,6 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
 -(void)allVersionsFinished:(ASINetworkQueue *)networkQueue
 {
     [self processBatch];
-    [networkQueue release];
     [self resetRetryDelay];
 
     DDLogVerbose(@"Simperium finished processing all objects from index (%@)", bucket.name);
@@ -858,7 +840,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
 -(void)requestVersions:(int)numVersions object:(id<SPDiffable>)object
 {
     // Get all the latest versions
-    ASINetworkQueue *networkQueue = [[ASINetworkQueue queue] retain];
+    ASINetworkQueue *networkQueue = [ASINetworkQueue queue];
     [networkQueue setDelegate:self];
     [networkQueue setQueueDidFinishSelector:@selector(allObjectVersionsFinished:)];
     [networkQueue setRequestDidFinishSelector:@selector(getObjectVersionFinished:)];
@@ -917,7 +899,6 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
 -(void)allObjectVersionsFinished:(ASINetworkQueue *)networkQueue
 {
     DDLogInfo(@"Simperium finished retrieving all versions");
-    [networkQueue release];
 }
 
 -(void)getObjectVersionFailed:(ASIHTTPRequest *)request

@@ -33,8 +33,8 @@
     UIBarButtonItem *cancelButton;
 }
 
-@property (nonatomic, retain) SPAuthenticationManager *authManager;
-@property (nonatomic, retain) UITableView* tableView;
-@property (nonatomic, assign) BOOL creating;
+@property (nonatomic, strong) SPAuthenticationManager *authManager;
+@property (nonatomic, strong) UITableView* tableView;
+@property (nonatomic) BOOL creating;
 
 @end

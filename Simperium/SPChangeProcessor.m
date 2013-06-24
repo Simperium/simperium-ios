@@ -61,8 +61,8 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
 - (id)initWithLabel:(NSString *)label {
     if (self = [super init]) {
         self.instanceLabel = label;
-		changesPending = [[NSMutableDictionary dictionaryWithCapacity:3] retain];
-        keysForObjectsWithMoreChanges = [[NSMutableSet setWithCapacity:3] retain];
+		changesPending = [NSMutableDictionary dictionaryWithCapacity:3];
+        keysForObjectsWithMoreChanges = [NSMutableSet setWithCapacity:3];
         
         [self loadSerializedChanges];
         [self loadKeysForObjectsWithMoreChanges];
@@ -71,12 +71,6 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     return self;
 }
 
-- (void)dealloc {
-    self.instanceLabel = nil;
-    [changesPending release];
-    [keysForObjectsWithMoreChanges release];
-    [super dealloc];
-}
 
 - (BOOL)awaitingAcknowledgementForKey:(NSString *)key {
     if (key == nil)
@@ -165,7 +159,6 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
                 [object simperiumKey]; // fire fault
                 [newChange setObject:[object dictionary] forKey:CH_DATA];
                 [changesPending setObject:newChange forKey:key];
-                [newChange release];
                 repostNeeded = YES;
             } else {
                 // Catch all, don't resubmit
@@ -227,7 +220,6 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
         SPGhost *ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData:nil];
         ghost.version = @"0";
         object.ghost = ghost;
-        [ghost release];
         
         // If this wasn't just an ack, send a notification and load the data
         DDLogVerbose(@"Simperium non-local ADD ENTITY received");
@@ -267,7 +259,6 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
         // Slight hack to ensure Core Data realizes the object has changed and needs a save
         NSString *ghostDataCopy = [[[object.ghost dictionary] JSONString] copy];
         object.ghostData = ghostDataCopy;
-        [ghostDataCopy release];
         
         DDLogVerbose(@"Simperium MODIFIED ghost version %@ (%@-%@)", endVersion, bucket.name, instanceLabel);
         
@@ -289,7 +280,6 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
                     DDLogVerbose(@"Simperium transform resulted in empty diff (invalid ack?)");
             }
         }
-        [oldGhost release];
         
         // Apply the diff to the object itself
         if (!acknowledged && [diff count] > 0) {

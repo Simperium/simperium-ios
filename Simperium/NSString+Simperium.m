@@ -68,13 +68,10 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
 {
     // From http://stackoverflow.com/questions/427180/how-to-create-a-guid-uuid-using-the-iphone-sdk
 	CFUUIDRef theUUID = CFUUIDCreate(NULL);
-	CFStringRef string = CFUUIDCreateString(NULL, theUUID);
+	NSString *str = CFBridgingRelease(CFUUIDCreateString(NULL, theUUID));
 	CFRelease(theUUID);
     
-    NSString *str = [(NSString *)string autorelease];
-    str = [[str stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
-        
-	return str;
+    return [[str stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
 }
 
 + (NSString *)sp_md5StringFromData:(NSData *)data
@@ -99,9 +96,9 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
 
 - (NSString *)sp_urlEncodeString
 {
-    return (NSString *) CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)self,
-                                                                NULL, (CFStringRef)@";/?:@&=$+{}<>!*'()%#[],",
-                                                                CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding));
+    return (NSString *) CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)self,
+                                                                                  NULL, (CFStringRef)@";/?:@&=$+{}<>!*'()%#[],",
+                                                                                  CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding)));
 }  
 
 @end

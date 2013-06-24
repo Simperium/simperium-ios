@@ -57,18 +57,15 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 
         SPDiffer *aDiffer = [[SPDiffer alloc] initWithSchema:aSchema];
         self.differ = aDiffer;
-        [aDiffer release];
 
         // Label is used to support multiple simperium instances (e.g. unit testing)
         self.instanceLabel = [NSString stringWithFormat:@"%@%@", self.name, label];
 
         SPChangeProcessor *cp = [[SPChangeProcessor alloc] initWithLabel:self.instanceLabel];
         self.changeProcessor = cp;
-        [cp release];
 
         SPIndexProcessor *ip = [[SPIndexProcessor alloc] init];
         self.indexProcessor = ip;
-        [ip release];
 
         NSString *queueLabel = [@"com.simperium.processor." stringByAppendingString:self.name];
         processorQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
@@ -99,15 +96,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:ProcessorRequestsReindexing object:self];
-    [name release];
-    name = nil;
-    self.storage = nil;
-    self.differ = nil;
-    self.network = nil;
-    self.changeProcessor = nil;
-    self.indexProcessor = nil;
-    [lastChangeSignature release];
-    [super dealloc];
 }
 
 - (id)objectForKey:(NSString *)simperiumKey {
@@ -202,7 +190,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 }
 
 - (void)setLastChangeSignature:(NSString *)signature {
-	[lastChangeSignature release];
 	lastChangeSignature = [signature copy];
     
 	// Persist it
