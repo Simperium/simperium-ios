@@ -202,6 +202,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #else
     self.authWindowController = nil;
 #endif
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
 	[super dealloc];
 }
@@ -349,6 +350,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)stopNetworking
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self name:kReachabilityChangedNotification object:nil];
     [self.reachability stopNotifier];
     [self stopNetworkManagers];
 }
