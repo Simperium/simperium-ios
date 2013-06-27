@@ -435,6 +435,12 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
 - (void)processLocalChange:(NSDictionary *)change key:(NSString *)key {
     [changesPending setObject:change forKey: key];
     [self serializeChangesPending];
+    
+    // Support delayed app termination to ensure local changes have a chance to fully save
+#if TARGET_OS_IPHONE
+#else
+    [[NSApplication sharedApplication] replyToApplicationShouldTerminate:YES];
+#endif
 }
 
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key {
