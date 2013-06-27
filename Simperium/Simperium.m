@@ -585,9 +585,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     // Clear the token and user
     [authManager reset];
-    [user release];
-    user = nil;
-    
+    self.user = nil;
+
     // Don't start network managers again; expect app to handle that
 }
 
