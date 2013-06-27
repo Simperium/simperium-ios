@@ -119,8 +119,6 @@
 		268EDFF9155F36B7006B566F /* DispatchQueueLogFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDFBD155F36B7006B566F /* DispatchQueueLogFormatter.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		268EDFFA155F36B7006B566F /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 268EDFBE155F36B7006B566F /* README.txt */; };
 		268EE001155F37CA006B566F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 268EDED1155F06D5006B566F /* Foundation.framework */; };
-		2693F85B15C9A57C00797A5E /* SPSimpleKeyChain.h in Headers */ = {isa = PBXBuildFile; fileRef = 2693F85915C9A57B00797A5E /* SPSimpleKeyChain.h */; };
-		2693F85C15C9A57C00797A5E /* SPSimpleKeyChain.m in Sources */ = {isa = PBXBuildFile; fileRef = 2693F85A15C9A57B00797A5E /* SPSimpleKeyChain.m */; };
 		2693F85F15C9A7BE00797A5E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2693F85E15C9A7BE00797A5E /* Security.framework */; };
 		2698BE4515C908C80020565F /* NSMutableDictionary+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 2698BE3715C908C60020565F /* NSMutableDictionary+Simperium.h */; };
 		2698BE4615C908C80020565F /* NSMutableDictionary+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 2698BE3815C908C60020565F /* NSMutableDictionary+Simperium.m */; };
@@ -289,8 +287,6 @@
 		268EDFBC155F36B7006B566F /* DispatchQueueLogFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DispatchQueueLogFormatter.h; sourceTree = "<group>"; };
 		268EDFBD155F36B7006B566F /* DispatchQueueLogFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DispatchQueueLogFormatter.m; sourceTree = "<group>"; };
 		268EDFBE155F36B7006B566F /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
-		2693F85915C9A57B00797A5E /* SPSimpleKeyChain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPSimpleKeyChain.h; path = ../../Simperium/SPSimpleKeyChain.h; sourceTree = "<group>"; };
-		2693F85A15C9A57B00797A5E /* SPSimpleKeyChain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPSimpleKeyChain.m; path = ../../Simperium/SPSimpleKeyChain.m; sourceTree = "<group>"; };
 		2693F85E15C9A7BE00797A5E /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		2698BE3715C908C60020565F /* NSMutableDictionary+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSMutableDictionary+Simperium.h"; path = "../../Simperium/NSMutableDictionary+Simperium.h"; sourceTree = "<group>"; };
 		2698BE3815C908C60020565F /* NSMutableDictionary+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSMutableDictionary+Simperium.m"; path = "../../Simperium/NSMutableDictionary+Simperium.m"; sourceTree = "<group>"; };
@@ -410,8 +406,6 @@
 				46D5BC40174C2A9B0027DBAF /* SPRelationshipResolver.m */,
 				26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */,
 				26C3E14E1666FE7500620306 /* SPWebSocketChannel.m */,
-				2693F85915C9A57B00797A5E /* SPSimpleKeyChain.h */,
-				2693F85A15C9A57B00797A5E /* SPSimpleKeyChain.m */,
 				2698BE3715C908C60020565F /* NSMutableDictionary+Simperium.h */,
 				2698BE3815C908C60020565F /* NSMutableDictionary+Simperium.m */,
 				2698BE3915C908C60020565F /* SPBucket.h */,
@@ -725,7 +719,6 @@
 				2698BE5015C908C80020565F /* SPSchema.h in Headers */,
 				2698BE5215C908C80020565F /* SPStorageProvider.h in Headers */,
 				2698BE5615C9097A0020565F /* JRSwizzle.h in Headers */,
-				2693F85B15C9A57C00797A5E /* SPSimpleKeyChain.h in Headers */,
 				26C3E1491666FD7600620306 /* Reachability.h in Headers */,
 				26C3E1531666FE7500620306 /* SPWebSocketChannel.h in Headers */,
 				463774E6171FC6D500E2E333 /* base64.h in Headers */,
@@ -864,7 +857,6 @@
 				2698BE4F15C908C80020565F /* SPObject.m in Sources */,
 				2698BE5115C908C80020565F /* SPSchema.m in Sources */,
 				2698BE5715C9097A0020565F /* JRSwizzle.m in Sources */,
-				2693F85C15C9A57C00797A5E /* SPSimpleKeyChain.m in Sources */,
 				26C3E14A1666FD7600620306 /* Reachability.m in Sources */,
 				26C3E1541666FE7500620306 /* SPWebSocketChannel.m in Sources */,
 				463774E5171FC6D500E2E333 /* base64.c in Sources */,
