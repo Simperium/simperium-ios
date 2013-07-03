@@ -1,18 +1,42 @@
-# Xcode
+# Mac OS X Finder and whatnot
 .DS_Store
-build/
-*.pbxuser
-!default.pbxuser
+
+# XCode (and ancestors) per-user config (very noisy, and not relevant)
+*.mode1
 *.mode1v3
-!default.mode1v3
 *.mode2v3
-!default.mode2v3
+*.perspective
 *.perspectivev3
-!default.perspectivev3
-*.xcworkspace
-!default.xcworkspace
-xcuserdata
-profile
+*.pbxuser
+*xcuserdatad*
+
+# Generated files
+VersionX-revision.h
+
+
+# build products
+build/
+*.[oa]
+
+# Other source repository archive directories (protects when importing)
+.hg
+.svn
+CVS
+
+Pods/*
+
+# automatic backup files
+*~.nib
+*.swp
+*~
+*(Autosaved).rtfd/
+Backup[ ]of[ ]*.pages/
+Backup[ ]of[ ]*.key/
+Backup[ ]of[ ]*.numbers/
+"Icon\r"
+
 *.moved-aside
 DerivedData
 .idea/
+samples/Simpletodo/Pods/*
+Project/Pods/*
