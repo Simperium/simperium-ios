@@ -56,7 +56,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [super awakeFromFetch];
     SPGhost *newGhost = [[SPGhost alloc] initFromDictionary: [self.ghostData objectFromJSONString]];
     self.ghost = newGhost;
-    [newGhost release];
     [self.managedObjectContext userInfo];
     [self configureBucket];
 }
@@ -67,7 +66,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)didTurnIntoFault {
-    [ghost release];
     ghost = nil;
     [super didTurnIntoFault];
 }
@@ -80,7 +78,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // When the entity is saved, check to see if its ghost has changed, in which case its data needs to be converted
     // to a string for storage
     if (ghost.needsSave) {
-        [ghostData release];
         // Careful not to use self.ghostData here, which would trigger KVC and cause strange things to happen (since willSave itself is related to Core Data's KVC triggerings). This manifested itself as an erroneous insertion notification being sent to fetchedResultsControllers after an object had been deleted. The underlying cause seemed to be that the deleted object sticks around as a fault, but probably shouldn't.
         ghostData = [[[ghost dictionary] JSONString] copy];
         ghost.needsSave = NO;
@@ -88,9 +85,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 //- (void)setGhost:(SPGhost *)aGhost {
-//    [ghost release];
-//    ghost = [aGhost retain];
-//    [ghostData release];
+//    ghost = aGhost;
 //    ghostData = [[[aGhost dictionary] JSONRepresentation] copy];    
 //}
 
@@ -100,7 +95,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // NSString implements NSCopying, so copy the attribute value
     NSString *newStr = [aString copy];
     [self setPrimitiveValue:newStr forKey:@"ghostData"]; // setPrimitiveContent will make it nil if the string is empty
-    [newStr release];
     [self didChangeValueForKey:@"ghostData"];
 }
 
@@ -111,7 +105,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // NSString implements NSCopying, so copy the attribute value
     NSString *newStr = [aString copy];
     [self setPrimitiveValue:newStr forKey:@"simperiumKey"]; // setPrimitiveContent will make it nil if the string is empty
-    [newStr release];
     [self didChangeValueForKey:@"simperiumKey"];
 }
 

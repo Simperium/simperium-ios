@@ -43,12 +43,12 @@ static char const * const BucketListKey = "bucketList";
 -(id)initWithModel:(NSManagedObjectModel *)model context:(NSManagedObjectContext *)context coordinator:(NSPersistentStoreCoordinator *)coordinator
 {
     if (self = [super init]) {
-        stashedObjects = [[NSMutableSet setWithCapacity:3] retain];
-        classMappings = [[NSMutableDictionary dictionary] retain];
+        stashedObjects = [NSMutableSet setWithCapacity:3];
+        classMappings = [NSMutableDictionary dictionary];
 
-        __persistentStoreCoordinator = [coordinator retain];
-        __managedObjectModel = [model retain];
-        __managedObjectContext = [context retain];
+        __persistentStoreCoordinator = coordinator;
+        __managedObjectModel = model;
+        __managedObjectContext = context;
         
         [self addObserversForContext:context];
     }
@@ -61,8 +61,7 @@ static char const * const BucketListKey = "bucketList";
         // Create an ephemeral, thread-safe context that will merge back to the sibling automatically
         sibling = aSibling;
         NSManagedObjectContext *newContext = [[NSManagedObjectContext alloc] init];
-        __managedObjectContext = [newContext retain];
-        [__managedObjectContext release];
+        __managedObjectContext = newContext;
         
         [__managedObjectContext setPersistentStoreCoordinator:sibling.managedObjectContext.persistentStoreCoordinator];
         
@@ -89,18 +88,11 @@ static char const * const BucketListKey = "bucketList";
 
 -(void)dealloc
 {
-    objc_setAssociatedObject(__managedObjectContext, BucketListKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-
     if (sibling) {
         // If a sibling was used, then this context was ephemeral and needs to be cleaned up
         [[NSNotificationCenter defaultCenter] removeObserver:sibling name:NSManagedObjectContextDidSaveNotification object:__managedObjectContext];
-        [__managedObjectContext release];
-        __managedObjectContext = nil;
     }
     
-    [classMappings release];
-    [stashedObjects release];
-    [super dealloc];
 }
 
 -(NSManagedObjectModel *)managedObjectModel {
@@ -124,7 +116,6 @@ static char const * const BucketListKey = "bucketList";
 -(NSArray *)exportSchemas {
     SPCoreDataExporter *exporter = [[SPCoreDataExporter alloc] init];
     NSDictionary *definitionDict = [exporter exportModel:__managedObjectModel classMappings:classMappings];
-    [exporter release];
     
     DDLogInfo(@"Simperium loaded %lu entity definitions", (unsigned long)[definitionDict count]);
     
@@ -135,13 +126,12 @@ static char const * const BucketListKey = "bucketList";
         
         SPSchema *schema = [[SPSchema alloc] initWithBucketName:entityName data:entityDict];
         [schemas addObject:schema];
-        [schema release];
     }
     return schemas;
 }
 
 -(id<SPStorageProvider>)threadSafeStorage {
-    return [[[SPCoreDataStorage alloc] initWithSibling:self] autorelease];
+    return [[SPCoreDataStorage alloc] initWithSibling:self];
 }
 
 -(id<SPDiffable>)objectForKey: (NSString *)key bucketName:(NSString *)bucketName {
@@ -154,7 +144,6 @@ static char const * const BucketListKey = "bucketList";
     
     NSError *error;
     NSArray *items = [__managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
     
     if ([items count] == 0)
         return nil;
@@ -177,7 +166,6 @@ static char const * const BucketListKey = "bucketList";
     
     NSError *error;
     NSArray *items = [__managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
     
     return items;
 }
@@ -192,7 +180,6 @@ static char const * const BucketListKey = "bucketList";
     
     NSError *err;
     NSUInteger count = [__managedObjectContext countForFetchRequest:request error:&err];
-    [request release];
     if(count == NSNotFound) {
         //Handle error
         return 0;
@@ -221,7 +208,6 @@ static char const * const BucketListKey = "bucketList";
     
     NSError *error;
     NSArray *objectArray = [__managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
     
     NSMutableDictionary *objects = [NSMutableDictionary dictionaryWithCapacity:[keys count]];
     for (SPManagedObject *object in objectArray) {
@@ -267,7 +253,6 @@ static char const * const BucketListKey = "bucketList";
     
     NSError *error;
     NSArray *items = [__managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
     
     for (NSManagedObject *managedObject in items) {
         [__managedObjectContext deleteObject:managedObject];
@@ -289,7 +274,7 @@ static char const * const BucketListKey = "bucketList";
     
     // Execute a targeted fetch to preserve faults so that only simperiumKeys are loaded in to memory
     // http://stackoverflow.com/questions/3956406/core-data-how-to-get-nsmanagedobjects-objectid-when-nsfetchrequest-returns-nsdi
-    NSExpressionDescription* objectIdDesc = [[NSExpressionDescription new] autorelease];
+    NSExpressionDescription* objectIdDesc = [NSExpressionDescription new];
     objectIdDesc.name = @"objectID";
     objectIdDesc.expression = [NSExpression expressionForEvaluatedObject];
     objectIdDesc.expressionResultType = NSObjectIDAttributeType;
@@ -338,7 +323,6 @@ static char const * const BucketListKey = "bucketList";
     
     NSLog(@"Simperium managing %lu %@ object instances", (unsigned long)[results count], bucketName);
     
-    [request release];    
 }
 
 -(BOOL)save
@@ -492,7 +476,7 @@ persistentStoreCoordinator:(NSPersistentStoreCoordinator **)persistentStoreCoord
     NSURL *developerModelURL;
     @try {
         developerModelURL = [NSURL fileURLWithPath: [[NSBundle mainBundle]  pathForResource:modelName ofType:@"momd"]];
-        *managedObjectModel = [[[NSManagedObjectModel alloc] initWithContentsOfURL:developerModelURL] autorelease];
+        *managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:developerModelURL];
     } @catch (NSException *e) {
         NSLog(@"Simperium error: could not find the specified model file (%@.xcdatamodeld)", modelName);
         @throw; // rethrow the exception
@@ -507,7 +491,7 @@ persistentStoreCoordinator:(NSPersistentStoreCoordinator **)persistentStoreCoord
     NSString *path = [documentsDirectory stringByAppendingPathComponent:databaseFilename];
     NSURL *storeURL = [NSURL fileURLWithPath:path];
     NSError *error = nil;
-    *persistentStoreCoordinator = [[[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:*managedObjectModel] autorelease];
+    *persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:*managedObjectModel];
     
     // Determine if lightweight migration is going to be necessary; this will be used to notify the app in case further action is needed
     BOOL lightweightMigrationNeeded = [SPCoreDataStorage isMigrationNecessary:storeURL managedObjectModel:*managedObjectModel];
@@ -525,7 +509,7 @@ persistentStoreCoordinator:(NSPersistentStoreCoordinator **)persistentStoreCoord
     // Setup the context
     if (persistentStoreCoordinator != nil)
     {
-        *managedObjectContext = [[[NSManagedObjectContext alloc] init] autorelease];
+        *managedObjectContext = [[NSManagedObjectContext alloc] init];
         [*managedObjectContext setPersistentStoreCoordinator:*persistentStoreCoordinator];
         [*managedObjectContext setUndoManager:nil];
     }
@@ -562,10 +546,8 @@ persistentStoreCoordinator:(NSPersistentStoreCoordinator **)persistentStoreCoord
         NSString *message = [NSString stringWithFormat:@"Migration failed %@ [%@]",
                              [error description], ([error userInfo] ? [[error userInfo] description] : @"no user info")];
         NSLog(@"Migration failure message: %@", message);
-        [manager release];
         return NO;
     }
-    [manager release];
     return YES;
 }
 

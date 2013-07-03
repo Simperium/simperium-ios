@@ -29,18 +29,8 @@
         [self.dict associateObject:self];
         SPGhost *newGhost = [[SPGhost alloc] init];
         self.ghost = newGhost;
-        [newGhost release];
     }
     return self;    
-}
-
--(void)dealloc {
-    self.dict = nil;
-    self.ghost = nil;
-    self.ghostData = nil;
-    self.simperiumKey = nil;
-    self.version = nil;
-    [super dealloc];
 }
 
 -(NSString *)simperiumKey {
@@ -48,7 +38,6 @@
 }
 
 -(void)setSimperiumKey:(NSString *)key {
-    [simperiumKey release];
     simperiumKey = [key copy];
     
     [self.dict associateSimperiumKey:simperiumKey];
@@ -69,9 +58,9 @@
 -(id)simperiumValueForKey:(NSString *)key {
     __block id obj;
     dispatch_sync(dispatch_get_main_queue(), ^{
-        obj = [[dict objectForKey: key] retain];
+        obj = [dict objectForKey: key];
     });
-    return [obj autorelease];
+    return obj;
 }
 
 -(void)loadMemberData:(NSDictionary *)data {

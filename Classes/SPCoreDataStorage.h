@@ -11,15 +11,15 @@
 #import "SPStorageProvider.h"
 
 @interface SPCoreDataStorage : SPStorage<SPStorageProvider> {
-    id<SPStorageObserver> delegate;
+    id<SPStorageObserver> __weak delegate;
     SPCoreDataStorage *sibling;
     NSMutableDictionary *classMappings;
 }
 
-@property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
-@property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
-@property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
-@property (nonatomic, assign) id<SPStorageObserver>delegate;
+@property (nonatomic, strong, readonly) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, strong, readonly) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, strong, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+@property (nonatomic, weak) id<SPStorageObserver>delegate;
 
 +(char const * const)bucketListKey;
 +(BOOL)newCoreDataStack:(NSString *)modelName

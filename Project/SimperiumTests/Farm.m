@@ -67,9 +67,6 @@
 
 - (void)dealloc {
     [simperium signOutAndRemoveLocalData:YES];
-    [simperium release];
-    [config release];
-    [super dealloc];
 }
 
 - (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs {
@@ -201,7 +198,7 @@
     {
         return __managedObjectModel;
     }
-    __managedObjectModel = [[NSManagedObjectModel mergedModelFromBundles:[NSBundle allBundles]] retain];   
+    __managedObjectModel = [NSManagedObjectModel mergedModelFromBundles:[NSBundle allBundles]];   
     return __managedObjectModel;
 }
 

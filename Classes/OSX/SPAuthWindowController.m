@@ -20,10 +20,6 @@
     return self;
 }
 
-- (void)dealloc {
-    self.authManager = nil;
-    [super dealloc];
-}
 
 - (void)windowDidLoad {
     [super windowDidLoad];

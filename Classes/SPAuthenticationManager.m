@@ -52,12 +52,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return self;
 }
 
--(void)dealloc {
-    self.failedBlock = nil;
-    self.succeededBlock = nil;
-  
-    [super dealloc];
-}
 
 // Open a UI to handle authentication if necessary
 -(BOOL)authenticateIfNecessary
@@ -83,7 +77,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         // Set the Simperium user
         SPUser *aUser = [[SPUser alloc] initWithEmail:username token:token];
         simperium.user = aUser;
-        [aUser release];
 
         if ([delegate respondsToSelector:@selector(authenticationDidSucceedForUsername:token:)])
             [delegate authenticationDidSucceedForUsername:username token:token];
@@ -151,7 +144,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Set the Simperium user
     SPUser *aUser = [[SPUser alloc] initWithEmail:username token:token];
     simperium.user = aUser;
-    [aUser release];
     
     [self performSelector:@selector(delayedAuthenticationDidFinish) withObject:nil afterDelay:0.1];
 }

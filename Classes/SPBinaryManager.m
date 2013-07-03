@@ -38,10 +38,10 @@
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         self.directory = [paths objectAtIndex:0];
         
-        pendingBinaryDownloads = [[NSMutableDictionary dictionaryWithCapacity:3] retain];
-        pendingBinaryUploads = [[NSMutableDictionary dictionaryWithCapacity:3] retain];
-        delegates = [[NSMutableArray arrayWithCapacity:3] retain];
-        transmissionProgress = [[NSMutableDictionary dictionaryWithCapacity:3] retain];
+        pendingBinaryDownloads = [NSMutableDictionary dictionaryWithCapacity:3];
+        pendingBinaryUploads = [NSMutableDictionary dictionaryWithCapacity:3];
+        delegates = [NSMutableArray arrayWithCapacity:3];
+        transmissionProgress = [NSMutableDictionary dictionaryWithCapacity:3];
         [self loadPendingBinaryDownloads];
         [self loadPendingBinaryUploads];
     }
@@ -49,13 +49,6 @@
     return self;
 }
 
--(void)dealloc {
-    self.directory = nil;
-    [binaryAuthURL release];
-    [pendingBinaryDownloads release];
-    [pendingBinaryUploads release];
-    [super dealloc];
-}
 
 -(void)loadPendingBinaryDownloads {
     NSString *pendingKey = [NSString stringWithFormat:@"SPPendingBinaryDownloads"];
@@ -276,7 +269,6 @@
     {
         return NO;
     }
-    [filemgr release];    
     
     return YES;
 }

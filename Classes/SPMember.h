@@ -30,9 +30,9 @@ extern NSString * const OP_STRING;
     id modelDefaultValue;
 }
 
-@property (nonatomic, assign, readonly) NSString *keyName;
-@property (nonatomic, assign, readonly) NSString *valueTransformerName;
-@property (nonatomic, assign, readonly) id modelDefaultValue;
+@property (nonatomic, readonly, strong) NSString *keyName;
+@property (nonatomic, readonly, strong) NSString *valueTransformerName;
+@property (nonatomic, readonly, strong) id modelDefaultValue;
 
 -(id)initFromDictionary:(NSDictionary *)dict;
 -(id)defaultValue;

@@ -24,15 +24,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     dispatch_queue_t queue;
 }
 
-@property (nonatomic, retain) NSMutableDictionary *pendingRelationships;
-@property (assign) dispatch_queue_t queue;
+@property (nonatomic, strong) NSMutableDictionary *pendingRelationships;
 
 @end
 
 
 @implementation SPRelationshipResolver
 @synthesize pendingRelationships;
-@synthesize queue;
 
 + (int)ddLogLevel {
     return ddLogLevel;
@@ -52,10 +50,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return self;
 }
 
-- (void)dealloc {
-    self.pendingRelationships = nil;
-    [super dealloc];
-}
 
 - (void)writePendingReferences:(id<SPStorageProvider>)storage {
     if ([pendingRelationships count] == 0) {
@@ -71,7 +65,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSString *key = [NSString stringWithFormat:@"SPPendingReferences"];
 	[metadata setObject:pendingRelationships forKey: key];
     [storage setMetadata:metadata];
-    [metadata release];
 }
 
 - (void)loadPendingRelationships:(id<SPStorageProvider>)storage {

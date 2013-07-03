@@ -23,14 +23,14 @@
     NSDate *date;
 }
 
-@property (nonatomic, retain) NSNumber *warpSpeed;
-@property (nonatomic, retain) NSString *binaryFile;
-@property (nonatomic, retain) NSString *captainsLog;
-@property (nonatomic, retain) NSNumber *shieldsUp;
-@property (nonatomic, retain) UIColor *shieldColor;
-@property (nonatomic, retain) NSNumber *shieldPercent;
-@property (nonatomic, retain) NSDecimalNumber *cost;
-@property (nonatomic, retain) UIImage *smallImageTest;
-@property (nonatomic, retain) NSDate *date;
+@property (nonatomic, strong) NSNumber *warpSpeed;
+@property (nonatomic, strong) NSString *binaryFile;
+@property (nonatomic, strong) NSString *captainsLog;
+@property (nonatomic, strong) NSNumber *shieldsUp;
+@property (nonatomic, strong) UIColor *shieldColor;
+@property (nonatomic, strong) NSNumber *shieldPercent;
+@property (nonatomic, strong) NSDecimalNumber *cost;
+@property (nonatomic, strong) UIImage *smallImageTest;
+@property (nonatomic, strong) NSDate *date;
 
 @end

@@ -40,21 +40,21 @@
 
 @interface Simperium() <SPStorageObserver>
 
-@property (nonatomic, retain) SPCoreDataStorage *coreDataStorage;
-@property (nonatomic, retain) SPJSONStorage *JSONStorage;
-@property (nonatomic, retain) NSMutableDictionary *buckets;
-@property (nonatomic, retain) id<SPNetworkInterface> network;
-@property (nonatomic, retain) SPRelationshipResolver *relationshipResolver;
-@property (nonatomic, assign) BOOL skipContextProcessing;
-@property (nonatomic, assign) BOOL networkManagersStarted;
-@property (nonatomic, assign) BOOL dynamicSchemaEnabled;
-@property (nonatomic, retain) SPReachability *reachability;
+@property (nonatomic, strong) SPCoreDataStorage *coreDataStorage;
+@property (nonatomic, strong) SPJSONStorage *JSONStorage;
+@property (nonatomic, strong) NSMutableDictionary *buckets;
+@property (nonatomic, strong) id<SPNetworkInterface> network;
+@property (nonatomic, strong) SPRelationshipResolver *relationshipResolver;
+@property (nonatomic) BOOL skipContextProcessing;
+@property (nonatomic) BOOL networkManagersStarted;
+@property (nonatomic) BOOL dynamicSchemaEnabled;
+@property (nonatomic, strong) SPReachability *reachability;
 
 
 #if TARGET_OS_IPHONE
-@property (nonatomic, retain) SPLoginViewController *loginViewController;
+@property (nonatomic, strong) SPLoginViewController *loginViewController;
 #else
-@property (nonatomic, retain) SPAuthWindowController *authWindowController;
+@property (nonatomic, strong) SPAuthWindowController *authWindowController;
 #endif
 
 -(BOOL)save;
@@ -137,11 +137,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         
         SPAuthenticationManager *manager = [[SPAuthenticationManager alloc] initWithDelegate:self simperium:self];
         self.authManager = manager;
-        [manager release];
         
         SPRelationshipResolver *resolver = [[SPRelationshipResolver alloc] init];
         self.relationshipResolver = resolver;
-        [resolver release];
 
 #if TARGET_OS_IPHONE
         loginViewControllerClass = [SPLoginViewController class];
@@ -181,34 +179,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)dealloc
 {
     [self stopNetworking];
-    self.buckets = nil;
-    self.binaryManager = nil;
-    self.user = nil;
-    self.authManager = nil;
-    [self.coreDataStorage setDelegate:nil];
-    self.coreDataStorage = nil;
-    self.JSONStorage = nil;
-    self.bucketOverrides = nil;
-    self.relationshipResolver = nil;
     self.rootURL = nil;
-    self.reachability = nil;
-    [appID release];
-    [APIKey release];
-	[appURL release];
-    [label release];
-    
-#if TARGET_OS_IPHONE
-    self.loginViewController = nil;
-#else
-    self.authWindowController = nil;
-#endif
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
-	[super dealloc];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 -(void)setClientID:(NSString *)cid {
-    [clientID release];
     clientID = [cid copy];
 }
 
@@ -229,12 +205,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 
 -(void)setLabel:(NSString *)aLabel {
-    [label release];
     label = [aLabel copy];
     
     // Set the clientID as well, otherwise certain change operations won't work (since they'll appear to come from
     // the same Simperium instance)
-    [clientID release];
     clientID = [label copy];
 }
 
@@ -290,9 +264,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             [buckets setObject:bucket forKey:name];
             [netManager start:bucket name:bucket.name];
             
-            [bucket release];
-            [netManager release];
-            [schema release];
 
         } else
             return nil;
@@ -393,7 +364,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             if (!self.network) {
                 SPWebSocketInterface *webSocketManager = [[SPWebSocketInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
                 self.network = webSocketManager;
-                [webSocketManager release];
             }
             bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
                                  relationshipResolver:self.relationshipResolver label:self.label];
@@ -403,11 +373,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:netInterface
                                  relationshipResolver:self.relationshipResolver label:self.label];
             [(SPHttpInterface *)netInterface setBucket:bucket overrides:self.bucketOverrides]; // tightly coupled for now; will fix in websockets netmanager
-            [netInterface release];
         }
         
         [bucketList setObject:bucket forKey:schema.bucketName];
-        [bucket release];
     }
     
     if (self.useWebSockets) {
@@ -436,7 +404,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 -(void)setRootURL:(NSString *)url {
-    [_rootURL release];
     _rootURL = [url copy];
     
     appURL = [[_rootURL stringByAppendingFormat:@"%@/", appID] copy];
@@ -451,7 +418,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Setup JSON storage
     SPJSONStorage *storage = [[SPJSONStorage alloc] initWithDelegate:self];
     self.JSONStorage = storage;
-    [storage release];
     
     // Network managers (load but don't start yet)
     //[self loadNetworkManagers];
@@ -475,7 +441,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     SPCoreDataStorage *storage = [[SPCoreDataStorage alloc] initWithModel:model context:context coordinator:coordinator];
     self.coreDataStorage = storage;
     self.coreDataStorage.delegate = self;
-    [storage release];
     
     // Get the schema from Core Data    
     NSArray *schemas = [self.coreDataStorage exportSchemas];
@@ -521,7 +486,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     for (id<SPDiffable>object in unsavedObjects) {
         [object.bucket.network sendObjectChanges: object];
     }
-    [unsavedObjects release];
     
     // Send changes for all unsaved, inserted and updated objects
     // The changes will automatically get batched and synced in the next tick
@@ -660,7 +624,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     SPLoginViewController *loginController =  [[self.loginViewControllerClass alloc] initWithNibName:@"LoginView" bundle:nil];
     self.loginViewController = loginController;
     self.loginViewController.authManager = self.authManager;
-    [loginController release];
     
     if (!self.rootViewController) {
         UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
@@ -676,14 +639,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     [self.rootViewController presentModalViewController:controller animated:animated];
-    [navController release];
 #else
     if (!authWindowController) {
         SPAuthWindowController *anAuthWindowController = [[self.authWindowControllerClass alloc] initWithWindowNibName:@"AuthWindow"];
         anAuthWindowController.authManager = self.authManager;
         
-        authWindowController = [anAuthWindowController retain];
-        [anAuthWindowController release];
+        authWindowController = anAuthWindowController;
     }
     
     [[authWindowController window] center];

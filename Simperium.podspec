@@ -11,6 +11,7 @@ Pod::Spec.new do |s|
   s.osx.deployment_target = '10.7'
   
   s.source_files = 'Classes/*.{h,m}' , 'External/**/*.{h,m}'
+  s.exclude_files = 'External/Reachability/SPReachability.*'
   s.osx.source_files = 'Classes/OSX/*.{h,m}'
   s.ios.source_files = 'Classes/iOS/*.{h,m}'
 
@@ -26,7 +27,13 @@ Pod::Spec.new do |s|
 
 
 
-  s.requires_arc = false # ..it should.
+  s.requires_arc = true
+  s.compiler_flags = '-DOS_OBJECT_USE_OBJC=0'
+
+  s.subspec 'noarc' do |subs|
+    subs.source_files = 'External/Reachability/SPReachability.*'
+    subs.requires_arc = false
+  end
 
   # If you need to specify any other build settings, add them to the
   # xcconfig hash.

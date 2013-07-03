@@ -41,14 +41,14 @@
     NSString *APIKey;
     NSString *appURL;
     NSString *clientID;   
-    id<SimperiumDelegate> delegate;  
+    id<SimperiumDelegate> __weak delegate;
     SPBinaryManager *binaryManager;
     SPAuthenticationManager *authManager;
     
 #if TARGET_OS_IPHONE
-    Class loginViewControllerClass;
+    Class __weak loginViewControllerClass;
 #else
-    Class authWindowControllerClass;
+    Class __weak authWindowControllerClass;
 #endif
 }
 
@@ -105,10 +105,10 @@
 
 
 // Set this to true if you need to be able to cancel the authentication dialog.
-@property (nonatomic, assign) BOOL authenticationOptional;
+@property (nonatomic) BOOL authenticationOptional;
 
 // A SimperiumDelegate for system callbacks.
-@property (nonatomic,assign) id<SimperiumDelegate> delegate;
+@property (nonatomic, weak) id<SimperiumDelegate> delegate;
 
 // Toggle verbose logging.
 @property (nonatomic) BOOL verboseLoggingEnabled;
@@ -120,10 +120,10 @@
 @property (nonatomic) BOOL authenticationEnabled;
 
 // Toggle websockets (should only be done before starting Simperium).
-@property (nonatomic, assign) BOOL useWebSockets;
+@property (nonatomic) BOOL useWebSockets;
 
 // Returns the currently authenticated Simperium user.
-@property (nonatomic,retain) SPUser *user;
+@property (nonatomic,strong) SPUser *user;
 
 // The full URL used to communicate with Simperium.
 @property (nonatomic,readonly) NSString *appURL;
@@ -138,7 +138,7 @@
 @property (nonatomic, readonly) NSString *APIKey;
 
 // A hashed, unique ID for this client.
-@property (nonatomic, readonly) NSString *clientID;
+@property (nonatomic, readonly, copy) NSString *clientID;
 
 // Set this if for some reason you want to use multiple Simperium instances (e.g. unit testing).
 @property (copy) NSString *label;
@@ -146,23 +146,23 @@
 // You can implement your own subclass of SPLoginViewController (iOS) or
 // SPLoginWindowController (OSX) to customize authentication.
 #if TARGET_OS_IPHONE
-@property (nonatomic, assign) Class loginViewControllerClass;
+@property (nonatomic, weak) Class loginViewControllerClass;
 #else
-@property (nonatomic, assign) Class authWindowControllerClass;
+@property (nonatomic, weak) Class authWindowControllerClass;
 #endif
 
 // Optional overrides (used for unit testing).
 @property (nonatomic, copy) NSDictionary *bucketOverrides;
 
-@property (nonatomic, retain) SPBinaryManager *binaryManager;
+@property (nonatomic, strong) SPBinaryManager *binaryManager;
 
-@property (nonatomic, retain) SPAuthenticationManager *authManager;
+@property (nonatomic, strong) SPAuthenticationManager *authManager;
 
 
 #if TARGET_OS_IPHONE
-@property (nonatomic, assign) UIViewController *rootViewController;
+@property (nonatomic, weak) UIViewController *rootViewController;
 #else
-@property (nonatomic, assign) NSWindow *window;
+@property (nonatomic, unsafe_unretained) NSWindow *window;
 #endif
 
 @end

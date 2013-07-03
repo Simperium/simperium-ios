@@ -42,7 +42,6 @@
         SPGhost *ghost = [[SPGhost alloc] initWithKey: [object simperiumKey] memberData: nil];
         object.ghost = ghost;
         object.ghost.version = @"0";
-        [ghost release];
     }
 }
 

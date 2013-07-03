@@ -55,8 +55,8 @@
     if (self = [super init]) {
         bucketName = [name copy];
         NSArray *memberList = [definition valueForKey:@"members"];
-        members = [[NSMutableDictionary dictionaryWithCapacity:3] retain];
-        binaryMembers = [[NSMutableArray arrayWithCapacity:3] retain];
+        members = [NSMutableDictionary dictionaryWithCapacity:3];
+        binaryMembers = [NSMutableArray arrayWithCapacity:3];
         for (NSDictionary *memberDict in memberList) {
             NSString *typeStr = [memberDict valueForKey:@"type"];
             SPMember *member = [[[self memberClassForType:typeStr] alloc] initFromDictionary:memberDict];
@@ -64,18 +64,12 @@
             
             if ([member isKindOfClass:[SPMemberBinary class]])
                 [binaryMembers addObject: member];
-            [member release];
         }        
     }
     
     return self;
 }
 
--(void)dealloc {
-    [members release];
-    [binaryMembers release];
-    [super dealloc];
-}
 
 -(NSString *)bucketName {
 	return bucketName;
@@ -99,7 +93,6 @@
                                 key, @"name", nil];
     SPMember *member = [[[self memberClassForType:type] alloc] initFromDictionary:memberDict];
     [members setObject:member forKey:member.keyName];
-    [member release];
     
 }
 

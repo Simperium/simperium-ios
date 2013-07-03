@@ -44,13 +44,6 @@ NSString * const OP_STRING			= @"d";
 	return [NSString stringWithFormat:@"%@ of type %@", keyName, type];
 }
 
--(void)dealloc {
-	[super dealloc];
-	[keyName release];
-	[type release];
-    [valueTransformerName release];
-    [modelDefaultValue release];
-}
 
 -(NSDictionary *)diffForAddition:(id)data {
     NSMutableDictionary *diff = [NSMutableDictionary dictionaryWithObjectsAndKeys:
@@ -114,7 +107,7 @@ NSString * const OP_STRING			= @"d";
 -(NSDictionary *)diff: (SPEntity *)otherEntity
 {
 	// changes contains the operations for every key that is different
-	NSMutableDictionary *changes = [[NSMutableDictionary dictionary] autorelease];
+	NSMutableDictionary *changes = [NSMutableDictionary dictionary];
 	
 	if (![self isKindOfClass:[otherEntity class]])
 	{

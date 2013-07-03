@@ -18,7 +18,7 @@
     SPSchema *schema;
 }
 
-@property (nonatomic, retain) SPSchema *schema;
+@property (nonatomic, strong) SPSchema *schema;
 
 -(id)initWithSchema:(SPSchema *)schema;
 -(NSMutableDictionary *)diffForAddition: (id<SPDiffable>)object;

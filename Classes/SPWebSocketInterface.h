@@ -21,7 +21,7 @@
     NSTimer *heartbeatTimer;
 }
 
-@property (nonatomic, retain) SRWebSocket *webSocket;
+@property (nonatomic, strong) SRWebSocket *webSocket;
 
 + (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled;
 - (id)initWithSimperium:(Simperium *)s appURL:(NSString *)url clientID:(NSString *)cid;

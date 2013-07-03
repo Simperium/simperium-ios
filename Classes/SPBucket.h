@@ -58,19 +58,18 @@ typedef NSUInteger SPBucketChangeType;
     SPDiffer *differ;
     id<SPStorageProvider> storage;
     SPSchema *schema;
-    dispatch_queue_t processorQueue;
     
-    id<SPBucketDelegate> delegate;
+    id<SPBucketDelegate> __weak delegate;
     
     NSString *lastChangeSignature;
 }
 
 /// Assign this delegate to be notified when objects in this bucket change (see SPBucketDelegate above)
-@property (assign) id<SPBucketDelegate> delegate;
+@property (weak) id<SPBucketDelegate> delegate;
 @property (nonatomic, readonly) NSString *name;
 
 /// Enable this to receive SPBucketDelegate notifications during indexing (disabled by default because it's slow)
-@property (assign) BOOL notifyWhileIndexing;
+@property BOOL notifyWhileIndexing;
 
 
 /** The following are convenience methods for accessing, inserting and deleting objects. If you're using Core Data, you can instead just access your context directly and Simperium will identify any changes accordingly.
@@ -107,13 +106,13 @@ typedef NSUInteger SPBucketChangeType;
 /** For internal use
  */
 @property (nonatomic, copy) NSString *instanceLabel;
-@property (nonatomic, retain) id<SPStorageProvider> storage;
-@property (nonatomic, retain) id<SPNetworkInterface> network;
-@property (nonatomic, retain) SPDiffer *differ;
-@property (nonatomic, retain) SPRelationshipResolver *relationshipResolver;
-@property (retain) SPChangeProcessor* changeProcessor;
-@property (retain) SPIndexProcessor* indexProcessor;
-@property (assign) dispatch_queue_t processorQueue;
+@property (nonatomic, strong) id<SPStorageProvider> storage;
+@property (nonatomic, strong) id<SPNetworkInterface> network;
+@property (nonatomic, strong) SPDiffer *differ;
+@property (nonatomic, strong) SPRelationshipResolver *relationshipResolver;
+@property (strong) SPChangeProcessor* changeProcessor;
+@property (strong) SPIndexProcessor* indexProcessor;
+@property dispatch_queue_t processorQueue;
 @property (nonatomic, copy) NSString *lastChangeSignature;
 
 - (id)initWithSchema:(SPSchema *)aSchema

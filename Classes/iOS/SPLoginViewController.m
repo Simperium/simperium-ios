@@ -28,12 +28,6 @@
 	return self;
 }
 
-- (void)dealloc {
-	self.tableView = nil;
-    self.authManager = nil;
-    [cancelButton release];
-	[super dealloc];
-}
 
 -(void)setCreating:(BOOL)bCreating
 {
@@ -93,7 +87,6 @@
 	[footerView addSubview:changeButton];
 	footerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
 	self.tableView.tableFooterView = footerView;
-    [footerView release];
 	
 	self.creating = NO;
 }
@@ -185,7 +178,6 @@
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle: title message:message
 														   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
 			[alert show];
-			[alert release];
 		}
 		return NO;		
 	}	
@@ -203,7 +195,6 @@
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message
 														   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
 			[alert show];
-			[alert release];	
 		}
 		return NO;
 	}
@@ -275,7 +266,6 @@
                          UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message
                                                                           delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
                          [alert show];
-                         [alert release]; 
                        }
      ];
 }
@@ -317,8 +307,8 @@
 	[loginField resignFirstResponder];
 	[loginPasswordField resignFirstResponder];
 	[loginPasswordConfirmField resignFirstResponder];
-	CFPreferencesSetAppValue(CFSTR("email"), loginField.text, kCFPreferencesCurrentApplication);
-	CFPreferencesSetAppValue(CFSTR("password"), loginPasswordField.text, kCFPreferencesCurrentApplication);
+	CFPreferencesSetAppValue(CFSTR("email"), (__bridge CFPropertyListRef)(loginField.text), kCFPreferencesCurrentApplication);
+	CFPreferencesSetAppValue(CFSTR("password"), (__bridge CFPropertyListRef)(loginPasswordField.text), kCFPreferencesCurrentApplication);
 	CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
 	
 	// Try to login and sync after entering password?
@@ -344,7 +334,6 @@
                     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message: message
                                                                    delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
                     [alert show];
-                    [alert release];
                 }
      ];
 }
@@ -359,7 +348,6 @@
 	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message
 												   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
 	[alert show];
-	[alert release];	
 }
 
 #pragma mark Actions
@@ -453,7 +441,7 @@
 		cell = [tView dequeueReusableCellWithIdentifier:EmailCellIdentifier];
 		// Email
 		if (cell == nil) {
-			cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:EmailCellIdentifier] autorelease];
+			cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:EmailCellIdentifier];
 			cell.textLabel.font = [UIFont boldSystemFontOfSize:14];
 			
 			loginField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, 25)];
@@ -473,7 +461,7 @@
 		cell = [tView dequeueReusableCellWithIdentifier:PasswordCellIdentifier];		
 		// Password
 		if (cell == nil) {
-			cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:PasswordCellIdentifier] autorelease];
+			cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:PasswordCellIdentifier];
 			cell.textLabel.font = [UIFont boldSystemFontOfSize:14];
 			
 			loginPasswordField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, 25)];
@@ -492,7 +480,7 @@
 		cell = [tView dequeueReusableCellWithIdentifier:ConfirmCellIdentifier];		
 		// Password
 		if (cell == nil) {
-			cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ConfirmCellIdentifier] autorelease];
+			cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ConfirmCellIdentifier];
 			cell.textLabel.font = [UIFont boldSystemFontOfSize:14];
 			
 			loginPasswordConfirmField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, 25)];
@@ -523,7 +511,7 @@
 	
     itemView.transform = leftQuake;  // starting point
 	
-    [UIView beginAnimations:@"earthquake" context:itemView];
+    [UIView beginAnimations:@"earthquake" context:(__bridge void *)(itemView)];
     [UIView setAnimationRepeatAutoreverses:YES]; // important
     [UIView setAnimationRepeatCount:5];
     [UIView setAnimationDuration:0.07];
@@ -539,7 +527,7 @@
 {
     if ([finished boolValue]) 
     {
-        UIView* item = (UIView *)context;
+        UIView* item = (__bridge UIView *)context;
         item.transform = CGAffineTransformIdentity;
     }
 }
