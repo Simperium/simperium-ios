@@ -61,7 +61,9 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
     *objPointer = '\0';
     
     // Return the results as an NSString object
-    return [NSString stringWithCString:strResult encoding:NSASCIIStringEncoding];
+    NSString *string = [NSString stringWithCString:strResult encoding:NSASCIIStringEncoding];
+    free(strResult);
+    return string;
 }
 
 + (NSString *)sp_makeUUID
