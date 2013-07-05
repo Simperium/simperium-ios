@@ -168,12 +168,15 @@ static char const * const BucketListKey = "bucketList";
     return [[self faultObjectsForKeys:[keys allObjects] bucketName:bucketName] allValues];
 }
 
--(NSArray *)objectsForBucketName:(NSString *)bucketName
+-(NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
 {
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:__managedObjectContext];
     [fetchRequest setEntity:entity];
     [fetchRequest setReturnsObjectsAsFaults:YES];
+    
+    if (predicate)
+        [fetchRequest setPredicate:predicate];
     
     NSError *error;
     NSArray *items = [__managedObjectContext executeFetchRequest:fetchRequest error:&error];

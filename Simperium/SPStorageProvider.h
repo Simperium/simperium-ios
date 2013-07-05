@@ -10,7 +10,7 @@
 
 @protocol SPStorageProvider <NSObject>
 -(BOOL)save;
--(NSArray *)objectsForBucketName:(NSString *)bucketName;
+-(NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate;
 -(id)objectForKey:(NSString *)key bucketName:(NSString *)bucketName;
 -(NSArray *)objectsForKeys:(NSSet *)keys bucketName:(NSString *)bucketName;
 -(id)objectAtIndex:(NSUInteger)index bucketName:(NSString *)bucketName;

@@ -128,7 +128,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 
 
 - (NSArray *)allObjects {
-    return [storage objectsForBucketName:self.name];
+    return [storage objectsForBucketName:self.name predicate:nil];
 }
 
 - (id)insertNewObject {
@@ -182,6 +182,11 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 - (NSArray *)objectsForKeys:(NSSet *)keys {
     return [storage objectsForKeys:keys bucketName:name];
 }
+
+- (NSArray *)objectsForPredicate:(NSPredicate *)predicate {
+    return [storage objectsForBucketName:name predicate:predicate];
+}
+
 
 - (NSInteger)numObjects {
     return [storage numObjectsForBucketName:name predicate:nil];

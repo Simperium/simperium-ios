@@ -88,12 +88,14 @@
     __block NSArray *someObjects = nil;
     dispatch_sync(storageQueue, ^{
         NSDictionary *objectDict = [objects objectForKey:bucketName];
-        if (objectDict)
+        if (objectDict) {
             someObjects = [objectDict objectsForKeys:[keys allObjects] notFoundMarker:[NSNull null]];
+        }
     });
     
     if (!someObjects)
         someObjects = [NSArray array];
+    
     return someObjects;
 }
 
@@ -101,13 +103,17 @@
     return nil;
 }
 
--(NSArray *)objectsForBucketName:(NSString *)bucketName
-{
+-(NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
+{ 
     __block NSArray *bucketObjects = nil;
     dispatch_sync(storageQueue, ^{
         NSDictionary *objectDict = [objects objectForKey:bucketName];
-        if (objectDict)
+        if (objectDict) {
             bucketObjects = [objects allValues];
+            
+            if (predicate)
+                bucketObjects = [bucketObjects filteredArrayUsingPredicate:predicate];
+        }
     });
     
     if (!bucketObjects)

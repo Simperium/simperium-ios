@@ -89,6 +89,9 @@ typedef NSUInteger SPBucketChangeType;
 // Retrieve objects for a particular set of keys
 - (NSArray *)objectsForKeys:(NSSet *)keys;
 
+// Retrieve objects filtered by a predicate
+- (NSArray *)objectsForPredicate:(NSPredicate *)predicate;
+
 // Retrieve a certain number of past versions for a particular object key
 // (will result in didReceiveObjectForKey:version:data: getting fired)
 - (void)requestVersions:(int)numVersions key:(NSString *)simperiumKey;
