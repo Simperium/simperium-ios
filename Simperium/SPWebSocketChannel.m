@@ -19,6 +19,8 @@
 #import "SPIndexProcessor.h"
 #import "SPMember.h"
 #import "SPGhost.h"
+#import "SPWebSocketChannel.h"
+#import "SPWebSocketInterface.h"
 #import "JSONKit.h"
 #import "NSString+Simperium.h"
 #import "DDLog.h"
@@ -39,9 +41,9 @@ static BOOL useNetworkActivityIndicator = 0;
 static int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface SPWebSocketChannel()
-@property (nonatomic, assign) Simperium *simperium;
-@property (nonatomic, retain) NSMutableArray *responseBatch;
-@property (nonatomic, retain) NSMutableDictionary *versionsWithErrors;
+@property (nonatomic, weak) Simperium *simperium;
+@property (nonatomic, strong) NSMutableArray *responseBatch;
+@property (nonatomic, strong) NSMutableDictionary *versionsWithErrors;
 @property (nonatomic, copy) NSString *clientID;
 @end
 
@@ -83,17 +85,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 	
 	return self;
-}
-
-- (void)dealloc {
-    self.webSocketManager = nil;
-    self.clientID = nil;
-    self.indexArray = nil;
-    self.responseBatch = nil;
-    self.versionsWithErrors = nil;
-    self.nextMark = nil;
-    self.name = nil;
-	[super dealloc];
 }
 
 - (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(void(^)())completionBlock {
@@ -279,7 +270,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Get all the latest versions
     DDLogInfo(@"Simperium processing %lu objects from index (%@)", (unsigned long)[currentIndexArray count], self.name);
 
-    __block NSArray *indexArrayCopy = [currentIndexArray copy];
+    NSArray *indexArrayCopy = [currentIndexArray copy];
     __block int objectRequests = 0;
     dispatch_async(bucket.processorQueue, ^{
         if (started) {
@@ -368,7 +359,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             });
         }
     });
-    [batch release];
+
     [self.responseBatch removeAllObjects];
 }
 

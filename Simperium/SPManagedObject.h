@@ -19,7 +19,7 @@
 	// The entity's member data as last seen by the server, stored in dictionary form for diffing
 	// has key, data, and signature
 	SPGhost *ghost;
-    SPBucket *bucket;
+    SPBucket *__weak bucket;
     
     NSString *simperiumKey;
     NSString *ghostData;
@@ -28,11 +28,11 @@
 	BOOL updateWaiting;
 }
 
-@property (retain, nonatomic) SPGhost *ghost;
-@property (assign, nonatomic) SPBucket *bucket;
+@property (strong, nonatomic) SPGhost *ghost;
+@property (weak, nonatomic) SPBucket *bucket;
 @property (copy, nonatomic) NSString *ghostData;
 @property (copy, nonatomic) NSString *simperiumKey;
-@property (assign, nonatomic) BOOL updateWaiting;
+@property (nonatomic) BOOL updateWaiting;
 
 - (void)loadMemberData:(NSDictionary *)dictionary;
 - (NSDictionary *)dictionary;

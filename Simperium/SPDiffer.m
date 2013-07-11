@@ -39,10 +39,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return self;
 }
 
-- (void)dealloc {
-    [super dealloc];
-    self.schema = nil;
-}
 
 // Construct a diff for newly added entities
 - (NSMutableDictionary *)diffForAddition:(id<SPDiffable>)object {
@@ -158,7 +154,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
 	// Create a copy of the ghost's data and update any members that have changed
 	NSMutableDictionary *ghostMemberData = [[object ghost] memberData];
-	NSMutableDictionary *newMemberData = ghostMemberData ? [[ghostMemberData mutableCopy] autorelease] : [NSMutableDictionary dictionaryWithCapacity: [diff count]];
+	NSMutableDictionary *newMemberData = ghostMemberData ? [ghostMemberData mutableCopy] : [NSMutableDictionary dictionaryWithCapacity: [diff count]];
 	for (NSString *key in [diff allKeys]) {
 		NSDictionary *change = [diff objectForKey:key];
         
@@ -247,7 +243,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             NSDictionary *changeCopy = [change copy];
 			// If there was no transformation required, just use the original change
 			[newDiff setObject:changeCopy forKey:key];
-            [changeCopy release];
         }
 	}
 	

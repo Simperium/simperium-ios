@@ -50,27 +50,23 @@
 	
 	NSMutableDictionary *memberDataCopy = [[self memberData] mutableCopyWithZone:zone];
 	newGhost.memberData = memberDataCopy;
-	[memberDataCopy release];
 	return newGhost;
 }
 
 -(void)setMemberData:(NSMutableDictionary *)newMemberData
 {
-    [memberData release];
     memberData = [newMemberData mutableCopy];
     needsSave = YES;
 }
 
 -(void)setKey:(NSString *)newKey
 {
-    [key release];
     key = [newKey copy];
     needsSave = YES;
 }
 
 -(void)setVersion:(NSString *)newVersion
 {
-    [version release];
     version = [newVersion copy];
     needsSave = YES;
 }
@@ -85,13 +81,6 @@
 				self.key, @"key", self.version, @"version", self.memberData, @"obj", nil];		
 }
 
--(void)dealloc
-{
-	[key release];
-	[memberData release];
-	[version release];
-    [super dealloc];
-}
 
 
 @end

@@ -13,15 +13,11 @@
 -(id)initFromDictionary:(NSDictionary *)dict
 {
     if (self = [super initFromDictionary:dict]) {
-        dmp = [[[DiffMatchPatch alloc] init] retain];
+        dmp = [[DiffMatchPatch alloc] init];
     }
     return self;
 }
 
--(void)dealloc {
-    [dmp release];
-    [super dealloc];
-}
 
 -(id)defaultValue {
 	return @"";

@@ -14,7 +14,7 @@
 @class SPBucket;
 
 @interface SPHttpInterface : NSObject <SPNetworkInterface> {
-    SPBucket *bucket;
+    SPBucket *__weak bucket;
 	ASIHTTPRequest *getRequest;
 	ASIHTTPRequest *postRequest;
     BOOL requestCancelled;
@@ -27,7 +27,7 @@
 }
 
 @property (nonatomic, copy) NSString *nextMark;
-@property (nonatomic, retain) NSMutableArray *indexArray;
+@property (nonatomic, strong) NSMutableArray *indexArray;
 @property(nonatomic, copy) NSString *pendingLastChangeSignature;
 
 +(void)setNetworkActivityIndicatorEnabled:(BOOL)enabled;
