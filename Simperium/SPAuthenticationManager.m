@@ -67,7 +67,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     username = [[NSUserDefaults standardUserDefaults] objectForKey:USERNAME_KEY];
     
     if (username)
-        token = [SFHFKeychainUtils getPasswordForUsername:@"SPUsername" andServiceName:simperium.appID error:nil];
+        token = [SFHFKeychainUtils getPasswordForUsername:username andServiceName:simperium.appID error:nil];
     
     if (!username || username.length == 0 || !token || token.length == 0) {
         DDLogInfo(@"Simperium didn't find an existing auth token");
@@ -191,8 +191,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)reset {
+    NSString *username = [[NSUserDefaults standardUserDefaults] objectForKey:USERNAME_KEY];
+    if (!username || username.length == 0)
+        username = simperium.user.email;
+    
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:USERNAME_KEY];
-    [SFHFKeychainUtils deleteItemForUsername:@"SPUsername" andServiceName:simperium.appID error:nil];
+    
+    if (username && username.length > 0)
+        [SFHFKeychainUtils deleteItemForUsername:simperium.user.email andServiceName:simperium.appID error:nil];
 }
 
 - (void)cancel {
