@@ -31,6 +31,8 @@
         done = NO;
         
         self.simperium = [[Simperium alloc] initWithRootViewController:nil];
+        // Some stuff is stored in user prefs / keychain, so be sure to remove it
+        [simperium signOutAndRemoveLocalData:YES];
         
         // Setting a label allows each Simperium instance to store user prefs under a different key
         // (be sure to do this before the call to clearLocalData)
@@ -54,10 +56,6 @@
                       context:[self managedObjectContext] coordinator:[self persistentStoreCoordinator]];
     
     [simperium setAllBucketDelegates: self];
-    
-    // Some stuff is stored in user prefs, so be sure to remove it
-    // (needs to be done after Simperium and its network managers have been started)
-    //[simperium clearLocalData];
     
     simperium.user = [[SPUser alloc] initWithEmail:USERNAME token:token];
     for (NSString *bucketName in [simperium.bucketOverrides allKeys]) {

@@ -16,7 +16,7 @@
 #import "Config.h"
 #import "Farm.h"
 #import "SPBucket.h"
-#import "SPSimpleKeychain.h"
+#import "SFHFKeychainUtils.h"
 #import "SPAuthenticationManager.h"
 
 @implementation SimperiumTests
@@ -155,12 +155,9 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     self.token = [userDict objectForKey:@"access_token"];
     STAssertTrue(token.length > 0, @"invalid token from request: %@", tokenURL);
     
-    [[NSUserDefaults standardUserDefaults] setObject: token forKey:@"spAuthToken"];
-    NSMutableDictionary *credentials = [SPSimpleKeychain load:APP_ID];
-    if (!credentials)
-        credentials = [NSMutableDictionary dictionary];
-    [credentials setObject:token forKey:@"SPAuthToken"];
-    [SPSimpleKeychain save:APP_ID data: credentials];
+    [[NSUserDefaults standardUserDefaults] setObject:USERNAME forKey:@"SPUsername"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [SFHFKeychainUtils storeUsername:@"SPUsername" andPassword:token forServiceName:APP_ID updateExisting:YES error:nil];
 
     NSLog(@"auth token is %@", self.token);
 }
