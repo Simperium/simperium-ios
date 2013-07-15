@@ -234,14 +234,16 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     [self resolvePendingRelationshipsToKeys:set];
 
     // Also notify the delegate since the referenced objects are now accessible
-    for (NSString *key in set) {
-        [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeInsert memberNames:nil];
+    if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:memberNames:)]) {
+        for (NSString *key in set) {
+            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeInsert memberNames:nil];
+        }
     }
 }
 
 - (void)objectKeysDeleted:(NSNotification *)notification  {
     NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
-    BOOL delegateRespondsToSelector = [delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:)];
+    BOOL delegateRespondsToSelector = [delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:memberNames:)];
 
     for (NSString *key in set) {
         [storage stopManagingObjectWithKey:key];
@@ -251,7 +253,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 }
 
 - (void)objectsAcknowledged:(NSNotification *)notification  {
-    if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:)]) {
+    if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:memberNames:)]) {
         NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
         for (NSString *key in set) {
             [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeAcknowledge memberNames:nil];
