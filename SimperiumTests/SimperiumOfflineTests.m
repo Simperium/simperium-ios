@@ -30,9 +30,9 @@
     [self waitFor:1.0];
     
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.captainsLog = @"1";
     [leader.simperium save];
+    NSString *configKey = leader.config.simperiumKey;
     leader.expectedAcknowledgments = 1;
     follower.expectedAdditions = 1;
     STAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
@@ -41,7 +41,7 @@
     NSLog(@"****************************DISCONNECT*************************");
     [follower disconnect];
     
-    follower.config = (Config *)[[follower.simperium bucketForName:@"Config"] objectForKey:@"config"];
+    follower.config = (Config *)[[follower.simperium bucketForName:@"Config"] objectForKey:configKey];
     follower.config.captainsLog = @"12";
     follower.expectedAcknowledgments = 1;
     leader.expectedChanges = 1;
@@ -77,11 +77,11 @@
     [self waitFor:1.5];
     
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.captainsLog = @"a";
     leader.expectedAcknowledgments = 1;
     follower.expectedAdditions = 1;
     [leader.simperium save];
+    NSString *configKey = leader.config.simperiumKey;
     STAssertTrue([self waitForCompletion: 6.0 farmArray:farmArray], @"timed out (adding)");
     [self resetExpectations: farmArray];
     [self ensureFarmsEqual:farmArray entityName:@"Config"];
@@ -93,7 +93,7 @@
     STAssertTrue([self waitForCompletion:6.0 farmArray:farmArray], @"timed out (changing)");
     [self resetExpectations:farmArray];
     
-    follower.config = (Config *)[[follower.simperium bucketForName:@"Config"] objectForKey:@"config"];
+    follower.config = (Config *)[[follower.simperium bucketForName:@"Config"] objectForKey:configKey];
     follower.config.captainsLog = @"ac";
     follower.expectedAcknowledgments = 1;
     follower.expectedChanges = 1;
@@ -130,7 +130,6 @@
     [self waitFor:2];
     
     leader.config = [bucket insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.captainsLog = @"1";
     [leader.simperium save];
     [self waitFor:1];

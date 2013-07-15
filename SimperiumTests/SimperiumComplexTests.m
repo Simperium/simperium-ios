@@ -126,7 +126,6 @@
     int changeNumber = 0;
     NSString *refString = [NSString stringWithFormat:@"%d", changeNumber];
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.captainsLog = refString;
     [leader.simperium save];
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];

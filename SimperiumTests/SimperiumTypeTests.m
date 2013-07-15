@@ -29,7 +29,6 @@
     [self waitFor:1.0];
     
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.captainsLog = @"1";
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;

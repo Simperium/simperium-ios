@@ -31,7 +31,6 @@
     SPBucket *followerBucket = [follower.simperium bucketForName:@"Config"];
     
     leader.config = [leaderBucket insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.captainsLog = @"1";
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;

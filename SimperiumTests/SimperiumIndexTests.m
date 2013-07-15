@@ -28,7 +28,6 @@
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.warpSpeed = refWarpSpeed;
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
@@ -116,7 +115,6 @@
     NSLog(@"****************************ADD ONE*************************");
     // Add one object
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.captainsLog = @"a";
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;

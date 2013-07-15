@@ -34,7 +34,7 @@
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
     SPBucket *leaderBucket = [leader.simperium bucketForName:@"Config"];
     leaderBucket.delegate = leader;
-    leader.config = [leaderBucket insertNewObjectForKey:@"config"];
+    leader.config = [leaderBucket insertNewObject];
     [leader.config setValue:refWarpSpeed forKey:@"warpSpeed"];
     //leader.config.warpSpeed = refWarpSpeed;
     [leader.simperium save];
@@ -64,9 +64,9 @@
     
     SPBucket *bucket = [leader.simperium bucketForName:@"Config"];
     leader.config = [bucket insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.warpSpeed = [NSNumber numberWithInt:2];
     [leader.simperium save];
+    NSString *configKey = [leader.config.simperiumKey copy];
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
     STAssertTrue([self waitForCompletion], @"timed out (adding)");
     
@@ -77,10 +77,11 @@
     
     int i=0;
     for (Farm *farm in farms) {
-        farm.config = (Config *)[[farm.simperium bucketForName:@"Config"] objectForKey:@"config"];
+        farm.config = (Config *)[[farm.simperium bucketForName:@"Config"] objectForKey:configKey];
         STAssertNil(farm.config, @"config %d wasn't deleted: %@", i, farm.config);
         i += 1;
     }
+    [configKey release];
     NSLog(@"%@ end", self.name);    
 }
 
@@ -95,7 +96,6 @@
     [self waitFor:1.0];
     
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.warpSpeed = [NSNumber numberWithInt:2];
     leader.config.captainsLog = @"Hi";
     leader.config.shieldPercent = [NSNumber numberWithFloat:3.14];
@@ -138,7 +138,6 @@
     [self waitFor:1];
     
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.warpSpeed = [NSNumber numberWithInt:2];
     leader.config.captainsLog = @"Hi";
     leader.config.shieldPercent = [NSNumber numberWithFloat:3.14];
@@ -180,7 +179,6 @@
     NSString *refString = [NSString stringWithFormat:@"%d", changeNumber];
     SPBucket *bucket = [leader.simperium bucketForName:@"Config"];
     leader.config = [bucket insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.captainsLog = refString;
     [leader.simperium save];
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];

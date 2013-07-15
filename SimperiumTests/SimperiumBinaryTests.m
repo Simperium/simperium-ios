@@ -42,7 +42,7 @@
     [self waitFor:2];
     
     SPBucket *leaderBucket = [leader.simperium bucketForName:@"Config"];
-    leader.config = [leaderBucket insertNewObjectForKey:@"config"];
+    leader.config = [leaderBucket insertNewObject];
     NSData *data = [self randomDataWithBytes:8096];
     [leader.simperium addBinary:data toObject:leader.config bucketName:@"Config" attributeName:@"binaryFile"];
     [leader.simperium save];
