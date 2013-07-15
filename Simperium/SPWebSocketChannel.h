@@ -25,7 +25,7 @@
     SPWebSocketInterface *__weak webSocketManager;
     NSString *name;
     int number;
-    int objectVersionsPending;
+    NSInteger objectVersionsPending;
 }
 
 @property (nonatomic, weak) SPWebSocketInterface *webSocketManager;

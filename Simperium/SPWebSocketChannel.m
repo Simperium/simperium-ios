@@ -298,7 +298,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                     return;
                 }
 
-                DDLogInfo(@"Simperium enqueuing %d object requests (%@)", objectVersionsPending, bucket.name);
+                DDLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)objectVersionsPending, bucket.name);
             });
         }
     });
@@ -366,6 +366,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
     if ([responseString isEqualToString:@"?"]) {
         DDLogError(@"Simperium error: version not found during version retrieval (%@)", bucket.name);
+        objectVersionsPending--;
         return;
     }
 
@@ -388,6 +389,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
     // If retrieving object versions (e.g. for going back in time), return the result directly to the delegate
     if (retrievingObjectHistory) {
+        if (--objectVersionsPending == 0)
+            retrievingObjectHistory = NO;
         if ([bucket.delegate respondsToSelector:@selector(bucket:didReceiveObjectForKey:version:data:)])
             [bucket.delegate bucket:bucket didReceiveObjectForKey:key version:version data:dataDict];
     } else {
@@ -466,11 +469,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (retrievingObjectHistory)
         return;
     
+    NSInteger startVersion = [object.ghost.version integerValue];
     retrievingObjectHistory = YES;
-    objectVersionsPending = numVersions;
+    objectVersionsPending = MIN(startVersion, numVersions);
     
-    NSInteger startVersion = [object.ghost.version integerValue]-1;
-    for (NSInteger i=startVersion; i>=1 && i>=startVersion-numVersions; i--) {
+    for (NSInteger i=startVersion; i>=1 && i>=startVersion-objectVersionsPending; i--) {
         NSString *versionStr = [NSString stringWithFormat:@"%ld", (long)i];
         NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", number, object.simperiumKey, versionStr];
         DDLogVerbose(@"Simperium sending object version request (%@): %@", self.name, message);
