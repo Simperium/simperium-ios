@@ -35,7 +35,7 @@ NSString * const CH_DATA            = @"d";
 
 // Notifications
 NSString * const ProcessorDidAddObjectsNotification = @"ProcessorDidAddObjectsNotification";
-NSString * const ProcessorDidChangeObjectsNotification = @"ProcessorDidChangeObjectsNotification";
+NSString * const ProcessorDidChangeObjectNotification = @"ProcessorDidChangeObjectNotification";
 NSString * const ProcessorDidDeleteObjectKeysNotification = @"ProcessorDidDeleteObjectKeysNotification";
 NSString * const ProcessorDidAcknowledgeObjectsNotification = @"ProcessorDidAcknowledgeObjectsNotification";
 NSString * const ProcessorWillChangeObjectsNotification = @"ProcessorWillChangeObjectsNotification";
@@ -299,16 +299,18 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
         [threadSafeStorage save];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+            NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                       bucket.name, @"bucketName",
                                       [NSSet setWithObject:key], @"keys", nil];
             NSString *notificationName;
             if (newlyAdded) {
                 notificationName = ProcessorDidAddObjectsNotification;
-            } else if (acknowledged)
+            } else if (acknowledged) {
                 notificationName = ProcessorDidAcknowledgeObjectsNotification;
-            else
-                notificationName = ProcessorDidChangeObjectsNotification;
+            } else {
+                notificationName = ProcessorDidChangeObjectNotification;                
+                [userInfo setObject:[diff allKeys] forKey:@"changedMembers"];
+            }
             [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:bucket userInfo:userInfo];
         });
         

@@ -73,8 +73,8 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
         NSString *queueLabel = [@"com.simperium.processor." stringByAppendingString:self.name];
         processorQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
 
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsDidChange:)
-                                                     name:ProcessorDidChangeObjectsNotification object:self];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectDidChange:)
+                                                     name:ProcessorDidChangeObjectNotification object:self];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsAdded:)
                                                      name:ProcessorDidAddObjectsNotification object:self];
@@ -218,12 +218,11 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 
 #pragma mark Notifications
 
-- (void)objectsDidChange:(NSNotification *)notification {
-    if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:)]) {
-        NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
-        for (NSString *key in set) {
-            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeUpdate];
-        }
+- (void)objectDidChange:(NSNotification *)notification {
+    if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:memberNames:)]) {
+        NSString *key = (NSString *)[notification.userInfo objectForKey:@"key"];
+        NSArray *changedMembers = (NSArray *)[notification.userInfo objectForKey:@"changedMembers"];
+        [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeUpdate memberNames:changedMembers];
     }
 }
 
@@ -236,7 +235,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 
     // Also notify the delegate since the referenced objects are now accessible
     for (NSString *key in set) {
-        [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeInsert];
+        [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeInsert memberNames:nil];
     }
 }
 
@@ -247,7 +246,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     for (NSString *key in set) {
         [storage stopManagingObjectWithKey:key];
         if (delegateRespondsToSelector)
-            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeDelete];
+            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeDelete memberNames:nil];
     }
 }
 
@@ -255,7 +254,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:)]) {
         NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
         for (NSString *key in set) {
-            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeAcknowledge];
+            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeAcknowledge memberNames:nil];
         }
     }
 }

@@ -37,7 +37,7 @@ typedef NSUInteger SPBucketChangeType;
  */
 @protocol SPBucketDelegate <NSObject>
 @optional
-- (void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)changeType;
+- (void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)changeType memberNames:(NSArray *)memberNames;
 - (void)bucket:(SPBucket *)bucket willChangeObjectsForKeys:(NSSet *)keys;
 - (void)bucketWillStartIndexing:(SPBucket *)bucket;
 - (void)bucketDidFinishIndexing:(SPBucket *)bucket;

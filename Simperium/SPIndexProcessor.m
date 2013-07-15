@@ -214,10 +214,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                                       addedKeys, @"keys", nil];
             [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidAddObjectsNotification" object:bucket userInfo:userInfoAdded];
 
-            NSDictionary *userInfoChanged = [NSDictionary dictionaryWithObjectsAndKeys:
-                                           bucket.name, @"bucketName",
-                                           changedKeys, @"keys", nil];        
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidChangeObjectsNotification" object:bucket userInfo:userInfoChanged];
+            for (NSString *key in changedKeys) {
+                NSDictionary *userInfoChanged = [NSDictionary dictionaryWithObjectsAndKeys:
+                                               bucket.name, @"bucketName",
+                                               key, @"key", nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidChangeObjectsNotification" object:bucket userInfo:userInfoChanged];
+            }
         }
     });
     
