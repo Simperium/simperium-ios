@@ -102,9 +102,9 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (Farm *)createFarm:(NSString *)label {
     if (!farms) {
-        farms = [[NSMutableArray arrayWithCapacity:NUM_FARMS] retain];
+        farms = [NSMutableArray arrayWithCapacity:NUM_FARMS];
     }
-    Farm *farm = [[[Farm alloc] initWithToken: token bucketOverrides:[self bucketOverrides] label:label] autorelease];
+    Farm *farm = [[Farm alloc] initWithToken: token bucketOverrides:[self bucketOverrides] label:label];
     [farms addObject:farm];
     return farm;
 }
@@ -164,8 +164,6 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 - (void)tearDown
 {
-    [farms release];
-    [overrides release];
     [super tearDown];
 }
 

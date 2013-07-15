@@ -81,7 +81,6 @@
         STAssertNil(farm.config, @"config %d wasn't deleted: %@", i, farm.config);
         i += 1;
     }
-    [configKey release];
     NSLog(@"%@ end", self.name);    
 }
 

@@ -22,11 +22,6 @@
     return self;
 }
 
--(void)dealloc {
-    [email release];
-    [authToken release];
-    [super dealloc];
-}
 
 -(NSString *)hashedEmail
 {

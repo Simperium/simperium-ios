@@ -22,7 +22,7 @@
 }
 
 @property (copy) NSString *token;
-@property (retain) NSDictionary *overrides;
+@property (strong) NSDictionary *overrides;
 
 - (NSDictionary *)bucketOverrides;
 - (NSString *)uniqueBucketFor:(NSString *)entityName;

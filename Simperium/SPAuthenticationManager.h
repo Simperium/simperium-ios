@@ -20,13 +20,13 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 @end
 
 @interface SPAuthenticationManager : NSObject {
-    Simperium *simperium;
+    Simperium *__weak simperium;
     id<SPAuthenticationDelegate> delegate;
     SucceededBlockType succeededBlock;
     FailedBlockType failedBlock;
 }
 
-@property(nonatomic, assign) Simperium *simperium;
+@property(nonatomic, weak) Simperium *simperium;
 @property(nonatomic, copy) SucceededBlockType succeededBlock;
 @property(nonatomic, copy) FailedBlockType failedBlock;
 

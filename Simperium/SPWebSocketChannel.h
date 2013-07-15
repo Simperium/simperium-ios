@@ -22,15 +22,15 @@
     NSString *nextMark;
     NSMutableArray *indexArray;
     NSString *pendingLastChangeSignature;
-    SPWebSocketInterface *webSocketManager;
+    SPWebSocketInterface *__weak webSocketManager;
     NSString *name;
     int number;
     int objectVersionsPending;
 }
 
-@property (nonatomic, assign) SPWebSocketInterface *webSocketManager;
+@property (nonatomic, weak) SPWebSocketInterface *webSocketManager;
 @property (nonatomic, copy) NSString *nextMark;
-@property (nonatomic, retain) NSMutableArray *indexArray;
+@property (nonatomic, strong) NSMutableArray *indexArray;
 @property (nonatomic, copy) NSString *pendingLastChangeSignature;
 @property (nonatomic) int number;
 @property (nonatomic, copy) NSString *name;

@@ -14,8 +14,8 @@
 
 @interface Post : TestObject
 
-@property (nonatomic, retain) NSString * title;
-@property (nonatomic, retain) NSSet *comments;
+@property (nonatomic, strong) NSString * title;
+@property (nonatomic, strong) NSSet *comments;
 @end
 
 @interface Post (CoreDataGeneratedAccessors)

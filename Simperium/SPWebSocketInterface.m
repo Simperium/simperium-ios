@@ -7,6 +7,7 @@
 //
 #import "SPWebSocketInterface.h"
 #import "Simperium.h"
+#import "SPChangeProcessor.h"
 #import "SPUser.h"
 #import "SPBucket.h"
 #import "JSONKit.h"
@@ -33,10 +34,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
 
 @interface SPWebSocketInterface() <SRWebSocketDelegate>
-@property (nonatomic, assign) Simperium *simperium;
-@property (nonatomic, retain) NSMutableDictionary *channels;
+@property (nonatomic, weak) Simperium *simperium;
+@property (nonatomic, strong) NSMutableDictionary *channels;
 @property (nonatomic, copy) NSString *clientID;
-@property (nonatomic, retain) NSDictionary *bucketNameOverrides;
+@property (nonatomic, strong) NSDictionary *bucketNameOverrides;
 @end
 
 @implementation SPWebSocketInterface
@@ -76,14 +77,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 	return self;
 }
 
-- (void)dealloc {
-    self.clientID = nil;
-    self.channels = nil;
-    self.webSocket.delegate = nil;
-    self.webSocket = nil;
-	[super dealloc];
-}
-
 - (SPWebSocketChannel *)channelForName:(NSString *)str {
     return [self.channels objectForKey:str];
 }
@@ -102,7 +95,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     channel.number = channelNumber;
     channel.name = bucket.name;
     [self.channels setObject:channel forKey:bucket.name];
-    [channel release];
     
     return [self.channels objectForKey:bucket.name];
 }
@@ -168,7 +160,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     NSString *url = @"wss://api.simperium.com/sock/websocket";
     SRWebSocket *newWebSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
     self.webSocket = newWebSocket;
-    [newWebSocket release];
     self.webSocket.delegate = self;
     
     NSLog(@"Opening Connection...");

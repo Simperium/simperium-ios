@@ -25,8 +25,8 @@
     int expectedIndexCompletions;
 }
 
-@property (nonatomic, retain) Simperium *simperium;
-@property (nonatomic, retain) Config *config;
+@property (nonatomic, strong) Simperium *simperium;
+@property (nonatomic, strong) Config *config;
 @property (nonatomic, copy) NSString *token;
 @property (nonatomic) BOOL done;
 @property (nonatomic) int expectedAcknowledgments;
@@ -35,9 +35,9 @@
 @property (nonatomic) int expectedChanges;
 @property (nonatomic) int expectedVersions;
 @property (nonatomic) int expectedIndexCompletions;
-@property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
-@property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
-@property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+@property (nonatomic, strong, readonly) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, strong, readonly) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, strong, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
 -(id)initWithToken:(NSString *)token bucketOverrides:(NSDictionary *)bucketOverrides label:(NSString *)label;
 -(void)start;

@@ -14,6 +14,6 @@
     SPBinaryManager *binaryManager;
 }
 
-@property (nonatomic, retain) SPBinaryManager *binaryManager;
+@property (nonatomic, strong) SPBinaryManager *binaryManager;
 
 @end
