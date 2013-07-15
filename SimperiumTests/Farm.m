@@ -110,7 +110,7 @@
     [simperium performSelector:@selector(stopNetworkManagers)];
 }
 
--(void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)change {
+-(void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)change memberNames:(NSArray *)memberNames {
     switch(change) {
         case SPBucketChangeAcknowledge:
             expectedAcknowledgments -= 1;
