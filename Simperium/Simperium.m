@@ -408,6 +408,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key {
     DDLogInfo(@"Simperium starting... %@", label);
+	
+	// Enforce required parameters
+	NSParameterAssert(identifier);
+	NSParameterAssert(key);
+	
+	// Keep the keys!
     appID = [identifier copy];
     APIKey = [key copy];
     self.rootURL = SPBaseURL;
@@ -430,6 +436,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key model:(NSManagedObjectModel *)model context:(NSManagedObjectContext *)context coordinator:(NSPersistentStoreCoordinator *)coordinator
 {
 	DDLogInfo(@"Simperium starting... %@", label);
+	
+	// Enforce required parameters
+	NSParameterAssert(identifier);
+	NSParameterAssert(key);
+	NSParameterAssert(model);
+	NSParameterAssert(context);
+	NSParameterAssert(coordinator);
+	
+	NSAssert((context.concurrencyType == NSMainQueueConcurrencyType), NSLocalizedString(@"Error: you must initialize your context with 'NSMainQueueConcurrencyType' concurrency type.", nil));
+	NSAssert((context.persistentStoreCoordinator == nil), NSLocalizedString(@"Error: NSManagedObjectContext's persistentStoreCoordinator must be nil. Simperium will handle CoreData connections for you.", nil));
+	
+	// Keep the keys!
     appID = [identifier copy];
     APIKey = [key copy];
     self.rootURL = SPBaseURL;
@@ -451,8 +469,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Load metadata for pending references among objects
     [self.relationshipResolver loadPendingRelationships:self.coreDataStorage];
     
-    if (self.binaryManager)
+    if (self.binaryManager) {
         [self configureBinaryManager:self.binaryManager];
+	}
     
     // With everything configured, all objects can now be validated. This will pick up any objects that aren't yet
     // known to Simperium (for the case where you're adding Simperium to an existing app).
