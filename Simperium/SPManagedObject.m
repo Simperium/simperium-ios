@@ -15,7 +15,8 @@
 #import "SPGhost.h"
 #import "JSONKit.h"
 #import "DDLog.h"
-#import <objc/runtime.h>
+
+
 
 @implementation SPManagedObject
 @synthesize ghost;
@@ -44,11 +45,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 
 - (void)configureBucket {
-    char const * const bucketListKey = [SPCoreDataStorage bucketListKey];
-    NSDictionary *bucketList = objc_getAssociatedObject(self.managedObjectContext, bucketListKey);
-    
-    if (!bucketList)
+    NSDictionary *bucketList = self.managedObjectContext.userInfo;
+    if (!bucketList) {
         NSLog(@"Simperium error: bucket list not loaded. Ensure Simperium is started before any objects are fetched.");
+	}
+	
     bucket = [bucketList objectForKey:[[self entity] name]];
 }
 

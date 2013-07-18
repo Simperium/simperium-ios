@@ -12,11 +12,10 @@
 #import "SPCoreDataExporter.h"
 #import "SPSchema.h"
 #import "DDLog.h"
-#import <objc/runtime.h>
+
+
 
 static int ddLogLevel = LOG_LEVEL_INFO;
-
-static char const * const BucketListKey = "bucketList";
 
 @interface SPCoreDataStorage()
 -(void)addObserversForContext:(NSManagedObjectContext *)context;
@@ -27,10 +26,6 @@ static char const * const BucketListKey = "bucketList";
 @synthesize managedObjectModel=__managedObjectModel;
 @synthesize persistentStoreCoordinator=__persistentStoreCoordinator;
 @synthesize delegate;
-
-+(char const * const)bucketListKey {
-    return BucketListKey;
-}
 
 + (int)ddLogLevel {
     return ddLogLevel;
@@ -78,9 +73,9 @@ static char const * const BucketListKey = "bucketList";
                                                      name:NSManagedObjectContextDidSaveNotification
                                                    object:__managedObjectContext];
         
-        // Be sure to copy the bucket list
-        NSDictionary *dict = objc_getAssociatedObject(aSibling.managedObjectContext, BucketListKey);
-        objc_setAssociatedObject(__managedObjectContext, BucketListKey, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+		// Be sure to copy the bucket list (iOS 5 style!)
+		NSDictionary* dict = aSibling.managedObjectContext.userInfo;
+		[__managedObjectContext.userInfo addEntriesFromDictionary:dict];
     }
     
     return self;
@@ -91,8 +86,9 @@ static char const * const BucketListKey = "bucketList";
     if (sibling) {
         // If a sibling was used, then this context was ephemeral and needs to be cleaned up
         [[NSNotificationCenter defaultCenter] removeObserver:sibling name:NSManagedObjectContextDidSaveNotification object:__managedObjectContext];
-    }
-    
+    } else {
+		[[NSNotificationCenter defaultCenter] removeObserver:self];
+	}
 }
 
 -(NSManagedObjectModel *)managedObjectModel {
@@ -109,8 +105,7 @@ static char const * const BucketListKey = "bucketList";
 
 -(void)setBucketList:(NSDictionary *)dict {
     // Set a custom field on the context so that objects can figure out their own buckets when they wake up
-    // (this could use userInfo on iOS5, but it doesn't exist on iOS4)
-    objc_setAssociatedObject(__managedObjectContext, BucketListKey, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+	[__managedObjectContext.userInfo addEntriesFromDictionary:dict];
 }
 
 -(NSArray *)exportSchemas {
@@ -150,7 +145,6 @@ static char const * const BucketListKey = "bucketList";
     
     return [items objectAtIndex:0];
 }
-
 
 -(NSArray *)objectsForKeys:(NSSet *)keys bucketName:(NSString *)bucketName
 {
