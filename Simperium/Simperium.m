@@ -654,7 +654,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         controller = navController;
     }
     
-    [self.rootViewController presentModalViewController:controller animated:animated];
+	[self.rootViewController presentViewController:controller animated:animated completion:nil];
 #else
     if (!authWindowController) {
         SPAuthWindowController *anAuthWindowController = [[self.authWindowControllerClass alloc] initWithWindowNibName:@"AuthWindow"];
@@ -686,8 +686,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     // Login can either be its own root, or the first child of a nav controller if auth is optional
     BOOL navLogin = [childViewControllers count] > 0 && [childViewControllers objectAtIndex:0] == self.loginViewController;
-    if ((self.rootViewController.presentedViewController == self.loginViewController && self.loginViewController) || navLogin)
-        [self.rootViewController dismissModalViewControllerAnimated:animated];
+    if ((self.rootViewController.presentedViewController == self.loginViewController && self.loginViewController) || navLogin) {
+        [self.rootViewController dismissViewControllerAnimated:animated completion:nil];
+	}
     self.loginViewController = nil;
 #else
     //[NSApp endSheet:[authWindowController window] returnCode:NSOKButton];
