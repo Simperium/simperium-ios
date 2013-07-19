@@ -26,10 +26,12 @@ extern NSString * const OP_STRING;
 @interface SPMember : NSObject {
 	NSString *keyName;
 	NSString *type;
+    NSString *valueTransformerName;
     id modelDefaultValue;
 }
 
 @property (nonatomic, readonly, strong) NSString *keyName;
+@property (nonatomic, readonly, strong) NSString *valueTransformerName;
 @property (nonatomic, readonly, strong) id modelDefaultValue;
 
 -(id)initFromDictionary:(NSDictionary *)dict;

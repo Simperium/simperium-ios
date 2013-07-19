@@ -12,6 +12,7 @@
 
 @implementation SPMember
 @synthesize keyName;
+@synthesize valueTransformerName;
 @synthesize modelDefaultValue;
 
 // Operations used for diff and transform
@@ -32,6 +33,7 @@ NSString * const OP_STRING			= @"d";
 	if ((self = [self init])) {			
 		keyName = [[dict objectForKey:@"name"] copy];
 		type = [[dict objectForKey:@"type"] copy];
+        valueTransformerName = [[dict objectForKey:@"valueTransformerName"] copy];
         modelDefaultValue = [[dict objectForKey:@"defaultValue"] copy];
 	}
 	
@@ -41,7 +43,6 @@ NSString * const OP_STRING			= @"d";
 - (NSString *)description {
 	return [NSString stringWithFormat:@"%@ of type %@", keyName, type];
 }
-
 
 -(NSDictionary *)diffForAddition:(id)data {
     NSMutableDictionary *diff = [NSMutableDictionary dictionaryWithObjectsAndKeys:
