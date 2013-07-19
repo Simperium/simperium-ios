@@ -31,7 +31,7 @@ Pod::Spec.new do |s|
   # against for this Pod to work.
   #
   # s.framework  = 'SomeFramework'
-  # s.frameworks = 'SomeFramework', 'AnotherFramework'
+  s.ios.frameworks = 'Security', 'MobileCoreServices', 'CoreData', 'CFNetwork', 'SystemConfiguration', 'Foundation', 'UIKit', 'CoreGraphics'
 
   # Specify a list of libraries that the application needs to link
   # against for this Pod to work.
