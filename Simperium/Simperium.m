@@ -29,7 +29,7 @@
 #import "SPAuthenticationManager.h"
 #import "SPBucket.h"
 #import "SPRelationshipResolver.h"
-#import "Reachability.h"
+#import "SPReachability.h"
 
 #if TARGET_OS_IPHONE
 #import "SPLoginViewController.h"
