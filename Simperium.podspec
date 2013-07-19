@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   #
   # s.public_header_files = 'Simperium/**/*.h'
 
-  s.ios.resources = 'Resources/icon.png', 'Resources/icon@2x.png', 'Resources/LoginView.xib', 'Resources/LoginView-iPad.xib', 'Resources/View.xib'
+  s.ios.resources = 'Resources/LoginView.xib', 'Resources/LoginView-iPad.xib', 'Resources/View.xib'
   s.osx.resources = 'Resources/AuthWindow.xib'
 
   # Specify a list of frameworks that the application needs to link
