@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 Simperium. All rights reserved.
 //
 
-#import "AuthView.h"
+#import "SPAuthView.h"
 
 @implementation AuthView
 
