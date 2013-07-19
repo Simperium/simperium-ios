@@ -433,7 +433,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 }
 
--(void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key model:(NSManagedObjectModel *)model context:(NSManagedObjectContext *)context coordinator:(NSPersistentStoreCoordinator *)coordinator
+-(void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key model:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator
 {
 	DDLogInfo(@"Simperium starting... %@", label);
 	
@@ -441,11 +441,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	NSParameterAssert(identifier);
 	NSParameterAssert(key);
 	NSParameterAssert(model);
-	NSParameterAssert(context);
+	NSParameterAssert(mainContext);
 	NSParameterAssert(coordinator);
 	
-	NSAssert((context.concurrencyType == NSMainQueueConcurrencyType), NSLocalizedString(@"Error: you must initialize your context with 'NSMainQueueConcurrencyType' concurrency type.", nil));
-	NSAssert((context.persistentStoreCoordinator == nil), NSLocalizedString(@"Error: NSManagedObjectContext's persistentStoreCoordinator must be nil. Simperium will handle CoreData connections for you.", nil));
+	NSAssert((mainContext.concurrencyType == NSMainQueueConcurrencyType), NSLocalizedString(@"Error: you must initialize your context with 'NSMainQueueConcurrencyType' concurrency type.", nil));
+	NSAssert((mainContext.persistentStoreCoordinator == nil), NSLocalizedString(@"Error: NSManagedObjectContext's persistentStoreCoordinator must be nil. Simperium will handle CoreData connections for you.", nil));
 	
 	// Keep the keys!
     appID = [identifier copy];
@@ -453,7 +453,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     self.rootURL = SPBaseURL;
     
     // Setup Core Data storage
-    SPCoreDataStorage *storage = [[SPCoreDataStorage alloc] initWithModel:model context:context coordinator:coordinator];
+    SPCoreDataStorage *storage = [[SPCoreDataStorage alloc] initWithModel:model mainContext:mainContext coordinator:coordinator];
     self.coreDataStorage = storage;
     self.coreDataStorage.delegate = self;
     
@@ -572,8 +572,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Don't start network managers again; expect app to handle that
 }
 
--(NSManagedObjectContext *)managedObjectContext {
-    return coreDataStorage.managedObjectContext;
+-(NSManagedObjectContext *)mainManagedObjectContext {
+    return coreDataStorage.mainManagedObjectContext;
+}
+
+-(NSManagedObjectContext *)writerManagedObjectContext {
+    return coreDataStorage.writerManagedObjectContext;
 }
 
 -(NSManagedObjectModel *)managedObjectModel {

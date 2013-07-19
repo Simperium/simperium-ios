@@ -62,10 +62,10 @@
 
 // Starts Simperium with the given credentials (from simperium.com) and an existing Core Data stack.
 - (void)startWithAppID:(NSString *)identifier
-               APIKey:(NSString *)key
-                model:(NSManagedObjectModel *)model
-              context:(NSManagedObjectContext *)context
-          coordinator:(NSPersistentStoreCoordinator *)coordinator;
+				APIKey:(NSString *)key
+				 model:(NSManagedObjectModel *)model
+		   mainContext:(NSManagedObjectContext *)mainContext
+		   coordinator:(NSPersistentStoreCoordinator *)coordinator;
 
 // Save and sync all changed objects. If you're using Core Data, this is just a convenience method
 // (you can also just save your context and Simperium will see the changes).
@@ -76,7 +76,8 @@
 - (SPBucket *)bucketForName:(NSString *)name;
 
 // Convenience methods for accessing the Core Data stack.
-- (NSManagedObjectContext *)managedObjectContext;
+- (NSManagedObjectContext *)mainManagedObjectContext;
+- (NSManagedObjectContext *)writerManagedObjectContext;
 - (NSManagedObjectModel *)managedObjectModel;
 - (NSPersistentStoreCoordinator *)persistentStoreCoordinator;
 
