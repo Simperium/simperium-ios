@@ -65,7 +65,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(id)initWithSibling:(SPCoreDataStorage *)aSibling
 {
     if (self = [super init]) {
-// TODO: mainManagedObjectContext name?
         self.sibling = aSibling;
 		
         // Create an ephemeral, thread-safe context that will push its changes directly to the writer MOC,
