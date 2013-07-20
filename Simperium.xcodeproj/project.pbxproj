@@ -199,6 +199,8 @@
 		464DC337176946ED00E75D05 /* SFHFKeychainUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 464DC335176946ED00E75D05 /* SFHFKeychainUtils.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		46A16A8117289FE2003AED55 /* NSString+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 46A16A7F17289FE2003AED55 /* NSString+Simperium.h */; };
 		46A16A8217289FE2003AED55 /* NSString+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 46A16A8017289FE2003AED55 /* NSString+Simperium.m */; };
+		46DD15CA179A6F4B0093678C /* SPMemberJSONList.h in Headers */ = {isa = PBXBuildFile; fileRef = 46DD15C8179A6F4B0093678C /* SPMemberJSONList.h */; };
+		46DD15CB179A6F4B0093678C /* SPMemberJSONList.m in Sources */ = {isa = PBXBuildFile; fileRef = 46DD15C9179A6F4B0093678C /* SPMemberJSONList.m */; };
 		46EE3D3C171C934300E6F0A5 /* SimperiumBasicTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D37171C934300E6F0A5 /* SimperiumBasicTests.m */; };
 		46EE3D3D171C934300E6F0A5 /* SimperiumIndexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D39171C934300E6F0A5 /* SimperiumIndexTests.m */; };
 		46EE3D3E171C934300E6F0A5 /* SimperiumOfflineTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D3B171C934300E6F0A5 /* SimperiumOfflineTests.m */; };
@@ -407,6 +409,8 @@
 		464DC335176946ED00E75D05 /* SFHFKeychainUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SFHFKeychainUtils.m; sourceTree = "<group>"; };
 		46A16A7F17289FE2003AED55 /* NSString+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Simperium.h"; sourceTree = "<group>"; };
 		46A16A8017289FE2003AED55 /* NSString+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Simperium.m"; sourceTree = "<group>"; };
+		46DD15C8179A6F4B0093678C /* SPMemberJSONList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberJSONList.h; sourceTree = "<group>"; };
+		46DD15C9179A6F4B0093678C /* SPMemberJSONList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMemberJSONList.m; sourceTree = "<group>"; };
 		46EE3D36171C934300E6F0A5 /* SimperiumBasicTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumBasicTests.h; sourceTree = "<group>"; };
 		46EE3D37171C934300E6F0A5 /* SimperiumBasicTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumBasicTests.m; sourceTree = "<group>"; };
 		46EE3D38171C934300E6F0A5 /* SimperiumIndexTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumIndexTests.h; sourceTree = "<group>"; };
@@ -514,6 +518,8 @@
 				2622FD17147F24E000C8EEB4 /* SPMemberFloat.m */,
 				2622FD1A147F24F600C8EEB4 /* SPMemberEntity.h */,
 				2622FD1B147F24F600C8EEB4 /* SPMemberEntity.m */,
+				46DD15C8179A6F4B0093678C /* SPMemberJSONList.h */,
+				46DD15C9179A6F4B0093678C /* SPMemberJSONList.m */,
 				2622FD22147F251100C8EEB4 /* SPMemberList.h */,
 				2622FD23147F251100C8EEB4 /* SPMemberList.m */,
 				2622FD26147F251C00C8EEB4 /* SPMemberBase64.h */,
@@ -960,6 +966,7 @@
 				46A16A8117289FE2003AED55 /* NSString+Simperium.h in Headers */,
 				464DC336176946ED00E75D05 /* SFHFKeychainUtils.h in Headers */,
 				1854D50F1799F6D2006C4211 /* NSArray+Simperium.h in Headers */,
+				46DD15CA179A6F4B0093678C /* SPMemberJSONList.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1173,6 +1180,7 @@
 				46A16A8217289FE2003AED55 /* NSString+Simperium.m in Sources */,
 				464DC337176946ED00E75D05 /* SFHFKeychainUtils.m in Sources */,
 				1854D5101799F6D2006C4211 /* NSArray+Simperium.m in Sources */,
+				46DD15CB179A6F4B0093678C /* SPMemberJSONList.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

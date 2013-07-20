@@ -162,6 +162,8 @@
 		46A6920017387ABF0080399F /* SFHFKeychainUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 46A691FE17387ABE0080399F /* SFHFKeychainUtils.m */; };
 		46D5BC41174C2A9B0027DBAF /* SPRelationshipResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 46D5BC3F174C2A9B0027DBAF /* SPRelationshipResolver.h */; };
 		46D5BC42174C2A9B0027DBAF /* SPRelationshipResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 46D5BC40174C2A9B0027DBAF /* SPRelationshipResolver.m */; };
+		46DD15C6179A6DAC0093678C /* SPMemberJSONList.h in Headers */ = {isa = PBXBuildFile; fileRef = 46DD15C4179A6DAC0093678C /* SPMemberJSONList.h */; };
+		46DD15C7179A6DAC0093678C /* SPMemberJSONList.m in Sources */ = {isa = PBXBuildFile; fileRef = 46DD15C5179A6DAC0093678C /* SPMemberJSONList.m */; };
 		46EA1AEB17569EA0009AC5AA /* SPNetworkInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EA1AEA17569EA0009AC5AA /* SPNetworkInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		46EA1AEE17569EB4009AC5AA /* SPWebSocketInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EA1AEC17569EB4009AC5AA /* SPWebSocketInterface.h */; };
 		46EA1AEF17569EB4009AC5AA /* SPWebSocketInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EA1AED17569EB4009AC5AA /* SPWebSocketInterface.m */; };
@@ -330,6 +332,8 @@
 		46A691FE17387ABE0080399F /* SFHFKeychainUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SFHFKeychainUtils.m; path = ../External/SFHFKeychainUtils/SFHFKeychainUtils.m; sourceTree = "<group>"; };
 		46D5BC3F174C2A9B0027DBAF /* SPRelationshipResolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPRelationshipResolver.h; path = ../../Simperium/SPRelationshipResolver.h; sourceTree = "<group>"; };
 		46D5BC40174C2A9B0027DBAF /* SPRelationshipResolver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPRelationshipResolver.m; path = ../../Simperium/SPRelationshipResolver.m; sourceTree = "<group>"; };
+		46DD15C4179A6DAC0093678C /* SPMemberJSONList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMemberJSONList.h; path = ../../Simperium/SPMemberJSONList.h; sourceTree = "<group>"; };
+		46DD15C5179A6DAC0093678C /* SPMemberJSONList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMemberJSONList.m; path = ../../Simperium/SPMemberJSONList.m; sourceTree = "<group>"; };
 		46EA1AEA17569EA0009AC5AA /* SPNetworkInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPNetworkInterface.h; path = ../../Simperium/SPNetworkInterface.h; sourceTree = "<group>"; };
 		46EA1AEC17569EB4009AC5AA /* SPWebSocketInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPWebSocketInterface.h; path = ../../Simperium/SPWebSocketInterface.h; sourceTree = "<group>"; };
 		46EA1AED17569EB4009AC5AA /* SPWebSocketInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocketInterface.m; path = ../../Simperium/SPWebSocketInterface.m; sourceTree = "<group>"; };
@@ -464,6 +468,8 @@
 				268EDF14155F08A0006B566F /* SPMemberFloat.m */,
 				268EDF15155F08A0006B566F /* SPMemberInt.h */,
 				268EDF16155F08A0006B566F /* SPMemberInt.m */,
+				46DD15C4179A6DAC0093678C /* SPMemberJSONList.h */,
+				46DD15C5179A6DAC0093678C /* SPMemberJSONList.m */,
 				268EDF17155F08A0006B566F /* SPMemberList.h */,
 				268EDF18155F08A1006B566F /* SPMemberList.m */,
 				268EDF19155F08A1006B566F /* SPMemberText.h */,
@@ -730,6 +736,7 @@
 				46EA1AEE17569EB4009AC5AA /* SPWebSocketInterface.h in Headers */,
 				46EA1AF217569EC7009AC5AA /* SPHttpInterface.h in Headers */,
 				4617AEBB179A1A3400545BD9 /* SPReachability.h in Headers */,
+				46DD15C6179A6DAC0093678C /* SPMemberJSONList.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -866,6 +873,7 @@
 				46EA1AEF17569EB4009AC5AA /* SPWebSocketInterface.m in Sources */,
 				46EA1AF317569EC7009AC5AA /* SPHttpInterface.m in Sources */,
 				4617AEBC179A1A3400545BD9 /* SPReachability.m in Sources */,
+				46DD15C7179A6DAC0093678C /* SPMemberJSONList.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
