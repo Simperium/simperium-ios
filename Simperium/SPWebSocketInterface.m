@@ -187,8 +187,10 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 - (void)sendHeartbeat:(NSTimer *)timer {
-    // Send it (will also schedule another one)
-    [self send:@"h:1"];
+    if (self.webSocket.readyState == SR_OPEN) {
+        // Send it (will also schedule another one)
+        [self send:@"h:1"];
+    }
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {

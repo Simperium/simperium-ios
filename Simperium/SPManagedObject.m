@@ -45,7 +45,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)configureBucket {
     char const * const bucketListKey = [SPCoreDataStorage bucketListKey];
-    NSDictionary *bucketList = objc_getAssociatedObject(self.managedObjectContext, bucketListKey);
+    NSDictionary *bucketList = nil;
+    
+    // Child managed object contexts inherit the bucket list of their parent, if any
+    NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
+    while (!(bucketList = objc_getAssociatedObject(managedObjectContext, bucketListKey)) && managedObjectContext.parentContext) {
+        managedObjectContext = managedObjectContext.parentContext;
+    }
     
     if (!bucketList)
         NSLog(@"Simperium error: bucket list not loaded. Ensure Simperium is started before any objects are fetched.");
