@@ -20,6 +20,7 @@ extern NSString * const OP_OBJECT_ADD;
 extern NSString * const OP_OBJECT_REMOVE;
 extern NSString * const OP_INTEGER;
 extern NSString * const OP_LIST;
+extern NSString * const OP_LIST_DMP;
 extern NSString * const OP_OBJECT;
 extern NSString * const OP_STRING;
 
