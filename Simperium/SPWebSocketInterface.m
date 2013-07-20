@@ -17,6 +17,7 @@
 #import "SRWebSocket.h"
 #import "SPWebSocketChannel.h"
 
+#define WEBSOCKET_URL @"wss://api.simperium.com/sock/1"
 #define INDEX_PAGE_SIZE 500
 #define INDEX_BATCH_SIZE 10
 #define INDEX_QUEUE_SIZE 5
@@ -157,8 +158,8 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 - (void)openWebSocket {
-    NSString *url = @"wss://api.simperium.com/sock/websocket";
-    SRWebSocket *newWebSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
+    NSString *urlString = [NSString stringWithFormat:@"%@/%@/websocket", WEBSOCKET_URL, simperium.appID];
+    SRWebSocket *newWebSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
     self.webSocket = newWebSocket;
     self.webSocket.delegate = self;
     
