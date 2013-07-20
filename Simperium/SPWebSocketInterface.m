@@ -29,8 +29,6 @@ NSString * const COM_CHANGE = @"c";
 NSString * const COM_ENTITY = @"e";
 NSString * const COM_ERROR = @"?";
 
-//static NSUInteger numTransfers = 0;
-static BOOL useNetworkActivityIndicator = 0;
 static int ddLogLevel = LOG_LEVEL_INFO;
 NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
 
@@ -53,19 +51,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 + (void)ddSetLogLevel:(int)logLevel {
     ddLogLevel = logLevel;
-}
-
-+ (void)updateNetworkActivityIndictator
-{
-#if TARGET_OS_IPHONE    
-//    BOOL visible = useNetworkActivityIndicator && numTransfers > 0;
-//	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:visible];
-    //DDLogInfo(@"Simperium numTransfers = %d", numTransfers);
-#endif
-}
-
-+ (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled {
-    useNetworkActivityIndicator = enabled;
 }
 
 - (id)initWithSimperium:(Simperium *)s appURL:(NSString *)url clientID:(NSString *)cid {
@@ -107,7 +92,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         [self loadChannelForBucket:bucket];
 }
 
-
 - (void)sendObjectDeletion:(id<SPDiffable>)object {
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
     [channel sendObjectDeletion:object];
@@ -117,20 +101,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
     [channel sendObjectChanges:object];
 }
-
-
-//- (int)nextRetryDelay {
-//    int currentDelay = retryDelay;
-//    retryDelay *= 2;
-//    if (retryDelay > 24)
-//        retryDelay = 24;
-//    
-//    return currentDelay;
-//}
-//
-//- (void)resetRetryDelay {
-//    retryDelay = 2;
-//}
 
 - (void)authenticationDidFail {
     DDLogWarn(@"Simperium authentication failed for token %@", simperium.user.authToken);
@@ -149,7 +119,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
                               simperium.appID, @"app_id",
                               simperium.user.authToken, @"token",
                               remoteBucketName, @"name",
-                              //@"i", @"cmd",
                               nil];
     
     DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
@@ -163,7 +132,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     self.webSocket = newWebSocket;
     self.webSocket.delegate = self;
     
-    NSLog(@"Opening Connection...");
+    DDLogVerbose(@"Simperium opening WebSocket connection...");
     [self.webSocket open];
 }
 
@@ -332,9 +301,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         [bucket.changeProcessor reset];
     });
     [bucket setLastChangeSignature:nil];
-
-//    numTransfers = 0;
-//    [[self class] updateNetworkActivityIndictator];
 }
 
 -(void)requestVersions:(int)numVersions object:(id<SPDiffable>)object {
