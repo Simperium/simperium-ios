@@ -207,7 +207,9 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 
 - (void)objectDidChange:(NSNotification *)notification {
     if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:memberNames:)]) {
-        NSString *key = (NSString *)[notification.userInfo objectForKey:@"key"];
+        // Only one object changed; get it
+        NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
+        NSString *key = [[set allObjects] objectAtIndex:0];
         NSArray *changedMembers = (NSArray *)[notification.userInfo objectForKey:@"changedMembers"];
         [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeUpdate memberNames:changedMembers];
     }
