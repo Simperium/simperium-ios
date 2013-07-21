@@ -17,6 +17,7 @@
 #import "SRWebSocket.h"
 #import "SPWebSocketChannel.h"
 
+#define WEBSOCKET_URL @"wss://api.simperium.com/sock/1"
 #define INDEX_PAGE_SIZE 500
 #define INDEX_BATCH_SIZE 10
 #define INDEX_QUEUE_SIZE 5
@@ -28,8 +29,6 @@ NSString * const COM_CHANGE = @"c";
 NSString * const COM_ENTITY = @"e";
 NSString * const COM_ERROR = @"?";
 
-//static NSUInteger numTransfers = 0;
-static BOOL useNetworkActivityIndicator = 0;
 static int ddLogLevel = LOG_LEVEL_INFO;
 NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
 
@@ -52,19 +51,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 + (void)ddSetLogLevel:(int)logLevel {
     ddLogLevel = logLevel;
-}
-
-+ (void)updateNetworkActivityIndictator
-{
-#if TARGET_OS_IPHONE    
-//    BOOL visible = useNetworkActivityIndicator && numTransfers > 0;
-//	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:visible];
-    //DDLogInfo(@"Simperium numTransfers = %d", numTransfers);
-#endif
-}
-
-+ (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled {
-    useNetworkActivityIndicator = enabled;
 }
 
 - (id)initWithSimperium:(Simperium *)s appURL:(NSString *)url clientID:(NSString *)cid {
@@ -106,7 +92,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         [self loadChannelForBucket:bucket];
 }
 
-
 - (void)sendObjectDeletion:(id<SPDiffable>)object {
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
     [channel sendObjectDeletion:object];
@@ -116,20 +101,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
     [channel sendObjectChanges:object];
 }
-
-
-//- (int)nextRetryDelay {
-//    int currentDelay = retryDelay;
-//    retryDelay *= 2;
-//    if (retryDelay > 24)
-//        retryDelay = 24;
-//    
-//    return currentDelay;
-//}
-//
-//- (void)resetRetryDelay {
-//    retryDelay = 2;
-//}
 
 - (void)authenticationDidFail {
     DDLogWarn(@"Simperium authentication failed for token %@", simperium.user.authToken);
@@ -148,7 +119,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
                               simperium.appID, @"app_id",
                               simperium.user.authToken, @"token",
                               remoteBucketName, @"name",
-                              //@"i", @"cmd",
                               nil];
     
     DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
@@ -157,12 +127,12 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 - (void)openWebSocket {
-    NSString *url = @"wss://api.simperium.com/sock/websocket";
-    SRWebSocket *newWebSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
+    NSString *urlString = [NSString stringWithFormat:@"%@/%@/websocket", WEBSOCKET_URL, simperium.appID];
+    SRWebSocket *newWebSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
     self.webSocket = newWebSocket;
     self.webSocket.delegate = self;
     
-    NSLog(@"Opening Connection...");
+    DDLogVerbose(@"Simperium opening WebSocket connection...");
     [self.webSocket open];
 }
 
@@ -217,8 +187,10 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 - (void)sendHeartbeat:(NSTimer *)timer {
-    // Send it (will also schedule another one)
-    [self send:@"h:1"];
+    if (self.webSocket.readyState == SR_OPEN) {
+        // Send it (will also schedule another one)
+        [self send:@"h:1"];
+    }
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
@@ -331,9 +303,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         [bucket.changeProcessor reset];
     });
     [bucket setLastChangeSignature:nil];
-
-//    numTransfers = 0;
-//    [[self class] updateNetworkActivityIndictator];
 }
 
 -(void)requestVersions:(int)numVersions object:(id<SPDiffable>)object {

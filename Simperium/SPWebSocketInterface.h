@@ -23,7 +23,6 @@
 
 @property (nonatomic, strong) SRWebSocket *webSocket;
 
-+ (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled;
 - (id)initWithSimperium:(Simperium *)s appURL:(NSString *)url clientID:(NSString *)cid;
 - (void)loadChannelsForBuckets:(NSDictionary *)bucketList overrides:(NSDictionary *)overrides;
 - (void)send:(NSString *)message;

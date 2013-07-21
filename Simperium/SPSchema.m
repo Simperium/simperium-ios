@@ -15,6 +15,7 @@
 #import "SPMemberFloat.h"
 #import "SPMemberDouble.h"
 #import "SPMemberEntity.h"
+#import "SPMemberJSONList.h"
 #import "SPMemberList.h"
 #import "SPMemberBase64.h"
 #import "SPMemberBinary.h"
@@ -42,6 +43,8 @@
         return [SPMemberBinary class];
     else if ([type isEqualToString:@"list"])
         return [SPMemberList class];
+    else if ([type isEqualToString:@"jsonlist"])
+        return [SPMemberJSONList class];
     else if ([type isEqualToString:@"base64"])
         return [SPMemberBase64 class];
 	

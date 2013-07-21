@@ -54,7 +54,7 @@
 
 #import <CoreFoundation/CoreFoundation.h>
 
-#import "Reachability.h"
+#import "SPReachability.h"
 
 #define kShouldPrintReachabilityFlags 1
 
@@ -88,23 +88,21 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 {
 	#pragma unused (target, flags)
 	NSCAssert(info != NULL, @"info was NULL in ReachabilityCallback");
-	NSCAssert([(NSObject*) info isKindOfClass: [SPReachability class]], @"info was wrong class in ReachabilityCallback");
+	NSCAssert([(__bridge NSObject*) info isKindOfClass: [SPReachability class]], @"info was wrong class in ReachabilityCallback");
 
 	//We're on the main RunLoop, so an NSAutoreleasePool is not necessary, but is added defensively
 	// in case someon uses the Reachablity object in a different thread.
-	NSAutoreleasePool* myPool = [[NSAutoreleasePool alloc] init];
-	
-	SPReachability* noteObject = (SPReachability*) info;
-	// Post a notification to notify the client that the network reachability changed.
-	[[NSNotificationCenter defaultCenter] postNotificationName: kReachabilityChangedNotification object: noteObject];
-	
-	[myPool release];
+    @autoreleasepool {
+        SPReachability* noteObject = (__bridge SPReachability*) info;
+        // Post a notification to notify the client that the network reachability changed.
+        [[NSNotificationCenter defaultCenter] postNotificationName: kReachabilityChangedNotification object: noteObject];
+    }
 }
 
 - (BOOL) startNotifier
 {
 	BOOL retVal = NO;
-	SCNetworkReachabilityContext	context = {0, self, NULL, NULL, NULL};
+	SCNetworkReachabilityContext	context = {0, (__bridge void *)(self), NULL, NULL, NULL};
 	if(SCNetworkReachabilitySetCallback(reachabilityRef, ReachabilityCallback, &context))
 	{
 		if(SCNetworkReachabilityScheduleWithRunLoop(reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode))
@@ -130,7 +128,6 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 	{
 		CFRelease(reachabilityRef);
 	}
-	[super dealloc];
 }
 
 + (SPReachability*) reachabilityWithHostName: (NSString*) hostName;
@@ -139,7 +136,7 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 	SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithName(NULL, [hostName UTF8String]);
 	if(reachability!= NULL)
 	{
-		retVal= [[[self alloc] init] autorelease];
+		retVal= [[self alloc] init];
 		if(retVal!= NULL)
 		{
 			retVal->reachabilityRef = reachability;
@@ -155,7 +152,7 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 	SPReachability* retVal = NULL;
 	if(reachability!= NULL)
 	{
-		retVal= [[[self alloc] init] autorelease];
+		retVal= [[self alloc] init];
 		if(retVal!= NULL)
 		{
 			retVal->reachabilityRef = reachability;
