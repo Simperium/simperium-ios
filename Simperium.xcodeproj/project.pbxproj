@@ -22,6 +22,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		246F22C8179B3EDB009547B6 /* SimperiumCoreDataTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 246F22C7179B3EDB009547B6 /* SimperiumCoreDataTests.m */; };
 		260722A315BF26A300786BD4 /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D95142CF97D001ACF20 /* DDASLLogger.m */; };
 		260722A515BF26A700786BD4 /* DDAbstractDatabaseLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D93142CF97D001ACF20 /* DDAbstractDatabaseLogger.m */; };
 		260722A615BF26AB00786BD4 /* DDFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 26905D97142CF97D001ACF20 /* DDFileLogger.m */; };
@@ -221,6 +222,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		246F22C6179B3EDA009547B6 /* SimperiumCoreDataTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumCoreDataTests.h; sourceTree = "<group>"; };
+		246F22C7179B3EDB009547B6 /* SimperiumCoreDataTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumCoreDataTests.m; sourceTree = "<group>"; };
 		2611E803149FB91100121D6E /* JSONKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONKit.h; sourceTree = "<group>"; };
 		2611E804149FB91100121D6E /* JSONKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSONKit.m; sourceTree = "<group>"; };
 		2618987415D2EB310013CBC9 /* base64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = base64.c; sourceTree = "<group>"; };
@@ -683,6 +686,8 @@
 				2678E4C21656D5A10018EE35 /* SimperiumTypeTests.m */,
 				265EF73615B8E26700115E19 /* SimperiumBinaryTests.h */,
 				265EF73715B8E26700115E19 /* SimperiumBinaryTests.m */,
+				246F22C6179B3EDA009547B6 /* SimperiumCoreDataTests.h */,
+				246F22C7179B3EDB009547B6 /* SimperiumCoreDataTests.m */,
 				26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */,
 				2673D71F147A00B300B7B6B3 /* Models */,
 				264CD912135DFD7A00C51BAD /* Supporting Files */,
@@ -1181,6 +1186,7 @@
 				46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */,
 				46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */,
 				46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */,
+				246F22C8179B3EDB009547B6 /* SimperiumCoreDataTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
