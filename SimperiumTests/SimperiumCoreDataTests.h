@@ -7,6 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "SimperiumTests.h"
+
 
 @interface SimperiumCoreDataTests : SimperiumTests
 
