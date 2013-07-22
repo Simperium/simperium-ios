@@ -180,6 +180,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
     [self stopNetworking];
     self.rootURL = nil;
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 -(void)setClientID:(NSString *)cid {
@@ -319,6 +321,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)stopNetworking
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self name:kReachabilityChangedNotification object:nil];
     [self.reachability stopNotifier];
     [self stopNetworkManagers];
 }
