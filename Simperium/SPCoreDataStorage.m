@@ -105,7 +105,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)setBucketList:(NSDictionary *)dict {
     // Set a custom field on the context so that objects can figure out their own buckets when they wake up
-	[self.mainManagedObjectContext.userInfo addEntriesFromDictionary:dict];
+	[self.writerManagedObjectContext.userInfo addEntriesFromDictionary:dict];
 }
 
 -(NSArray *)exportSchemas {

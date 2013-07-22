@@ -55,7 +55,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 
 	// Check
-	bucketList = self.managedObjectContext.userInfo;
+	bucketList = managedObjectContext.userInfo;
 	
     if (!bucketList) {
         NSLog(@"Simperium error: bucket list not loaded. Ensure Simperium is started before any objects are fetched.");
