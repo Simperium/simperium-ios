@@ -24,11 +24,13 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
     id<SPAuthenticationDelegate> delegate;
     SucceededBlockType succeededBlock;
     FailedBlockType failedBlock;
+    BOOL connected;
 }
 
 @property(nonatomic, weak) Simperium *simperium;
 @property(nonatomic, copy) SucceededBlockType succeededBlock;
 @property(nonatomic, copy) FailedBlockType failedBlock;
+@property(assign) BOOL connected;
 
 -(id)initWithDelegate:(id<SPAuthenticationDelegate>)authDelegate simperium:(Simperium *)s;
 -(BOOL)authenticateIfNecessary;

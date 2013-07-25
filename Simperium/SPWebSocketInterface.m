@@ -207,12 +207,13 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
+    self.webSocket = nil;
+
     if (!open)
         return;
     
     DDLogVerbose(@"Simperium websocket failed (will retry) with error %@", error);
     
-    self.webSocket = nil;
     open = NO;
     
     [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];

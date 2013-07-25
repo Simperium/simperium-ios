@@ -16,6 +16,7 @@
 #import "DDLog.h"
 #import "JSONKit.h"
 #import "SFHFKeychainUtils.h"
+#import "SPReachability.h"
 
 #define USERNAME_KEY @"SPUsername"
 
@@ -27,7 +28,10 @@
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
-@interface SPAuthenticationManager()
+@interface SPAuthenticationManager() {
+    SPReachability *reachability;
+}
+
 -(void)authDidFail:(ASIHTTPRequest *)request;
 @end
 
@@ -35,6 +39,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 @synthesize succeededBlock;
 @synthesize failedBlock;
 @synthesize simperium;
+@synthesize connected;
 
 + (int)ddLogLevel {
     return ddLogLevel;
@@ -48,10 +53,27 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if ((self = [super init])) {
         delegate = authDelegate;
         simperium = s;
+        
+        reachability = [SPReachability reachabilityForInternetConnection];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kReachabilityChangedNotification object:nil];
+        connected = [reachability currentReachabilityStatus] != NotReachable;
+        [reachability startNotifier];
+
     }
     return self;
 }
 
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+-(void)handleNetworkChange:(NSNotification *)notification {
+    if ([reachability currentReachabilityStatus] == NotReachable) {
+        connected = NO;
+    } else {
+        connected = YES;
+    }
+}
 
 // Open a UI to handle authentication if necessary
 -(BOOL)authenticateIfNecessary
@@ -136,7 +158,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSString *token = [userDict objectForKey:@"access_token"];
     
     // Set the user's details
-    // Set the user's details
     [[NSUserDefaults standardUserDefaults] setObject:username forKey:USERNAME_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [SFHFKeychainUtils storeUsername:username andPassword:token forServiceName:simperium.appID updateExisting:YES error:nil];
@@ -199,20 +220,5 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if ([delegate respondsToSelector:@selector(authenticationDidCancel)])
         [delegate authenticationDidCancel];
 }
-
-#if !TARGET_OS_IPHONE
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-    //    [sheet orderOut:self];
-    //    if (returnCode == NSCancelButton) {
-    //        for (id<SimperiumDelegate>delegate in simperium.delegates) {
-    //            if ([delegate respondsToSelector:@selector(authenticationDidCancel)])
-    //                [delegate authenticationDidCancel];
-    //        }
-    //    }
-}
-#endif
-
-
 
 @end
