@@ -8,6 +8,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface SPAuthenticationWindow : NSWindow
+@interface SPAuthenticationWindow : NSWindow {
+    NSPoint initialLocation;
+}
+
+@property (assign) NSPoint initialLocation;
 
 @end
