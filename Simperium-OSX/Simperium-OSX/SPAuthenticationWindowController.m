@@ -263,7 +263,7 @@ static int minimumPasswordLength = 4;
 }
 
 - (BOOL)validatePasswordSecurity {
-    if (passwordField.stringValue.length <= minimumPasswordLength) {
+    if (passwordField.stringValue.length < minimumPasswordLength) {
         [self earthquake:passwordField];
         [self earthquake:confirmField];
         
