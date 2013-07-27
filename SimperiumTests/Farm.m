@@ -52,8 +52,11 @@
     //[simperium startWithAppName:APP_ID APIKey:API_KEY];
     
     // Core Data testing
-    [simperium startWithAppID:APP_ID APIKey:API_KEY model:[self managedObjectModel]
-                      context:[self managedObjectContext] coordinator:[self persistentStoreCoordinator]];
+    [simperium startWithAppID:APP_ID
+					   APIKey:API_KEY
+						model:[self managedObjectModel]
+				  mainContext:[self managedObjectContext]
+				  coordinator:[self persistentStoreCoordinator]];
     
     [simperium setAllBucketDelegates: self];
     
@@ -176,13 +179,7 @@
     {
         return __managedObjectContext;
     }
-    
-    NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
-    if (coordinator != nil)
-    {
-        __managedObjectContext = [[NSManagedObjectContext alloc] init];
-        [__managedObjectContext setPersistentStoreCoordinator:coordinator];
-    }
+	__managedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
     return __managedObjectContext;
 }
 

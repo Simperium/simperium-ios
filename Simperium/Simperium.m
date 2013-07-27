@@ -410,6 +410,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key {
     DDLogInfo(@"Simperium starting... %@", label);
+	
+	// Enforce required parameters
+	NSParameterAssert(identifier);
+	NSParameterAssert(key);
+	
+	// Keep the keys!
     appID = [identifier copy];
     APIKey = [key copy];
     self.rootURL = SPBaseURL;
@@ -429,15 +435,27 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 }
 
--(void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key model:(NSManagedObjectModel *)model context:(NSManagedObjectContext *)context coordinator:(NSPersistentStoreCoordinator *)coordinator
+-(void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key model:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator
 {
 	DDLogInfo(@"Simperium starting... %@", label);
+	
+	// Enforce required parameters
+	NSParameterAssert(identifier);
+	NSParameterAssert(key);
+	NSParameterAssert(model);
+	NSParameterAssert(mainContext);
+	NSParameterAssert(coordinator);
+	
+	NSAssert((mainContext.concurrencyType == NSMainQueueConcurrencyType), NSLocalizedString(@"Error: you must initialize your context with 'NSMainQueueConcurrencyType' concurrency type.", nil));
+	NSAssert((mainContext.persistentStoreCoordinator == nil), NSLocalizedString(@"Error: NSManagedObjectContext's persistentStoreCoordinator must be nil. Simperium will handle CoreData connections for you.", nil));
+	
+	// Keep the keys!
     appID = [identifier copy];
     APIKey = [key copy];
     self.rootURL = SPBaseURL;
     
     // Setup Core Data storage
-    SPCoreDataStorage *storage = [[SPCoreDataStorage alloc] initWithModel:model context:context coordinator:coordinator];
+    SPCoreDataStorage *storage = [[SPCoreDataStorage alloc] initWithModel:model mainContext:mainContext coordinator:coordinator];
     self.coreDataStorage = storage;
     self.coreDataStorage.delegate = self;
     
@@ -453,8 +471,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Load metadata for pending references among objects
     [self.relationshipResolver loadPendingRelationships:self.coreDataStorage];
     
-    if (self.binaryManager)
+    if (self.binaryManager) {
         [self configureBinaryManager:self.binaryManager];
+	}
     
     // With everything configured, all objects can now be validated. This will pick up any objects that aren't yet
     // known to Simperium (for the case where you're adding Simperium to an existing app).
@@ -555,8 +574,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Don't start network managers again; expect app to handle that
 }
 
--(NSManagedObjectContext *)managedObjectContext {
-    return coreDataStorage.managedObjectContext;
+-(NSManagedObjectContext *)mainManagedObjectContext {
+    return coreDataStorage.mainManagedObjectContext;
+}
+
+-(NSManagedObjectContext *)writerManagedObjectContext {
+    return coreDataStorage.writerManagedObjectContext;
 }
 
 -(NSManagedObjectModel *)managedObjectModel {
@@ -632,7 +655,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         controller = navController;
     }
     
-    [self.rootViewController presentModalViewController:controller animated:animated];
+	[self.rootViewController presentViewController:controller animated:animated completion:nil];
 #else
     if (!authenticationWindowController) {
         authenticationWindowController = [[self.authenticationWindowControllerClass alloc] init];
@@ -654,8 +677,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     // Login can either be its own root, or the first child of a nav controller if auth is optional
     BOOL navLogin = [childViewControllers count] > 0 && [childViewControllers objectAtIndex:0] == self.loginViewController;
-    if ((self.rootViewController.presentedViewController == self.loginViewController && self.loginViewController) || navLogin)
-        [self.rootViewController dismissModalViewControllerAnimated:animated];
+    if ((self.rootViewController.presentedViewController == self.loginViewController && self.loginViewController) || navLogin) {
+        [self.rootViewController dismissViewControllerAnimated:animated completion:nil];
+	}
     self.loginViewController = nil;
 #else
     [self.window setIsVisible:YES];
