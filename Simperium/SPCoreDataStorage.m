@@ -15,7 +15,9 @@
 
 
 
+NSString* const SPCoreDataBucketListKey = @"SPCoreDataBucketListKey";
 static int ddLogLevel = LOG_LEVEL_INFO;
+
 
 @interface SPCoreDataStorage ()
 @property (nonatomic, strong,  readwrite) NSManagedObjectContext		*writerManagedObjectContext;
@@ -84,10 +86,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         
         // An observer is expected to handle merges for otherContext when the threaded context is saved
 		[aSibling addObserversForChildrenContext:self.mainManagedObjectContext];
-        
-		// Be sure to copy the bucket list (iOS 5 style!)
-		NSDictionary* dict = aSibling.mainManagedObjectContext.userInfo;
-		[self.mainManagedObjectContext.userInfo addEntriesFromDictionary:dict];
     }
     
     return self;
@@ -105,7 +103,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)setBucketList:(NSDictionary *)dict {
     // Set a custom field on the context so that objects can figure out their own buckets when they wake up
-	[self.writerManagedObjectContext.userInfo addEntriesFromDictionary:dict];
+	NSMutableDictionary* bucketList = self.writerManagedObjectContext.userInfo[SPCoreDataBucketListKey];
+	
+	if(!bucketList)
+	{
+		bucketList = [NSMutableDictionary dictionary];
+		[self.writerManagedObjectContext.userInfo setObject:bucketList forKey:SPCoreDataBucketListKey];
+	}
+	
+	[bucketList addEntriesFromDictionary:dict];
 }
 
 -(NSArray *)exportSchemas {

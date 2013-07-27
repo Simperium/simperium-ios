@@ -49,13 +49,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSDictionary *bucketList = nil;
     NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
 	
-    // Get the MOC's Grandpa
+    // Get the MOC's Grandpa (writerContext)
     while (managedObjectContext.parentContext != nil) {
         managedObjectContext = managedObjectContext.parentContext;
     }
 
 	// Check
-	bucketList = managedObjectContext.userInfo;
+	bucketList = managedObjectContext.userInfo[SPCoreDataBucketListKey];
 	
     if (!bucketList) {
         NSLog(@"Simperium error: bucket list not loaded. Ensure Simperium is started before any objects are fetched.");
