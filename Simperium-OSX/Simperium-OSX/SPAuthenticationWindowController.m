@@ -19,7 +19,9 @@ static NSUInteger windowWidth = 380;
 static NSUInteger windowHeight = 540;
 static int minimumPasswordLength = 4;
 
-@interface SPAuthenticationWindowController ()
+@interface SPAuthenticationWindowController () {
+    BOOL earthquaking;
+}
 
 @end
 
@@ -314,7 +316,13 @@ static int minimumPasswordLength = 4;
 }
 
 - (void)earthquake:(NSView *)view {
-    [view setAnimations:@{@"frameOrigin":[self shakeAnimation:view.frame]}];
+    // Quick and dirty way to prevent overlapping animations that can move the view
+    if (earthquaking)
+        return;
+    
+    earthquaking = YES;
+    CAKeyframeAnimation *shakeAnimation = [self shakeAnimation:view.frame];
+    [view setAnimations:@{@"frameOrigin":shakeAnimation}];
 	[[view animator] setFrameOrigin:view.frame.origin];
 }
 
@@ -338,8 +346,13 @@ static int minimumPasswordLength = 4;
     CGPathCloseSubpath(shakePath);
     shakeAnimation.path = shakePath;
     shakeAnimation.duration = durationOfShake;
+    shakeAnimation.delegate = self;
     
     return shakeAnimation;
+}
+
+- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
+    earthquaking = NO;
 }
 
 - (void)showAuthenticationError:(NSString *)errorMessage {
