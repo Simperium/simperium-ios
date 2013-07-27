@@ -149,7 +149,7 @@
 #if TARGET_OS_IPHONE
 @property (nonatomic, weak) Class loginViewControllerClass;
 #else
-@property (nonatomic, weak) Class authWindowControllerClass;
+@property (nonatomic, weak) Class authenticationWindowControllerClass;
 #endif
 
 // Optional overrides (used for unit testing).

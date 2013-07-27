@@ -34,7 +34,7 @@
 #if TARGET_OS_IPHONE
 #import "SPLoginViewController.h"
 #else
-#import "SPAuthWindowController.h"
+#import "SPAuthenticationWindowController.h"
 #endif
 
 
@@ -54,7 +54,7 @@
 #if TARGET_OS_IPHONE
 @property (nonatomic, strong) SPLoginViewController *loginViewController;
 #else
-@property (nonatomic, strong) SPAuthWindowController *authWindowController;
+@property (nonatomic, strong) SPAuthenticationWindowController *authenticationWindowController;
 #endif
 
 -(BOOL)save;
@@ -95,8 +95,8 @@
 @synthesize loginViewControllerClass;
 #else
 @synthesize window;
-@synthesize authWindowController;
-@synthesize authWindowControllerClass;
+@synthesize authenticationWindowController;
+@synthesize authenticationWindowControllerClass;
 #endif
 
 
@@ -144,7 +144,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #if TARGET_OS_IPHONE
         loginViewControllerClass = [SPLoginViewController class];
 #else
-        authWindowControllerClass = [SPAuthWindowController class];
+        authenticationWindowControllerClass = [SPAuthenticationWindowController class];
 #endif
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(authenticationDidFail)
                                                      name:@"AuthenticationDidFailNotification" object:nil];
@@ -180,6 +180,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
     [self stopNetworking];
     self.rootURL = nil;
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 -(void)setClientID:(NSString *)cid {
@@ -311,23 +313,23 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)startNetworking
 {
-    //self.reachability = [SPReachability reachabilityForInternetConnection];
+    // Create a new one each time to make sure it fires (and causes networking to start)
     self.reachability = [SPReachability reachabilityWithHostName:@"api.simperium.com"];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kReachabilityChangedNotification object:nil];
-    [self.reachability startNotifier]; 
+    [self.reachability startNotifier];
 }
 
 -(void)stopNetworking
 {
-    [self.reachability stopNotifier];
     [self stopNetworkManagers];
 }
 
 -(void)handleNetworkChange:(NSNotification *)notification {
-    if ([self.reachability currentReachabilityStatus] == NotReachable)
+    if ([self.reachability currentReachabilityStatus] == NotReachable) {
         [self stopNetworkManagers];
-    else
+    } else {
         [self startNetworkManagers];
+    }
 }
 
 -(void)setNetworkEnabled:(BOOL)enabled
@@ -591,11 +593,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token
 {
-#if TARGET_OS_IPHONE
-#else
-    [self.window makeKeyAndOrderFront:nil];
-#endif
-
     [binaryManager setupAuth:user];
     
     // It's now safe to start the network managers
@@ -660,26 +657,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
 	[self.rootViewController presentViewController:controller animated:animated completion:nil];
 #else
-    if (!authWindowController) {
-        SPAuthWindowController *anAuthWindowController = [[self.authWindowControllerClass alloc] initWithWindowNibName:@"AuthWindow"];
-        anAuthWindowController.authManager = self.authManager;
-        
-        authWindowController = anAuthWindowController;
+    if (!authenticationWindowController) {
+        authenticationWindowController = [[self.authenticationWindowControllerClass alloc] init];
+        authenticationWindowController.authManager = self.authManager;
+        authenticationWindowController.optional = authenticationOptional;
     }
     
-    [[authWindowController window] center];
-    [[authWindowController window] makeKeyAndOrderFront:self];
-    
-    
-    //    [NSApp beginSheet:[authWindowController window]
-    //       modalForWindow:window
-    //        modalDelegate:self
-    //       didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-    //          contextInfo:nil];
-    //    [NSApp runModalForWindow: [authWindowController window]];
-    //    // Dialog is up here.
-    //    [NSApp endSheet: [authWindowController window]];
-    //    [[authWindowController window] orderOut: self];
+    // Hide the main window and show the auth window instead
+    [self.window setIsVisible:NO];    
+    [[authenticationWindowController window] center];
+    [[authenticationWindowController window] makeKeyAndOrderFront:self];
 #endif
 }
 
@@ -695,8 +682,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	}
     self.loginViewController = nil;
 #else
-    //[NSApp endSheet:[authWindowController window] returnCode:NSOKButton];
-    [[authWindowController window] close];
+    [self.window setIsVisible:YES];
+    [[authenticationWindowController window] close];
+    authenticationWindowController = nil;
 #endif
 }
 
