@@ -95,6 +95,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
     if (self.sibling) {
         // If a sibling was used, then this context was ephemeral and needs to be cleaned up
+        [[NSNotificationCenter defaultCenter] removeObserver:self.sibling name:NSManagedObjectContextWillSaveNotification object:self.mainManagedObjectContext];
         [[NSNotificationCenter defaultCenter] removeObserver:self.sibling name:NSManagedObjectContextDidSaveNotification object:self.mainManagedObjectContext];
     } else {
 		[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -433,7 +434,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 # pragma mark Children MOC Notification Handlers
 
-- (void)childrenContextDidSave:(NSNotification*)notification
+-(void)childrenContextDidSave:(NSNotification*)notification
 {
 	// Persist to "disk"!
 	[self saveWriterContext];
@@ -447,8 +448,27 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	}];
 }
 
+-(void)childrenContextWillSave:(NSNotification*)notification
+{	
+	// Workaround for 'mergeChangesFromContextDidSaveNotification' not updating the main context.
+	// We'll Obtain perament objecID's for children-saved objects, so when 'childrenContextDidSave' gets fired, the merge is performed with the actual
+	// objectIDs
+	NSManagedObjectContext* moc = (NSManagedObjectContext*)notification.object;
+	NSSet* insertedObjects = moc.insertedObjects;
+	
+	if(insertedObjects.count)
+	{
+		NSError* error = nil;
+		if(![moc obtainPermanentIDsForObjects:[insertedObjects allObjects] error:&error])
+		{
+			NSLog(@"Simperium error while attempting to obtain permanentIDs for Objects: %@, %@", error, error.userInfo);
+		}
+	}
+}
+
 -(void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
 	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self selector:@selector(childrenContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:context];
     [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:context];
 }
 
