@@ -20,12 +20,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 
 @interface SPCoreDataStorage ()
-@property (nonatomic, strong,  readwrite) NSManagedObjectContext		*writerManagedObjectContext;
-@property (nonatomic, strong,  readwrite) NSManagedObjectContext		*mainManagedObjectContext;
-@property (nonatomic, strong,  readwrite) NSManagedObjectModel			*managedObjectModel;
-@property (nonatomic, strong,  readwrite) NSPersistentStoreCoordinator	*persistentStoreCoordinator;
-@property (nonatomic, strong,  readwrite) NSMutableDictionary			*classMappings;
-@property (nonatomic, weak,    readwrite) SPCoreDataStorage				*sibling;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext *writerManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext	*mainManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+@property (nonatomic, strong, readwrite) NSMutableDictionary *classMappings;
+@property (nonatomic, weak, readwrite) SPCoreDataStorage *sibling;
 -(void)addObserversForMainContext:(NSManagedObjectContext *)context;
 -(void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
@@ -540,8 +540,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     // Perform automatic, lightweight migration
     NSDictionary *options = @{
-		NSMigratePersistentStoresAutomaticallyOption	: @(YES),
-		NSInferMappingModelAutomaticallyOption			: @(YES)
+		NSMigratePersistentStoresAutomaticallyOption : @(YES),
+		NSInferMappingModelAutomaticallyOption : @(YES)
 	};
 	
     if (![*coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error])

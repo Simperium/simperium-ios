@@ -17,13 +17,13 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSUInteger const kObjectsCount			= 10;
-static NSTimeInterval const kLocalTestTimeout	= 1;
-static NSTimeInterval const kRemoteTestTimeout	= 10;
+static NSUInteger const kObjectsCount = 10;
+static NSTimeInterval const kLocalTestTimeout = 1;
+static NSTimeInterval const kRemoteTestTimeout = 10;
 
-static NSString* const kInsertedKey				= @"inserted";
-static NSString* const kUpdatedKey				= @"updated";
-static NSString* const kDeletedKey				= @"deleted";
+static NSString* const kInsertedKey	= @"inserted";
+static NSString* const kUpdatedKey = @"updated";
+static NSString* const kDeletedKey = @"deleted";
 
 
 #pragma mark ====================================================================================
@@ -31,9 +31,9 @@ static NSString* const kDeletedKey				= @"deleted";
 #pragma mark ====================================================================================
 
 @interface SimperiumCoreDataTests ()
-@property (nonatomic, strong, readwrite) NSManagedObjectContext*	writerContext;
-@property (nonatomic, strong, readwrite) NSManagedObjectContext*	mainContext;
-@property (nonatomic, strong, readwrite) NSMutableDictionary*		changesByContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext* writerContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext* mainContext;
+@property (nonatomic, strong, readwrite) NSMutableDictionary* changesByContext;
 @end
 
 
@@ -52,12 +52,12 @@ static NSString* const kDeletedKey				= @"deleted";
     [self connectFarms];
 
 	// Load the contexts
-    Farm *leader			= [farms lastObject];
-	self.writerContext		= leader.simperium.writerManagedObjectContext;
-	self.mainContext		= leader.simperium.mainManagedObjectContext;
-	self.changesByContext	= [NSMutableDictionary dictionary];
+    Farm *leader = [farms lastObject];
+	self.writerContext = leader.simperium.writerManagedObjectContext;
+	self.mainContext = leader.simperium.mainManagedObjectContext;
+	self.changesByContext = [NSMutableDictionary dictionary];
 	
-	STAssertTrue((self.mainContext.concurrencyType	 == NSMainQueueConcurrencyType),	@"CoreData mainContext Setup Error");
+	STAssertTrue((self.mainContext.concurrencyType == NSMainQueueConcurrencyType), @"CoreData mainContext Setup Error");
 	STAssertTrue((self.writerContext.concurrencyType == NSPrivateQueueConcurrencyType),	@"CoreData writerContext Setup Error");
 }
 
@@ -66,9 +66,9 @@ static NSString* const kDeletedKey				= @"deleted";
 	[super tearDown];
 	
 	// Cleanup
-	self.writerContext		= nil;
-	self.mainContext		= nil;
-	self.changesByContext	= nil;
+	self.writerContext = nil;
+	self.mainContext = nil;
+	self.changesByContext = nil;
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -85,15 +85,15 @@ static NSString* const kDeletedKey				= @"deleted";
 	// Let's insert new objects
 	for(NSInteger i = 0; ++i <= kObjectsCount; )
 	{
-		Config* config		= [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:self.mainContext];
-		config.warpSpeed	= @( arc4random_uniform(UINT_MAX) );
+		Config* config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:self.mainContext];
+		config.warpSpeed = @( arc4random_uniform(UINT_MAX) );
 	}
 	
 	// Listen to the follower MainMOC changes & WriterMOC save notifications
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleContextNote:) name:NSManagedObjectContextDidSaveNotification object:self.writerContext];
 	
 	// Scotty, beam the changes down!
-	STAssertTrue(self.mainContext.hasChanges,	 @"Main MOC should have changes");
+	STAssertTrue(self.mainContext.hasChanges, @"Main MOC should have changes");
 	STAssertFalse(self.writerContext.hasChanges, @"Writer MOC should not have changes");
 	
 	NSError* error = nil;
@@ -117,11 +117,11 @@ static NSString* const kDeletedKey				= @"deleted";
 	
     NSLog(@"%@ start", self.name);
 	
-	NSManagedObjectContext *workerContext	= [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-	NSManagedObjectContext *deepContext		= [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+	NSManagedObjectContext* workerContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+	NSManagedObjectContext* deepContext	= [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
 	
 	workerContext.parentContext = self.mainContext;
-	deepContext.parentContext	= workerContext;
+	deepContext.parentContext = workerContext;
 	
 	// Let's insert new objects
 	Config* config = nil;
@@ -144,8 +144,8 @@ static NSString* const kDeletedKey				= @"deleted";
 	
     NSLog(@"%@ start", self.name);
 	
-	NSManagedObjectContext *workerContext	= [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-	NSManagedObjectContext *deepContext		= [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+	NSManagedObjectContext *workerContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+	NSManagedObjectContext *deepContext	= [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
 	
 	workerContext.parentContext = self.mainContext;
 	deepContext.parentContext	= workerContext;
@@ -199,8 +199,8 @@ static NSString* const kDeletedKey				= @"deleted";
     [self waitFor:1.0];
 
 	// Prepare everything we need
-	NSManagedObjectContext *followerMainMOC		= follower.simperium.mainManagedObjectContext;
-	NSManagedObjectContext *followerWriterMOC	= follower.simperium.writerManagedObjectContext;
+	NSManagedObjectContext *followerMainMOC	= follower.simperium.mainManagedObjectContext;
+	NSManagedObjectContext *followerWriterMOC = follower.simperium.writerManagedObjectContext;
 		
 	// Listen to the follower MainMOC changes & WriterMOC save notifications
 	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
@@ -229,7 +229,7 @@ static NSString* const kDeletedKey				= @"deleted";
 
 	[self waitFor:kRemoteTestTimeout];
 
-	NSArray *mainInserted	= [[self changesForContext:followerMainMOC] objectForKey:kInsertedKey];
+	NSArray *mainInserted = [[self changesForContext:followerMainMOC] objectForKey:kInsertedKey];
 	NSArray *writerInserted = [[self changesForContext:followerWriterMOC] objectForKey:kInsertedKey];
 	
 	STAssertTrue( (mainInserted.count == kObjectsCount), @"The follower's mainMOC didn't get the new objects");
@@ -245,10 +245,10 @@ static NSString* const kDeletedKey				= @"deleted";
 	
 	for(Config* config in objects)
 	{
-		config.warpSpeed		= @(31337);
-		config.shieldsUp		= @(YES);
-		config.shieldPercent	= @(100);
-		config.captainsLog		= @"You damn dirty borgs!";
+		config.warpSpeed = @(31337);
+		config.shieldsUp = @(YES);
+		config.shieldPercent = @(100);
+		config.captainsLog = @"You damn dirty borgs!";
 	}
 	
 	error = nil;
@@ -262,9 +262,9 @@ static NSString* const kDeletedKey				= @"deleted";
 	
 	for(Config* config in mainUpdated)
 	{
-		STAssertTrue([config.warpSpeed isEqual:@(31337)],					@"Update Test Failed");
-		STAssertTrue([config.shieldsUp isEqual:@(YES)],						@"Update Test Failed");
-		STAssertTrue([config.shieldPercent isEqual:@(100)],					@"Update Test Failed");
+		STAssertTrue([config.warpSpeed isEqual:@(31337)], @"Update Test Failed");
+		STAssertTrue([config.shieldsUp isEqual:@(YES)],	@"Update Test Failed");
+		STAssertTrue([config.shieldPercent isEqual:@(100)],	@"Update Test Failed");
 		STAssertTrue([config.captainsLog isEqual:@"You damn dirty borgs!"], @"Update Test Failed");
 	}
 	
@@ -287,10 +287,10 @@ static NSString* const kDeletedKey				= @"deleted";
 	
 	[self waitFor:kRemoteTestTimeout];
 	
-	NSArray *mainDeleted	= [[self changesForContext:followerMainMOC] objectForKey:kDeletedKey];
-	NSArray *writerDeleted	= [[self changesForContext:followerWriterMOC] objectForKey:kDeletedKey];
+	NSArray *mainDeleted = [[self changesForContext:followerMainMOC] objectForKey:kDeletedKey];
+	NSArray *writerDeleted = [[self changesForContext:followerWriterMOC] objectForKey:kDeletedKey];
 	
-	STAssertTrue( (mainDeleted.count   == kObjectsCount), @"The follower's mainMOC failed to delete objects");
+	STAssertTrue( (mainDeleted.count == kObjectsCount), @"The follower's mainMOC failed to delete objects");
 	STAssertTrue( (writerDeleted.count == kObjectsCount), @"The follower's writerMOC failed to delete objects");
 		
     NSLog(@"%@ end", self.name);
@@ -309,18 +309,18 @@ static NSString* const kDeletedKey				= @"deleted";
 	// First time?
 	if(!changes)
 	{
-		changes					= [NSMutableDictionary dictionary];
-		changes[kInsertedKey]	= [NSMutableArray array];
-		changes[kUpdatedKey]	= [NSMutableArray array];
-		changes[kDeletedKey]	= [NSMutableArray array];
+		changes	= [NSMutableDictionary dictionary];
+		changes[kInsertedKey] = [NSMutableArray array];
+		changes[kUpdatedKey] = [NSMutableArray array];
+		changes[kDeletedKey] = [NSMutableArray array];
 		self.changesByContext[wrappedSender] = changes;
 	}
 	
 	// Track everything
-	NSDictionary* userInfo		= note.userInfo;
-	NSSet* receivedInserts		= userInfo[kInsertedKey];
-	NSSet* receivedUpdates		= userInfo[kUpdatedKey];
-	NSSet* receivedDeletions	= userInfo[kDeletedKey];
+	NSDictionary* userInfo = note.userInfo;
+	NSSet* receivedInserts = userInfo[kInsertedKey];
+	NSSet* receivedUpdates = userInfo[kUpdatedKey];
+	NSSet* receivedDeletions = userInfo[kDeletedKey];
 	
 	if(receivedInserts)
 	{
