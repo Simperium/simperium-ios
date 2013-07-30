@@ -14,6 +14,7 @@
 #import "SPAuthenticationView.h"
 #import "SPAuthenticationTextField.h"
 #import "SPAuthenticationButton.h"
+#import "SPAuthenticationConfiguration.h"
 
 static NSUInteger windowWidth = 380;
 static NSUInteger windowHeight = 540;
@@ -124,7 +125,7 @@ static int minimumPasswordLength = 4;
     [field setBordered:NO];
     [field setDrawsBackground:NO];
     [field setAlignment:NSCenterTextAlignment];
-    [field setFont:[NSFont fontWithName:@"SourceSansPro-Semibold" size:13]];
+    [field setFont:[[SPAuthenticationConfiguration sharedInstance] mediumFontWithSize:13]];
     [field setTextColor:[NSColor colorWithCalibratedWhite:153.f/255.f alpha:1.0]];
     
     return field;
@@ -136,14 +137,13 @@ static int minimumPasswordLength = 4;
     [button setButtonType:NSMomentaryChangeButton];
     button.target = self;
     button.action = @selector(toggleAuthenticationMode:);
-    [button setFont:[NSFont fontWithName:@"SourceSansPro-Semibold" size:13]];
     
     NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
     [style setAlignment:NSCenterTextAlignment];
     NSColor *linkColor = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
 
     
-    NSDictionary *attributes = @{NSFontAttributeName : [NSFont fontWithName:@"SourceSansPro-Semibold" size:13],
+    NSDictionary *attributes = @{NSFontAttributeName : [[SPAuthenticationConfiguration sharedInstance] mediumFontWithSize:13],
                                  NSForegroundColorAttributeName : linkColor,
                                  NSParagraphStyleAttributeName : style};
     [button setAttributedTitle: [[NSAttributedString alloc] initWithString:[text uppercaseString] attributes:attributes]];

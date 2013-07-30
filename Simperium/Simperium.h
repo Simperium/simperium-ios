@@ -11,6 +11,7 @@
 #import "SPBucket.h"
 #import "SPManagedObject.h"
 #import "SPAuthenticationManager.h"
+#import "SPAuthenticationConfiguration.h"
 #import "SPUser.h"
 
 @class Simperium;
