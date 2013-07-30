@@ -88,10 +88,10 @@ static int minimumPasswordLength = 4;
         signUpButton.action = @selector(signUpAction:);
         [authView addSubview:signUpButton];
         
-        changeToSignUpField = [self tipFieldWithText:@"Already have an account?" frame:NSMakeRect(paddingX, logoY - rowSize*3 - 35, width, 20)];
+        changeToSignUpField = [self tipFieldWithText:@"Need an account?" frame:NSMakeRect(paddingX, logoY - rowSize*3 - 35, width, 20)];
         [authView addSubview:changeToSignUpField];
 
-        changeToSignInField = [self tipFieldWithText:@"Need an account?" frame:NSMakeRect(paddingX, logoY - rowSize*4 - 35, width, 20)];
+        changeToSignInField = [self tipFieldWithText:@"Already have an account?" frame:NSMakeRect(paddingX, logoY - rowSize*4 - 35, width, 20)];
         [authView addSubview:changeToSignInField];
         
         logoY -= 5;
