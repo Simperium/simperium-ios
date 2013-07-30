@@ -40,6 +40,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 @synthesize failedBlock;
 @synthesize simperium;
 @synthesize connected;
+@synthesize providerString;
 
 + (int)ddLogLevel {
     return ddLogLevel;
@@ -184,9 +185,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/create/", SPAuthURL, simperium.appID]];
     
     ASIFormDataRequest *tokenRequest = [[ASIFormDataRequest alloc] initWithURL:tokenURL];
-    NSDictionary *authData = [NSDictionary dictionaryWithObjectsAndKeys:
+    NSMutableDictionary *authData = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                               username, @"username",
-                              password, @"password", nil];
+                              password, @"password",
+                              nil];
+    
+    // Backend authentication may need extra data
+    if ([providerString length] > 0)
+        [authData setObject:providerString forKey:@"provider"];
+    
     NSString *jsonData = [authData JSONString];
     [tokenRequest appendPostData:[jsonData dataUsingEncoding:NSUTF8StringEncoding]];
     [tokenRequest addRequestHeader:@"Content-Type" value:@"application/json"];

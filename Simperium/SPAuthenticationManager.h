@@ -30,6 +30,7 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 @property(nonatomic, weak) Simperium *simperium;
 @property(nonatomic, copy) SucceededBlockType succeededBlock;
 @property(nonatomic, copy) FailedBlockType failedBlock;
+@property(nonatomic, copy) NSString *providerString;
 @property(assign) BOOL connected;
 
 -(id)initWithDelegate:(id<SPAuthenticationDelegate>)authDelegate simperium:(Simperium *)s;
