@@ -21,7 +21,10 @@
         return @"";
     
     // Convert from a Transformable class to a base64 string
-    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:value];
+    NSData *data = (self.valueTransformerName ?
+                    [[NSValueTransformer valueTransformerForName:self.valueTransformerName] transformedValue:value] :
+                    [NSKeyedArchiver archivedDataWithRootObject:value]);
+    
     NSString *base64 = [NSString sp_encodeBase64WithData:data];
     //NSLog(@"Simperium transformed base64 (%@) %@ to %@", keyName, value, base64);
 	return base64;
@@ -34,7 +37,9 @@
     
 	// Convert from NSString (base64) to NSData
     NSData *data = [NSData decodeBase64WithString:value];
-    id obj = [NSKeyedUnarchiver unarchiveObjectWithData: data];
+    id obj = (self.valueTransformerName ?
+              [[NSValueTransformer valueTransformerForName:self.valueTransformerName] reverseTransformedValue:data] :
+              [NSKeyedUnarchiver unarchiveObjectWithData:data]);
     
     //NSLog(@"Simperium transforming base64 (%@) %@ from %@", keyName, obj, value);
     

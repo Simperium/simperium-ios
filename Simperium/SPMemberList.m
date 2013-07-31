@@ -8,54 +8,85 @@
 
 #import "SPMemberList.h"
 #import "JSONKit.h"
+#import "DiffMatchPatch.h"
+#import "NSArray+Simperium.h"
+
+@interface SPMemberList ()
+@property (nonatomic, strong, readonly) DiffMatchPatch *diffMatchPatch;
+@end
 
 @implementation SPMemberList
+@synthesize diffMatchPatch = _diffMatchPatch;
+
+- (DiffMatchPatch *)diffMatchPatch
+{
+	if (!_diffMatchPatch) {
+		_diffMatchPatch = [[DiffMatchPatch alloc] init];
+	}
+	return _diffMatchPatch;
+}
 
 -(id)defaultValue {
 	return @"[]";
 }
 
--(id)stringValueFromArray:(id)value {
+-(id)arrayFromJSONString:(id)value {
     if ([value length] == 0)
         return [[self defaultValue] objectFromJSONString];
 	return [value objectFromJSONString];
 }
 
 -(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
-    id value = [dict objectForKey: key];
+	return [self getValueFromJSON:dict key:key object:object];
+}
+
+- (id)getValueFromJSON:(NSDictionary *)json key:(NSString *)key object:(id<SPDiffable>)object
+{
+	id value = [json objectForKey:key];
 	return [value JSONString];
 }
 
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self stringValueFromArray: value];
+    id convertedValue = [self arrayFromJSONString: value];
     [dict setValue:convertedValue forKey:key];
 }
 
--(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
-	NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
-			 @"Simperium error: couldn't diff dates because their classes weren't NSString");
+-(NSDictionary *)diff:(NSArray *)a otherValue:(NSArray *)b {
+	NSAssert([a isKindOfClass:[NSArray class]] && [b isKindOfClass:[NSArray class]],
+			 @"Simperium error: couldn't diff list because their classes weren't NSArray");
     
-	// TODO: proper list diff; for now just replace
-    
-    if ([thisValue isEqualToString: otherValue])
+    if ([a isEqualToArray:b])
 		return [NSDictionary dictionary];
-    
-	// Construct the diff in the expected format
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			OP_REPLACE, OP_OP,
-			[self stringValueFromArray: otherValue], OP_VALUE, nil];
+	
+	// For the moment we can only create OP_LIST_DMP
+	return @{ OP_OP: OP_LIST_DMP, OP_VALUE: [a sp_diffDeltaWithArray:b diffMatchPatch:self.diffMatchPatch] };
 }
+
+
 
 -(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
-    // TODO: proper list diff, including transform
-	// Expect dates in Number format
-	//NSAssert([thisValue isKindOfClass:[NSNumber class]] && [otherValue isKindOfClass:[NSNumber class]],
-	//		 @"Simperium error: couldn't diff dates because their classes weren't NSNumber (NSDate not supported directly)");
 	
-	// Date changes replaces the previous value by default (like ints)
 	
-	// TODO: Not sure if this should be a copy or not
-	return otherValue;
+	// Assuming OP_LIST_DMP. This code will have to change when OP_LIST is
+	// implemented and it will have to take the full change diff in order
+	// to apply the right diffing method.
+	NSString *delta = otherValue;
+	NSArray *source = thisValue;
+	
+	return [source sp_arrayByApplyingDiffDelta:delta diffMatchPatch:self.diffMatchPatch];
 }
 
+- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue
+{
+	NSArray *source = oldValue;
+	NSString *delta1 = thisValue;
+	NSString *delta2 = otherValue;
+	
+	return @{ OP_OP: OP_LIST_DMP, OP_VALUE: [source sp_transformDelta:delta1 onto:delta2 diffMatchPatch:self.diffMatchPatch] };
+}
+
+
 @end
+
+
+

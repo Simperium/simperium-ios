@@ -40,11 +40,9 @@ Known transgressions
 If you decide to dig into the source code, please expect problems and violations of best practices. Your help in identifying these would be greatly appreciated.
 
 * ASI is still being used for HTTP requests, but WebSockets are intended to replace HTTP eventually anyway
-* Some external libraries (still) haven't been properly "namespaced" (with prefixes)
 * Core Data threading is currently messy (iOS 4 was originally targeted)
 * Full WebSockets support is still being fleshed out
 * Support for raw JSON (without Core Data) is still being fleshed out
-* No CocoaPods support yet
 * Some TODOs and hacks remain in the code
 * Some support for binary files and collaboration is committed, but not finished
 * Auth UI is in a .xib but could live more happily as code instead

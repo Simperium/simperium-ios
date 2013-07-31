@@ -90,6 +90,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSString *type = [self simperiumTypeForAttribute: attr];
         NSAssert1(type != nil, @"Simperium couldn't load member %@ (unsupported type)", [attr name]);
         [member setObject: type forKey:@"type"];
+        if (attr.attributeType == NSTransformableAttributeType && attr.valueTransformerName != nil) {
+            [member setObject:attr.valueTransformerName forKey:@"valueTransformerName"];
+        }
         [members addObject: member];
     }
     
