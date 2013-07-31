@@ -618,7 +618,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (self.loginViewController && self.rootViewController.presentedViewController == self.loginViewController)
         return;
     
-    SPLoginViewController *loginController =  [[self.loginViewControllerClass alloc] initWithNibName:@"LoginView" bundle:nil];
+    SPLoginViewController *loginController =  [[SPLoginViewController alloc] init];
     self.loginViewController = loginController;
     self.loginViewController.authManager = self.authManager;
     

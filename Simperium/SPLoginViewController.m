@@ -12,21 +12,17 @@
 #import "ASIFormDataRequest.h"
 #import "JSONKit.h"
 
+
 @interface SPLoginViewController()
+
+@property (nonatomic) CGFloat keyboardHeight;
+
 -(void)earthquake:(UIView*)itemView;
 -(void)changeAction:(id)sender;
 @end
 
 @implementation SPLoginViewController
-@synthesize tableView;
 @synthesize authManager;
-
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil])) {
-	}
-	return self;
-}
 
 
 -(void)setCreating:(BOOL)bCreating
@@ -39,57 +35,119 @@
 	NSString *changeTitle = creating ?
 		NSLocalizedString(@"Already have an account? Sign in", @"A short link to access the account login screen") :
 		NSLocalizedString(@"Don't have an account? Sign up", @"A short link to access the account creation screen");
+    
 	[actionButton setTitle: actionTitle forState:UIControlStateNormal];
-	[changeButton setTitle: changeTitle forState:UIControlStateNormal];	
+	[changeButton setTitle: changeTitle.uppercaseString forState:UIControlStateNormal];
+    
 }
 
--(BOOL)creating {
-	return creating;
+- (UIImage *)stretchableSolidImageWithColor:(UIColor *)color {
+    
+    UIImage *strethableImage = [UIImage imageNamed:@"stretchable_image"];
+    
+    CGRect rect = CGRectMake(0.0f, 0.0f, strethableImage.size.width, strethableImage.size.height);
+    
+    UIGraphicsBeginImageContext(strethableImage.size);
+    
+    [strethableImage drawInRect:rect];
+    
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetBlendMode(context, kCGBlendModeSourceIn);
+    
+    CGContextSetFillColorWithColor(context, color.CGColor);
+    CGContextFillRect(context, rect);
+    
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return [image resizableImageWithCapInsets:UIEdgeInsetsZero];
+    
 }
 
-- (void)viewDidLoad {	
+
+- (void)viewDidLoad {
+    
+    UIColor *whiteColor = [UIColor colorWithWhite:0.99 alpha:1.0];
+    UIColor *blueColor = [UIColor colorWithRed:66.0 / 255.0 green:137 / 255.0 blue:201 / 255.0 alpha:1.0];
+    UIColor *darkBlueColor = [UIColor colorWithRed:36.0 / 255.0 green:100.0 / 255.0 blue:158.0 / 255.0 alpha:1.0];
+    UIColor *lightGreyColor = [UIColor colorWithWhite:0.92 alpha:1.0];
+    UIColor *greyColor = [UIColor colorWithWhite:0.7 alpha:1.0];
+    
+    
+    self.view.backgroundColor = whiteColor;
+	
     // The cancel button will only be visible if there's a navigation controller, which will only happen
     // if authenticationOptional has been set on the Simperium instance.
-    cancelButton = [[UIBarButtonItem alloc] initWithTitle:@"Cancel" style:UIBarButtonItemStylePlain target:self action:@selector(cancelAction:)];
+    cancelButton = [[UIBarButtonItem alloc] initWithTitle:@"Cancel"
+                                                    style:UIBarButtonItemStyleBordered
+                                                   target:self
+                                                   action:@selector(cancelAction:)];
     self.navigationItem.rightBarButtonItem = cancelButton;
+    
+    
+    self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds
+                                                  style:UITableViewStyleGrouped];
+    self.tableView.delegate = self;
+    self.tableView.dataSource = self;
+    self.tableView.backgroundColor = whiteColor;
+    self.tableView.separatorColor = lightGreyColor;
+    [self.view addSubview:self.tableView];
+    
 
-	[createButton addTarget:self action:@selector(showCreateAction:) forControlEvents:UIControlEventTouchUpInside];
-	createButton.titleLabel.font = [UIFont boldSystemFontOfSize:14];
-	[createButton setTitle: NSLocalizedString(@"Create an account", @"Button to create an account") forState:UIControlStateNormal];	
 	
-	[loginButton addTarget:self action:@selector(showLoginAction:) forControlEvents:UIControlEventTouchUpInside];
-	loginButton.titleLabel.font = [UIFont boldSystemFontOfSize:14];
-	[loginButton setTitle: NSLocalizedString(@"I have an account", @"Button to use an existing account") forState:UIControlStateNormal];	
-	self.tableView.hidden = YES;
-	
-	actionButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-	[actionButton addTarget:self action:@selector(goAction:) forControlEvents:UIControlEventTouchUpInside];
-	actionButton.titleLabel.font = [UIFont boldSystemFontOfSize:14];
-	actionButton.frame = CGRectMake(self.tableView.frame.size.width/2-200/2, 0.0, 200, 40);
+	actionButton = [UIButton buttonWithType:UIButtonTypeCustom];
+	[actionButton addTarget:self
+                     action:@selector(goAction:)
+           forControlEvents:UIControlEventTouchUpInside];
+    [actionButton setTitleColor:whiteColor forState:UIControlStateNormal];
+    actionButton.titleLabel.font = [UIFont fontWithName:@"SourceSansPro-Regular" size:22.0];
+    [actionButton setBackgroundImage:[self stretchableSolidImageWithColor:blueColor]
+                            forState:UIControlStateNormal];
+    [actionButton setBackgroundImage:[self stretchableSolidImageWithColor:darkBlueColor]
+                            forState:UIControlStateHighlighted];
+	actionButton.frame = CGRectMake(0, 0.0, self.view.frame.size.width, 44);
 	actionButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin;
 	
 	changeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-	[changeButton addTarget:self action:@selector(changeAction:) forControlEvents:UIControlEventTouchUpInside];
-	changeButton.titleLabel.font = [UIFont systemFontOfSize:14];
-	[changeButton setTitleColor:[UIColor colorWithRed:59.0/255.0 green:86.0/255.0 blue:137.0/255.0 alpha:1.0] forState:UIControlStateNormal];
-	[changeButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateHighlighted];
-	changeButton.frame= CGRectMake(10, 50, self.tableView.frame.size.width-20, 40);
+	[changeButton addTarget:self
+                     action:@selector(changeAction:)
+           forControlEvents:UIControlEventTouchUpInside];
+    [changeButton setTitleColor:greyColor forState:UIControlStateNormal];
+    [changeButton setTitleColor:blueColor forState:UIControlStateHighlighted];
+    changeButton.titleLabel.font = [UIFont fontWithName:@"SourceSansPro-Semibold" size:12.0];
+    changeButton.frame= CGRectMake(10, 50, self.tableView.frame.size.width-20, 40);
 	changeButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	
-	progressView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+	progressView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
 	progressView.frame = CGRectMake(actionButton.frame.size.width - 30, 9, 20, 20);
 	[actionButton addSubview:progressView];
 	
-	UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.frame.size.width, 200)];
+    
+    UIImage *headerImage = [UIImage imageNamed:@"logo_login"];
+    UIImageView *headerView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, headerImage.size.width, headerImage.size.height + 2 * 50)];
+    headerView.image = headerImage;
+    headerView.contentMode = UIViewContentModeCenter;
+    headerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.tableView.tableHeaderView = headerView;
+    
+	UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, changeButton.frame.size.height + changeButton.frame.origin.y)];
 	footerView.contentMode = UIViewContentModeTopLeft;
 	[footerView setUserInteractionEnabled:YES];
 	[footerView addSubview:actionButton];
 	[footerView addSubview:changeButton];
-	footerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
+	footerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	self.tableView.tableFooterView = footerView;
-	
+    
+    
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                                 action:@selector(endEditingAction:)];
+    tapGesture.numberOfTouchesRequired = 1;
+    tapGesture.numberOfTapsRequired = 1;
+    [self.tableView addGestureRecognizer:tapGesture];
+    
 	self.creating = NO;
 }
+
 
 - (void)viewWillAppear:(BOOL)animated
 {    
@@ -100,61 +158,80 @@
         [self.tableView setBackgroundView:nil];
 	}
 
+    // register for keyboard notifications
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
-{    
+{
+    // un-register for keyboard notifications
 	[[NSNotificationCenter defaultCenter] removeObserver: self name:UIKeyboardWillHideNotification object:nil];	
 	[[NSNotificationCenter defaultCenter] removeObserver: self name:UIKeyboardWillShowNotification object:nil];	
 }
 
--(void)keyboardWillHide:(NSNotification *)notification
-{
-	int keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue].size.height;	
-	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {	
-		[UIView beginAnimations:nil context:nil];
-		[UIView setAnimationCurve:[[[notification userInfo] objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue]];
-		[UIView setAnimationDuration:[[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue]];
-		[UIView setAnimationBeginsFromCurrentState:YES];
-		CGRect rect = self.tableView.frame;
-		rect.size.height -= keyboardHeight;
-		rect.origin.y += keyboardHeight/4;
-		self.tableView.frame = rect;
-		
-		[UIView commitAnimations];	
-	} else {
-		CGRect rect = self.tableView.frame;
-		rect.size.height += keyboardHeight;
-		self.tableView.frame = rect;
-	}
+#pragma mark Keyboard
+
+- (void)keyboardWillShow:(NSNotification *)notification {
+    
+    CGRect keyboardFrame = [(NSValue *)[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    
+    _keyboardHeight = MIN(keyboardFrame.size.height, keyboardFrame.size.width);
+    
+    CGFloat duration = [(NSNumber *)[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue];
+    
+    [self positionTableViewWithDuration:duration];
 }
 
--(void)keyboardWillShow:(NSNotification *)notification
-{
-	int keyboardHeight = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue].size.height;	
-	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {	
-		[UIView beginAnimations:nil context:nil];
-		[UIView setAnimationCurve:[[[notification userInfo] objectForKey:UIKeyboardAnimationCurveUserInfoKey] intValue]];
-		[UIView setAnimationDuration:[[[notification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue]];
-		[UIView setAnimationBeginsFromCurrentState:YES];
-		CGRect rect = self.tableView.frame;
-		rect.size.height += keyboardHeight;
-		rect.origin.y -= keyboardHeight/4;
-		self.tableView.frame = rect;
-		
-		[UIView commitAnimations];	
-	} else {
-		CGRect rect = self.tableView.frame;
-		rect.size.height -= keyboardHeight;
-		self.tableView.frame = rect;		
-	}
+- (void)keyboardWillHide:(NSNotification *)notification {
+    
+        CGFloat duration = [(NSNumber *)[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue];
+    
+    
+    _keyboardHeight = 0;
+    
+    [self positionTableViewWithDuration:duration];
+
 }
 
--(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
-	
+- (void)positionTableViewWithDuration:(CGFloat)duration {
+    
+    CGRect newFrame = self.view.bounds;
+    
+    if (_keyboardHeight > 0) {
+        
+        CGFloat maxHeight = newFrame.size.height - _keyboardHeight - 20;
+        
+        CGFloat tableViewHeight = self.tableView.tableFooterView.frame.origin.y + self.tableView.tableFooterView.frame.size.height - [self.tableView rectForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]].origin.y;
+        
+        CGFloat relativeOrigin = [self.view convertRect:[self.tableView rectForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]
+                                               fromView:self.tableView].origin.y;
+        
+        newFrame.origin.y = MAX((maxHeight - tableViewHeight) / 2.0 - relativeOrigin, 20 - relativeOrigin);
+        
+    }
+
+    if (!(_keyboardHeight > 0)) {
+        self.tableView.tableHeaderView.hidden = NO;
+    }
+
+    self.tableView.tableHeaderView.alpha = _keyboardHeight > 0 ? 1.0 : 0.0;
+
+    [UIView animateWithDuration:duration
+                     animations:^{
+                         
+                         self.tableView.frame = newFrame;
+                         self.tableView.tableHeaderView.alpha = _keyboardHeight > 0 ? 0.0 : 1.0;
+                         
+                     } completion:^(BOOL finished) {
+                         
+                         self.tableView.tableHeaderView.hidden = (_keyboardHeight > 0);
+                         
+                     }];
+    
+    
 }
+
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
 	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)	
@@ -162,6 +239,7 @@
 	
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
+
 
 #pragma mark Validation
 -(BOOL)validateEmailWithAlerts:(BOOL)alert
@@ -175,8 +253,11 @@
 			// Bad email address
 			NSString *title = NSLocalizedString(@"Invalid email", @"Title of dialog displayed when email address is invalid");
 			NSString *message = NSLocalizedString(@"Your email address is not valid.", @"Message displayed when email address is invalid");
-			UIAlertView *alert = [[UIAlertView alloc] initWithTitle: title message:message
-														   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+			UIAlertView *alert = [[UIAlertView alloc] initWithTitle: title
+                                                            message:message
+														   delegate:self
+                                                  cancelButtonTitle:@"OK"
+                                                  otherButtonTitles: nil];
 			[alert show];
 		}
 		return NO;		
@@ -192,8 +273,11 @@
 			// Bad password
 			NSString *title = NSLocalizedString(@"Invalid password", @"Title of a dialog displayed when password is invalid");
 			NSString *message = NSLocalizedString(@"Password must contain at least 4 characters.", @"Message displayed when password is invalid");
-			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message
-														   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
+                                                            message:message
+														   delegate:self
+                                                  cancelButtonTitle:@"OK"
+                                                  otherButtonTitles: nil];
 			[alert show];
 		}
 		return NO;
@@ -221,18 +305,6 @@
 
 #pragma mark Login
 
--(void)showLoginAction:(id)sender
-{	
-	[loginField becomeFirstResponder];	
-	tableView.alpha = 0;
-	tableView.hidden = NO;
-	[self.view bringSubviewToFront:tableView];
-	[UIView beginAnimations:nil context:nil];
-	tableView.alpha = 1.0;
-	welcomeView.alpha = 0.0;
-	[UIView commitAnimations];
-}
-
 -(void)performLogin
 {	
 	actionButton.enabled = NO;
@@ -253,6 +325,9 @@
                          //[self closeLoginScreenAnimated:YES];
                      }
                      failure: ^(int responseCode, NSString *responseString){
+                         
+                         [self earthquake:self.tableView];
+                         
                          actionButton.enabled = YES;
                          changeButton.enabled = YES;
                          cancelButton.enabled = YES;
@@ -270,20 +345,7 @@
      ];
 }
 
-#pragma mark Creation
-
--(void)showCreateAction:(id)sender
-{
-	[self changeAction:sender];
-	[loginField becomeFirstResponder];
-	tableView.alpha = 0;
-	tableView.hidden = NO;
-	[self.view bringSubviewToFront:tableView];
-	[UIView beginAnimations:nil context:nil];
-	tableView.alpha = 1.0;
-	welcomeView.alpha = 0.0;
-	[UIView commitAnimations];
-}
+#pragma mark Creatio
 
 -(void)restoreCreationSettings
 {
@@ -354,19 +416,22 @@
 
 -(void)changeAction:(id)sender
 {
-	self.creating = !self.creating;
+	creating = !creating;
     NSArray *indexPaths = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:2 inSection:0]];
-    if (self.creating)
+    if (creating)
         [self.tableView insertRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
     else
         [self.tableView deleteRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
 	[loginField becomeFirstResponder];
+    
+    [self setCreating:creating];
+    
 }
 
 -(void)goAction:(id)sender
 {
 	if ([self validateDataWithAlerts:YES]) {
-		if (self.creating) {
+		if (creating) {
 			if ([self validatePasswordConfirmation])
 				[self performCreation];
 		} else
@@ -377,6 +442,12 @@
 -(void)cancelAction:(id)sender
 {
     [authManager cancel];
+}
+
+- (void)endEditingAction:(id)sender {
+    
+    [self.view endEditing:YES];
+    
 }
 
 #pragma mark Text Field
@@ -395,7 +466,7 @@
 	else if(theTextField == loginPasswordField)
 	{
 		if ([self validatePasswordWithAlerts:YES]) {
-			if (self.creating) {
+			if (creating) {
 				// Advance to next field and don't dismiss keyboard
 				[loginPasswordConfirmField becomeFirstResponder];
 				return NO;
@@ -413,22 +484,32 @@
 }
 
 
-#pragma mark -
+- (UITextField *)textFieldWithPlaceholder:(NSString *)placeholder secure:(BOOL)secure {
+    
+    UITextField *newTextField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, 25)];
+    newTextField.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
+    newTextField.clearsOnBeginEditing = NO;
+    newTextField.autocorrectionType = UITextAutocorrectionTypeNo;
+    newTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    newTextField.secureTextEntry = secure;
+    newTextField.font = [UIFont fontWithName:@"SourceSansPro-Regular" size:22.0];
+    newTextField.textColor = [UIColor colorWithWhite:0.3 alpha:1.0];
+    
+    [newTextField setDelegate:self];
+    
+    newTextField.returnKeyType = UIReturnKeyNext;
+    newTextField.clearButtonMode = UITextFieldViewModeWhileEditing;
+    newTextField.placeholder = placeholder;
+ 
+    return newTextField;
+}
+
 #pragma mark Table Data Source Methods
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section 
 {
-	return self.creating ? 3 : 2;
+    return creating ? 3 : 2;
 }
 
--(NSString*) tableView:(UITableView*) tView titleForHeaderInSection:(NSInteger)section
-{
-	return @"";
-}
-
--(NSString*) tableView:(UITableView*) tView titleForFooterInSection:(NSInteger)section
-{
-    return @"";
-}
 
 - (UITableViewCell *)tableView:(UITableView *)tView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -441,62 +522,40 @@
 		cell = [tView dequeueReusableCellWithIdentifier:EmailCellIdentifier];
 		// Email
 		if (cell == nil) {
-			cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:EmailCellIdentifier];
-			cell.textLabel.font = [UIFont boldSystemFontOfSize:14];
-			
-			loginField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, 25)];
-			loginField.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
-			loginField.clearsOnBeginEditing = NO;
-			loginField.autocorrectionType = UITextAutocorrectionTypeNo;
-			loginField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-			loginField.keyboardType = UIKeyboardTypeEmailAddress;
-			[loginField setDelegate:self];
-			
-			loginField.returnKeyType = UIReturnKeyNext;
-			loginField.clearButtonMode = UITextFieldViewModeWhileEditing;
-			loginField.placeholder = @"email@email.com";
-			cell.accessoryView = loginField;	
+			cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
+                                          reuseIdentifier:EmailCellIdentifier];
+            
+			loginField = [self textFieldWithPlaceholder:@"email@email.com"
+                                                 secure:NO];
+            loginField.keyboardType = UIKeyboardTypeEmailAddress;
+
+			cell.accessoryView = loginField;
 		}
 	} else if (indexPath.row == 1) {
 		cell = [tView dequeueReusableCellWithIdentifier:PasswordCellIdentifier];		
 		// Password
 		if (cell == nil) {
 			cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:PasswordCellIdentifier];
-			cell.textLabel.font = [UIFont boldSystemFontOfSize:14];
 			
-			loginPasswordField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, 25)];
-			loginPasswordField.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
-			loginPasswordField.autocorrectionType = UITextAutocorrectionTypeNo;
-			loginPasswordField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-			[loginPasswordField setDelegate:self];			
-			loginPasswordField.secureTextEntry = YES;
-			loginPasswordField.clearsOnBeginEditing = YES;
-			loginPasswordField.placeholder = NSLocalizedString(@"Password", @"Hint displayed in the password field");
+			loginPasswordField = [self textFieldWithPlaceholder:NSLocalizedString(@"Password", @"Hint displayed in the password field")
+                                                         secure:YES];
 			cell.accessoryView = loginPasswordField;
 		}
 		
-		loginPasswordField.returnKeyType = self.creating ? UIReturnKeyNext : UIReturnKeyGo;
+		loginPasswordField.returnKeyType = creating ? UIReturnKeyNext : UIReturnKeyGo;
 	} else {
 		cell = [tView dequeueReusableCellWithIdentifier:ConfirmCellIdentifier];		
 		// Password
 		if (cell == nil) {
 			cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ConfirmCellIdentifier];
-			cell.textLabel.font = [UIFont boldSystemFontOfSize:14];
 			
-			loginPasswordConfirmField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, 25)];
-			loginPasswordConfirmField.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
-			loginPasswordConfirmField.autocorrectionType = UITextAutocorrectionTypeNo;
-			loginPasswordConfirmField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-			[loginPasswordConfirmField setDelegate:self];			
+			loginPasswordConfirmField = [self textFieldWithPlaceholder:NSLocalizedString(@"Confirm", @"Hint displayed in the password confirmation field") secure:YES];
 			loginPasswordConfirmField.returnKeyType = UIReturnKeyGo;
-			loginPasswordConfirmField.secureTextEntry = YES;
-			loginPasswordConfirmField.clearsOnBeginEditing = YES;
-			loginPasswordConfirmField.placeholder = NSLocalizedString(@"Confirm", @"Hint displayed in the password confirmation field");
 			cell.accessoryView = loginPasswordConfirmField;
 		}
 	}
 	cell.selectionStyle = UITableViewCellSelectionStyleNone;
-	
+	cell.backgroundColor = [UIColor colorWithWhite:0.98 alpha:1.0];
 	return cell;
 }
 
