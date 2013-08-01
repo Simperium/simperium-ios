@@ -11,7 +11,6 @@
 #import "SPBucket.h"
 #import "SPManagedObject.h"
 #import "SPAuthenticationManager.h"
-#import "SPAuthenticationConfiguration.h"
 #import "SPUser.h"
 
 @class Simperium;
@@ -20,6 +19,7 @@
 #if TARGET_OS_IPHONE
 @class UIViewController;
 #else
+#import "SPAuthenticationConfiguration.h"
 @class NSWindow;
 #endif
 
