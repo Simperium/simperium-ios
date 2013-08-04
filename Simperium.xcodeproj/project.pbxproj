@@ -207,6 +207,8 @@
 		46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */; };
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
+		E20C533817AEF53000EC0444 /* SPLoginButton.h in Headers */ = {isa = PBXBuildFile; fileRef = E20C533617AEF53000EC0444 /* SPLoginButton.h */; };
+		E20C533917AEF53000EC0444 /* SPLoginButton.m in Sources */ = {isa = PBXBuildFile; fileRef = E20C533717AEF53000EC0444 /* SPLoginButton.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -423,6 +425,8 @@
 		46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumAuxiliaryTests.m; sourceTree = "<group>"; };
 		46EE3D55171D0C8E00E6F0A5 /* SimperiumErrorTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumErrorTests.h; sourceTree = "<group>"; };
 		46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumErrorTests.m; sourceTree = "<group>"; };
+		E20C533617AEF53000EC0444 /* SPLoginButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPLoginButton.h; sourceTree = "<group>"; };
+		E20C533717AEF53000EC0444 /* SPLoginButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPLoginButton.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -590,6 +594,8 @@
 			children = (
 				26C93A6B14F850EA00BE99F5 /* SPLoginViewController.h */,
 				26C93A6C14F850EA00BE99F5 /* SPLoginViewController.m */,
+				E20C533617AEF53000EC0444 /* SPLoginButton.h */,
+				E20C533717AEF53000EC0444 /* SPLoginButton.m */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -909,6 +915,7 @@
 				264CD996135DFE7E00C51BAD /* DiffMatchPatch.h in Headers */,
 				264CD999135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.h in Headers */,
 				264CD99A135DFE7E00C51BAD /* MinMaxMacros.h in Headers */,
+				E20C533817AEF53000EC0444 /* SPLoginButton.h in Headers */,
 				264CD99B135DFE7E00C51BAD /* NSMutableDictionary+DMPExtensions.h in Headers */,
 				264CD99D135DFE7E00C51BAD /* NSString+JavaSubstring.h in Headers */,
 				264CD99F135DFE7E00C51BAD /* NSString+UnicharUtilities.h in Headers */,
@@ -1156,6 +1163,7 @@
 				2622FD1D147F24F700C8EEB4 /* SPMemberEntity.m in Sources */,
 				2622FD21147F250400C8EEB4 /* SPMemberBinary.m in Sources */,
 				2622FD25147F251200C8EEB4 /* SPMemberList.m in Sources */,
+				E20C533917AEF53000EC0444 /* SPLoginButton.m in Sources */,
 				2622FD29147F251D00C8EEB4 /* SPMemberBase64.m in Sources */,
 				2611E806149FB91100121D6E /* JSONKit.m in Sources */,
 				26C93A6E14F850EA00BE99F5 /* SPLoginViewController.m in Sources */,

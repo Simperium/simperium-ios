@@ -11,7 +11,7 @@
 #import <Simperium/Simperium.h>
 #import "ASIFormDataRequest.h"
 #import "JSONKit.h"
-
+#import "SPLoginButton.h"
 
 @interface SPLoginViewController()
 
@@ -41,30 +41,6 @@
     
 }
 
-- (UIImage *)stretchableSolidImageWithColor:(UIColor *)color {
-    
-    UIImage *strethableImage = [UIImage imageNamed:@"stretchable_image"];
-    
-    CGRect rect = CGRectMake(0.0f, 0.0f, strethableImage.size.width, strethableImage.size.height);
-    
-    UIGraphicsBeginImageContext(strethableImage.size);
-    
-    [strethableImage drawInRect:rect];
-    
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSetBlendMode(context, kCGBlendModeSourceIn);
-    
-    CGContextSetFillColorWithColor(context, color.CGColor);
-    CGContextFillRect(context, rect);
-    
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return [image resizableImageWithCapInsets:UIEdgeInsetsZero];
-    
-}
-
-
 - (void)viewDidLoad {
     
     UIColor *whiteColor = [UIColor colorWithWhite:0.99 alpha:1.0];
@@ -89,24 +65,23 @@
                                                   style:UITableViewStyleGrouped];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
-    self.tableView.backgroundColor = whiteColor;
+    self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.separatorColor = lightGreyColor;
+    self.tableView.clipsToBounds = NO;
     [self.view addSubview:self.tableView];
     
 
 	
-	actionButton = [UIButton buttonWithType:UIButtonTypeCustom];
+	actionButton = [[SPLoginButton alloc] initWithFrame:CGRectMake(0, 0.0, self.view.frame.size.width, 44)];
 	[actionButton addTarget:self
                      action:@selector(goAction:)
            forControlEvents:UIControlEventTouchUpInside];
     [actionButton setTitleColor:whiteColor forState:UIControlStateNormal];
     actionButton.titleLabel.font = [UIFont fontWithName:@"SourceSansPro-Regular" size:22.0];
-    [actionButton setBackgroundImage:[self stretchableSolidImageWithColor:blueColor]
-                            forState:UIControlStateNormal];
-    [actionButton setBackgroundImage:[self stretchableSolidImageWithColor:darkBlueColor]
-                            forState:UIControlStateHighlighted];
-	actionButton.frame = CGRectMake(0, 0.0, self.view.frame.size.width, 44);
-	actionButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin;
+    
+    [actionButton setBackgroundColor:blueColor];
+    [actionButton setBackgroundHighlightColor:darkBlueColor];
+	actionButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	
 	changeButton = [UIButton buttonWithType:UIButtonTypeCustom];
 	[changeButton addTarget:self
@@ -123,12 +98,15 @@
 	[actionButton addSubview:progressView];
 	
     
-    UIImage *headerImage = [UIImage imageNamed:@"logo_login"];
-    UIImageView *headerView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, headerImage.size.width, headerImage.size.height + 2 * 50)];
-    headerView.image = headerImage;
-    headerView.contentMode = UIViewContentModeCenter;
-    headerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    self.tableView.tableHeaderView = headerView;
+    UIImage *logo = [UIImage imageNamed:@"logo_login"];
+    
+    _logoView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, logo.size.width, logo.size.height)];
+    _logoView.image = logo;
+    _logoView.contentMode = UIViewContentModeCenter;
+
+
+    [self.view addSubview:_logoView];
+    
     
 	UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, changeButton.frame.size.height + changeButton.frame.origin.y)];
 	footerView.contentMode = UIViewContentModeTopLeft;
@@ -146,6 +124,65 @@
     [self.tableView addGestureRecognizer:tapGesture];
     
 	self.creating = NO;
+    
+    
+    
+    // layout views
+    [self layoutViewsForInterfaceOrientation:self.interfaceOrientation];
+    
+}
+
+- (CGFloat)topInset {
+    
+    CGFloat navigationBarHeight = self.navigationController.navigationBar.frame.size.height + self.navigationController.navigationBar.frame.origin.y;
+    
+    return navigationBarHeight > 0 ? navigationBarHeight : 20.0; // 20.0 refers to the status bar height
+    
+}
+
+- (void)layoutViewsForInterfaceOrientation:(UIInterfaceOrientation)orientation {
+    
+    CGFloat viewWidth = UIInterfaceOrientationIsPortrait(orientation) ? MIN(self.view.frame.size.width, self.view.frame.size.height) :  MAX(self.view.frame.size.width, self.view.frame.size.height);
+    
+    _logoView.frame = CGRectMake((viewWidth - _logoView.frame.size.width) / 2.0,
+                                 (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 180.0 : 20.0 + self.topInset,
+                                 _logoView.frame.size.width,
+                                 _logoView.frame.size.height);
+    
+    CGFloat tableViewYOrigin = _logoView.frame.origin.y + _logoView.frame.size.height;
+    CGFloat tableViewWidth = (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 400 : viewWidth;
+    
+    _tableView.frame = CGRectMake((viewWidth - tableViewWidth) / 2.0,
+                                  tableViewYOrigin,
+                                  tableViewWidth,
+                                  self.view.frame.size.height - tableViewYOrigin);
+    
+    [self.view sendSubviewToBack:_logoView];
+    
+}
+
+
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+    
+    [self layoutViewsForInterfaceOrientation:toInterfaceOrientation];
+
+    
+}
+
+- (BOOL)shouldAutorotate {
+    
+    return !editing;
+    
+}
+
+
+- (NSUInteger)supportedInterfaceOrientations {
+    
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
+        return UIInterfaceOrientationMaskPortrait;
+    
+    return UIInterfaceOrientationMaskAll;
+    
 }
 
 
@@ -174,6 +211,8 @@
 
 - (void)keyboardWillShow:(NSNotification *)notification {
     
+    editing = YES;
+    
     CGRect keyboardFrame = [(NSValue *)[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
     
     _keyboardHeight = MIN(keyboardFrame.size.height, keyboardFrame.size.width);
@@ -185,8 +224,9 @@
 
 - (void)keyboardWillHide:(NSNotification *)notification {
     
-        CGFloat duration = [(NSNumber *)[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue];
+    editing = NO;
     
+    CGFloat duration = [(NSNumber *)[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue];
     
     _keyboardHeight = 0;
     
@@ -200,32 +240,43 @@
     
     if (_keyboardHeight > 0) {
         
-        CGFloat maxHeight = newFrame.size.height - _keyboardHeight - 20;
+        CGFloat maxHeight = newFrame.size.height - _keyboardHeight - self.topInset;
         
-        CGFloat tableViewHeight = self.tableView.tableFooterView.frame.origin.y + self.tableView.tableFooterView.frame.size.height - [self.tableView rectForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]].origin.y;
+        CGFloat tableViewHeight = [self.tableView tableFooterView].frame.origin.y + [self.tableView tableFooterView].frame.size.height;
         
-        CGFloat relativeOrigin = [self.view convertRect:[self.tableView rectForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]
-                                               fromView:self.tableView].origin.y;
+        CGFloat tableViewTopPadding = [self.tableView convertRect:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]].frame fromView:self.tableView].origin.y;
         
-        newFrame.origin.y = MAX((maxHeight - tableViewHeight) / 2.0 - relativeOrigin, 20 - relativeOrigin);
+        newFrame.origin.y = MAX((maxHeight - tableViewHeight - tableViewTopPadding) / 2.0 + self.topInset, self.topInset - tableViewTopPadding);
+        newFrame.size.height = maxHeight  + tableViewTopPadding;
+
+        self.tableView.scrollEnabled = YES;
         
+    } else {
+        newFrame.origin.y = _logoView.frame.origin.y + _logoView.frame.size.height;
+        newFrame.size.height = self.view.frame.size.height -  newFrame.origin.y;
+        self.tableView.scrollEnabled = NO;
     }
+    
+    newFrame.size.width = self.tableView.frame.size.width;
+    newFrame.origin.x = self.tableView.frame.origin.x;
+    
 
     if (!(_keyboardHeight > 0)) {
-        self.tableView.tableHeaderView.hidden = NO;
+        self.logoView.hidden = NO;
     }
 
     self.tableView.tableHeaderView.alpha = _keyboardHeight > 0 ? 1.0 : 0.0;
-
+    
     [UIView animateWithDuration:duration
                      animations:^{
                          
                          self.tableView.frame = newFrame;
-                         self.tableView.tableHeaderView.alpha = _keyboardHeight > 0 ? 0.0 : 1.0;
+                         self.logoView.alpha = _keyboardHeight > 0 ? 0.0 : 1.0;
+                         
                          
                      } completion:^(BOOL finished) {
                          
-                         self.tableView.tableHeaderView.hidden = (_keyboardHeight > 0);
+                         self.logoView.hidden = (_keyboardHeight > 0);
                          
                      }];
     
@@ -251,14 +302,18 @@
 	if (loginField.text != nil && [emailTest evaluateWithObject:loginField.text] == NO) {
 		if (alert) {
 			// Bad email address
-			NSString *title = NSLocalizedString(@"Invalid email", @"Title of dialog displayed when email address is invalid");
-			NSString *message = NSLocalizedString(@"Your email address is not valid.", @"Message displayed when email address is invalid");
-			UIAlertView *alert = [[UIAlertView alloc] initWithTitle: title
-                                                            message:message
-														   delegate:self
-                                                  cancelButtonTitle:@"OK"
-                                                  otherButtonTitles: nil];
-			[alert show];
+//			NSString *title = NSLocalizedString(@"Invalid email", @"Title of dialog displayed when email address is invalid");
+//			NSString *message = NSLocalizedString(@"Your email address is not valid.", @"Message displayed when email address is invalid");
+//			UIAlertView *alert = [[UIAlertView alloc] initWithTitle: title
+//                                                            message:message
+//														   delegate:self
+//                                                  cancelButtonTitle:@"OK"
+//                                                  otherButtonTitles: nil];
+//			[alert show];
+            
+            [actionButton showErrorMessage:NSLocalizedString(@"Your email address is not valid.", @"Message displayed when email address is invalid")];
+            
+            [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
 		}
 		return NO;		
 	}	
@@ -271,14 +326,19 @@
 	{
 		if (alert) {
 			// Bad password
-			NSString *title = NSLocalizedString(@"Invalid password", @"Title of a dialog displayed when password is invalid");
-			NSString *message = NSLocalizedString(@"Password must contain at least 4 characters.", @"Message displayed when password is invalid");
-			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
-                                                            message:message
-														   delegate:self
-                                                  cancelButtonTitle:@"OK"
-                                                  otherButtonTitles: nil];
-			[alert show];
+//			NSString *title = NSLocalizedString(@"Invalid password", @"Title of a dialog displayed when password is invalid");
+//			NSString *message = NSLocalizedString(@"Password must contain at least 4 characters.", @"Message displayed when password is invalid");
+//			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
+//                                                            message:message
+//														   delegate:self
+//                                                  cancelButtonTitle:@"OK"
+//                                                  otherButtonTitles: nil];
+//			[alert show];
+            
+            [actionButton showErrorMessage:NSLocalizedString(@"Password must contain at least 4 characters.", @"Message displayed when password is invalid")];
+            
+            [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
+            
 		}
 		return NO;
 	}
@@ -326,8 +386,6 @@
                      }
                      failure: ^(int responseCode, NSString *responseString){
                          
-                         [self earthquake:self.tableView];
-                         
                          actionButton.enabled = YES;
                          changeButton.enabled = YES;
                          cancelButton.enabled = YES;
@@ -336,11 +394,16 @@
                          [progressView stopAnimating];	
                          [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                            
-                         NSString *title = NSLocalizedString(@"Login failed", @"Title of a dialog displayed when login fails");
-                         NSString *message = NSLocalizedString(@"Could not login with the provided email address and password.", @"Message displayed when login fails");
-                         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message
-                                                                          delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
-                         [alert show];
+//                         NSString *title = NSLocalizedString(@"Login failed", @"Title of a dialog displayed when login fails");
+//                         NSString *message = NSLocalizedString(@"Could not login with the provided email address and password.", @"Message displayed when login fails");
+//                         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message
+//                                                                          delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+//                         [alert show];
+                         
+                         [actionButton showErrorMessage:NSLocalizedString(@"Could not login with the provided email address and password.", @"Message displayed when login fails")];
+                         
+                         [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
+                         [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
                        }
      ];
 }
@@ -390,12 +453,18 @@
                 }
                 failure:^(int responseCode, NSString *responseString){
                     [self restoreCreationSettings];
-                    NSString *title = NSLocalizedString(@"Account creation failed",
-                                                        @"The title for a dialog that notifies you when account creation fails");
-                    NSString *message = NSLocalizedString(@"Could not create an account with the provided email address and password.", @"An error message");
-                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message: message
-                                                                   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
-                    [alert show];
+//                    NSString *title = NSLocalizedString(@"Account creation failed",
+//                                                        @"The title for a dialog that notifies you when account creation fails");
+//                    NSString *message = NSLocalizedString(@"Could not create an account with the provided email address and password.", @"An error message");
+//                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message: message
+//                                                                   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+//                    [alert show];
+                    
+                    [actionButton showErrorMessage:NSLocalizedString(@"Could not create an account with the provided email address and password.", @"An error message")];
+                    
+                    [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
+                    [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
+                    [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:2 inSection:0]]];
                 }
      ];
 }
@@ -403,13 +472,18 @@
 -(void)failedDueToNetwork:(ASIHTTPRequest *)request
 {
 	[self restoreCreationSettings];
-	NSString *title = NSLocalizedString(@"No connection",
-										@"The title for a dialog that is displayed when there's a connection problem");
+//	NSString *title = NSLocalizedString(@"No connection",
+//										@"The title for a dialog that is displayed when there's a connection problem");
 	NSString *message = NSLocalizedString(@"There's a problem with the connection.  Please try again later.",
 										  @"Details for a dialog that is displayed when there's a connection problem");
-	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message
-												   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
-	[alert show];
+//	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message
+//												   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+//	[alert show];
+    
+    [actionButton showErrorMessage:message];
+    
+    [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
+    [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
 }
 
 #pragma mark Actions
@@ -425,6 +499,8 @@
 	[loginField becomeFirstResponder];
     
     [self setCreating:creating];
+    
+    [self positionTableViewWithDuration:0.3];
     
 }
 
@@ -451,6 +527,13 @@
 }
 
 #pragma mark Text Field
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    
+    [actionButton clearErrorMessage];
+    
+    return YES;
+}
 
 - (BOOL)textFieldShouldReturn:(UITextField *)theTextField {
 	if (theTextField == loginField)
@@ -487,7 +570,7 @@
 - (UITextField *)textFieldWithPlaceholder:(NSString *)placeholder secure:(BOOL)secure {
     
     UITextField *newTextField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, 25)];
-    newTextField.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
+    newTextField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     newTextField.clearsOnBeginEditing = NO;
     newTextField.autocorrectionType = UITextAutocorrectionTypeNo;
     newTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
@@ -529,7 +612,12 @@
                                                  secure:NO];
             loginField.keyboardType = UIKeyboardTypeEmailAddress;
 
-			cell.accessoryView = loginField;
+            CGRect fieldFrame = cell.contentView.bounds;
+            fieldFrame.origin.x += 10;
+            fieldFrame.size.width -= 2 * 10;
+            
+            loginField.frame = fieldFrame;
+            [cell.contentView addSubview:loginField];
 		}
 	} else if (indexPath.row == 1) {
 		cell = [tView dequeueReusableCellWithIdentifier:PasswordCellIdentifier];		
@@ -539,7 +627,13 @@
 			
 			loginPasswordField = [self textFieldWithPlaceholder:NSLocalizedString(@"Password", @"Hint displayed in the password field")
                                                          secure:YES];
-			cell.accessoryView = loginPasswordField;
+            
+            CGRect fieldFrame = cell.contentView.bounds;
+            fieldFrame.origin.x += 10;
+            fieldFrame.size.width -= 2 * 10;
+            
+            loginPasswordField.frame = fieldFrame;
+            [cell.contentView addSubview:loginPasswordField];
 		}
 		
 		loginPasswordField.returnKeyType = creating ? UIReturnKeyNext : UIReturnKeyGo;
@@ -551,7 +645,13 @@
 			
 			loginPasswordConfirmField = [self textFieldWithPlaceholder:NSLocalizedString(@"Confirm", @"Hint displayed in the password confirmation field") secure:YES];
 			loginPasswordConfirmField.returnKeyType = UIReturnKeyGo;
-			cell.accessoryView = loginPasswordConfirmField;
+			
+            CGRect fieldFrame = cell.contentView.bounds;
+            fieldFrame.origin.x += 10;
+            fieldFrame.size.width -= 2 * 10;
+            
+            loginPasswordConfirmField.frame = fieldFrame;
+            [cell.contentView addSubview:loginPasswordConfirmField];
 		}
 	}
 	cell.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -565,8 +665,8 @@
     // From http://stackoverflow.com/a/1827373/1379066
     CGFloat t = 2.0;
 	
-    CGAffineTransform leftQuake  = CGAffineTransformTranslate(CGAffineTransformIdentity, t, -t);
-    CGAffineTransform rightQuake = CGAffineTransformTranslate(CGAffineTransformIdentity, -t, t);
+    CGAffineTransform leftQuake  = CGAffineTransformTranslate(CGAffineTransformIdentity, t, 0);
+    CGAffineTransform rightQuake = CGAffineTransformTranslate(CGAffineTransformIdentity, -t, 0);
 	
     itemView.transform = leftQuake;  // starting point
 	
