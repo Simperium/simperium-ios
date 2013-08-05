@@ -44,7 +44,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator
 {
     if (self = [super init]) {
-		
 		// Create a writer MOC
 		self.writerManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
 		
@@ -439,36 +438,54 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	// Persist to "disk"!
 	[self saveWriterContext];
 	
-	// Move the changes to the main MOC. This will NOT trigger main MOC's hasData flag.
+	// Move the changes to the main MOC. This will NOT trigger main MOC's hasChanges flag.
 	// NOTE: setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
 	// Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
-	
 	[self.mainManagedObjectContext performBlock:^{
-        [self.mainManagedObjectContext mergeChangesFromContextDidSaveNotification:notification];
-	}];
-}
 
--(void)childrenContextWillSave:(NSNotification*)notification
-{	
-	// Workaround for 'mergeChangesFromContextDidSaveNotification' not updating the main context.
-	// We'll Obtain perament objecID's for children-saved objects, so when 'childrenContextDidSave' gets fired, the merge is performed with the actual
-	// objectIDs
-	NSManagedObjectContext* moc = (NSManagedObjectContext*)notification.object;
-	NSSet* insertedObjects = moc.insertedObjects;
-	
-	if(insertedObjects.count)
-	{
-		NSError* error = nil;
-		if(![moc obtainPermanentIDsForObjects:[insertedObjects allObjects] error:&error])
-		{
-			NSLog(@"Simperium error while attempting to obtain permanentIDs for Objects: %@, %@", error, error.userInfo);
+		// Force fault & refresh any updated objects.
+		// Ref.: http://lists.apple.com/archives/cocoa-dev/2008/Jun/msg00264.html
+		// Ref.: http://stackoverflow.com/questions/16296364/nsfetchedresultscontroller-is-not-showing-all-results-after-merging-an-nsmanage/16296538#16296538
+		NSDictionary *userInfo = notification.userInfo;
+		
+		for(NSManagedObject* mo in userInfo[NSUpdatedObjectsKey]) {
+			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
+			[localMO willAccessValueForKey:nil];
+			[self.mainManagedObjectContext refreshObject:localMO mergeChanges:NO];
+
 		}
-	}
+		
+		// Now we can proceed with the merge
+		[self.mainManagedObjectContext mergeChangesFromContextDidSaveNotification:notification];
+	}];
+		
+/*	// Ref.: mergeChangesFromContextDidSaveNotification alternative
+	[self.mainManagedObjectContext performBlock:^{
+
+		NSDictionary *userInfo = notification.userInfo;
+		NSMutableSet *upsertedObjects = [NSMutableSet set];
+
+		[upsertedObjects unionSet:userInfo[NSUpdatedObjectsKey]];
+		[upsertedObjects unionSet:userInfo[NSRefreshedObjectsKey]];
+		[upsertedObjects unionSet:userInfo[NSInsertedObjectsKey]];
+
+		for(NSManagedObject* mo in upsertedObjects) {
+			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
+			[localMO willAccessValueForKey:nil];
+			[self.mainManagedObjectContext refreshObject:localMO mergeChanges:NO];
+		}
+
+		NSSet* deletedObjects = userInfo[NSDeletedObjectsKey];
+		for(NSManagedObject* mo in deletedObjects) {
+			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
+			[self.mainManagedObjectContext deleteObject:localMO];
+		}
+	}];
+ */
 }
 
 -(void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
 	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(childrenContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:context];
     [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:context];
 }
 
@@ -480,7 +497,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[self.writerManagedObjectContext performBlock:^{
         @try
         {
-			NSError* error = nil;
+			NSError *error = nil;
             if ([self.writerManagedObjectContext hasChanges] && ![self.writerManagedObjectContext save:&error])
             {
                 NSLog(@"Critical Simperium error while persisting writer context's changes: %@, %@", error, error.userInfo);
