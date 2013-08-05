@@ -47,8 +47,7 @@
     UIColor *blueColor = [UIColor colorWithRed:66.0 / 255.0 green:137 / 255.0 blue:201 / 255.0 alpha:1.0];
     UIColor *darkBlueColor = [UIColor colorWithRed:36.0 / 255.0 green:100.0 / 255.0 blue:158.0 / 255.0 alpha:1.0];
     UIColor *lightGreyColor = [UIColor colorWithWhite:0.92 alpha:1.0];
-    UIColor *greyColor = [UIColor colorWithWhite:0.7 alpha:1.0];
-    
+    UIColor *greyColor = [UIColor colorWithWhite:0.7 alpha:1.0];    
     
     self.view.backgroundColor = whiteColor;
 	
@@ -69,8 +68,6 @@
     self.tableView.separatorColor = lightGreyColor;
     self.tableView.clipsToBounds = NO;
     [self.view addSubview:self.tableView];
-    
-
 	
 	actionButton = [[SPLoginButton alloc] initWithFrame:CGRectMake(0, 0.0, self.view.frame.size.width, 44)];
 	[actionButton addTarget:self
@@ -99,12 +96,9 @@
 	
     
     UIImage *logo = [UIImage imageNamed:@"logo_login"];
-    
     _logoView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, logo.size.width, logo.size.height)];
     _logoView.image = logo;
     _logoView.contentMode = UIViewContentModeCenter;
-
-
     [self.view addSubview:_logoView];
     
     
@@ -115,7 +109,6 @@
 	[footerView addSubview:changeButton];
 	footerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	self.tableView.tableFooterView = footerView;
-    
     
     UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                                  action:@selector(endEditingAction:)];
@@ -241,9 +234,7 @@
     if (_keyboardHeight > 0) {
         
         CGFloat maxHeight = newFrame.size.height - _keyboardHeight - self.topInset;
-        
         CGFloat tableViewHeight = [self.tableView tableFooterView].frame.origin.y + [self.tableView tableFooterView].frame.size.height;
-        
         CGFloat tableViewTopPadding = [self.tableView convertRect:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]].frame fromView:self.tableView].origin.y;
         
         newFrame.origin.y = MAX((maxHeight - tableViewHeight - tableViewTopPadding) / 2.0 + self.topInset, self.topInset - tableViewTopPadding);
@@ -269,15 +260,10 @@
     
     [UIView animateWithDuration:duration
                      animations:^{
-                         
                          self.tableView.frame = newFrame;
                          self.logoView.alpha = _keyboardHeight > 0 ? 0.0 : 1.0;
-                         
-                         
                      } completion:^(BOOL finished) {
-                         
                          self.logoView.hidden = (_keyboardHeight > 0);
-                         
                      }];
     
     
@@ -336,7 +322,6 @@
 //			[alert show];
             
             [actionButton showErrorMessage:NSLocalizedString(@"Password must contain at least 4 characters.", @"Message displayed when password is invalid")];
-            
             [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
             
 		}
@@ -401,7 +386,6 @@
 //                         [alert show];
                          
                          [actionButton showErrorMessage:NSLocalizedString(@"Could not login with the provided email address and password.", @"Message displayed when login fails")];
-                         
                          [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
                          [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
                        }
@@ -499,7 +483,6 @@
 	[loginField becomeFirstResponder];
     
     [self setCreating:creating];
-    
     [self positionTableViewWithDuration:0.3];
     
 }
@@ -577,9 +560,7 @@
     newTextField.secureTextEntry = secure;
     newTextField.font = [UIFont fontWithName:@"SourceSansPro-Regular" size:22.0];
     newTextField.textColor = [UIColor colorWithWhite:0.3 alpha:1.0];
-    
     [newTextField setDelegate:self];
-    
     newTextField.returnKeyType = UIReturnKeyNext;
     newTextField.clearButtonMode = UITextFieldViewModeWhileEditing;
     newTextField.placeholder = placeholder;
@@ -611,7 +592,6 @@
 			loginField = [self textFieldWithPlaceholder:@"email@email.com"
                                                  secure:NO];
             loginField.keyboardType = UIKeyboardTypeEmailAddress;
-
             CGRect fieldFrame = cell.contentView.bounds;
             fieldFrame.origin.x += 10;
             fieldFrame.size.width -= 2 * 10;
@@ -631,7 +611,6 @@
             CGRect fieldFrame = cell.contentView.bounds;
             fieldFrame.origin.x += 10;
             fieldFrame.size.width -= 2 * 10;
-            
             loginPasswordField.frame = fieldFrame;
             [cell.contentView addSubview:loginPasswordField];
 		}
