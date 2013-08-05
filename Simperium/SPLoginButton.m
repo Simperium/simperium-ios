@@ -16,12 +16,10 @@
     self = [super initWithFrame:frame];
     if (self) {
         
-        
         [self addObserver:self
                forKeyPath:@"highlighted"
                   options:NSKeyValueObservingOptionNew
                   context:NULL];
-        
         
         errorView = [[UIView alloc] initWithFrame:self.bounds];
         errorView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
@@ -54,27 +52,20 @@
 {
     
     for (UIView *view in self.subviews) {
-        
         if (view.class == [UIImageView class])
             [(UIImageView *)view setHighlighted:self.highlighted];
         
     }
-    
     [self setNeedsDisplay];
     
 }
 
 - (void)drawRect:(CGRect)rect
 {
-    if (self.highlighted == YES)
-        self.layer.backgroundColor = backgroundHighlightColor.CGColor;
-    else
-        self.layer.backgroundColor = backgroundColor.CGColor;
-    
+    self.layer.backgroundColor = self.highlighted ? backgroundHighlightColor.CGColor : backgroundColor.CGColor;
 }
 
 - (void)setBackgroundColor:(UIColor *)bgcolor {
-    
     backgroundColor = bgcolor;
 }
 - (void)setBackgroundHighlightColor:(UIColor *)bgHighlightColor {
@@ -87,12 +78,10 @@
     [self bringSubviewToFront:errorView];
 
     errorLabel.text = errorMessage.uppercaseString;
-    
     [UIView animateWithDuration:0.05
                      animations:^{
                          errorView.alpha = 1.0;
                      }];
-    
     clearErrorTimer = [NSTimer scheduledTimerWithTimeInterval:4.0
                                                        target:self
                                                      selector:@selector(clearErrorMessage)
@@ -103,7 +92,6 @@
 }
 
 - (void)clearErrorMessage {
-    
     errorView.alpha = 0.0;
     
 }
