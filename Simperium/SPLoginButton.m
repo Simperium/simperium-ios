@@ -34,6 +34,7 @@
         errorLabelFrame.size.width -= 2 * 10.0;
         
         errorLabel = [[UILabel alloc] initWithFrame:errorLabelFrame];
+        errorLabel.backgroundColor = [UIColor clearColor];
         errorLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         errorLabel.numberOfLines = 0;
         errorLabel.textAlignment = NSTextAlignmentCenter;

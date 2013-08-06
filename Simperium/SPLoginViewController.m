@@ -65,6 +65,7 @@
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     self.tableView.backgroundColor = [UIColor clearColor];
+    self.tableView.backgroundView = nil;
     self.tableView.separatorColor = lightGreyColor;
     self.tableView.clipsToBounds = NO;
     [self.view addSubview:self.tableView];
@@ -91,7 +92,8 @@
 	changeButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	
 	progressView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
-	progressView.frame = CGRectMake(actionButton.frame.size.width - 30, 9, 20, 20);
+	progressView.frame = CGRectMake(actionButton.frame.size.width - 30, (actionButton.frame.size.height - 20) / 2.0, 20, 20);
+    progressView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
 	[actionButton addSubview:progressView];
 	
     
@@ -568,6 +570,16 @@
     return newTextField;
 }
 
+- (void)positionTextField:(UITextField *)textField inCell:(UITableViewCell *)cell {
+
+    CGFloat sidePadding = 10.0;
+    CGFloat fieldHeight = textField.font.lineHeight;
+    textField.frame = CGRectMake(sidePadding,
+                                 (cell.bounds.size.height - fieldHeight) / 2.0,
+                                 cell.bounds.size.width - 2 * sidePadding,
+                                 fieldHeight);
+}
+
 #pragma mark Table Data Source Methods
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section 
 {
@@ -592,11 +604,7 @@
 			loginField = [self textFieldWithPlaceholder:@"email@email.com"
                                                  secure:NO];
             loginField.keyboardType = UIKeyboardTypeEmailAddress;
-            CGRect fieldFrame = cell.contentView.bounds;
-            fieldFrame.origin.x += 10;
-            fieldFrame.size.width -= 2 * 10;
-            
-            loginField.frame = fieldFrame;
+            [self positionTextField:loginField inCell:cell];
             [cell.contentView addSubview:loginField];
 		}
 	} else if (indexPath.row == 1) {
@@ -608,10 +616,7 @@
 			loginPasswordField = [self textFieldWithPlaceholder:NSLocalizedString(@"Password", @"Hint displayed in the password field")
                                                          secure:YES];
             
-            CGRect fieldFrame = cell.contentView.bounds;
-            fieldFrame.origin.x += 10;
-            fieldFrame.size.width -= 2 * 10;
-            loginPasswordField.frame = fieldFrame;
+            [self positionTextField:loginPasswordField inCell:cell];
             [cell.contentView addSubview:loginPasswordField];
 		}
 		
@@ -625,11 +630,7 @@
 			loginPasswordConfirmField = [self textFieldWithPlaceholder:NSLocalizedString(@"Confirm", @"Hint displayed in the password confirmation field") secure:YES];
 			loginPasswordConfirmField.returnKeyType = UIReturnKeyGo;
 			
-            CGRect fieldFrame = cell.contentView.bounds;
-            fieldFrame.origin.x += 10;
-            fieldFrame.size.width -= 2 * 10;
-            
-            loginPasswordConfirmField.frame = fieldFrame;
+            [self positionTextField:loginPasswordConfirmField inCell:cell];
             [cell.contentView addSubview:loginPasswordConfirmField];
 		}
 	}
