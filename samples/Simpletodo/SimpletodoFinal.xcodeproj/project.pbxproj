@@ -34,6 +34,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		2457B1931798E134008266B3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 264CD8FA135DFD7A00C51BAD;
+			remoteInfo = Simperium;
+		};
 		46B787E616B70402001AA908 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
@@ -199,6 +206,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				2457B1941798E134008266B3 /* PBXTargetDependency */,
 			);
 			name = SimpletodoFinal;
 			productName = Simpletodo;
@@ -286,6 +294,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		2457B1941798E134008266B3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Simperium;
+			targetProxy = 2457B1931798E134008266B3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
 		26156AD614EC3D4C003332BA /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
@@ -371,6 +387,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SimpletodoFinal/SimpletodoFinal-Prefix.pch";
 				INFOPLIST_FILE = "SimpletodoFinal/SimpletodoFinal-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = SimpletodoFinal;
@@ -389,6 +406,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SimpletodoFinal/SimpletodoFinal-Prefix.pch";
 				INFOPLIST_FILE = "SimpletodoFinal/SimpletodoFinal-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = SimpletodoFinal;

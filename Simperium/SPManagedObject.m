@@ -15,7 +15,8 @@
 #import "SPGhost.h"
 #import "JSONKit.h"
 #import "DDLog.h"
-#import <objc/runtime.h>
+
+
 
 @implementation SPManagedObject
 @synthesize ghost;
@@ -44,17 +45,22 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 
 - (void)configureBucket {
-    char const * const bucketListKey = [SPCoreDataStorage bucketListKey];
+	
     NSDictionary *bucketList = nil;
-    
-    // Child managed object contexts inherit the bucket list of their parent, if any
     NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
-    while (!(bucketList = objc_getAssociatedObject(managedObjectContext, bucketListKey)) && managedObjectContext.parentContext) {
+	
+    // Get the MOC's Grandpa (writerContext)
+    while (managedObjectContext.parentContext != nil) {
         managedObjectContext = managedObjectContext.parentContext;
     }
-    
-    if (!bucketList)
+
+	// Check
+	bucketList = managedObjectContext.userInfo[SPCoreDataBucketListKey];
+	
+    if (!bucketList) {
         NSLog(@"Simperium error: bucket list not loaded. Ensure Simperium is started before any objects are fetched.");
+	}
+	
     bucket = [bucketList objectForKey:[[self entity] name]];
 }
 
