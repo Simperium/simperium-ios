@@ -173,7 +173,7 @@ static char const * const BucketListKey = "bucketList";
     return items;
 }
 
--(NSArray *)objectKeysForBucketName:(NSString *)bucketName {
+-(NSArray *)objectKeysAndIdsForBucketName:(NSString *)bucketName {
     NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:__managedObjectContext];
     if (entity == nil) {
         //DDLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
@@ -198,6 +198,12 @@ static char const * const BucketListKey = "bucketList";
         // Handle the error.
         NSAssert1(0, @"Simperium error: couldn't load array of entities (%@)", bucketName);
     }
+    
+    return results;
+}
+
+-(NSArray *)objectKeysForBucketName:(NSString *)bucketName {
+    NSArray *results = [self objectKeysAndIdsForBucketName:bucketName];
     
     NSMutableArray *objectKeys = [NSMutableArray arrayWithCapacity:[results count]];
     for (NSDictionary *result in results) {
@@ -302,7 +308,7 @@ static char const * const BucketListKey = "bucketList";
 
 -(void)validateObjectsForBucketName:(NSString *)bucketName
 {
-    NSArray *results = [self objectKeysForBucketName:bucketName];
+    NSArray *results = [self objectKeysAndIdsForBucketName:bucketName];
     
     // Check each entity instance
     for (NSDictionary *result in results) {
