@@ -11,6 +11,7 @@
 @protocol SPStorageProvider <NSObject>
 -(BOOL)save;
 -(NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate;
+-(NSArray *)objectKeysForBucketName:(NSString *)bucketName;
 -(id)objectForKey:(NSString *)key bucketName:(NSString *)bucketName;
 -(NSArray *)objectsForKeys:(NSSet *)keys bucketName:(NSString *)bucketName;
 -(id)objectAtIndex:(NSUInteger)index bucketName:(NSString *)bucketName;

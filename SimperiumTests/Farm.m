@@ -111,9 +111,11 @@
     switch(change) {
         case SPBucketChangeAcknowledge:
             expectedAcknowledgments -= 1;
+//            NSLog(@"%@ acknowledged (%d)", simperium.label, expectedAcknowledgments);
             break;
         case SPBucketChangeDelete:
             expectedDeletions -= 1;
+//            NSLog(@"%@ received deletion (%d)", simperium.label, expectedDeletions);
             break;
         case SPBucketChangeInsert:
             expectedAdditions -= 1;
@@ -140,6 +142,7 @@
 
 - (void)bucketDidAcknowledgeDelete:(SPBucket *)bucket {
     expectedAcknowledgments -= 1;
+//    NSLog(@"%@ acknowledged deletion (%d)", simperium.label, expectedAcknowledgments);
 }
 
 - (void)bucket:(SPBucket *)bucket didReceiveObjectForKey:(NSString *)key version:(NSString *)version data:(NSDictionary *)data {
