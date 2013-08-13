@@ -8,6 +8,6 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 
-@interface DiffMatchPatchArrayTests : SenTestCase
+@interface SPJSONDiffTests : SenTestCase
 
 @end

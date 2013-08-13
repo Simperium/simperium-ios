@@ -11,6 +11,7 @@
 #import "NSString+Simperium.h"
 #import "SPCoreDataExporter.h"
 #import "SPSchema.h"
+#import "SPMember.h"
 #import "DDLog.h"
 #import <objc/runtime.h>
 
@@ -19,6 +20,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 static char const * const BucketListKey = "bucketList";
 
 @interface SPCoreDataStorage()
+{
+    // This is a dictionary with entity names as keys and values that are an array of keypaths.
+    NSDictionary *_keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName;
+    NSSet *_entityNamesOfEmbeddedObjects;
+}
 -(void)addObserversForContext:(NSManagedObjectContext *)context;
 @end
 
@@ -127,8 +133,41 @@ static char const * const BucketListKey = "bucketList";
         SPSchema *schema = [[SPSchema alloc] initWithBucketName:entityName data:entityDict];
         [schemas addObject:schema];
     }
+    _keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName = [self generateKeyPathsForEmbeddedObjectsFromSchema:schemas];
+    _entityNamesOfEmbeddedObjects = [NSSet setWithArray:[_keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName allKeys]];
     return schemas;
 }
+
+- (NSDictionary *)generateKeyPathsForEmbeddedObjectsFromSchema:(NSArray *)schemas
+{
+    NSMutableArray *currentPathArray = [[NSMutableArray alloc] init];
+    NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
+    for (SPSchema *schema in schemas) {
+        [self searchMembersForEmbeddedObjects:[schema.members allValues] andAddKeyPathsToDictionaryByEntityName:dictionary currentPath:currentPathArray];
+    }
+    return dictionary;
+}
+
+- (void)searchMembersForEmbeddedObjects:(NSArray *)members andAddKeyPathsToDictionaryByEntityName:(NSMutableDictionary *)dictionary currentPath:(NSArray *)currentPathArray
+{
+    for (SPMember *member in members) {
+        if (member.type == SPMemberTypeEmbeddedRelatedEntity || (member.type == SPMemberTypeList && member.itemMember.type == SPMemberTypeEmbeddedRelatedEntity)) {
+            SPMember *embedMember = (member.type == SPMemberTypeEmbeddedRelatedEntity) ? member : member.itemMember;
+            NSMutableArray *keyPathArray = [currentPathArray mutableCopy];
+            [keyPathArray insertObject:member.inverseKeyName atIndex:0];
+            [self addKeyPath:[keyPathArray componentsJoinedByString:@"."] forEntityNamed:embedMember.entityName dictionary:dictionary];
+            [self searchMembersForEmbeddedObjects:embedMember.embeddedMembers andAddKeyPathsToDictionaryByEntityName:dictionary currentPath:keyPathArray];
+        }
+    }
+}
+
+- (void)addKeyPath:(NSString *)keyPath forEntityNamed:(NSString *)entityName dictionary:(NSMutableDictionary *)dictionary
+{
+    NSMutableArray *keyPaths = dictionary[entityName] ?: [[NSMutableArray alloc] init];
+    [keyPaths addObject:keyPath];
+    dictionary[entityName] = keyPaths;
+}
+
 
 -(id<SPStorageProvider>)threadSafeStorage {
     return [[SPCoreDataStorage alloc] initWithSibling:self];
@@ -393,11 +432,35 @@ static char const * const BucketListKey = "bucketList";
         return;
     
     NSSet *insertedObjects = [notification.userInfo objectForKey:NSInsertedObjectsKey];
-    NSSet *updatedObjects = [notification.userInfo objectForKey:NSUpdatedObjectsKey];
+    NSMutableSet *updatedObjects = [[notification.userInfo objectForKey:NSUpdatedObjectsKey] mutableCopy];
     NSSet *deletedObjects = [notification.userInfo objectForKey:NSDeletedObjectsKey];
     
+    [updatedObjects addObjectsFromArray:[self updatedBucketObjectsFromEmbeddedObjects:insertedObjects]];
+    [updatedObjects addObjectsFromArray:[self updatedBucketObjectsFromEmbeddedObjects:updatedObjects]];
+    [updatedObjects addObjectsFromArray:[self updatedBucketObjectsFromEmbeddedObjects:deletedObjects]];
+
     // Sync all changes
     [delegate storage:self updatedObjects:updatedObjects insertedObjects:insertedObjects deletedObjects:deletedObjects];
+}
+
+- (NSArray *)updatedBucketObjectsFromEmbeddedObjects:(NSSet *)set
+{
+    NSMutableArray *bucketObjects = [[NSMutableArray alloc] init];
+
+    for (NSManagedObject *object in set) {
+        if  ([_entityNamesOfEmbeddedObjects containsObject:[[object entity] name]]) {
+            NSArray *keyPaths = _keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName[[[object entity] name]];
+            for (NSString *keyPath in keyPaths) {
+                id objectAtKeyPath = [object valueForKeyPath:keyPath];
+                if (objectAtKeyPath) {
+                    NSArray *flattened = [self flattenCollection:@[ objectAtKeyPath ]];
+                    [bucketObjects addObjectsFromArray:flattened];
+                }
+            }
+        }
+    }
+    return bucketObjects;
+
 }
 
 -(void)contextWillSave:(NSNotification *)notification {
@@ -412,8 +475,22 @@ static char const * const BucketListKey = "bucketList";
         if ([insertedObject isKindOfClass:[SPManagedObject class]]) {
             SPManagedObject *object = (SPManagedObject *)insertedObject;
             [self configureInsertedObject: object];
+        } 
+    }
+}
+
+- (NSArray *)flattenCollection:(id<NSFastEnumeration>)collection
+{
+    NSMutableArray *newArray = [[NSMutableArray alloc] init];
+    for (id object in collection) {
+        if ([object conformsToProtocol:@protocol(NSFastEnumeration)]) {
+            NSArray *flattened = [self flattenCollection:object];
+            [newArray addObjectsFromArray:flattened];
+        } else {
+            [newArray addObject:object];
         }
     }
+    return newArray;
 }
 
 -(void)addObserversForContext:(NSManagedObjectContext *)moc {
