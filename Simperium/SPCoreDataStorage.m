@@ -15,15 +15,17 @@
 
 
 
+NSString* const SPCoreDataBucketListKey = @"SPCoreDataBucketListKey";
 static int ddLogLevel = LOG_LEVEL_INFO;
 
+
 @interface SPCoreDataStorage ()
-@property (nonatomic, strong,  readwrite) NSManagedObjectContext		*writerManagedObjectContext;
-@property (nonatomic, strong,  readwrite) NSManagedObjectContext		*mainManagedObjectContext;
-@property (nonatomic, strong,  readwrite) NSManagedObjectModel			*managedObjectModel;
-@property (nonatomic, strong,  readwrite) NSPersistentStoreCoordinator	*persistentStoreCoordinator;
-@property (nonatomic, strong,  readwrite) NSMutableDictionary			*classMappings;
-@property (nonatomic, weak,    readwrite) SPCoreDataStorage				*sibling;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext *writerManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext	*mainManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+@property (nonatomic, strong, readwrite) NSMutableDictionary *classMappings;
+@property (nonatomic, weak, readwrite) SPCoreDataStorage *sibling;
 -(void)addObserversForMainContext:(NSManagedObjectContext *)context;
 -(void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
@@ -42,7 +44,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator
 {
     if (self = [super init]) {
-		
 		// Create a writer MOC
 		self.writerManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
 		
@@ -84,10 +85,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         
         // An observer is expected to handle merges for otherContext when the threaded context is saved
 		[aSibling addObserversForChildrenContext:self.mainManagedObjectContext];
-        
-		// Be sure to copy the bucket list (iOS 5 style!)
-		NSDictionary* dict = aSibling.mainManagedObjectContext.userInfo;
-		[self.mainManagedObjectContext.userInfo addEntriesFromDictionary:dict];
     }
     
     return self;
@@ -97,6 +94,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
     if (self.sibling) {
         // If a sibling was used, then this context was ephemeral and needs to be cleaned up
+        [[NSNotificationCenter defaultCenter] removeObserver:self.sibling name:NSManagedObjectContextWillSaveNotification object:self.mainManagedObjectContext];
         [[NSNotificationCenter defaultCenter] removeObserver:self.sibling name:NSManagedObjectContextDidSaveNotification object:self.mainManagedObjectContext];
     } else {
 		[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -105,7 +103,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)setBucketList:(NSDictionary *)dict {
     // Set a custom field on the context so that objects can figure out their own buckets when they wake up
-	[self.writerManagedObjectContext.userInfo addEntriesFromDictionary:dict];
+	NSMutableDictionary* bucketList = self.writerManagedObjectContext.userInfo[SPCoreDataBucketListKey];
+	
+	if(!bucketList)
+	{
+		bucketList = [NSMutableDictionary dictionary];
+		[self.writerManagedObjectContext.userInfo setObject:bucketList forKey:SPCoreDataBucketListKey];
+	}
+	
+	[bucketList addEntriesFromDictionary:dict];
 }
 
 -(NSArray *)exportSchemas {
@@ -427,18 +433,55 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 # pragma mark Children MOC Notification Handlers
 
-- (void)childrenContextDidSave:(NSNotification*)notification
+-(void)childrenContextDidSave:(NSNotification*)notification
 {
 	// Persist to "disk"!
 	[self saveWriterContext];
 	
-	// Move the changes to the main MOC. This will NOT trigger main MOC's hasData flag.
+	// Move the changes to the main MOC. This will NOT trigger main MOC's hasChanges flag.
 	// NOTE: setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
 	// Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
-	
 	[self.mainManagedObjectContext performBlock:^{
-        [self.mainManagedObjectContext mergeChangesFromContextDidSaveNotification:notification];
+
+		// Force fault & refresh any updated objects.
+		// Ref.: http://lists.apple.com/archives/cocoa-dev/2008/Jun/msg00264.html
+		// Ref.: http://stackoverflow.com/questions/16296364/nsfetchedresultscontroller-is-not-showing-all-results-after-merging-an-nsmanage/16296538#16296538
+		NSDictionary *userInfo = notification.userInfo;
+		
+		for(NSManagedObject* mo in userInfo[NSUpdatedObjectsKey]) {
+			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
+			[localMO willAccessValueForKey:nil];
+			[self.mainManagedObjectContext refreshObject:localMO mergeChanges:NO];
+
+		}
+		
+		// Now we can proceed with the merge
+		[self.mainManagedObjectContext mergeChangesFromContextDidSaveNotification:notification];
 	}];
+		
+/*	// Ref.: mergeChangesFromContextDidSaveNotification alternative
+	[self.mainManagedObjectContext performBlock:^{
+
+		NSDictionary *userInfo = notification.userInfo;
+		NSMutableSet *upsertedObjects = [NSMutableSet set];
+
+		[upsertedObjects unionSet:userInfo[NSUpdatedObjectsKey]];
+		[upsertedObjects unionSet:userInfo[NSRefreshedObjectsKey]];
+		[upsertedObjects unionSet:userInfo[NSInsertedObjectsKey]];
+
+		for(NSManagedObject* mo in upsertedObjects) {
+			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
+			[localMO willAccessValueForKey:nil];
+			[self.mainManagedObjectContext refreshObject:localMO mergeChanges:NO];
+		}
+
+		NSSet* deletedObjects = userInfo[NSDeletedObjectsKey];
+		for(NSManagedObject* mo in deletedObjects) {
+			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
+			[self.mainManagedObjectContext deleteObject:localMO];
+		}
+	}];
+ */
 }
 
 -(void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
@@ -454,7 +497,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[self.writerManagedObjectContext performBlock:^{
         @try
         {
-			NSError* error = nil;
+			NSError *error = nil;
             if ([self.writerManagedObjectContext hasChanges] && ![self.writerManagedObjectContext save:&error])
             {
                 NSLog(@"Critical Simperium error while persisting writer context's changes: %@, %@", error, error.userInfo);
@@ -514,8 +557,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     // Perform automatic, lightweight migration
     NSDictionary *options = @{
-		NSMigratePersistentStoresAutomaticallyOption	: @(YES),
-		NSInferMappingModelAutomaticallyOption			: @(YES)
+		NSMigratePersistentStoresAutomaticallyOption : @(YES),
+		NSInferMappingModelAutomaticallyOption : @(YES)
 	};
 	
     if (![*coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error])
