@@ -65,7 +65,7 @@
 - (void)startWithAppID:(NSString *)identifier
 				APIKey:(NSString *)key
 				 model:(NSManagedObjectModel *)model
-		   mainContext:(NSManagedObjectContext *)mainContext
+               context:(NSManagedObjectContext *)context
 		   coordinator:(NSPersistentStoreCoordinator *)coordinator;
 
 // Save and sync all changed objects. If you're using Core Data, this is just a convenience method
@@ -77,7 +77,7 @@
 - (SPBucket *)bucketForName:(NSString *)name;
 
 // Convenience methods for accessing the Core Data stack.
-- (NSManagedObjectContext *)mainManagedObjectContext;
+- (NSManagedObjectContext *)managedObjectContext;
 - (NSManagedObjectContext *)writerManagedObjectContext;
 - (NSManagedObjectModel *)managedObjectModel;
 - (NSPersistentStoreCoordinator *)persistentStoreCoordinator;
