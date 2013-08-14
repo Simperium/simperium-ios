@@ -1,8 +1,8 @@
 //
-//  AuthWindowController.m
-//  Simplenote-OSX
+//  SPAuthenticationWindowController.m
+//  Simperium
 //
-//  Created by Brad Angelcyk on 2/14/13.
+//  Created by Michael Johnston on 8/14/13.
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 

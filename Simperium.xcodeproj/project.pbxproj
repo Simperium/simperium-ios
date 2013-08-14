@@ -120,8 +120,8 @@
 		264CD9A1135DFE7E00C51BAD /* NSString+UriCompatibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD970135DFE7E00C51BAD /* NSString+UriCompatibility.h */; };
 		264CD9A2135DFE7E00C51BAD /* NSString+UriCompatibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD971135DFE7E00C51BAD /* NSString+UriCompatibility.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD9B1135DFFFF00C51BAD /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 264CD9B0135DFFFF00C51BAD /* CoreData.framework */; };
-		26563AE414FC3BDE0081C8C1 /* SPAuthenticationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 26563AE214FC3BDE0081C8C1 /* SPAuthenticationManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		26563AE514FC3BDE0081C8C1 /* SPAuthenticationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 26563AE314FC3BDE0081C8C1 /* SPAuthenticationManager.m */; };
+		26563AE414FC3BDE0081C8C1 /* SPAuthenticator.h in Headers */ = {isa = PBXBuildFile; fileRef = 26563AE214FC3BDE0081C8C1 /* SPAuthenticator.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		26563AE514FC3BDE0081C8C1 /* SPAuthenticator.m in Sources */ = {isa = PBXBuildFile; fileRef = 26563AE314FC3BDE0081C8C1 /* SPAuthenticator.m */; };
 		265D80091475C2F500002A19 /* SPStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 265D80071475C2F400002A19 /* SPStorage.h */; };
 		265D800A1475C2F500002A19 /* SPStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 265D80081475C2F500002A19 /* SPStorage.m */; };
 		265D800D1476188200002A19 /* SPCoreDataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 265D800B1476188100002A19 /* SPCoreDataStorage.h */; };
@@ -334,8 +334,8 @@
 		264CD970135DFE7E00C51BAD /* NSString+UriCompatibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+UriCompatibility.h"; sourceTree = "<group>"; };
 		264CD971135DFE7E00C51BAD /* NSString+UriCompatibility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+UriCompatibility.m"; sourceTree = "<group>"; };
 		264CD9B0135DFFFF00C51BAD /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
-		26563AE214FC3BDE0081C8C1 /* SPAuthenticationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationManager.h; sourceTree = "<group>"; };
-		26563AE314FC3BDE0081C8C1 /* SPAuthenticationManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAuthenticationManager.m; sourceTree = "<group>"; };
+		26563AE214FC3BDE0081C8C1 /* SPAuthenticator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticator.h; sourceTree = "<group>"; };
+		26563AE314FC3BDE0081C8C1 /* SPAuthenticator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAuthenticator.m; sourceTree = "<group>"; };
 		265D80071475C2F400002A19 /* SPStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStorage.h; sourceTree = "<group>"; };
 		265D80081475C2F500002A19 /* SPStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStorage.m; sourceTree = "<group>"; };
 		265D800B1476188100002A19 /* SPCoreDataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCoreDataStorage.h; sourceTree = "<group>"; };
@@ -659,10 +659,10 @@
 				264CD930135DFE6D00C51BAD /* SPEnvironment.h */,
 				264CD931135DFE6D00C51BAD /* SPEnvironment.m */,
 				2622FD03147F23D400C8EEB4 /* Object */,
-				466EB40F17BC45D8005F7599 /* Authentication */,
 				2622FCFF147F225800C8EEB4 /* Diffing */,
 				2622FD01147F237800C8EEB4 /* System */,
 				2622FD00147F227E00C8EEB4 /* Storage */,
+				466EB40F17BC45D8005F7599 /* Authentication */,
 				46B7880216B709AD001AA908 /* Networking */,
 				2622FD02147F23BE00C8EEB4 /* User */,
 				2622FD05147F241500C8EEB4 /* Helpers */,
@@ -879,6 +879,8 @@
 		466EB40F17BC45D8005F7599 /* Authentication */ = {
 			isa = PBXGroup;
 			children = (
+				26563AE214FC3BDE0081C8C1 /* SPAuthenticator.h */,
+				26563AE314FC3BDE0081C8C1 /* SPAuthenticator.m */,
 				466EB41817BC4890005F7599 /* SPAuthenticationButton.h */,
 				466EB41917BC4890005F7599 /* SPAuthenticationButton.m */,
 				26C93A6B14F850EA00BE99F5 /* SPAuthenticationViewController.h */,
@@ -887,8 +889,6 @@
 				466EB41117BC45F5005F7599 /* SPAuthenticationConfiguration.m */,
 				466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */,
 				466EB41317BC45F5005F7599 /* SPAuthenticationValidator.m */,
-				26563AE214FC3BDE0081C8C1 /* SPAuthenticationManager.h */,
-				26563AE314FC3BDE0081C8C1 /* SPAuthenticationManager.m */,
 			);
 			name = Authentication;
 			sourceTree = "<group>";
@@ -972,7 +972,7 @@
 				2611E805149FB91100121D6E /* JSONKit.h in Headers */,
 				26B473F714A116B100397E7F /* SPBinaryTransportDelegate.h in Headers */,
 				26C93A6D14F850EA00BE99F5 /* SPAuthenticationViewController.h in Headers */,
-				26563AE414FC3BDE0081C8C1 /* SPAuthenticationManager.h in Headers */,
+				26563AE414FC3BDE0081C8C1 /* SPAuthenticator.h in Headers */,
 				267CE8FA156C0FD20028801C /* NSMutableDictionary+Simperium.h in Headers */,
 				267CE8FE156C0FD20028801C /* SPBucket.h in Headers */,
 				267CE900156C0FD20028801C /* SPDiffable.h in Headers */,
@@ -1189,7 +1189,7 @@
 				2622FD29147F251D00C8EEB4 /* SPMemberBase64.m in Sources */,
 				2611E806149FB91100121D6E /* JSONKit.m in Sources */,
 				26C93A6E14F850EA00BE99F5 /* SPAuthenticationViewController.m in Sources */,
-				26563AE514FC3BDE0081C8C1 /* SPAuthenticationManager.m in Sources */,
+				26563AE514FC3BDE0081C8C1 /* SPAuthenticator.m in Sources */,
 				267CE8FB156C0FD20028801C /* NSMutableDictionary+Simperium.m in Sources */,
 				267CE8FF156C0FD20028801C /* SPBucket.m in Sources */,
 				267CE902156C0FD20028801C /* SPDiffer.m in Sources */,

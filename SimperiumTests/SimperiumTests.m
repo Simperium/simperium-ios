@@ -17,7 +17,7 @@
 #import "Farm.h"
 #import "SPBucket.h"
 #import "SFHFKeychainUtils.h"
-#import "SPAuthenticationManager.h"
+#import "SPAuthenticator.h"
 
 @implementation SimperiumTests
 @synthesize token;

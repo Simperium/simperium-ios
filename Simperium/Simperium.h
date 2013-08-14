@@ -10,7 +10,7 @@
 #import <CoreData/CoreData.h>
 #import "SPBucket.h"
 #import "SPManagedObject.h"
-#import "SPAuthenticationManager.h"
+#import "SPAuthenticator.h"
 #import "SPUser.h"
 
 @class Simperium;
@@ -35,7 +35,7 @@
 @end
 
 // The main class through which you access Simperium.
-@interface Simperium : NSObject<SPAuthenticationDelegate> {
+@interface Simperium : NSObject<SPAuthenticatorDelegate> {
     SPUser *user;
     NSString *label;
     NSString *appID;
@@ -44,7 +44,7 @@
     NSString *clientID;   
     id<SimperiumDelegate> __weak delegate;
     SPBinaryManager *binaryManager;
-    SPAuthenticationManager *authManager;
+    SPAuthenticator *authManager;
     
 #if TARGET_OS_IPHONE
     Class __weak authenticationViewControllerClass;
@@ -158,7 +158,7 @@
 
 @property (nonatomic, strong) SPBinaryManager *binaryManager;
 
-@property (nonatomic, strong) SPAuthenticationManager *authManager;
+@property (nonatomic, strong) SPAuthenticator *authManager;
 
 
 #if TARGET_OS_IPHONE

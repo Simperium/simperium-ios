@@ -7,7 +7,7 @@
 //
 
 #import "SPAuthenticationViewController.h"
-#import "SPAuthenticationManager.h"
+#import "SPAuthenticator.h"
 #import <Simperium/Simperium.h>
 #import "ASIFormDataRequest.h"
 #import "JSONKit.h"

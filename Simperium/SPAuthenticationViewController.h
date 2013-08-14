@@ -12,11 +12,11 @@
 
 #import <UIKit/UIKit.h>
 
-@class SPAuthenticationManager, SPAuthenticationButton;
+@class SPAuthenticator, SPAuthenticationButton;
 
 @interface SPAuthenticationViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate>
 {   
-    SPAuthenticationManager *authManager;
+    SPAuthenticator *authManager;
 	BOOL creating;
 	UITextField *loginField;
 	UITextField *loginPasswordField;
@@ -30,7 +30,7 @@
     UIBarButtonItem *cancelButton;
 }
 
-@property (nonatomic, strong) SPAuthenticationManager *authManager;
+@property (nonatomic, strong) SPAuthenticator *authManager;
 @property (nonatomic, strong) UITableView* tableView;
 @property (nonatomic, strong) UIImageView *logoView;
 //@property (nonatomic) BOOL creating;

@@ -19,8 +19,8 @@
 		268EDF33155F08A2006B566F /* Simperium-complete.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEE8155F089C006B566F /* Simperium-complete.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		268EDF35155F08A2006B566F /* Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEEA155F089D006B566F /* Simperium.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		268EDF36155F08A2006B566F /* Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDEEB155F089D006B566F /* Simperium.m */; };
-		268EDF37155F08A2006B566F /* SPAuthenticationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEEC155F089D006B566F /* SPAuthenticationManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		268EDF38155F08A2006B566F /* SPAuthenticationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDEED155F089D006B566F /* SPAuthenticationManager.m */; };
+		268EDF37155F08A2006B566F /* SPAuthenticator.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEEC155F089D006B566F /* SPAuthenticator.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		268EDF38155F08A2006B566F /* SPAuthenticator.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDEED155F089D006B566F /* SPAuthenticator.m */; };
 		268EDF3B155F08A2006B566F /* SPBinaryManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEF0155F089D006B566F /* SPBinaryManager.h */; };
 		268EDF3C155F08A2006B566F /* SPBinaryManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDEF1155F089D006B566F /* SPBinaryManager.m */; };
 		268EDF3D155F08A2006B566F /* SPBinaryTransportDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEF2155F089D006B566F /* SPBinaryTransportDelegate.h */; };
@@ -195,8 +195,8 @@
 		268EDEE8155F089C006B566F /* Simperium-complete.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Simperium-complete.h"; path = "../../Simperium/Simperium-complete.h"; sourceTree = "<group>"; };
 		268EDEEA155F089D006B566F /* Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Simperium.h; path = ../../Simperium/Simperium.h; sourceTree = "<group>"; };
 		268EDEEB155F089D006B566F /* Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Simperium.m; path = ../../Simperium/Simperium.m; sourceTree = "<group>"; };
-		268EDEEC155F089D006B566F /* SPAuthenticationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPAuthenticationManager.h; path = ../../Simperium/SPAuthenticationManager.h; sourceTree = "<group>"; };
-		268EDEED155F089D006B566F /* SPAuthenticationManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPAuthenticationManager.m; path = ../../Simperium/SPAuthenticationManager.m; sourceTree = "<group>"; };
+		268EDEEC155F089D006B566F /* SPAuthenticator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPAuthenticator.h; path = ../../Simperium/SPAuthenticator.h; sourceTree = "<group>"; };
+		268EDEED155F089D006B566F /* SPAuthenticator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPAuthenticator.m; path = ../../Simperium/SPAuthenticator.m; sourceTree = "<group>"; };
 		268EDEF0155F089D006B566F /* SPBinaryManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPBinaryManager.h; path = ../../Simperium/SPBinaryManager.h; sourceTree = "<group>"; };
 		268EDEF1155F089D006B566F /* SPBinaryManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPBinaryManager.m; path = ../../Simperium/SPBinaryManager.m; sourceTree = "<group>"; };
 		268EDEF2155F089D006B566F /* SPBinaryTransportDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPBinaryTransportDelegate.h; path = ../../Simperium/SPBinaryTransportDelegate.h; sourceTree = "<group>"; };
@@ -617,6 +617,8 @@
 		26F1C7001562E76B002172D5 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
+				268EDEEC155F089D006B566F /* SPAuthenticator.h */,
+				268EDEED155F089D006B566F /* SPAuthenticator.m */,
 				46DD161317A1B8480093678C /* SPAuthenticationButton.h */,
 				46DD161417A1B8480093678C /* SPAuthenticationButton.m */,
 				46DD161517A1B8480093678C /* SPAuthenticationButtonCell.h */,
@@ -629,8 +631,6 @@
 				46DD161C17A1B8480093678C /* SPAuthenticationWindow.m */,
 				46DD161D17A1B8480093678C /* SPAuthenticationWindowController.h */,
 				46DD161E17A1B8490093678C /* SPAuthenticationWindowController.m */,
-				268EDEEC155F089D006B566F /* SPAuthenticationManager.h */,
-				268EDEED155F089D006B566F /* SPAuthenticationManager.m */,
 				46263BAF17A7778E00131791 /* SPAuthenticationConfiguration.h */,
 				46263BB017A7778E00131791 /* SPAuthenticationConfiguration.m */,
 				466EB40B17BC194D005F7599 /* SPAuthenticationValidator.h */,
@@ -675,7 +675,7 @@
 				268EDF33155F08A2006B566F /* Simperium-complete.h in Headers */,
 				268EDF31155F08A2006B566F /* NSString+Simperium.h in Headers */,
 				268EDF35155F08A2006B566F /* Simperium.h in Headers */,
-				268EDF37155F08A2006B566F /* SPAuthenticationManager.h in Headers */,
+				268EDF37155F08A2006B566F /* SPAuthenticator.h in Headers */,
 				268EDF3B155F08A2006B566F /* SPBinaryManager.h in Headers */,
 				268EDF3D155F08A2006B566F /* SPBinaryTransportDelegate.h in Headers */,
 				268EDF3E155F08A2006B566F /* SPChangeProcessor.h in Headers */,
@@ -825,7 +825,7 @@
 				268EDF30155F08A2006B566F /* NSDate+Simperium.m in Sources */,
 				268EDF32155F08A2006B566F /* NSString+Simperium.m in Sources */,
 				268EDF36155F08A2006B566F /* Simperium.m in Sources */,
-				268EDF38155F08A2006B566F /* SPAuthenticationManager.m in Sources */,
+				268EDF38155F08A2006B566F /* SPAuthenticator.m in Sources */,
 				268EDF3C155F08A2006B566F /* SPBinaryManager.m in Sources */,
 				268EDF3F155F08A2006B566F /* SPChangeProcessor.m in Sources */,
 				268EDF41155F08A2006B566F /* SPCoreDataExporter.m in Sources */,

@@ -1,5 +1,5 @@
 //
-//  SPAuthenticationManager.m
+//  SPAuthenticator.m
 //  Simperium
 //
 //  Created by Michael Johnston on 12-02-27.
@@ -9,7 +9,7 @@
 #import "Simperium.h"
 #import "SPEnvironment.h"
 #import "SPUser.h"
-#import "SPAuthenticationManager.h"
+#import "SPAuthenticator.h"
 #import "SPBinaryManager.h"
 #import "ASIFormDataRequest.h"
 #import "ASIHTTPRequest.h"
@@ -28,14 +28,14 @@
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
-@interface SPAuthenticationManager() {
+@interface SPAuthenticator() {
     SPReachability *reachability;
 }
 
 -(void)authDidFail:(ASIHTTPRequest *)request;
 @end
 
-@implementation SPAuthenticationManager
+@implementation SPAuthenticator
 @synthesize succeededBlock;
 @synthesize failedBlock;
 @synthesize simperium;
@@ -50,7 +50,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
--(id)initWithDelegate:(id<SPAuthenticationDelegate>)authDelegate simperium:(Simperium *)s {
+-(id)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s {
     if ((self = [super init])) {
         delegate = authDelegate;
         simperium = s;

@@ -26,7 +26,7 @@
 #import "DDASLLogger.h"
 #import "DDTTYLogger.h"
 #import "SPCoreDataStorage.h"
-#import "SPAuthenticationManager.h"
+#import "SPAuthenticator.h"
 #import "SPBucket.h"
 #import "SPRelationshipResolver.h"
 #import "SPReachability.h"
@@ -135,7 +135,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		[ASIHTTPRequest setShouldUpdateNetworkActivityIndicator:NO];
         self.buckets = [NSMutableDictionary dictionary];
         
-        SPAuthenticationManager *manager = [[SPAuthenticationManager alloc] initWithDelegate:self simperium:self];
+        SPAuthenticator *manager = [[SPAuthenticator alloc] initWithDelegate:self simperium:self];
         self.authManager = manager;
         
         SPRelationshipResolver *resolver = [[SPRelationshipResolver alloc] init];
