@@ -58,8 +58,7 @@ typedef NSUInteger SPBucketChangeType;
     SPDiffer *differ;
     id<SPStorageProvider> storage;
     SPSchema *schema;
-    dispatch_queue_t processorQueue;
-    
+   
     id<SPBucketDelegate> __weak delegate;
     
     NSString *lastChangeSignature;
@@ -116,7 +115,7 @@ typedef NSUInteger SPBucketChangeType;
 @property (nonatomic, strong) SPRelationshipResolver *relationshipResolver;
 @property (strong) SPChangeProcessor* changeProcessor;
 @property (strong) SPIndexProcessor* indexProcessor;
-@property (nonatomic, assign) dispatch_queue_t processorQueue;
+@property (nonatomic, strong) dispatch_queue_t processorQueue;
 @property (nonatomic, copy) NSString *lastChangeSignature;
 
 - (id)initWithSchema:(SPSchema *)aSchema
