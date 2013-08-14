@@ -50,7 +50,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
--(id)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s {
+- (id)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s {
     if ((self = [super init])) {
         delegate = authDelegate;
         simperium = s;
@@ -68,7 +68,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
--(void)handleNetworkChange:(NSNotification *)notification {
+- (void)handleNetworkChange:(NSNotification *)notification {
     if ([reachability currentReachabilityStatus] == NotReachable) {
         connected = NO;
     } else {
@@ -77,8 +77,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 // Open a UI to handle authentication if necessary
--(BOOL)authenticateIfNecessary
-{
+- (BOOL)authenticateIfNecessary {
     // Look up a stored token (if it exists) and try authenticating
     NSString *username = nil, *token = nil;
     username = [[NSUserDefaults standardUserDefaults] objectForKey:USERNAME_KEY];
@@ -108,7 +107,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 // Perform the actual authentication calls to Simperium
--(void)authenticateWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock
+- (void)authenticateWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock
 {    
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, simperium.appID]];
     DDLogInfo(@"Simperium authenticating: %@", [NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, simperium.appID]);
@@ -135,8 +134,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [tokenRequest startAsynchronous];
 }
 
--(void)delayedAuthenticationDidFinish
-{
+- (void)delayedAuthenticationDidFinish {
     if (self.succeededBlock)
         self.succeededBlock();
     
@@ -146,7 +144,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [delegate authenticationDidSucceedForUsername:simperium.user.email token:simperium.user.authToken];
 }
 
--(void)authDidSucceed:(ASIHTTPRequest *)request {
+- (void)authDidSucceed:(ASIHTTPRequest *)request {
     NSString *tokenResponse = [request responseString];
     int code = [request responseStatusCode];
     if (code != 200) {
@@ -170,7 +168,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self performSelector:@selector(delayedAuthenticationDidFinish) withObject:nil afterDelay:0.1];
 }
 
--(void)authDidFail:(ASIHTTPRequest *)request {
+- (void)authDidFail:(ASIHTTPRequest *)request {
     if (self.failedBlock)
         self.failedBlock([request responseStatusCode], [request responseString]);
     
@@ -180,8 +178,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [delegate authenticationDidFail];
 }
 
--(void)createWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock
-{
+- (void)createWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock {
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/create/", SPAuthURL, simperium.appID]];
     
     ASIFormDataRequest *tokenRequest = [[ASIFormDataRequest alloc] initWithURL:tokenURL];

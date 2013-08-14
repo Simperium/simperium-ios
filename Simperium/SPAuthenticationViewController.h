@@ -33,6 +33,5 @@
 @property (nonatomic, strong) SPAuthenticator *authManager;
 @property (nonatomic, strong) UITableView* tableView;
 @property (nonatomic, strong) UIImageView *logoView;
-//@property (nonatomic) BOOL creating;
 
 @end
