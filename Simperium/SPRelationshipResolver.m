@@ -25,7 +25,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 @property (nonatomic, strong) NSMutableDictionary *pendingRelationships;
-@property (nonatomic, strong) dispatch_queue_t queue;
+@property (nonatomic, assign) dispatch_queue_t queue;
 
 @end
 
