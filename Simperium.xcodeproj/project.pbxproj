@@ -202,6 +202,9 @@
 		466EB41517BC45F5005F7599 /* SPAuthenticationConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 466EB41117BC45F5005F7599 /* SPAuthenticationConfiguration.m */; };
 		466EB41617BC45F5005F7599 /* SPAuthenticationValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */; };
 		466EB41717BC45F5005F7599 /* SPAuthenticationValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 466EB41317BC45F5005F7599 /* SPAuthenticationValidator.m */; };
+		466EB41A17BC4890005F7599 /* SPAuthenticationButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41817BC4890005F7599 /* SPAuthenticationButton.h */; };
+		466EB41B17BC4890005F7599 /* SPAuthenticationButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 466EB41917BC4890005F7599 /* SPAuthenticationButton.m */; };
+		466EB41D17BC49DB005F7599 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 466EB41C17BC49DB005F7599 /* QuartzCore.framework */; };
 		46A16A8117289FE2003AED55 /* NSString+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 46A16A7F17289FE2003AED55 /* NSString+Simperium.h */; };
 		46A16A8217289FE2003AED55 /* NSString+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 46A16A8017289FE2003AED55 /* NSString+Simperium.m */; };
 		46DD15CA179A6F4B0093678C /* SPMemberJSONList.h in Headers */ = {isa = PBXBuildFile; fileRef = 46DD15C8179A6F4B0093678C /* SPMemberJSONList.h */; };
@@ -418,6 +421,9 @@
 		466EB41117BC45F5005F7599 /* SPAuthenticationConfiguration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAuthenticationConfiguration.m; sourceTree = "<group>"; };
 		466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationValidator.h; sourceTree = "<group>"; };
 		466EB41317BC45F5005F7599 /* SPAuthenticationValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAuthenticationValidator.m; sourceTree = "<group>"; };
+		466EB41817BC4890005F7599 /* SPAuthenticationButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationButton.h; sourceTree = "<group>"; };
+		466EB41917BC4890005F7599 /* SPAuthenticationButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAuthenticationButton.m; sourceTree = "<group>"; };
+		466EB41C17BC49DB005F7599 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		46A16A7F17289FE2003AED55 /* NSString+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Simperium.h"; sourceTree = "<group>"; };
 		46A16A8017289FE2003AED55 /* NSString+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Simperium.m"; sourceTree = "<group>"; };
 		46DD15C8179A6F4B0093678C /* SPMemberJSONList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberJSONList.h; sourceTree = "<group>"; };
@@ -441,6 +447,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				466EB41D17BC49DB005F7599 /* QuartzCore.framework in Frameworks */,
 				264AE51115D3094D00E5E04E /* Security.framework in Frameworks */,
 				264AE50E15D3092200E5E04E /* libicucore.dylib in Frameworks */,
 				26F4BBD413DCFDC100B8AC56 /* MobileCoreServices.framework in Frameworks */,
@@ -609,6 +616,7 @@
 		264CD8F0135DFD7900C51BAD = {
 			isa = PBXGroup;
 			children = (
+				466EB41C17BC49DB005F7599 /* QuartzCore.framework */,
 				264CD900135DFD7A00C51BAD /* Simperium */,
 				264CD911135DFD7A00C51BAD /* SimperiumTests */,
 				264CD94B135DFE7E00C51BAD /* External */,
@@ -871,6 +879,8 @@
 		466EB40F17BC45D8005F7599 /* Authentication */ = {
 			isa = PBXGroup;
 			children = (
+				466EB41817BC4890005F7599 /* SPAuthenticationButton.h */,
+				466EB41917BC4890005F7599 /* SPAuthenticationButton.m */,
 				26C93A6B14F850EA00BE99F5 /* SPAuthenticationViewController.h */,
 				26C93A6C14F850EA00BE99F5 /* SPAuthenticationViewController.m */,
 				466EB41017BC45F5005F7599 /* SPAuthenticationConfiguration.h */,
@@ -986,6 +996,7 @@
 				46DD15CA179A6F4B0093678C /* SPMemberJSONList.h in Headers */,
 				466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */,
 				466EB41617BC45F5005F7599 /* SPAuthenticationValidator.h in Headers */,
+				466EB41A17BC4890005F7599 /* SPAuthenticationButton.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1202,6 +1213,7 @@
 				46DD15CB179A6F4B0093678C /* SPMemberJSONList.m in Sources */,
 				466EB41517BC45F5005F7599 /* SPAuthenticationConfiguration.m in Sources */,
 				466EB41717BC45F5005F7599 /* SPAuthenticationValidator.m in Sources */,
+				466EB41B17BC4890005F7599 /* SPAuthenticationButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

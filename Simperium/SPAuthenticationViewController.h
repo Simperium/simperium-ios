@@ -12,7 +12,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class SPAuthenticationManager, SPLoginButton;
+@class SPAuthenticationManager, SPAuthenticationButton;
 
 @interface SPAuthenticationViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate>
 {   
@@ -22,7 +22,7 @@
 	UITextField *loginPasswordField;
 	UITextField *loginPasswordConfirmField;
 	UIActivityIndicatorView *progressView;
-	SPLoginButton *actionButton;
+	SPAuthenticationButton *actionButton;
     UIButton *changeButton;
 
     BOOL editing;

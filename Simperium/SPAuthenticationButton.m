@@ -1,21 +1,20 @@
 //
-//  SPLoginButton.m
+//  SPAutehnticationButton.m
 //  Simperium
 //
 //  Created by Tom Witkin on 8/4/13.
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
-#import "SPLoginButton.h"
+#import "SPAuthenticationButton.h"
+#import <QuartzCore/QuartzCore.h>
 
-@implementation SPLoginButton
+@implementation SPAuthenticationButton
 @synthesize backgroundHighlightColor;
 
 - (id)initWithFrame:(CGRect)frame {
-    
     self = [super initWithFrame:frame];
     if (self) {
-        
         [self addObserver:self
                forKeyPath:@"highlighted"
                   options:NSKeyValueObservingOptionNew
@@ -43,7 +42,6 @@
         [errorView addSubview:errorLabel];
         
         errorView.alpha = 0.0;
-
     }
     
     return self;
@@ -51,31 +49,27 @@
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    
     for (UIView *view in self.subviews) {
         if (view.class == [UIImageView class])
             [(UIImageView *)view setHighlighted:self.highlighted];
         
     }
     [self setNeedsDisplay];
-    
 }
 
-- (void)drawRect:(CGRect)rect
-{
+- (void)drawRect:(CGRect)rect {
     self.layer.backgroundColor = self.highlighted ? backgroundHighlightColor.CGColor : backgroundColor.CGColor;
 }
 
 - (void)setBackgroundColor:(UIColor *)bgcolor {
     backgroundColor = bgcolor;
 }
+
 - (void)setBackgroundHighlightColor:(UIColor *)bgHighlightColor {
-    
     backgroundHighlightColor = bgHighlightColor;
 }
 
 - (void)showErrorMessage:(NSString *)errorMessage {
-    
     [self bringSubviewToFront:errorView];
 
     errorLabel.text = errorMessage.uppercaseString;
@@ -88,13 +82,10 @@
                                                      selector:@selector(clearErrorMessage)
                                                      userInfo:nil
                                                       repeats:NO];
-    
-    
 }
 
 - (void)clearErrorMessage {
     errorView.alpha = 0.0;
-    
 }
 
 

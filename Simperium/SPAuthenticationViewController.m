@@ -11,7 +11,7 @@
 #import <Simperium/Simperium.h>
 #import "ASIFormDataRequest.h"
 #import "JSONKit.h"
-#import "SPLoginButton.h"
+#import "SPAuthenticationButton.h"
 
 @interface SPAuthenticationViewController()
 
@@ -67,7 +67,7 @@
     self.tableView.clipsToBounds = NO;
     [self.view addSubview:self.tableView];
 	
-	actionButton = [[SPLoginButton alloc] initWithFrame:CGRectMake(0, 0.0, self.view.frame.size.width, 44)];
+	actionButton = [[SPAuthenticationButton alloc] initWithFrame:CGRectMake(0, 0.0, self.view.frame.size.width, 44)];
 	[actionButton addTarget:self
                      action:@selector(goAction:)
            forControlEvents:UIControlEventTouchUpInside];

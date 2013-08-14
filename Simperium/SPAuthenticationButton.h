@@ -1,5 +1,5 @@
 //
-//  SPLoginButton.h
+//  SPAuthenticationButton.h
 //  Simperium
 //
 //  Created by Tom Witkin on 8/4/13.
@@ -8,8 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SPLoginButton : UIButton {
-    
+@interface SPAuthenticationButton : UIButton {
     UIView *errorView;
     UILabel *errorLabel;
     
@@ -17,14 +16,11 @@
     UIColor *backgroundHighlightColor;
     
     NSTimer *clearErrorTimer;
-    
 }
 
 @property (nonatomic, strong) UIColor *backgroundHighlightColor;
 
-
 - (void)showErrorMessage:(NSString *)errorMessage;
 - (void)clearErrorMessage;
-
 
 @end
