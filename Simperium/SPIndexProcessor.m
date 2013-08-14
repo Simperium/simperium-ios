@@ -126,7 +126,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             [keysForDeletedObjects addObject:key];
             [threadSafeStorage deleteObject:objectToDelete];
         }
-        DDLogVerbose(@"Simperium deleting %d objects after re-indexing", [keysForDeletedObjects count]);
+        DDLogVerbose(@"Simperium deleting %ld objects after re-indexing", (long)[keysForDeletedObjects count]);
         [threadSafeStorage save];
         
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
