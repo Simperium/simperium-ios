@@ -47,7 +47,7 @@
     SPAuthenticationManager *authManager;
     
 #if TARGET_OS_IPHONE
-    Class __weak loginViewControllerClass;
+    Class __weak authenticationViewControllerClass;
 #else
     Class __weak authWindowControllerClass;
 #endif
@@ -148,7 +148,7 @@
 // You can implement your own subclass of SPLoginViewController (iOS) or
 // SPLoginWindowController (OSX) to customize authentication.
 #if TARGET_OS_IPHONE
-@property (nonatomic, weak) Class loginViewControllerClass;
+@property (nonatomic, weak) Class authenticationViewControllerClass;
 #else
 @property (nonatomic, weak) Class authenticationWindowControllerClass;
 #endif

@@ -32,7 +32,7 @@
 #import "SPReachability.h"
 
 #if TARGET_OS_IPHONE
-#import "SPLoginViewController.h"
+#import "SPAuthenticationViewController.h"
 #else
 #import "SPAuthenticationWindowController.h"
 #endif
@@ -52,7 +52,7 @@
 
 
 #if TARGET_OS_IPHONE
-@property (nonatomic, strong) SPLoginViewController *loginViewController;
+@property (nonatomic, strong) SPAuthenticationViewController *loginViewController;
 #else
 @property (nonatomic, strong) SPAuthenticationWindowController *authenticationWindowController;
 #endif
@@ -92,7 +92,7 @@
 #if TARGET_OS_IPHONE
 @synthesize rootViewController;
 @synthesize loginViewController;
-@synthesize loginViewControllerClass;
+@synthesize authenticationViewControllerClass;
 #else
 @synthesize window;
 @synthesize authenticationWindowController;
@@ -142,7 +142,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         self.relationshipResolver = resolver;
 
 #if TARGET_OS_IPHONE
-        loginViewControllerClass = [SPLoginViewController class];
+        authenticationViewControllerClass = [SPAuthenticationViewController class];
 #else
         authenticationWindowControllerClass = [SPAuthenticationWindowController class];
 #endif
@@ -638,7 +638,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (self.loginViewController && self.rootViewController.presentedViewController == self.loginViewController)
         return;
     
-    SPLoginViewController *loginController =  [[SPLoginViewController alloc] init];
+    SPAuthenticationViewController *loginController =  [[SPAuthenticationViewController alloc] init];
     self.loginViewController = loginController;
     self.loginViewController.authManager = self.authManager;
     

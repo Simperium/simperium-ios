@@ -14,7 +14,7 @@
 
 @class SPAuthenticationManager, SPLoginButton;
 
-@interface SPLoginViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate>
+@interface SPAuthenticationViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate>
 {   
     SPAuthenticationManager *authManager;
 	BOOL creating;

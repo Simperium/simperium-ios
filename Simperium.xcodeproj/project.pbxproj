@@ -169,8 +169,8 @@
 		26B733F015E585630081CF4A /* SPRelationshipResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 26B733EE15E585620081CF4A /* SPRelationshipResolver.h */; };
 		26B733F115E585630081CF4A /* SPRelationshipResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 26B733EF15E585620081CF4A /* SPRelationshipResolver.m */; };
 		26C93A6A14F8159300BE99F5 /* libSimperium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 264CD8FB135DFD7A00C51BAD /* libSimperium.a */; };
-		26C93A6D14F850EA00BE99F5 /* SPLoginViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 26C93A6B14F850EA00BE99F5 /* SPLoginViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		26C93A6E14F850EA00BE99F5 /* SPLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 26C93A6C14F850EA00BE99F5 /* SPLoginViewController.m */; };
+		26C93A6D14F850EA00BE99F5 /* SPAuthenticationViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 26C93A6B14F850EA00BE99F5 /* SPAuthenticationViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		26C93A6E14F850EA00BE99F5 /* SPAuthenticationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 26C93A6C14F850EA00BE99F5 /* SPAuthenticationViewController.m */; };
 		26D4D3B3156C3DA300E822E9 /* JRSwizzle.h in Headers */ = {isa = PBXBuildFile; fileRef = 26D4D3B1156C3DA300E822E9 /* JRSwizzle.h */; };
 		26D4D3B4156C3DA300E822E9 /* JRSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 26D4D3B2156C3DA300E822E9 /* JRSwizzle.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		26E83A811395A1FC00195758 /* SPS3Manager.h in Headers */ = {isa = PBXBuildFile; fileRef = 26E83A7F1395A1FC00195758 /* SPS3Manager.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -388,8 +388,8 @@
 		26B473F614A116B100397E7F /* SPBinaryTransportDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBinaryTransportDelegate.h; sourceTree = "<group>"; };
 		26B733EE15E585620081CF4A /* SPRelationshipResolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPRelationshipResolver.h; sourceTree = "<group>"; };
 		26B733EF15E585620081CF4A /* SPRelationshipResolver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPRelationshipResolver.m; sourceTree = "<group>"; };
-		26C93A6B14F850EA00BE99F5 /* SPLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPLoginViewController.h; sourceTree = "<group>"; };
-		26C93A6C14F850EA00BE99F5 /* SPLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPLoginViewController.m; sourceTree = "<group>"; };
+		26C93A6B14F850EA00BE99F5 /* SPAuthenticationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationViewController.h; sourceTree = "<group>"; };
+		26C93A6C14F850EA00BE99F5 /* SPAuthenticationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAuthenticationViewController.m; sourceTree = "<group>"; };
 		26D4D3B1156C3DA300E822E9 /* JRSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JRSwizzle.h; sourceTree = "<group>"; };
 		26D4D3B2156C3DA300E822E9 /* JRSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JRSwizzle.m; sourceTree = "<group>"; };
 		26E83A7F1395A1FC00195758 /* SPS3Manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPS3Manager.h; sourceTree = "<group>"; };
@@ -596,15 +596,6 @@
 			name = Object;
 			sourceTree = "<group>";
 		};
-		2622FD04147F23FB00C8EEB4 /* UI */ = {
-			isa = PBXGroup;
-			children = (
-				26C93A6B14F850EA00BE99F5 /* SPLoginViewController.h */,
-				26C93A6C14F850EA00BE99F5 /* SPLoginViewController.m */,
-			);
-			name = UI;
-			sourceTree = "<group>";
-		};
 		2622FD05147F241500C8EEB4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
@@ -667,7 +658,6 @@
 				46B7880216B709AD001AA908 /* Networking */,
 				2622FD02147F23BE00C8EEB4 /* User */,
 				2622FD05147F241500C8EEB4 /* Helpers */,
-				2622FD04147F23FB00C8EEB4 /* UI */,
 				2622FCFE147F224200C8EEB4 /* Binary */,
 				264CD901135DFD7A00C51BAD /* Supporting Files */,
 				265D80061475C2CE00002A19 /* Categories */,
@@ -881,6 +871,8 @@
 		466EB40F17BC45D8005F7599 /* Authentication */ = {
 			isa = PBXGroup;
 			children = (
+				26C93A6B14F850EA00BE99F5 /* SPAuthenticationViewController.h */,
+				26C93A6C14F850EA00BE99F5 /* SPAuthenticationViewController.m */,
 				466EB41017BC45F5005F7599 /* SPAuthenticationConfiguration.h */,
 				466EB41117BC45F5005F7599 /* SPAuthenticationConfiguration.m */,
 				466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */,
@@ -969,7 +961,7 @@
 				2622FD2D147F32A500C8EEB4 /* SPNetworkInterface.h in Headers */,
 				2611E805149FB91100121D6E /* JSONKit.h in Headers */,
 				26B473F714A116B100397E7F /* SPBinaryTransportDelegate.h in Headers */,
-				26C93A6D14F850EA00BE99F5 /* SPLoginViewController.h in Headers */,
+				26C93A6D14F850EA00BE99F5 /* SPAuthenticationViewController.h in Headers */,
 				26563AE414FC3BDE0081C8C1 /* SPAuthenticationManager.h in Headers */,
 				267CE8FA156C0FD20028801C /* NSMutableDictionary+Simperium.h in Headers */,
 				267CE8FE156C0FD20028801C /* SPBucket.h in Headers */,
@@ -1185,7 +1177,7 @@
 				2622FD25147F251200C8EEB4 /* SPMemberList.m in Sources */,
 				2622FD29147F251D00C8EEB4 /* SPMemberBase64.m in Sources */,
 				2611E806149FB91100121D6E /* JSONKit.m in Sources */,
-				26C93A6E14F850EA00BE99F5 /* SPLoginViewController.m in Sources */,
+				26C93A6E14F850EA00BE99F5 /* SPAuthenticationViewController.m in Sources */,
 				26563AE514FC3BDE0081C8C1 /* SPAuthenticationManager.m in Sources */,
 				267CE8FB156C0FD20028801C /* NSMutableDictionary+Simperium.m in Sources */,
 				267CE8FF156C0FD20028801C /* SPBucket.m in Sources */,

@@ -6,14 +6,14 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
-#import "SPLoginViewController.h"
+#import "SPAuthenticationViewController.h"
 #import "SPAuthenticationManager.h"
 #import <Simperium/Simperium.h>
 #import "ASIFormDataRequest.h"
 #import "JSONKit.h"
 #import "SPLoginButton.h"
 
-@interface SPLoginViewController()
+@interface SPAuthenticationViewController()
 
 @property (nonatomic) CGFloat keyboardHeight;
 
@@ -21,12 +21,11 @@
 -(void)changeAction:(id)sender;
 @end
 
-@implementation SPLoginViewController
+@implementation SPAuthenticationViewController
 @synthesize authManager;
 
 
--(void)setCreating:(BOOL)bCreating
-{
+- (void)setCreating:(BOOL)bCreating {
 	creating = bCreating;
 	
 	NSString *actionTitle = creating ?
@@ -42,7 +41,6 @@
 }
 
 - (void)viewDidLoad {
-    
     UIColor *whiteColor = [UIColor colorWithWhite:0.99 alpha:1.0];
     UIColor *blueColor = [UIColor colorWithRed:66.0 / 255.0 green:137 / 255.0 blue:201 / 255.0 alpha:1.0];
     UIColor *darkBlueColor = [UIColor colorWithRed:36.0 / 255.0 green:100.0 / 255.0 blue:158.0 / 255.0 alpha:1.0];
@@ -58,7 +56,6 @@
                                                    target:self
                                                    action:@selector(cancelAction:)];
     self.navigationItem.rightBarButtonItem = cancelButton;
-    
     
     self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds
                                                   style:UITableViewStyleGrouped];
@@ -95,14 +92,12 @@
 	progressView.frame = CGRectMake(actionButton.frame.size.width - 30, (actionButton.frame.size.height - 20) / 2.0, 20, 20);
     progressView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
 	[actionButton addSubview:progressView];
-	
     
     UIImage *logo = [UIImage imageNamed:@"logo_login"];
     _logoView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, logo.size.width, logo.size.height)];
     _logoView.image = logo;
     _logoView.contentMode = UIViewContentModeCenter;
     [self.view addSubview:_logoView];
-    
     
 	UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, changeButton.frame.size.height + changeButton.frame.origin.y)];
 	footerView.contentMode = UIViewContentModeTopLeft;
@@ -120,23 +115,17 @@
     
 	self.creating = YES;
     
-    
-    
     // layout views
     [self layoutViewsForInterfaceOrientation:self.interfaceOrientation];
-    
 }
 
 - (CGFloat)topInset {
-    
     CGFloat navigationBarHeight = self.navigationController.navigationBar.frame.size.height + self.navigationController.navigationBar.frame.origin.y;
     
     return navigationBarHeight > 0 ? navigationBarHeight : 20.0; // 20.0 refers to the status bar height
-    
 }
 
 - (void)layoutViewsForInterfaceOrientation:(UIInterfaceOrientation)orientation {
-    
     CGFloat viewWidth = UIInterfaceOrientationIsPortrait(orientation) ? MIN(self.view.frame.size.width, self.view.frame.size.height) :  MAX(self.view.frame.size.width, self.view.frame.size.height);
     
     _logoView.frame = CGRectMake((viewWidth - _logoView.frame.size.width) / 2.0,
@@ -153,36 +142,28 @@
                                   self.view.frame.size.height - tableViewYOrigin);
     
     [self.view sendSubviewToBack:_logoView];
-    
 }
 
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
     
     [self layoutViewsForInterfaceOrientation:toInterfaceOrientation];
-
-    
 }
 
 - (BOOL)shouldAutorotate {
-    
     return !editing;
-    
 }
 
 
 - (NSUInteger)supportedInterfaceOrientations {
-    
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
         return UIInterfaceOrientationMaskPortrait;
     
     return UIInterfaceOrientationMaskAll;
-    
 }
 
 
-- (void)viewWillAppear:(BOOL)animated
-{    
+- (void)viewWillAppear:(BOOL)animated {
     self.tableView.scrollEnabled = NO;
     
 	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
@@ -195,8 +176,7 @@
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
 }
 
-- (void)viewWillDisappear:(BOOL)animated
-{
+- (void)viewWillDisappear:(BOOL)animated {
     // un-register for keyboard notifications
 	[[NSNotificationCenter defaultCenter] removeObserver: self name:UIKeyboardWillHideNotification object:nil];	
 	[[NSNotificationCenter defaultCenter] removeObserver: self name:UIKeyboardWillShowNotification object:nil];	
@@ -205,20 +185,16 @@
 #pragma mark Keyboard
 
 - (void)keyboardWillShow:(NSNotification *)notification {
-    
     editing = YES;
     
     CGRect keyboardFrame = [(NSValue *)[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    
     _keyboardHeight = MIN(keyboardFrame.size.height, keyboardFrame.size.width);
-    
     CGFloat duration = [(NSNumber *)[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue];
     
     [self positionTableViewWithDuration:duration];
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification {
-    
     editing = NO;
     
     CGFloat duration = [(NSNumber *)[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue];
@@ -226,15 +202,12 @@
     _keyboardHeight = 0;
     
     [self positionTableViewWithDuration:duration];
-
 }
 
 - (void)positionTableViewWithDuration:(CGFloat)duration {
-    
     CGRect newFrame = self.view.bounds;
     
     if (_keyboardHeight > 0) {
-        
         CGFloat maxHeight = newFrame.size.height - _keyboardHeight - self.topInset;
         CGFloat tableViewHeight = [self.tableView tableFooterView].frame.origin.y + [self.tableView tableFooterView].frame.size.height;
         CGFloat tableViewTopPadding = [self.tableView convertRect:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]].frame fromView:self.tableView].origin.y;
@@ -243,7 +216,6 @@
         newFrame.size.height = maxHeight  + tableViewTopPadding;
 
         self.tableView.scrollEnabled = YES;
-        
     } else {
         newFrame.origin.y = _logoView.frame.origin.y + _logoView.frame.size.height;
         newFrame.size.height = self.view.frame.size.height -  newFrame.origin.y;
@@ -252,7 +224,6 @@
     
     newFrame.size.width = self.tableView.frame.size.width;
     newFrame.origin.x = self.tableView.frame.origin.x;
-    
 
     if (!(_keyboardHeight > 0)) {
         self.logoView.hidden = NO;
@@ -267,10 +238,7 @@
                      } completion:^(BOOL finished) {
                          self.logoView.hidden = (_keyboardHeight > 0);
                      }];
-    
-    
 }
-
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
 	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)	
@@ -281,24 +249,13 @@
 
 
 #pragma mark Validation
--(BOOL)validateEmailWithAlerts:(BOOL)alert
-{
+- (BOOL)validateEmailWithAlerts:(BOOL)alert {
 	if (loginField.text.length == 0)
 		return NO;
     NSString *emailRegEx = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
 	NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegEx];
 	if (loginField.text != nil && [emailTest evaluateWithObject:loginField.text] == NO) {
 		if (alert) {
-			// Bad email address
-//			NSString *title = NSLocalizedString(@"Invalid email", @"Title of dialog displayed when email address is invalid");
-//			NSString *message = NSLocalizedString(@"Your email address is not valid.", @"Message displayed when email address is invalid");
-//			UIAlertView *alert = [[UIAlertView alloc] initWithTitle: title
-//                                                            message:message
-//														   delegate:self
-//                                                  cancelButtonTitle:@"OK"
-//                                                  otherButtonTitles: nil];
-//			[alert show];
-            
             [actionButton showErrorMessage:NSLocalizedString(@"Your email address is not valid.", @"Message displayed when email address is invalid")];
             
             [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
@@ -308,8 +265,7 @@
 	return YES;
 }
 
--(BOOL)validatePasswordWithAlerts:(BOOL)alert
-{
+- (BOOL)validatePasswordWithAlerts:(BOOL)alert {
 	if (loginPasswordField.text == nil || [loginPasswordField.text length] < 4)
 	{
 		if (alert) {
