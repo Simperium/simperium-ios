@@ -29,7 +29,8 @@
 
         Class textFieldClass = secure ? [NSSecureTextField class] : [NSTextField class];
         _textField = [[textFieldClass alloc] initWithFrame:textFrame];
-        [_textField setFont:[[SPAuthenticationConfiguration sharedInstance] regularFontWithSize:fontSize]];
+        NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
+        [_textField setFont:font];
         [_textField setTextColor:[NSColor colorWithCalibratedWhite:0.1 alpha:1.0]];
         [_textField setDrawsBackground:NO];
         [_textField setBezeled:NO];

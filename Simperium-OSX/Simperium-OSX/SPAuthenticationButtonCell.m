@@ -31,7 +31,8 @@
     [style setAlignment:NSCenterTextAlignment];
 
     int fontSize = 20;
-    NSDictionary *attributes = @{NSFontAttributeName : [[SPAuthenticationConfiguration sharedInstance] regularFontWithSize:fontSize],
+    NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
+    NSDictionary *attributes = @{NSFontAttributeName : font,
                                  NSForegroundColorAttributeName : [NSColor whiteColor],
                                  NSParagraphStyleAttributeName: style};
     

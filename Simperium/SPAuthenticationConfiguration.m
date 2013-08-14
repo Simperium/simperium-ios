@@ -33,6 +33,17 @@ static SPAuthenticationConfiguration *gInstance = NULL;
 }
 
 // Just quick and dirty fonts for now. Could be extended with colors.
+// In an app this would likely be done in an external .plist file, but for a framework,
+// keeping in code avoids having to include a resource.
+#if TARGET_OS_IPHONE
+
+// TODO: iPhone support
+- (float)regularFontHeightForSize:(float)size {
+    return 0;
+}
+
+#else
+
 - (NSFont *)regularFontWithSize:(CGFloat)size {
     return [NSFont fontWithName:_regularFontName size:size];
 }
@@ -41,12 +52,13 @@ static SPAuthenticationConfiguration *gInstance = NULL;
     return [NSFont fontWithName:_mediumFontName size:size];
 }
 
-- (CGFloat)regularFontHeightForSize:(CGFloat)size {
+- (float)regularFontHeightForSize:(float)size {
     NSDictionary *attributes = @{NSFontAttributeName : [self regularFontWithSize:size],
                                  NSFontSizeAttribute : [NSString stringWithFormat:@"%f", size]};
     NSString *testStr = @"Testyj";
     return [testStr sizeWithAttributes:attributes].height;
 }
+#endif
 
 
 

@@ -15,10 +15,10 @@
 #import "SPAuthenticationTextField.h"
 #import "SPAuthenticationButton.h"
 #import "SPAuthenticationConfiguration.h"
+#import "SPAuthenticationValidator.h"
 
 static NSUInteger windowWidth = 380;
 static NSUInteger windowHeight = 540;
-static int minimumPasswordLength = 4;
 
 @interface SPAuthenticationWindowController () {
     BOOL earthquaking;
@@ -28,12 +28,15 @@ static int minimumPasswordLength = 4;
 
 @implementation SPAuthenticationWindowController
 @synthesize authManager;
+@synthesize validator;
 
 - (id)init {
     rowSize = 50;
     SPAuthenticationWindow *window = [[SPAuthenticationWindow alloc] initWithContentRect:NSMakeRect(0, 0, windowWidth, windowHeight) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
     
     if ((self = [super initWithWindow: window])) {
+        self.validator = [[SPAuthenticationValidator alloc] init];
+        
         SPAuthenticationView *authView = [[SPAuthenticationView alloc] initWithFrame:window.frame];
         [window.contentView addSubview:authView];
         
@@ -132,13 +135,14 @@ static int minimumPasswordLength = 4;
 
 - (NSTextField *)tipFieldWithText:(NSString *)text frame:(CGRect)frame {
     NSTextField *field = [[NSTextField alloc] initWithFrame:frame];
+    NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:13];
     [field setStringValue:[text uppercaseString]];
     [field setEditable:NO];
     [field setSelectable:NO];
     [field setBordered:NO];
     [field setDrawsBackground:NO];
     [field setAlignment:NSCenterTextAlignment];
-    [field setFont:[[SPAuthenticationConfiguration sharedInstance] mediumFontWithSize:13]];
+    [field setFont:font];
     [field setTextColor:[NSColor colorWithCalibratedWhite:153.f/255.f alpha:1.0]];
     
     return field;
@@ -156,7 +160,8 @@ static int minimumPasswordLength = 4;
     NSColor *linkColor = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
 
     
-    NSDictionary *attributes = @{NSFontAttributeName : [[SPAuthenticationConfiguration sharedInstance] mediumFontWithSize:13],
+    NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:13];
+    NSDictionary *attributes = @{NSFontAttributeName : font,
                                  NSForegroundColorAttributeName : linkColor,
                                  NSParagraphStyleAttributeName : style};
     [button setAttributedTitle: [[NSAttributedString alloc] initWithString:[text uppercaseString] attributes:attributes]];
@@ -258,20 +263,8 @@ static int minimumPasswordLength = 4;
 
 # pragma mark Validation and Error Handling
 
-- (BOOL)isValidEmail:(NSString *)checkString {
-    // From http://stackoverflow.com/a/3638271/1379066
-    BOOL stricterFilter = YES; // Discussion http://blog.logichigh.com/2010/09/02/validating-an-e-mail-address/
-    NSString *stricterFilterString = @"[A-Z0-9a-z\\._%+-]+@([A-Za-z0-9-]+\\.)+[A-Za-z]{2,4}";
-    NSString *laxString = @".+@([A-Za-z0-9]+\\.)+[A-Za-z]{2}[A-Za-z]*";
-    NSString *emailRegex = stricterFilter ? stricterFilterString : laxString;
-    NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
-    
-    return [emailTest evaluateWithObject:checkString];
-}
-
 - (BOOL)validateUsername {
-    // Expect email addresses by default
-    if (![self isValidEmail:usernameField.stringValue]) {
+    if (![self.validator validateUsername:usernameField.stringValue]) {
         [self earthquake:usernameField];
         [self showAuthenticationError:@"Not a valid email address"];
         
@@ -282,18 +275,16 @@ static int minimumPasswordLength = 4;
 }
 
 - (BOOL)validatePasswordSecurity {
-    if (passwordField.stringValue.length < minimumPasswordLength) {
+    if (![self.validator validatePasswordSecurity:passwordField.stringValue]) {
         [self earthquake:passwordField];
         [self earthquake:confirmField];
         
-        NSString *notLongEnough = [NSString stringWithFormat:@"Password should be at least %d characters", minimumPasswordLength];
+        NSString *notLongEnough = [NSString stringWithFormat:@"Password should be at least %ld characters", (long)self.validator.minimumPasswordLength];
         [self showAuthenticationError:notLongEnough];
         
         return NO;
     }
     
-    // Could enforce other requirements here
-
     return YES;
 }
 

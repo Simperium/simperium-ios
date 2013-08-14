@@ -14,8 +14,6 @@
 @property (nonatomic, copy) NSString *mediumFontName;
 
 + (SPAuthenticationConfiguration *)sharedInstance;
-- (NSFont *)regularFontWithSize:(CGFloat)size;
-- (NSFont *)mediumFontWithSize:(CGFloat)size;
-- (CGFloat)regularFontHeightForSize:(CGFloat)size;
+- (float)regularFontHeightForSize:(float)size;
 
 @end

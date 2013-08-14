@@ -10,6 +10,7 @@
 #import <Simperium-OSX/SPAuthenticationManager.h>
 
 @class SPAuthenticationTextField;
+@class SPAuthenticationValidator;
 
 @interface SPAuthenticationWindowController : NSWindowController<NSTextFieldDelegate> {
     NSImageView *logoImageView;
@@ -32,6 +33,7 @@
 }
 
 @property (nonatomic, retain) SPAuthenticationManager *authManager;
+@property (nonatomic, retain) SPAuthenticationValidator *validator;
 @property (assign) BOOL optional;
 
 - (IBAction) signUpAction:(id)sender;
