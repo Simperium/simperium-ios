@@ -46,7 +46,8 @@
     follower.expectedAcknowledgments = 1;
     leader.expectedChanges = 1;
     [follower.simperium save];
-    [self waitFor:1];
+    
+    [self waitFor:1.0];
     NSLog(@"****************************RECONNECT*************************");
     [follower connect];
     STAssertTrue([self waitForCompletion:4.0 farmArray:farmArray], @"timed out (changing)");
@@ -71,7 +72,6 @@
     Farm *follower = [self createFarm:@"follower"];
     [leader start];
     [follower start];
-    NSArray *farmArray = [NSArray arrayWithObjects:leader, follower, nil];
     [leader connect];
     [follower connect];
     [self waitFor:1.5];
@@ -82,16 +82,17 @@
     follower.expectedAdditions = 1;
     [leader.simperium save];
     NSString *configKey = leader.config.simperiumKey;
-    STAssertTrue([self waitForCompletion: 6.0 farmArray:farmArray], @"timed out (adding)");
-    [self resetExpectations: farmArray];
-    [self ensureFarmsEqual:farmArray entityName:@"Config"];
+    STAssertTrue([self waitForCompletion: 6.0 farmArray:farms], @"timed out (adding)");
+    [self resetExpectations:farms];
+    [self ensureFarmsEqual:farms entityName:@"Config"];
     [follower disconnect];
+    [self waitFor:1.0];
 
     leader.config.captainsLog = @"ab";
     leader.expectedAcknowledgments = 1;
     [leader.simperium save];
-    STAssertTrue([self waitForCompletion:6.0 farmArray:farmArray], @"timed out (changing)");
-    [self resetExpectations:farmArray];
+    STAssertTrue([self waitForCompletion:6.0 farmArray:farms], @"timed out (changing)");
+    [self resetExpectations:farms];
     
     follower.config = (Config *)[[follower.simperium bucketForName:@"Config"] objectForKey:configKey];
     follower.config.captainsLog = @"ac";
@@ -99,8 +100,9 @@
     follower.expectedChanges = 1;
     leader.expectedChanges = 1;
     [follower.simperium save];
+    [self waitFor:0.5];
     [follower connect];
-    STAssertTrue([self waitForCompletion:6.0 farmArray:farmArray], @"timed out (changing)");
+    STAssertTrue([self waitForCompletion:6.0 farmArray:farms], @"timed out (changing)");
     
     // Make sure there's no residual weirdness
     [self waitFor:1.0];
@@ -108,7 +110,7 @@
     NSString *refString = @"abc";
     STAssertTrue([refString isEqualToString: leader.config.captainsLog],
                  @"leader %@ != ref %@", leader.config.captainsLog, refString);
-    [self ensureFarmsEqual:farmArray entityName:@"Config"];
+    [self ensureFarmsEqual:farms entityName:@"Config"];
     NSLog(@"%@ end", self.name); 
 }
 
