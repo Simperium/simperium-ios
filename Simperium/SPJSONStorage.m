@@ -113,6 +113,18 @@
     return bucketObjects;
 }
 
+-(NSArray *)objectKeysForBucketName:(NSString *)bucketName {
+    __block NSArray *bucketObjects = [self objectsForBucketName:bucketName predicate:nil];
+    
+    NSMutableArray *keys = [NSMutableArray arrayWithCapacity:[bucketObjects count]];
+    for (id<SPDiffable>object in bucketObjects) {
+        [keys addObject:[object simperiumKey]];
+    }
+         
+    return keys;
+}
+
+
 -(NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
 {
     __block NSInteger count = 0;

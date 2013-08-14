@@ -236,7 +236,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         return;
     }
     
-    DDLogVerbose(@"Received \"%@\"", message);
+    DDLogVerbose(@"Simperium (%@) received \"%@\"", simperium.label, message);
     
     // It's an actual message; parse/handle it
     NSNumber *channelNumber = [NSNumber numberWithInt:[channelStr intValue]];

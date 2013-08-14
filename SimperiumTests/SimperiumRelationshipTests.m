@@ -33,31 +33,33 @@
     Farm *follower = [self createFarm:@"follower"];
     [leader start];
     [follower start];
-    NSArray *farmArray = [NSArray arrayWithObjects:leader, follower, nil];
+    leader.expectedIndexCompletions = 1;
+    follower.expectedIndexCompletions = 1;
     [leader connect];
     [follower connect];
+    STAssertTrue([self waitForCompletion: 4.0 farmArray:farms], @"timed out (initial index)");
+    [self resetExpectations:farms];
+
     
     SPBucket *leaderPosts = [leader.simperium bucketForName:@"Post"];
     Post *post = (Post *)[leaderPosts insertNewObject];
-    post.simperiumKey = @"post";
     post.title = @"post title";
     
     SPBucket *leaderComments = [leader.simperium bucketForName:@"Comment"];
     Comment *comment = (Comment *)[leaderComments insertNewObject];
-    comment.simperiumKey = @"comment";
     comment.content = @"a comment";
     comment.post = post;
     
     leader.expectedAcknowledgments = 2;
     follower.expectedAdditions = 2;
     [leader.simperium save];
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
+    STAssertTrue([self waitForCompletion: 4.0 farmArray:farms], @"timed out (adding)");
     
     // Ensure pending references have an opportunity to resolve
     [self waitFor:0.5];
     
-    [self ensureFarmsEqual:farmArray entityName:@"Post"];
-    [self ensureFarmsEqual:farmArray entityName:@"Comment"];
+    [self ensureFarmsEqual:farms entityName:@"Post"];
+    [self ensureFarmsEqual:farms entityName:@"Comment"];
 
     NSLog(@"%@ end", self.name); 
 }

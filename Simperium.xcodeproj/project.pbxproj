@@ -22,6 +22,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		246F22C8179B3EDB009547B6 /* SimperiumCoreDataTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 246F22C7179B3EDB009547B6 /* SimperiumCoreDataTests.m */; };
 		1854D50F1799F6D2006C4211 /* NSArray+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 1854D50D1799F6D2006C4211 /* NSArray+Simperium.h */; };
 		1854D5101799F6D2006C4211 /* NSArray+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 1854D50E1799F6D2006C4211 /* NSArray+Simperium.m */; };
 		1854D5111799F6D2006C4211 /* NSArray+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 1854D50E1799F6D2006C4211 /* NSArray+Simperium.m */; };
@@ -229,6 +230,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		246F22C6179B3EDA009547B6 /* SimperiumCoreDataTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumCoreDataTests.h; sourceTree = "<group>"; };
+		246F22C7179B3EDB009547B6 /* SimperiumCoreDataTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumCoreDataTests.m; sourceTree = "<group>"; };
 		1854D50D1799F6D2006C4211 /* NSArray+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+Simperium.h"; sourceTree = "<group>"; };
 		1854D50E1799F6D2006C4211 /* NSArray+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+Simperium.m"; sourceTree = "<group>"; };
 		1854D512179A18B1006C4211 /* DiffMatchPatchArrayTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DiffMatchPatchArrayTests.h; sourceTree = "<group>"; };
@@ -705,6 +708,8 @@
 				2678E4C21656D5A10018EE35 /* SimperiumTypeTests.m */,
 				265EF73615B8E26700115E19 /* SimperiumBinaryTests.h */,
 				265EF73715B8E26700115E19 /* SimperiumBinaryTests.m */,
+				246F22C6179B3EDA009547B6 /* SimperiumCoreDataTests.h */,
+				246F22C7179B3EDB009547B6 /* SimperiumCoreDataTests.m */,
 				26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */,
 				2673D71F147A00B300B7B6B3 /* Models */,
 				264CD912135DFD7A00C51BAD /* Supporting Files */,
@@ -1211,6 +1216,7 @@
 				46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */,
 				46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */,
 				46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */,
+				246F22C8179B3EDB009547B6 /* SimperiumCoreDataTests.m in Sources */,
 				1854D5111799F6D2006C4211 /* NSArray+Simperium.m in Sources */,
 				1854D514179A18B1006C4211 /* DiffMatchPatchArrayTests.m in Sources */,
 			);
@@ -1259,7 +1265,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_PROFILING_CODE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PUBLIC_HEADERS_FOLDER_PATH = Headers;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1280,7 +1286,7 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PUBLIC_HEADERS_FOLDER_PATH = Headers;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
