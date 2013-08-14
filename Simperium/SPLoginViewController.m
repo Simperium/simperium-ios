@@ -118,7 +118,7 @@
     tapGesture.numberOfTapsRequired = 1;
     [self.tableView addGestureRecognizer:tapGesture];
     
-	self.creating = NO;
+	self.creating = YES;
     
     
     
