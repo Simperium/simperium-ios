@@ -24,6 +24,8 @@
     NSButton *signUpButton;
     NSButton *changeToSignInButton;
     NSButton *changeToSignUpButton;
+    NSProgressIndicator *signInProgress;
+    NSProgressIndicator *signUpProgress;
     BOOL signingIn;
     BOOL optional;
     CGFloat rowSize;

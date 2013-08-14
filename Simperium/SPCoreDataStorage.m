@@ -175,6 +175,48 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return items;
 }
 
+-(NSArray *)objectKeysAndIdsForBucketName:(NSString *)bucketName {
+    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
+    if (entity == nil) {
+        //DDLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
+        return nil;
+    }
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entity];
+    
+    // Execute a targeted fetch to preserve faults so that only simperiumKeys are loaded in to memory
+    // http://stackoverflow.com/questions/3956406/core-data-how-to-get-nsmanagedobjects-objectid-when-nsfetchrequest-returns-nsdi
+    NSExpressionDescription* objectIdDesc = [NSExpressionDescription new];
+    objectIdDesc.name = @"objectID";
+    objectIdDesc.expression = [NSExpression expressionForEvaluatedObject];
+    objectIdDesc.expressionResultType = NSObjectIDAttributeType;
+    NSDictionary *properties = [entity propertiesByName];
+    request.resultType = NSDictionaryResultType;
+    request.propertiesToFetch = [NSArray arrayWithObjects:[properties objectForKey:@"simperiumKey"], objectIdDesc, nil];
+    
+    NSError *error = nil;
+    NSArray *results = [self.mainManagedObjectContext executeFetchRequest:request error:&error];
+    if (results == nil) {
+        // Handle the error.
+        NSAssert1(0, @"Simperium error: couldn't load array of entities (%@)", bucketName);
+    }
+    
+    return results;
+    
+}
+
+-(NSArray *)objectKeysForBucketName:(NSString *)bucketName {
+    NSArray *results = [self objectKeysAndIdsForBucketName:bucketName];
+    
+    NSMutableArray *objectKeys = [NSMutableArray arrayWithCapacity:[results count]];
+    for (NSDictionary *result in results) {
+        NSString *key = [result objectForKey:@"simperiumKey"];
+        [objectKeys addObject:key];
+    }
+    
+    return objectKeys;
+}
+
 -(NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
 {
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
@@ -272,31 +314,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)validateObjectsForBucketName:(NSString *)bucketName
 {
-    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
-    if (entity == nil) {
-        //DDLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
-        return;
-    }
-	
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    
-    // Execute a targeted fetch to preserve faults so that only simperiumKeys are loaded in to memory
-    // http://stackoverflow.com/questions/3956406/core-data-how-to-get-nsmanagedobjects-objectid-when-nsfetchrequest-returns-nsdi
-    NSExpressionDescription* objectIdDesc = [NSExpressionDescription new];
-    objectIdDesc.name = @"objectID";
-    objectIdDesc.expression = [NSExpression expressionForEvaluatedObject];
-    objectIdDesc.expressionResultType = NSObjectIDAttributeType;
-    NSDictionary *properties = [entity propertiesByName];
-    request.resultType = NSDictionaryResultType;
-    request.propertiesToFetch = [NSArray arrayWithObjects:[properties objectForKey:@"simperiumKey"], objectIdDesc, nil];
-    
-    NSError *error = nil;
-    NSArray *results = [self.mainManagedObjectContext executeFetchRequest:request error:&error];
-    if (results == nil) {
-        // Handle the error.
-        NSAssert1(0, @"Simperium error: couldn't load array of entities (%@)", bucketName);
-    }
+    NSArray *results = [self objectKeysAndIdsForBucketName:bucketName];
     
     // Check each entity instance
     for (NSDictionary *result in results) {
@@ -331,7 +349,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     NSLog(@"Simperium managing %lu %@ object instances", (unsigned long)[results count], bucketName);
-    
 }
 
 -(BOOL)save

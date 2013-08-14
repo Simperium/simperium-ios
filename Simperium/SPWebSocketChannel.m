@@ -169,20 +169,17 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
 
             dispatch_async(dispatch_get_main_queue(), ^{
+                // Start getting changes from the last cv
                 NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
+                DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, getMessage);
+                [self.webSocketManager send:getMessage];
+                
                 if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
-                    // Send the offline changes
+                    // There are also offline changes; send them right away
+                    // This needs to happen after the above cv is sent, otherwise acks will arrive prematurely if there
+                    // have been remote changes that need to be processed first
                     DDLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
-                    [self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:^{
-                        // Start getting changes after all pending local changes have been sent
-                        DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, getMessage);
-                        [self.webSocketManager send:getMessage];
-                        
-                    }];
-                } else {
-                    // No pending local changes, start getting changes right away
-                    DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, getMessage);
-                    [self.webSocketManager send:getMessage];
+                    [self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:nil];
                 }
             });
         }

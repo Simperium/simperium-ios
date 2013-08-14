@@ -139,6 +139,8 @@
 		26C3E1541666FE7500620306 /* SPWebSocketChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 26C3E14E1666FE7500620306 /* SPWebSocketChannel.m */; };
 		4617AEBB179A1A3400545BD9 /* SPReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 4617AEB9179A1A3400545BD9 /* SPReachability.h */; };
 		4617AEBC179A1A3400545BD9 /* SPReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 4617AEBA179A1A3400545BD9 /* SPReachability.m */; };
+		46263BB117A7778E00131791 /* SPAuthenticationConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 46263BAF17A7778E00131791 /* SPAuthenticationConfiguration.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		46263BB217A7778E00131791 /* SPAuthenticationConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 46263BB017A7778E00131791 /* SPAuthenticationConfiguration.m */; };
 		463774E5171FC6D500E2E333 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 463774DE171FC6D500E2E333 /* base64.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		463774E6171FC6D500E2E333 /* base64.h in Headers */ = {isa = PBXBuildFile; fileRef = 463774DF171FC6D500E2E333 /* base64.h */; };
 		463774E7171FC6D500E2E333 /* NSData+SRB64Additions.h in Headers */ = {isa = PBXBuildFile; fileRef = 463774E0171FC6D500E2E333 /* NSData+SRB64Additions.h */; };
@@ -309,6 +311,8 @@
 		26C3E14E1666FE7500620306 /* SPWebSocketChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocketChannel.m; path = ../../Simperium/SPWebSocketChannel.m; sourceTree = "<group>"; };
 		4617AEB9179A1A3400545BD9 /* SPReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPReachability.h; sourceTree = "<group>"; };
 		4617AEBA179A1A3400545BD9 /* SPReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPReachability.m; sourceTree = "<group>"; };
+		46263BAF17A7778E00131791 /* SPAuthenticationConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationConfiguration.h; sourceTree = "<group>"; };
+		46263BB017A7778E00131791 /* SPAuthenticationConfiguration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAuthenticationConfiguration.m; sourceTree = "<group>"; };
 		463774DE171FC6D500E2E333 /* base64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = base64.c; sourceTree = "<group>"; };
 		463774DF171FC6D500E2E333 /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
 		463774E0171FC6D500E2E333 /* NSData+SRB64Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+SRB64Additions.h"; sourceTree = "<group>"; };
@@ -623,6 +627,8 @@
 				46DD161E17A1B8490093678C /* SPAuthenticationWindowController.m */,
 				268EDEEC155F089D006B566F /* SPAuthenticationManager.h */,
 				268EDEED155F089D006B566F /* SPAuthenticationManager.m */,
+				46263BAF17A7778E00131791 /* SPAuthenticationConfiguration.h */,
+				46263BB017A7778E00131791 /* SPAuthenticationConfiguration.m */,
 			);
 			name = Auth;
 			sourceTree = "<group>";
@@ -740,6 +746,7 @@
 				46DD162517A1B8490093678C /* SPAuthenticationView.h in Headers */,
 				46DD162717A1B8490093678C /* SPAuthenticationWindow.h in Headers */,
 				46DD162917A1B8490093678C /* SPAuthenticationWindowController.h in Headers */,
+				46263BB117A7778E00131791 /* SPAuthenticationConfiguration.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -876,6 +883,7 @@
 				46DD162617A1B8490093678C /* SPAuthenticationView.m in Sources */,
 				46DD162817A1B8490093678C /* SPAuthenticationWindow.m in Sources */,
 				46DD162A17A1B8490093678C /* SPAuthenticationWindowController.m in Sources */,
+				46263BB217A7778E00131791 /* SPAuthenticationConfiguration.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

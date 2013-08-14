@@ -119,6 +119,10 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     return [storage objectsForBucketName:self.name predicate:nil];
 }
 
+- (NSArray *)allObjectKeys {
+    return [storage objectKeysForBucketName:self.name];
+}
+
 - (id)insertNewObject {
     id<SPDiffable>diffable = [storage insertNewObjectForBucketName:self.name simperiumKey:nil];
     diffable.bucket = self;

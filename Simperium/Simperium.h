@@ -19,6 +19,7 @@
 #if TARGET_OS_IPHONE
 @class UIViewController;
 #else
+#import "SPAuthenticationConfiguration.h"
 @class NSWindow;
 #endif
 

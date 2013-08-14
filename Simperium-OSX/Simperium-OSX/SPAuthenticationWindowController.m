@@ -14,6 +14,7 @@
 #import "SPAuthenticationView.h"
 #import "SPAuthenticationTextField.h"
 #import "SPAuthenticationButton.h"
+#import "SPAuthenticationConfiguration.h"
 
 static NSUInteger windowWidth = 380;
 static NSUInteger windowHeight = 540;
@@ -73,13 +74,20 @@ static int minimumPasswordLength = 4;
         [confirmField setPlaceholderString:@"Confirm Password"];
         confirmField.delegate = self;
         [authView addSubview:confirmField];
-        
+                
         logoY -= 30;
         signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize*3, width, 40)];
         signInButton.title = @"Sign In";
         signInButton.target = self;
         signInButton.action = @selector(signInAction:);
         [authView addSubview:signInButton];
+
+        int progressSize = 20;
+        signInProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(signInButton.frame.size.width - progressSize - paddingX, (signInButton.frame.size.height - progressSize) / 2, progressSize, progressSize)];
+        [signInProgress setStyle:NSProgressIndicatorSpinningStyle];
+        [signInProgress setDisplayedWhenStopped:NO];
+        [signInButton addSubview:signInProgress];
+
         
         signUpButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize*4, width, 40)];
         signUpButton.title = @"Sign Up";
@@ -87,10 +95,16 @@ static int minimumPasswordLength = 4;
         signUpButton.action = @selector(signUpAction:);
         [authView addSubview:signUpButton];
         
-        changeToSignUpField = [self tipFieldWithText:@"Already have an account?" frame:NSMakeRect(paddingX, logoY - rowSize*3 - 35, width, 20)];
+        signUpProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(signUpProgress.frame.size.width - progressSize - paddingX, (signUpProgress.frame.size.height - progressSize) / 2, progressSize, progressSize)];
+        [signUpProgress setStyle:NSProgressIndicatorSpinningStyle];
+        [signUpProgress setDisplayedWhenStopped:NO];
+        [signUpButton addSubview:signUpProgress];
+
+        
+        changeToSignUpField = [self tipFieldWithText:@"Need an account?" frame:NSMakeRect(paddingX, logoY - rowSize*3 - 35, width, 20)];
         [authView addSubview:changeToSignUpField];
 
-        changeToSignInField = [self tipFieldWithText:@"Need an account?" frame:NSMakeRect(paddingX, logoY - rowSize*4 - 35, width, 20)];
+        changeToSignInField = [self tipFieldWithText:@"Already have an account?" frame:NSMakeRect(paddingX, logoY - rowSize*4 - 35, width, 20)];
         [authView addSubview:changeToSignInField];
         
         logoY -= 5;
@@ -124,7 +138,7 @@ static int minimumPasswordLength = 4;
     [field setBordered:NO];
     [field setDrawsBackground:NO];
     [field setAlignment:NSCenterTextAlignment];
-    [field setFont:[NSFont fontWithName:@"SourceSansPro-Semibold" size:13]];
+    [field setFont:[[SPAuthenticationConfiguration sharedInstance] mediumFontWithSize:13]];
     [field setTextColor:[NSColor colorWithCalibratedWhite:153.f/255.f alpha:1.0]];
     
     return field;
@@ -136,14 +150,13 @@ static int minimumPasswordLength = 4;
     [button setButtonType:NSMomentaryChangeButton];
     button.target = self;
     button.action = @selector(toggleAuthenticationMode:);
-    [button setFont:[NSFont fontWithName:@"SourceSansPro-Semibold" size:13]];
     
     NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
     [style setAlignment:NSCenterTextAlignment];
     NSColor *linkColor = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
 
     
-    NSDictionary *attributes = @{NSFontAttributeName : [NSFont fontWithName:@"SourceSansPro-Semibold" size:13],
+    NSDictionary *attributes = @{NSFontAttributeName : [[SPAuthenticationConfiguration sharedInstance] mediumFontWithSize:13],
                                  NSForegroundColorAttributeName : linkColor,
                                  NSParagraphStyleAttributeName : style};
     [button setAttributedTitle: [[NSAttributedString alloc] initWithString:[text uppercaseString] attributes:attributes]];
@@ -187,6 +200,7 @@ static int minimumPasswordLength = 4;
     }
     
     signInButton.title = @"Signing In...";
+    [signInProgress startAnimation:self];
     [signInButton setEnabled:NO];
     [changeToSignUpButton setEnabled:NO];
     [usernameField setEnabled:NO];
@@ -197,6 +211,7 @@ static int minimumPasswordLength = 4;
                                        failure:^(int responseCode, NSString *responseString) {
                                            NSLog(@"Error signing in (%d): %@", responseCode, responseString);
                                            [self showAuthenticationErrorForCode:responseCode];
+                                           [signInProgress stopAnimation:self];
                                            signInButton.title = @"Sign In";
                                            [signInButton setEnabled:YES];
                                            [changeToSignUpButton setEnabled:YES];
@@ -212,6 +227,7 @@ static int minimumPasswordLength = 4;
     }
     
     signUpButton.title = @"Signing Up...";
+    [signUpProgress startAnimation:self];
     [signUpButton setEnabled:NO];
     [changeToSignInButton setEnabled:NO];
     [usernameField setEnabled:NO];
@@ -226,6 +242,7 @@ static int minimumPasswordLength = 4;
                                      NSLog(@"Error signing up (%d): %@", responseCode, responseString);
                                      [self showAuthenticationErrorForCode:responseCode];
                                      signUpButton.title = @"Sign Up";
+                                     [signUpProgress stopAnimation:self];
                                      [signUpButton setEnabled:YES];
                                      [changeToSignInButton setEnabled:YES];
                                      [usernameField setEnabled:YES];

@@ -7,6 +7,7 @@
 //
 
 #import "SPAuthenticationTextField.h"
+#import "SPAuthenticationConfiguration.h"
 
 @interface SPAuthenticationTextField() {
     BOOL hasFocus;
@@ -19,10 +20,16 @@
 - (id)initWithFrame:(NSRect)frame secure:(BOOL)secure {
     self = [super initWithFrame:frame];
     if (self) {
+        // Center the textField vertically
+        int paddingX = 10;
+        int fontSize = 20;
+        CGFloat fieldHeight = [[SPAuthenticationConfiguration sharedInstance] regularFontHeightForSize:fontSize];
+        CGFloat fieldY = (self.frame.size.height - fieldHeight) / 2;
+        CGRect textFrame = NSMakeRect(paddingX, -fieldY, frame.size.width-paddingX*2, frame.size.height);
+
         Class textFieldClass = secure ? [NSSecureTextField class] : [NSTextField class];
-        CGRect textFrame = NSMakeRect(10, -4, frame.size.width-20, frame.size.height);
         _textField = [[textFieldClass alloc] initWithFrame:textFrame];
-        [_textField setFont:[NSFont fontWithName:@"SourceSansPro-Regular" size:20]];
+        [_textField setFont:[[SPAuthenticationConfiguration sharedInstance] regularFontWithSize:fontSize]];
         [_textField setTextColor:[NSColor colorWithCalibratedWhite:0.1 alpha:1.0]];
         [_textField setDrawsBackground:NO];
         [_textField setBezeled:NO];

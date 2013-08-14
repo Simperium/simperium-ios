@@ -7,6 +7,7 @@
 //
 
 #import "SPAuthenticationButtonCell.h"
+#import "SPAuthenticationConfiguration.h"
 
 @implementation SPAuthenticationButtonCell
 
@@ -28,13 +29,18 @@
 
     NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
     [style setAlignment:NSCenterTextAlignment];
-    
-    NSDictionary *attributes = @{NSFontAttributeName : [NSFont fontWithName:@"SourceSansPro-Regular" size:20],
+
+    int fontSize = 20;
+    NSDictionary *attributes = @{NSFontAttributeName : [[SPAuthenticationConfiguration sharedInstance] regularFontWithSize:fontSize],
                                  NSForegroundColorAttributeName : [NSColor whiteColor],
                                  NSParagraphStyleAttributeName: style};
     
     NSAttributedString *buttonTitle = [[NSAttributedString alloc] initWithString:self.title attributes:attributes];
     
+    // Vertically align the text (could be cached)
+    CGFloat fieldHeight = [[SPAuthenticationConfiguration sharedInstance] regularFontHeightForSize:fontSize];
+    CGFloat fieldY = (controlView.frame.size.height - fieldHeight) / 2.5;
+    cellFrame.origin.y = fieldY;
     [buttonTitle drawInRect:cellFrame];
 }
 

@@ -370,12 +370,17 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
             [changedKeys addObject:key];
     }
 
-    NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+    NSDictionary *userInfo;
+    if ([changedKeys count] > 0) {
+        userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
                               bucket.name, @"bucketName",
                               changedKeys, @"keys", nil];
+    }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorWillChangeObjectsNotification object:bucket userInfo:userInfo];
+        if (userInfo) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorWillChangeObjectsNotification object:bucket userInfo:userInfo];
+        }
         
         // The above notification needs to give the main thread a chance to react before we continue
         dispatch_async(bucket.processorQueue, ^{
