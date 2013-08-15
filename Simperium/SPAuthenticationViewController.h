@@ -14,14 +14,16 @@
 
 @class SPAuthenticator;
 @class SPAuthenticationButton;
+@class SPAuthenticationValidator;
 
 @interface SPAuthenticationViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate>
 {   
     SPAuthenticator *authenticator;
+    SPAuthenticationValidator *validator;
 	BOOL creating;
-	UITextField *loginField;
-	UITextField *loginPasswordField;
-	UITextField *loginPasswordConfirmField;
+	UITextField *usernameField;
+	UITextField *passwordField;
+	UITextField *passwordConfirmField;
 	UIActivityIndicatorView *progressView;
 	SPAuthenticationButton *actionButton;
     UIButton *changeButton;

@@ -13,6 +13,7 @@
 #import "JSONKit.h"
 #import "SPAuthenticationButton.h"
 #import "SPAuthenticationConfiguration.h"
+#import "SPAuthenticationValidator.h"
 
 @interface SPAuthenticationViewController()
 
@@ -24,7 +25,6 @@
 
 @implementation SPAuthenticationViewController
 @synthesize authenticator;
-
 
 - (void)setCreating:(BOOL)bCreating {
 	creating = bCreating;
@@ -38,10 +38,11 @@
     
 	[actionButton setTitle: actionTitle forState:UIControlStateNormal];
 	[changeButton setTitle: changeTitle.uppercaseString forState:UIControlStateNormal];
-    
 }
 
 - (void)viewDidLoad {
+    validator = [[SPAuthenticationValidator alloc] init];
+    
     // Should eventually be paramaterized
     UIColor *whiteColor = [UIColor colorWithWhite:0.99 alpha:1.0];
     UIColor *blueColor = [UIColor colorWithRed:66.0 / 255.0 green:137 / 255.0 blue:201 / 255.0 alpha:1.0];
@@ -117,7 +118,7 @@
     
 	self.creating = YES;
     
-    // layout views
+    // Layout views
     [self layoutViewsForInterfaceOrientation:self.interfaceOrientation];
 }
 
@@ -146,9 +147,7 @@
     [self.view sendSubviewToBack:_logoView];
 }
 
-
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    
     [self layoutViewsForInterfaceOrientation:toInterfaceOrientation];
 }
 
@@ -156,14 +155,12 @@
     return !editing;
 }
 
-
 - (NSUInteger)supportedInterfaceOrientations {
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
         return UIInterfaceOrientationMaskPortrait;
     
     return UIInterfaceOrientationMaskAll;
 }
-
 
 - (void)viewWillAppear:(BOOL)animated {
     self.tableView.scrollEnabled = NO;
@@ -183,6 +180,7 @@
 	[[NSNotificationCenter defaultCenter] removeObserver: self name:UIKeyboardWillHideNotification object:nil];	
 	[[NSNotificationCenter defaultCenter] removeObserver: self name:UIKeyboardWillShowNotification object:nil];	
 }
+
 
 #pragma mark Keyboard
 
@@ -251,86 +249,65 @@
 
 
 #pragma mark Validation
-- (BOOL)validateEmailWithAlerts:(BOOL)alert {
-	if (loginField.text.length == 0)
-		return NO;
-    NSString *emailRegEx = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
-	NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegEx];
-	if (loginField.text != nil && [emailTest evaluateWithObject:loginField.text] == NO) {
-		if (alert) {
-            [actionButton showErrorMessage:NSLocalizedString(@"Your email address is not valid.", @"Message displayed when email address is invalid")];
-            
-            [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
-		}
-		return NO;		
-	}	
-	return YES;
-}
-
-- (BOOL)validatePasswordWithAlerts:(BOOL)alert {
-	if (loginPasswordField.text == nil || [loginPasswordField.text length] < 4)
-	{
-		if (alert) {
-			// Bad password
-//			NSString *title = NSLocalizedString(@"Invalid password", @"Title of a dialog displayed when password is invalid");
-//			NSString *message = NSLocalizedString(@"Password must contain at least 4 characters.", @"Message displayed when password is invalid");
-//			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
-//                                                            message:message
-//														   delegate:self
-//                                                  cancelButtonTitle:@"OK"
-//                                                  otherButtonTitles: nil];
-//			[alert show];
-            
-            [actionButton showErrorMessage:NSLocalizedString(@"Password must contain at least 4 characters.", @"Message displayed when password is invalid")];
-            [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
-            
-		}
+- (BOOL)validateUsername {
+	if (![validator validateUsername:usernameField.text]) {
+        [actionButton showErrorMessage:NSLocalizedString(@"Your email address is not valid.", @"Message displayed when email address is invalid")];
+        
+        [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
 		return NO;
 	}
+    
 	return YES;
 }
 
--(BOOL)validateDataWithAlerts:(BOOL)alert
-{
-	if (![self validateEmailWithAlerts:alert])
+- (BOOL)validatePassword {
+	if (![validator validatePasswordSecurity:passwordField.text])	{
+        [actionButton showErrorMessage:NSLocalizedString(@"Password must contain at least 4 characters.", @"Message displayed when password is invalid")];
+        [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
+		return NO;
+	}
+        
+	return YES;
+}
+
+- (BOOL)validateData {
+	if (![self validateUsername])
 		return NO;
 	
-	return [self validatePasswordWithAlerts:alert];
+	return [self validatePassword];
 }
 
--(BOOL)validatePasswordConfirmation
-{
-	if ([loginPasswordField.text compare: loginPasswordConfirmField.text] != NSOrderedSame) {
-		[self earthquake: loginPasswordField];
-		[self earthquake: loginPasswordConfirmField];
+- (BOOL)validatePasswordConfirmation {
+	if ([passwordField.text compare: passwordConfirmField.text] != NSOrderedSame) {
+		[self earthquake: passwordField];
+		[self earthquake: passwordConfirmField];
 		return NO;
 	}
+    
 	return YES;
 }
+
 
 #pragma mark Login
 
--(void)performLogin
-{	
+- (void)performLogin {	
 	actionButton.enabled = NO;
 	changeButton.enabled = NO;
     cancelButton.enabled = NO;
 
-	[loginField resignFirstResponder];
-	[loginPasswordField resignFirstResponder];
+	[usernameField resignFirstResponder];
+	[passwordField resignFirstResponder];
 	[progressView setHidden: NO];
 	[progressView startAnimating];
 	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
 
-    [self.authenticator authenticateWithUsername:loginField.text password:loginPasswordField.text
+    [self.authenticator authenticateWithUsername:usernameField.text password:passwordField.text
                      success:^{
                          [progressView setHidden: YES];
                          [progressView stopAnimating];	
                          [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-                         //[self closeLoginScreenAnimated:YES];
                      }
                      failure: ^(int responseCode, NSString *responseString){
-                         
                          actionButton.enabled = YES;
                          changeButton.enabled = YES;
                          cancelButton.enabled = YES;
@@ -338,13 +315,7 @@
                          [progressView setHidden: YES];
                          [progressView stopAnimating];	
                          [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-                           
-//                         NSString *title = NSLocalizedString(@"Login failed", @"Title of a dialog displayed when login fails");
-//                         NSString *message = NSLocalizedString(@"Could not login with the provided email address and password.", @"Message displayed when login fails");
-//                         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message
-//                                                                          delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
-//                         [alert show];
-                         
+                                                    
                          [actionButton showErrorMessage:NSLocalizedString(@"Could not login with the provided email address and password.", @"Message displayed when login fails")];
                          [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
                          [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
@@ -352,10 +323,9 @@
      ];
 }
 
-#pragma mark Creatio
+#pragma mark Creation
 
--(void)restoreCreationSettings
-{
+- (void)restoreCreationSettings {
 	actionButton.enabled = YES;
 	changeButton.enabled = YES;
     cancelButton.enabled = YES;
@@ -367,43 +337,29 @@
 	CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
 }
 
--(void)performCreation
-{
+- (void)performCreation {
 	actionButton.enabled = NO;
 	changeButton.enabled = NO;
     cancelButton.enabled = NO;
 
-	[loginField resignFirstResponder];
-	[loginPasswordField resignFirstResponder];
-	[loginPasswordConfirmField resignFirstResponder];
-	CFPreferencesSetAppValue(CFSTR("email"), (__bridge CFPropertyListRef)(loginField.text), kCFPreferencesCurrentApplication);
-	CFPreferencesSetAppValue(CFSTR("password"), (__bridge CFPropertyListRef)(loginPasswordField.text), kCFPreferencesCurrentApplication);
+	[usernameField resignFirstResponder];
+	[passwordField resignFirstResponder];
+	[passwordConfirmField resignFirstResponder];
+	CFPreferencesSetAppValue(CFSTR("email"), (__bridge CFPropertyListRef)(usernameField.text), kCFPreferencesCurrentApplication);
+	CFPreferencesSetAppValue(CFSTR("password"), (__bridge CFPropertyListRef)(passwordField.text), kCFPreferencesCurrentApplication);
 	CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
 	
 	// Try to login and sync after entering password?
 	[progressView setHidden: NO];
 	[progressView startAnimating];
-    [authenticator createWithUsername:loginField.text password:loginPasswordField.text
+    [authenticator createWithUsername:usernameField.text password:passwordField.text
                 success:^{	
                     [progressView setHidden: YES];
                     [progressView stopAnimating];
-                    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];	
-                   
-                    //[appDelegate closeLoginScreenAnimated:YES];	
-                   
-#ifdef TESTFLIGHT
-                   [TestFlight passCheckpoint:@"Account created"];
-#endif
+                    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                 }
                 failure:^(int responseCode, NSString *responseString){
-                    [self restoreCreationSettings];
-//                    NSString *title = NSLocalizedString(@"Account creation failed",
-//                                                        @"The title for a dialog that notifies you when account creation fails");
-//                    NSString *message = NSLocalizedString(@"Could not create an account with the provided email address and password.", @"An error message");
-//                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message: message
-//                                                                   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
-//                    [alert show];
-                    
+                    [self restoreCreationSettings];                    
                     [actionButton showErrorMessage:NSLocalizedString(@"Could not create an account with the provided email address and password.", @"An error message")];
                     
                     [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
@@ -413,16 +369,10 @@
      ];
 }
 
--(void)failedDueToNetwork:(ASIHTTPRequest *)request
-{
+- (void)failedDueToNetwork:(ASIHTTPRequest *)request {
 	[self restoreCreationSettings];
-//	NSString *title = NSLocalizedString(@"No connection",
-//										@"The title for a dialog that is displayed when there's a connection problem");
 	NSString *message = NSLocalizedString(@"There's a problem with the connection.  Please try again later.",
 										  @"Details for a dialog that is displayed when there's a connection problem");
-//	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message
-//												   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
-//	[alert show];
     
     [actionButton showErrorMessage:message];
     
@@ -430,79 +380,71 @@
     [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
 }
 
+
 #pragma mark Actions
 
--(void)changeAction:(id)sender
-{
+- (void)changeAction:(id)sender {
 	creating = !creating;
     NSArray *indexPaths = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:2 inSection:0]];
     if (creating)
         [self.tableView insertRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
     else
         [self.tableView deleteRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
-	[loginField becomeFirstResponder];
+	[usernameField becomeFirstResponder];
     
     [self setCreating:creating];
     [self positionTableViewWithDuration:0.3];
     
 }
 
--(void)goAction:(id)sender
-{
-	if ([self validateDataWithAlerts:YES]) {
+- (void)goAction:(id)sender {
+	if ([self validateData]) {
 		if (creating) {
 			if ([self validatePasswordConfirmation])
 				[self performCreation];
-		} else
+		} else {
 			[self performLogin];
+        }
 	}
 }
 
--(void)cancelAction:(id)sender
-{
+- (void)cancelAction:(id)sender {
     [authenticator cancel];
 }
 
 - (void)endEditingAction:(id)sender {
-    
     [self.view endEditing:YES];
-    
 }
+
 
 #pragma mark Text Field
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
-    
     [actionButton clearErrorMessage];
     
     return YES;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)theTextField {
-	if (theTextField == loginField)
-	{
-		if (![self validateEmailWithAlerts:YES]) {
+	if (theTextField == usernameField) {
+		if (![self validateUsername]) {
 			return NO;
 		}
 		
 		// Advance to next field and don't dismiss keyboard
-		[loginPasswordField becomeFirstResponder];
+		[passwordField becomeFirstResponder];
 		return NO;
-	}
-	else if(theTextField == loginPasswordField)
-	{
-		if ([self validatePasswordWithAlerts:YES]) {
+	} else if(theTextField == passwordField) {
+		if ([self validatePassword]) {
 			if (creating) {
 				// Advance to next field and don't dismiss keyboard
-				[loginPasswordConfirmField becomeFirstResponder];
+				[passwordConfirmField becomeFirstResponder];
 				return NO;
 			} else
 				[self performLogin];
 		}
-	}
-	else
-	{
-		if (creating && [self validatePasswordConfirmation] && [self validateDataWithAlerts:YES])
+	} else {
+		if (creating && [self validatePasswordConfirmation] && [self validateData])
 			[self performCreation];
 	}
 	
@@ -511,7 +453,6 @@
 
 
 - (UITextField *)textFieldWithPlaceholder:(NSString *)placeholder secure:(BOOL)secure {
-    
     UITextField *newTextField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, 25)];
     newTextField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     newTextField.clearsOnBeginEditing = NO;
@@ -529,7 +470,6 @@
 }
 
 - (void)positionTextField:(UITextField *)textField inCell:(UITableViewCell *)cell {
-
     CGFloat sidePadding = 10.0;
     CGFloat fieldHeight = textField.font.lineHeight;
     textField.frame = CGRectMake(sidePadding,
@@ -538,15 +478,14 @@
                                  fieldHeight);
 }
 
+
 #pragma mark Table Data Source Methods
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section 
-{
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section  {
     return creating ? 3 : 2;
 }
 
-
-- (UITableViewCell *)tableView:(UITableView *)tView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (UITableViewCell *)tableView:(UITableView *)tView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 	static NSString *EmailCellIdentifier = @"EmailCellIdentifier";
 	static NSString *PasswordCellIdentifier = @"PasswordCellIdentifier";
 	static NSString *ConfirmCellIdentifier = @"ConfirmCellIdentifier";
@@ -559,11 +498,11 @@
 			cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
                                           reuseIdentifier:EmailCellIdentifier];
             
-			loginField = [self textFieldWithPlaceholder:@"email@email.com"
+			usernameField = [self textFieldWithPlaceholder:@"email@email.com"
                                                  secure:NO];
-            loginField.keyboardType = UIKeyboardTypeEmailAddress;
-            [self positionTextField:loginField inCell:cell];
-            [cell.contentView addSubview:loginField];
+            usernameField.keyboardType = UIKeyboardTypeEmailAddress;
+            [self positionTextField:usernameField inCell:cell];
+            [cell.contentView addSubview:usernameField];
 		}
 	} else if (indexPath.row == 1) {
 		cell = [tView dequeueReusableCellWithIdentifier:PasswordCellIdentifier];		
@@ -571,35 +510,36 @@
 		if (cell == nil) {
 			cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:PasswordCellIdentifier];
 			
-			loginPasswordField = [self textFieldWithPlaceholder:NSLocalizedString(@"Password", @"Hint displayed in the password field")
+			passwordField = [self textFieldWithPlaceholder:NSLocalizedString(@"Password", @"Hint displayed in the password field")
                                                          secure:YES];
             
-            [self positionTextField:loginPasswordField inCell:cell];
-            [cell.contentView addSubview:loginPasswordField];
+            [self positionTextField:passwordField inCell:cell];
+            [cell.contentView addSubview:passwordField];
 		}
 		
-		loginPasswordField.returnKeyType = creating ? UIReturnKeyNext : UIReturnKeyGo;
+		passwordField.returnKeyType = creating ? UIReturnKeyNext : UIReturnKeyGo;
 	} else {
 		cell = [tView dequeueReusableCellWithIdentifier:ConfirmCellIdentifier];		
 		// Password
 		if (cell == nil) {
 			cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ConfirmCellIdentifier];
 			
-			loginPasswordConfirmField = [self textFieldWithPlaceholder:NSLocalizedString(@"Confirm", @"Hint displayed in the password confirmation field") secure:YES];
-			loginPasswordConfirmField.returnKeyType = UIReturnKeyGo;
+			passwordConfirmField = [self textFieldWithPlaceholder:NSLocalizedString(@"Confirm", @"Hint displayed in the password confirmation field") secure:YES];
+			passwordConfirmField.returnKeyType = UIReturnKeyGo;
 			
-            [self positionTextField:loginPasswordConfirmField inCell:cell];
-            [cell.contentView addSubview:loginPasswordConfirmField];
+            [self positionTextField:passwordConfirmField inCell:cell];
+            [cell.contentView addSubview:passwordConfirmField];
 		}
 	}
 	cell.selectionStyle = UITableViewCellSelectionStyleNone;
 	cell.backgroundColor = [UIColor colorWithWhite:0.98 alpha:1.0];
+    
 	return cell;
 }
 
+
 #pragma mark Helpers
-- (void)earthquake:(UIView*)itemView
-{
+- (void)earthquake:(UIView*)itemView {
     // From http://stackoverflow.com/a/1827373/1379066
     CGFloat t = 2.0;
 	
@@ -620,10 +560,8 @@
     [UIView commitAnimations];
 }
 
-- (void)earthquakeEnded:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context 
-{
-    if ([finished boolValue]) 
-    {
+- (void)earthquakeEnded:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context {
+    if ([finished boolValue]) {
         UIView* item = (__bridge UIView *)context;
         item.transform = CGAffineTransformIdentity;
     }
