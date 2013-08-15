@@ -1,5 +1,5 @@
 //
-//  SPLoginViewController.m
+//  SPAutehnticationViewController.m
 //  Simperium
 //
 //  Created by Michael Johnston on 24/11/11.
@@ -12,6 +12,7 @@
 #import "ASIFormDataRequest.h"
 #import "JSONKit.h"
 #import "SPAuthenticationButton.h"
+#import "SPAuthenticationConfiguration.h"
 
 @interface SPAuthenticationViewController()
 
@@ -22,7 +23,7 @@
 @end
 
 @implementation SPAuthenticationViewController
-@synthesize authManager;
+@synthesize authenticator;
 
 
 - (void)setCreating:(BOOL)bCreating {
@@ -41,6 +42,7 @@
 }
 
 - (void)viewDidLoad {
+    // Should eventually be paramaterized
     UIColor *whiteColor = [UIColor colorWithWhite:0.99 alpha:1.0];
     UIColor *blueColor = [UIColor colorWithRed:66.0 / 255.0 green:137 / 255.0 blue:201 / 255.0 alpha:1.0];
     UIColor *darkBlueColor = [UIColor colorWithRed:36.0 / 255.0 green:100.0 / 255.0 blue:158.0 / 255.0 alpha:1.0];
@@ -320,7 +322,7 @@
 	[progressView startAnimating];
 	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
 
-    [self.authManager authenticateWithUsername:loginField.text password:loginPasswordField.text
+    [self.authenticator authenticateWithUsername:loginField.text password:loginPasswordField.text
                      success:^{
                          [progressView setHidden: YES];
                          [progressView stopAnimating];	
@@ -381,7 +383,7 @@
 	// Try to login and sync after entering password?
 	[progressView setHidden: NO];
 	[progressView startAnimating];
-    [authManager createWithUsername:loginField.text password:loginPasswordField.text
+    [authenticator createWithUsername:loginField.text password:loginPasswordField.text
                 success:^{	
                     [progressView setHidden: YES];
                     [progressView stopAnimating];
@@ -458,7 +460,7 @@
 
 -(void)cancelAction:(id)sender
 {
-    [authManager cancel];
+    [authenticator cancel];
 }
 
 - (void)endEditingAction:(id)sender {

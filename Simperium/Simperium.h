@@ -44,7 +44,7 @@
     NSString *clientID;   
     id<SimperiumDelegate> __weak delegate;
     SPBinaryManager *binaryManager;
-    SPAuthenticator *authManager;
+    SPAuthenticator *authenticator;
     
 #if TARGET_OS_IPHONE
     Class __weak authenticationViewControllerClass;
@@ -158,7 +158,7 @@
 
 @property (nonatomic, strong) SPBinaryManager *binaryManager;
 
-@property (nonatomic, strong) SPAuthenticator *authManager;
+@property (nonatomic, strong) SPAuthenticator *authenticator;
 
 
 #if TARGET_OS_IPHONE

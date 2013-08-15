@@ -27,7 +27,7 @@ static NSUInteger windowHeight = 540;
 @end
 
 @implementation SPAuthenticationWindowController
-@synthesize authManager;
+@synthesize authenticator;
 @synthesize validator;
 
 - (id)init {
@@ -210,7 +210,7 @@ static NSUInteger windowHeight = 540;
     [changeToSignUpButton setEnabled:NO];
     [usernameField setEnabled:NO];
     [passwordField setEnabled:NO];
-    [self.authManager authenticateWithUsername:[usernameField stringValue] password:[passwordField stringValue]
+    [self.authenticator authenticateWithUsername:[usernameField stringValue] password:[passwordField stringValue]
                                        success:^{
                                        }
                                        failure:^(int responseCode, NSString *responseString) {
@@ -239,7 +239,7 @@ static NSUInteger windowHeight = 540;
     [passwordField setEnabled:NO];
     [confirmField setEnabled:NO];
 
-    [self.authManager createWithUsername:[usernameField stringValue] password:[passwordField stringValue]
+    [self.authenticator createWithUsername:[usernameField stringValue] password:[passwordField stringValue]
                                  success:^{
                                      //[self close];
                                  }
@@ -257,7 +257,7 @@ static NSUInteger windowHeight = 540;
 }
 
 - (IBAction)cancelAction:(id)sender {
-    [authManager cancel];
+    [authenticator cancel];
 }
 
 
@@ -300,7 +300,7 @@ static NSUInteger windowHeight = 540;
 }
 
 - (BOOL)validateConnection {
-    if (!authManager.connected) {
+    if (!authenticator.connected) {
         [self showAuthenticationError:@"You're not connected to the internet"];
         return NO;
     }

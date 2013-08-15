@@ -32,7 +32,7 @@
     CGFloat rowSize;
 }
 
-@property (nonatomic, retain) SPAuthenticator *authManager;
+@property (nonatomic, retain) SPAuthenticator *authenticator;
 @property (nonatomic, retain) SPAuthenticationValidator *validator;
 @property (assign) BOOL optional;
 

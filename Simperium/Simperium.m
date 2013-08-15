@@ -52,7 +52,7 @@
 
 
 #if TARGET_OS_IPHONE
-@property (nonatomic, strong) SPAuthenticationViewController *loginViewController;
+@property (nonatomic, strong) SPAuthenticationViewController *authenticationViewController;
 #else
 @property (nonatomic, strong) SPAuthenticationWindowController *authenticationWindowController;
 #endif
@@ -75,7 +75,7 @@
 @synthesize networkEnabled = _networkEnabled;
 @synthesize authenticationEnabled = _authenticationEnabled;
 @synthesize useWebSockets = _useWebSockets;
-@synthesize authManager;
+@synthesize authenticator;
 @synthesize network;
 @synthesize relationshipResolver;
 @synthesize binaryManager;
@@ -91,7 +91,7 @@
 
 #if TARGET_OS_IPHONE
 @synthesize rootViewController;
-@synthesize loginViewController;
+@synthesize authenticationViewController;
 @synthesize authenticationViewControllerClass;
 #else
 @synthesize window;
@@ -135,8 +135,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		[ASIHTTPRequest setShouldUpdateNetworkActivityIndicator:NO];
         self.buckets = [NSMutableDictionary dictionary];
         
-        SPAuthenticator *manager = [[SPAuthenticator alloc] initWithDelegate:self simperium:self];
-        self.authManager = manager;
+        SPAuthenticator *auth = [[SPAuthenticator alloc] initWithDelegate:self simperium:self];
+        self.authenticator = auth;
         
         SPRelationshipResolver *resolver = [[SPRelationshipResolver alloc] init];
         self.relationshipResolver = resolver;
@@ -568,7 +568,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     // Clear the token and user
-    [authManager reset];
+    [authenticator reset];
     self.user = nil;
 
     // Don't start network managers again; expect app to handle that
@@ -603,14 +603,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)authenticationDidCancel {
     [self stopNetworking];
-    [self.authManager reset];
+    [self.authenticator reset];
     user.authToken = nil;
     [self closeAuthViewControllerAnimated:YES];
 }
 
 -(void)authenticationDidFail {
     [self stopNetworking];
-    [self.authManager reset];
+    [self.authenticator reset];
     user.authToken = nil;
     
     if (self.authenticationEnabled)
@@ -625,7 +625,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     [self stopNetworking];
     
-    return [self.authManager authenticateIfNecessary];    
+    return [self.authenticator authenticateIfNecessary];    
 }
 
 -(void)delayedOpenAuthViewController {
@@ -635,12 +635,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)openAuthViewControllerAnimated:(BOOL)animated
 {
 #if TARGET_OS_IPHONE
-    if (self.loginViewController && self.rootViewController.presentedViewController == self.loginViewController)
+    if (self.authenticationViewController && self.rootViewController.presentedViewController == self.authenticationViewController)
         return;
     
     SPAuthenticationViewController *loginController =  [[SPAuthenticationViewController alloc] init];
-    self.loginViewController = loginController;
-    self.loginViewController.authManager = self.authManager;
+    self.authenticationViewController = loginController;
+    self.authenticationViewController.authenticator = self.authenticator;
     
     if (!self.rootViewController) {
         UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
@@ -648,10 +648,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSAssert(self.rootViewController, @"Simperium error: to use built-in authentication, you must configure a rootViewController when you initialize Simperium, or call setParentViewControllerForAuthentication:. This is how Simperium knows where to present a modal view. See enableManualAuthentication in the documentation if you want to use your own authentication interface.");
     }
     
-    UIViewController *controller = self.loginViewController;
+    UIViewController *controller = self.authenticationViewController;
     UINavigationController *navController = nil;
     if (self.authenticationOptional) {
-        navController = [[UINavigationController alloc] initWithRootViewController: self.loginViewController];
+        navController = [[UINavigationController alloc] initWithRootViewController: self.authenticationViewController];
         controller = navController;
     }
     
@@ -659,7 +659,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #else
     if (!authenticationWindowController) {
         authenticationWindowController = [[self.authenticationWindowControllerClass alloc] init];
-        authenticationWindowController.authManager = self.authManager;
+        authenticationWindowController.authenticator = self.authenticator;
         authenticationWindowController.optional = authenticationOptional;
     }
     
@@ -676,11 +676,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSArray *childViewControllers = self.rootViewController.presentedViewController.childViewControllers;
     
     // Login can either be its own root, or the first child of a nav controller if auth is optional
-    BOOL navLogin = [childViewControllers count] > 0 && [childViewControllers objectAtIndex:0] == self.loginViewController;
-    if ((self.rootViewController.presentedViewController == self.loginViewController && self.loginViewController) || navLogin) {
+    BOOL navLogin = [childViewControllers count] > 0 && [childViewControllers objectAtIndex:0] == self.authenticationViewController;
+    if ((self.rootViewController.presentedViewController == self.authenticationViewController && self.authenticationViewController) || navLogin) {
         [self.rootViewController dismissViewControllerAnimated:animated completion:nil];
 	}
-    self.loginViewController = nil;
+    self.authenticationViewController = nil;
 #else
     [self.window setIsVisible:YES];
     [[authenticationWindowController window] close];

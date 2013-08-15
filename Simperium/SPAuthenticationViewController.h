@@ -1,5 +1,5 @@
 //
-//  SPLoginViewController.h
+//  SPAuthenticationViewController.h
 //  Simperium
 //
 //  Created by Michael Johnston on 24/11/11.
@@ -16,7 +16,7 @@
 
 @interface SPAuthenticationViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate>
 {   
-    SPAuthenticator *authManager;
+    SPAuthenticator *authenticator;
 	BOOL creating;
 	UITextField *loginField;
 	UITextField *loginPasswordField;
@@ -30,7 +30,7 @@
     UIBarButtonItem *cancelButton;
 }
 
-@property (nonatomic, strong) SPAuthenticator *authManager;
+@property (nonatomic, strong) SPAuthenticator *authenticator;
 @property (nonatomic, strong) UITableView* tableView;
 @property (nonatomic, strong) UIImageView *logoView;
 
