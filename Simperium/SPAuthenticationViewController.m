@@ -34,7 +34,8 @@
 		NSLocalizedString(@"Sign In", @"Title of button for logging in (must be short)");
 	NSString *changeTitle = creating ?
 		NSLocalizedString(@"Already have an account? Sign in", @"A short link to access the account login screen") :
-		NSLocalizedString(@"Don't have an account? Sign up", @"A short link to access the account creation screen");
+		NSLocalizedString(@"Don't have an account? Sign up", @"A short link to access the account creation screen");    
+    changeTitle = [changeTitle stringByAppendingString:@" »"];
     
 	[actionButton setTitle: actionTitle forState:UIControlStateNormal];
 	[changeButton setTitle: changeTitle.uppercaseString forState:UIControlStateNormal];
