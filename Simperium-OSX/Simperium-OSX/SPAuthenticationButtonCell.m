@@ -12,8 +12,7 @@
 @implementation SPAuthenticationButtonCell
 
 
-- (void)drawBezelWithFrame:(NSRect)frame inView:(NSView *)controlView
-{
+- (void)drawBezelWithFrame:(NSRect)frame inView:(NSView *)controlView {
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {

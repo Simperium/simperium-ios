@@ -85,11 +85,6 @@
     if ([self hasFirstResponder]) {
         [[NSColor colorWithCalibratedWhite:0.9 alpha:1.0] setFill];
         [betterBounds fill];
-
-        
-        //        [[NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:200.f/255.f alpha:1.0] setStroke];
-//        [betterBounds setLineWidth:4.0];
-//        [betterBounds stroke];
         
         if (!hasFocus) {
             hasFocus = YES;
@@ -109,9 +104,5 @@
         }
     }
 }
-
-//+ (void)load {
-//    [SPAuthenticationTextField setCellClass:[SPAuthenticationTextFieldCell class]];
-//}
 
 @end

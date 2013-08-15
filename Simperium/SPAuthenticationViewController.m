@@ -54,7 +54,8 @@
 	
     // The cancel button will only be visible if there's a navigation controller, which will only happen
     // if authenticationOptional has been set on the Simperium instance.
-    cancelButton = [[UIBarButtonItem alloc] initWithTitle:@"Cancel"
+    NSString *cancelTitle = NSLocalizedString(@"Cancel", @"Cancel button for authentication");
+    cancelButton = [[UIBarButtonItem alloc] initWithTitle:cancelTitle
                                                     style:UIBarButtonItemStyleBordered
                                                    target:self
                                                    action:@selector(cancelAction:)];
