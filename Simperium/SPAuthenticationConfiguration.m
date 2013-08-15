@@ -8,6 +8,12 @@
 
 #import "SPAuthenticationConfiguration.h"
 
+#define kFontTestString @"Testyj"
+
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
+
 @implementation SPAuthenticationConfiguration
 
 static SPAuthenticationConfiguration *gInstance = NULL;
@@ -37,9 +43,9 @@ static SPAuthenticationConfiguration *gInstance = NULL;
 // keeping in code avoids having to include a resource.
 #if TARGET_OS_IPHONE
 
-// TODO: iPhone support
 - (float)regularFontHeightForSize:(float)size {
-    return 0;
+    // Not cached, but could be
+    return [kFontTestString sizeWithFont:[UIFont fontWithName:self.regularFontName size:size]].height;
 }
 
 #else
@@ -53,10 +59,10 @@ static SPAuthenticationConfiguration *gInstance = NULL;
 }
 
 - (float)regularFontHeightForSize:(float)size {
+    // Not cached, but could be
     NSDictionary *attributes = @{NSFontAttributeName : [self regularFontWithSize:size],
                                  NSFontSizeAttribute : [NSString stringWithFormat:@"%f", size]};
-    NSString *testStr = @"Testyj";
-    return [testStr sizeWithAttributes:attributes].height;
+    return [kFontTestString sizeWithAttributes:attributes].height;
 }
 #endif
 

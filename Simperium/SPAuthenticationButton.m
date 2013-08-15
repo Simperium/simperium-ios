@@ -7,6 +7,7 @@
 //
 
 #import "SPAuthenticationButton.h"
+#import "SPAuthenticationConfiguration.h"
 #import <QuartzCore/QuartzCore.h>
 
 @implementation SPAuthenticationButton
@@ -38,7 +39,7 @@
         errorLabel.numberOfLines = 0;
         errorLabel.textAlignment = NSTextAlignmentCenter;
         errorLabel.textColor = [UIColor whiteColor];
-        errorLabel.font = [UIFont fontWithName:@"SourceSansPro-Semibold" size:12.0];
+        errorLabel.font = [UIFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:12.0];
         [errorView addSubview:errorLabel];
         
         errorView.alpha = 0.0;

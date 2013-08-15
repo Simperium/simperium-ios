@@ -12,7 +12,8 @@
 
 #import <UIKit/UIKit.h>
 
-@class SPAuthenticator, SPAuthenticationButton;
+@class SPAuthenticator;
+@class SPAuthenticationButton;
 
 @interface SPAuthenticationViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate>
 {   

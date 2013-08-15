@@ -74,7 +74,7 @@
                      action:@selector(goAction:)
            forControlEvents:UIControlEventTouchUpInside];
     [actionButton setTitleColor:whiteColor forState:UIControlStateNormal];
-    actionButton.titleLabel.font = [UIFont fontWithName:@"SourceSansPro-Regular" size:22.0];
+    actionButton.titleLabel.font = [UIFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:22.0];
     
     [actionButton setBackgroundColor:blueColor];
     [actionButton setBackgroundHighlightColor:darkBlueColor];
@@ -86,7 +86,7 @@
            forControlEvents:UIControlEventTouchUpInside];
     [changeButton setTitleColor:greyColor forState:UIControlStateNormal];
     [changeButton setTitleColor:blueColor forState:UIControlStateHighlighted];
-    changeButton.titleLabel.font = [UIFont fontWithName:@"SourceSansPro-Semibold" size:12.0];
+    changeButton.titleLabel.font = [UIFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:12.0];
     changeButton.frame= CGRectMake(10, 50, self.tableView.frame.size.width-20, 40);
 	changeButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	
@@ -518,7 +518,7 @@
     newTextField.autocorrectionType = UITextAutocorrectionTypeNo;
     newTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     newTextField.secureTextEntry = secure;
-    newTextField.font = [UIFont fontWithName:@"SourceSansPro-Regular" size:22.0];
+    newTextField.font = [UIFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:22.0];
     newTextField.textColor = [UIColor colorWithWhite:0.3 alpha:1.0];
     [newTextField setDelegate:self];
     newTextField.returnKeyType = UIReturnKeyNext;
