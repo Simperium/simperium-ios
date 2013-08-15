@@ -12,6 +12,7 @@
 #import "SPManagedObject.h"
 #import "SPAuthenticator.h"
 #import "SPUser.h"
+#import "SPAuthenticationConfiguration.h"
 
 @class Simperium;
 @class SPBinaryManager;
@@ -19,7 +20,6 @@
 #if TARGET_OS_IPHONE
 @class UIViewController;
 #else
-#import "SPAuthenticationConfiguration.h"
 @class NSWindow;
 #endif
 

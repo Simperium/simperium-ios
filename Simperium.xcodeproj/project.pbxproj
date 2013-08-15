@@ -198,7 +198,7 @@
 		26F4BBD413DCFDC100B8AC56 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */; };
 		464DC336176946ED00E75D05 /* SFHFKeychainUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 464DC334176946ED00E75D05 /* SFHFKeychainUtils.h */; };
 		464DC337176946ED00E75D05 /* SFHFKeychainUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 464DC335176946ED00E75D05 /* SFHFKeychainUtils.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41017BC45F5005F7599 /* SPAuthenticationConfiguration.h */; };
+		466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41017BC45F5005F7599 /* SPAuthenticationConfiguration.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		466EB41517BC45F5005F7599 /* SPAuthenticationConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 466EB41117BC45F5005F7599 /* SPAuthenticationConfiguration.m */; };
 		466EB41617BC45F5005F7599 /* SPAuthenticationValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */; };
 		466EB41717BC45F5005F7599 /* SPAuthenticationValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 466EB41317BC45F5005F7599 /* SPAuthenticationValidator.m */; };
