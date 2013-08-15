@@ -145,8 +145,8 @@
 // Set this if for some reason you want to use multiple Simperium instances (e.g. unit testing).
 @property (copy) NSString *label;
 
-// You can implement your own subclass of SPLoginViewController (iOS) or
-// SPLoginWindowController (OSX) to customize authentication.
+// You can implement your own subclass of SPAuthenticationViewController (iOS) or
+// SPAuthenticationWindowController (OSX) to customize authentication.
 #if TARGET_OS_IPHONE
 @property (nonatomic, weak) Class authenticationViewControllerClass;
 #else

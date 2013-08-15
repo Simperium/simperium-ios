@@ -5,8 +5,8 @@
 //  Created by Michael Johnston on 24/11/11.
 //  Copyright 2011 Simperium. All rights reserved.
 //
-//  You can write a subclass of SPLoginViewController and then set loginViewControllerClass on your
-//  Simperium instance in order to fully customize the behavior of the authentication UI. 
+//  You can write a subclass of SPAuthenticationViewController and then set authenticationViewControllerClass
+//  on your Simperium instance in order to fully customize the behavior of the authentication UI.
 //
 //  Simperium will use the subclass and display your UI automatically.
 
