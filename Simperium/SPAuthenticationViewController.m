@@ -97,7 +97,7 @@
     progressView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
 	[actionButton addSubview:progressView];
     
-    UIImage *logo = [UIImage imageNamed:@"logo_login"];
+    UIImage *logo = [UIImage imageNamed:[SPAuthenticationConfiguration sharedInstance].logoImageName];
     _logoView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, logo.size.width, logo.size.height)];
     _logoView.image = logo;
     _logoView.contentMode = UIViewContentModeCenter;

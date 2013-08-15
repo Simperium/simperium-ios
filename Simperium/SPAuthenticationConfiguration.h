@@ -12,6 +12,7 @@
 
 @property (nonatomic, copy) NSString *regularFontName;
 @property (nonatomic, copy) NSString *mediumFontName;
+@property (nonatomic, copy) NSString *logoImageName;
 
 + (SPAuthenticationConfiguration *)sharedInstance;
 - (float)regularFontHeightForSize:(float)size;

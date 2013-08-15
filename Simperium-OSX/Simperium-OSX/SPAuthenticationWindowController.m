@@ -49,7 +49,7 @@ static NSUInteger windowHeight = 540;
         cancelButton.action = @selector(cancelAction:);
         [authView addSubview:cancelButton];
         
-        NSImage *logoImage = [NSImage imageNamed:@"logo"];
+        NSImage *logoImage = [NSImage imageNamed:[[SPAuthenticationConfiguration sharedInstance] logoImageName]];
         CGFloat logoY = windowHeight-45-logoImage.size.height;
         NSRect logoRect = NSMakeRect(windowWidth/2 - logoImage.size.width/2, logoY, logoImage.size.width, logoImage.size.height);
         logoImageView = [[NSImageView alloc] initWithFrame:logoRect];
