@@ -400,7 +400,7 @@
 
 - (void)goAction:(id)sender {
 	if ([self validateData]) {
-		if (creating) {
+		if (creating && passwordConfirmField.text.length > 0) {
 			if ([self validatePasswordConfirmation])
 				[self performCreation];
 		} else {
