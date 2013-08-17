@@ -34,7 +34,8 @@
 		NSLocalizedString(@"Sign In", @"Title of button for logging in (must be short)");
 	NSString *changeTitle = creating ?
 		NSLocalizedString(@"Already have an account? Sign in", @"A short link to access the account login screen") :
-		NSLocalizedString(@"Don't have an account? Sign up", @"A short link to access the account creation screen");
+		NSLocalizedString(@"Don't have an account? Sign up", @"A short link to access the account creation screen");    
+    changeTitle = [changeTitle stringByAppendingString:@" »"];
     
 	[actionButton setTitle: actionTitle forState:UIControlStateNormal];
 	[changeButton setTitle: changeTitle.uppercaseString forState:UIControlStateNormal];
@@ -97,7 +98,7 @@
     progressView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
 	[actionButton addSubview:progressView];
     
-    UIImage *logo = [UIImage imageNamed:@"logo_login"];
+    UIImage *logo = [UIImage imageNamed:[SPAuthenticationConfiguration sharedInstance].logoImageName];
     _logoView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, logo.size.width, logo.size.height)];
     _logoView.image = logo;
     _logoView.contentMode = UIViewContentModeCenter;
@@ -400,7 +401,7 @@
 
 - (void)goAction:(id)sender {
 	if ([self validateData]) {
-		if (creating) {
+		if (creating && passwordConfirmField.text.length > 0) {
 			if ([self validatePasswordConfirmation])
 				[self performCreation];
 		} else {
