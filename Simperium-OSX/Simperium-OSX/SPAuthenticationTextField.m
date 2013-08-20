@@ -36,6 +36,8 @@
         [_textField setBezeled:NO];
         [_textField setBordered:NO];
         [_textField setFocusRingType:NSFocusRingTypeNone];
+        [[_textField cell] setWraps:NO];
+        [[_textField cell] setScrollable:YES];
         [self addSubview:_textField];
     }
     
