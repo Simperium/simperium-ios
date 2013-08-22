@@ -26,10 +26,11 @@
     
     [outerClip fill];
 
+    int fontSize = 20;
     NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
     [style setAlignment:NSCenterTextAlignment];
+    [style setMaximumLineHeight:fontSize + 8];
 
-    int fontSize = 20;
     NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
     NSDictionary *attributes = @{NSFontAttributeName : font,
                                  NSForegroundColorAttributeName : [NSColor whiteColor],
@@ -39,7 +40,7 @@
     
     // Vertically align the text (could be cached)
     CGFloat fieldHeight = [[SPAuthenticationConfiguration sharedInstance] regularFontHeightForSize:fontSize];
-    CGFloat fieldY = (controlView.frame.size.height - fieldHeight) / 2.5;
+    CGFloat fieldY = (controlView.frame.size.height - fieldHeight) / 2;
     cellFrame.origin.y = fieldY;
     [buttonTitle drawInRect:cellFrame];
 }

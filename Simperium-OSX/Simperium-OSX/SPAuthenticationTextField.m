@@ -25,7 +25,7 @@
         int fontSize = 20;
         CGFloat fieldHeight = [[SPAuthenticationConfiguration sharedInstance] regularFontHeightForSize:fontSize];
         CGFloat fieldY = (self.frame.size.height - fieldHeight) / 2;
-        CGRect textFrame = NSMakeRect(paddingX, -fieldY, frame.size.width-paddingX*2, frame.size.height);
+        CGRect textFrame = NSMakeRect(paddingX, fieldY, frame.size.width-paddingX*2, fieldHeight);
 
         Class textFieldClass = secure ? [NSSecureTextField class] : [NSTextField class];
         _textField = [[textFieldClass alloc] initWithFrame:textFrame];

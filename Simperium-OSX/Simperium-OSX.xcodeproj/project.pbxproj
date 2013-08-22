@@ -411,6 +411,7 @@
 		268EDED2155F06D5006B566F /* Simperium-OSX */ = {
 			isa = PBXGroup;
 			children = (
+				26F1C7001562E76B002172D5 /* Auth */,
 				46EA1AF017569EC7009AC5AA /* SPHttpInterface.h */,
 				46EA1AF117569EC7009AC5AA /* SPHttpInterface.m */,
 				46EA1AEC17569EB4009AC5AA /* SPWebSocketInterface.h */,
@@ -434,7 +435,6 @@
 				2698BE4215C908C70020565F /* SPSchema.h */,
 				2698BE4315C908C70020565F /* SPSchema.m */,
 				2698BE4415C908C70020565F /* SPStorageProvider.h */,
-				26F1C7001562E76B002172D5 /* Auth */,
 				268EDEE1155F089C006B566F /* DDLogDebug.h */,
 				268EDEE2155F089C006B566F /* NSData+Simperium.h */,
 				268EDEE3155F089C006B566F /* NSData+Simperium.m */,

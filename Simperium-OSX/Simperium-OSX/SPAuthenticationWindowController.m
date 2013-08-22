@@ -53,36 +53,36 @@ static NSUInteger windowHeight = 540;
         [authView addSubview:cancelButton];
         
         NSImage *logoImage = [NSImage imageNamed:[[SPAuthenticationConfiguration sharedInstance] logoImageName]];
-        CGFloat logoY = windowHeight-45-logoImage.size.height;
-        NSRect logoRect = NSMakeRect(windowWidth/2 - logoImage.size.width/2, logoY, logoImage.size.width, logoImage.size.height);
+        CGFloat markerY = windowHeight-45-logoImage.size.height;
+        NSRect logoRect = NSMakeRect(windowWidth/2 - logoImage.size.width/2, markerY, logoImage.size.width, logoImage.size.height);
         logoImageView = [[NSImageView alloc] initWithFrame:logoRect];
         logoImageView.image = logoImage;
         [authView addSubview:logoImageView];
         
-        errorField = [self tipFieldWithText:@"" frame:NSMakeRect(paddingX, logoY - 30, width, 20)];
+        errorField = [self tipFieldWithText:@"" frame:NSMakeRect(paddingX, markerY - 30, width, 20)];
         [errorField setTextColor:[NSColor redColor]];
         [authView addSubview:errorField];
 
-        logoY -= 30;
-        usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize, width, 40) secure:NO];
+        markerY -= 30;
+        usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize, width, 40) secure:NO];
         
         [usernameField setPlaceholderString:NSLocalizedString(@"Email Address", @"Placeholder text for login field")];
         usernameField.delegate = self;
         [authView addSubview:usernameField];
         
-        passwordField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize*2, width, 40) secure:YES];
+        passwordField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*2, width, 40) secure:YES];
         [passwordField setPlaceholderString:NSLocalizedString(@"Password", @"Placeholder text for password field")];
         
         passwordField.delegate = self;
         [authView addSubview:passwordField];
 
-        confirmField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize*3, width, 40) secure:YES];
+        confirmField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*3, width, 40) secure:YES];
         [confirmField setPlaceholderString:NSLocalizedString(@"Confirm Password", @"Placeholder text for confirmation field")];
         confirmField.delegate = self;
         [authView addSubview:confirmField];
                 
-        logoY -= 30;
-        signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize*3, width, 40)];
+        markerY -= 30;
+        signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*3, width, 40)];
         signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
         signInButton.target = self;
         signInButton.action = @selector(signInAction:);
@@ -95,7 +95,7 @@ static NSUInteger windowHeight = 540;
         [signInButton addSubview:signInProgress];
 
         
-        signUpButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize*4, width, 40)];
+        signUpButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*4, width, 40)];
         signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
         signUpButton.target = self;
         signUpButton.action = @selector(signUpAction:);
@@ -108,18 +108,17 @@ static NSUInteger windowHeight = 540;
 
         
         NSString *signUpTip = NSLocalizedString(@"Need an account?", @"Link to create an account");
-        changeToSignUpField = [self tipFieldWithText:signUpTip frame:NSMakeRect(paddingX, logoY - rowSize*3 - 35, width, 20)];
+        changeToSignUpField = [self tipFieldWithText:signUpTip frame:NSMakeRect(paddingX, markerY - rowSize*3 - 35, width, 20)];
         [authView addSubview:changeToSignUpField];
 
         NSString *signInTip = NSLocalizedString(@"Already have an account?", @"Link to sign in to an account");
-        changeToSignInField = [self tipFieldWithText:signInTip frame:NSMakeRect(paddingX, logoY - rowSize*4 - 35, width, 20)];
+        changeToSignInField = [self tipFieldWithText:signInTip frame:NSMakeRect(paddingX, markerY - rowSize*4 - 35, width, 20)];
         [authView addSubview:changeToSignInField];
         
-        logoY -= 5;
-        changeToSignUpButton = [self toggleButtonWithText:signUpButton.title frame:NSMakeRect(paddingX, changeToSignUpField.frame.origin.y - changeToSignUpField.frame.size.height - 5, width, 30)];
+        changeToSignUpButton = [self toggleButtonWithText:signUpButton.title frame:NSMakeRect(paddingX, changeToSignUpField.frame.origin.y - changeToSignUpField.frame.size.height - 2, width, 30)];
         [authView addSubview:changeToSignUpButton];
         
-        changeToSignInButton = [self toggleButtonWithText:signInButton.title frame:NSMakeRect(paddingX, changeToSignInField.frame.origin.y - changeToSignInField.frame.size.height - 5, width, 30)];
+        changeToSignInButton = [self toggleButtonWithText:signInButton.title frame:NSMakeRect(paddingX, changeToSignInField.frame.origin.y - changeToSignInField.frame.size.height - 2, width, 30)];
         [authView addSubview:changeToSignInButton];
         
         // Enter sign up mode
