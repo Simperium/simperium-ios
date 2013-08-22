@@ -33,6 +33,11 @@ static SPAuthenticationConfiguration *gInstance = NULL;
     if ((self = [super init])) {
         _regularFontName = @"HelveticaNeue";
         _mediumFontName = @"HelveticaNeue-Medium";
+        
+#if TARGET_OS_IPHONE
+#else
+        self.controlColor = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
+#endif
     }
     
     return self;

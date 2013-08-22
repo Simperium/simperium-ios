@@ -161,8 +161,7 @@ static NSUInteger windowHeight = 540;
     
     NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
     [style setAlignment:NSCenterTextAlignment];
-    NSColor *linkColor = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
-
+    NSColor *linkColor = [SPAuthenticationConfiguration sharedInstance].controlColor;
     
     NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:13];
     NSDictionary *attributes = @{NSFontAttributeName : font,

@@ -14,6 +14,11 @@
 @property (nonatomic, copy) NSString *mediumFontName;
 @property (nonatomic, copy) NSString *logoImageName;
 
+#if TARGET_OS_IPHONE
+#else
+@property (nonatomic, retain) NSColor *controlColor;
+#endif
+
 + (SPAuthenticationConfiguration *)sharedInstance;
 - (float)regularFontHeightForSize:(float)size;
 

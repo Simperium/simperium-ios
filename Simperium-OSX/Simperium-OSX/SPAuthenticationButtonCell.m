@@ -19,11 +19,12 @@
     NSBezierPath *outerClip = [NSBezierPath bezierPathWithRoundedRect:cellFrame xRadius:12.f yRadius:12.f];
     [outerClip addClip];
     
-    if (![self isHighlighted])
-        [[NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0] setFill];
-    else
-        [[NSColor colorWithCalibratedRed:55.f/255.f green:117.f/255.f blue:179.f/255.f alpha:1.0] setFill];
+    NSColor *buttonColor = [SPAuthenticationConfiguration sharedInstance].controlColor;
+    if ([self isHighlighted]) {
+        buttonColor = [buttonColor blendedColorWithFraction:0.1 ofColor:[NSColor blackColor]];
+    }
     
+    [buttonColor setFill];
     [outerClip fill];
 
     int fontSize = 20;
