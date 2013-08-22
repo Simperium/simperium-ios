@@ -638,7 +638,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (self.authenticationViewController && self.rootViewController.presentedViewController == self.authenticationViewController)
         return;
     
-    SPAuthenticationViewController *loginController =  [[SPAuthenticationViewController alloc] init];
+    SPAuthenticationViewController *loginController =  [[self.authenticationViewControllerClass alloc] init];
     self.authenticationViewController = loginController;
     self.authenticationViewController.authenticator = self.authenticator;
     
