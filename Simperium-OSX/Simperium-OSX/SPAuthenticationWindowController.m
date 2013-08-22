@@ -421,7 +421,8 @@ static NSUInteger windowHeight = 540;
 
 - (void)controlTextDidChange:(NSNotification *)obj {
     // Intercept return and invoke actions
-    if ([[NSApp currentEvent].charactersIgnoringModifiers isEqualToString:@"\r"]) {
+    NSEvent *currentEvent = [NSApp currentEvent];
+    if (currentEvent.type == NSKeyDown && [currentEvent.charactersIgnoringModifiers isEqualToString:@"\r"]) {
         if (signingIn && [[obj object] isEqual:passwordField.textField]) {
             [self signInAction:nil];
         } else if (!signingIn && [[obj object] isEqual:confirmField.textField]) {
