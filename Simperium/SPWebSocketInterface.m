@@ -23,6 +23,14 @@
 #define INDEX_QUEUE_SIZE 5
 #define HEARTBEAT 30
 
+#if TARGET_OS_IPHONE
+#define LIBRARY_ID @"ios"
+#else
+#define LIBRARY_ID @"osx"
+#endif
+
+#define LIBRARY_VERSION @0
+
 NSString * const COM_AUTH = @"auth";
 NSString * const COM_INDEX = @"i";
 NSString * const COM_CHANGE = @"c";
@@ -113,13 +121,15 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     if (!remoteBucketName || remoteBucketName.length == 0)
         remoteBucketName = channel.name;
     
-    NSDictionary *jsonData = [NSDictionary dictionaryWithObjectsAndKeys:
-                              [NSNumber numberWithInt:1], @"api",
-                              simperium.clientID, @"clientid",
-                              simperium.appID, @"app_id",
-                              simperium.user.authToken, @"token",
-                              remoteBucketName, @"name",
-                              nil];
+    NSDictionary *jsonData = @{
+                               @"api" : @1,
+                               @"clientid" : simperium.clientID,
+                               @"app_id" : simperium.appID,
+                               @"token" : simperium.user.authToken,
+                               @"name" : remoteBucketName,
+                               @"library" : LIBRARY_ID,
+                               @"version" : LIBRARY_VERSION
+                               };
     
     DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
     NSString *message = [NSString stringWithFormat:@"%d:init:%@", channel.number, [jsonData JSONString]];
