@@ -88,6 +88,7 @@ NSString * const SPMemberDefinitionInverseKeyNameKey = @"inverseName";
 - (NSDictionary *)policy
 {
     // TODO: implement so that tranformables do replace by default otherwise they'll just stringdiff
+    return nil;
 }
 
 -(id)initFromDictionary:(NSDictionary *)dict
@@ -166,6 +167,9 @@ NSString * const SPMemberDefinitionInverseKeyNameKey = @"inverseName";
                 id JSONValue = [self.itemMember JSONValueForMemberValue:item context:context];
                 if (JSONValue) [items addObject:JSONValue];
             }
+            [items sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+                return [[obj1 valueForKey:@"simperiumKey"] compare:[obj2 valueForKey:@"simperiumKey"]];
+            }];
             return (items.count ? items : nil);
         }
         case SPMemberTypeTransformable:

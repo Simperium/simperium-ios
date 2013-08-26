@@ -55,8 +55,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return diff;
 }
 
+- (NSDictionary *)diff:(id<SPDiffable>)object toDictionary:(NSDictionary *)dict
+{
+    return [self diff:object dictionary:dict toDictionary:YES];
+}
+
+- (NSDictionary *)diff:(id<SPDiffable>)object fromDictionary:(NSDictionary *)dict
+{
+    return [self diff:object dictionary:dict toDictionary:NO];
+}
+
 // Construct a diff against a particular dictionary of data, such as a ghost dictionary
-- (NSDictionary *)diff:(id<SPDiffable>)object withDictionary:(NSDictionary *)dict {
+- (NSDictionary *)diff:(id<SPDiffable>)object dictionary:(NSDictionary *)dict toDictionary:(BOOL)toDictionary {
 	// changes contains the operations for every key that is different
 	NSMutableDictionary *changes = [NSMutableDictionary dictionaryWithCapacity:3];
 	
@@ -68,8 +78,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     {
         id dictionaryJSONValue = dict[member.keyName];
         id objectJSONValue = [member JSONValueForMemberOnParentObject:object];
-        
-        SPDiff *diff = SPDiffObjects(dictionaryJSONValue, objectJSONValue, member.policy);
+        SPDiff *diff = (toDictionary) ? SPDiffObjects(objectJSONValue, dictionaryJSONValue, member.policy) : SPDiffObjects(dictionaryJSONValue, objectJSONValue, member.policy);
 
 		if (diff == nil || [diff count] == 0)
 			continue;
@@ -150,15 +159,19 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			DDLogError(@"Simperium error: transform diff for a ghost member (ghost %@, memberData %@) that doesn't exist (%@): %@", oldGhost, oldGhost.memberData, key, [memberDiff description]);
             continue;
         }
-
-
-        SPDiff *transformedMemberDiff = SPTransformDiff(ghostValue, memberDiff, oldMemberDiff, member.policy);
-		if (transformedMemberDiff)
-			[newDiff setObject:transformedMemberDiff forKey:key];
-		else {
-			// If there was no transformation required, just use the original change
-			[newDiff setObject:[memberDiff copy] forKey:key];
+        
+        if (!oldMemberDiff) {
+            newDiff[key] = [memberDiff copy];
+            continue;
         }
+        
+        SPDiff *transformedMemberDiff = SPTransformDiff(ghostValue, memberDiff, oldMemberDiff, member.policy);
+		if (transformedMemberDiff) {
+			newDiff[key] = transformedMemberDiff;
+        } else {
+            newDiff[key] = memberDiff;
+        }
+
 	}
 	
 	return newDiff;

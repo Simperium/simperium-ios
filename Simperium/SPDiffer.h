@@ -22,7 +22,8 @@
 
 -(id)initWithSchema:(SPSchema *)schema;
 -(NSMutableDictionary *)diffForAddition:(id<SPDiffable>)object;
--(NSDictionary *)diff:(id<SPDiffable>)object withDictionary:(NSDictionary *)dict;
+-(NSDictionary *)diff:(id<SPDiffable>)object fromDictionary:(NSDictionary *)dict;
+-(NSDictionary *)diff:(id<SPDiffable>)object toDictionary:(NSDictionary *)dict;
 -(void)applyDiff:(NSDictionary *)diff to:(id<SPDiffable>)object;
 -(void)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object;
 -(NSDictionary *)transform:(id<SPDiffable>)object diff:(NSDictionary *)diff oldDiff:(NSDictionary *)oldDiff oldGhost:(SPGhost *)oldGhost;

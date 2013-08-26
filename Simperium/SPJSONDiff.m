@@ -66,7 +66,7 @@ id SPApplyDiff(id object, SPDiff *diff)
     if ([op isEqual:OP_LIST_DMP] && [object isKindOfClass:[NSArray class]] && [value isKindOfClass:[NSString class]]) return [(NSArray *)object sp_arrayByApplyingArrayDMPDiff:value];
     if ([op isEqual:OP_INTEGER] && [object isKindOfClass:[NSNumber class]] && [value isKindOfClass:[NSNumber class]]) return [(NSNumber *)object sp_numberByApplyingNumberDiff:value];
     DDLogCError(@"Unable to apply diff (%@) to object (%@)",diff, object);
-    return value;
+    return object;
 }
 
 SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *policy)
@@ -88,9 +88,7 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
         if ([aop_op isEqual:OP_INTEGER]) return @{ OP_OP: OP_INTEGER, OP_VALUE: [(NSNumber *)source sp_numberDiffByTransformingNumberDiff:aop[OP_VALUE] ontoNumberDiff:bop[OP_VALUE]] };
     }
 
-    id object = SPApplyDiff(source, aop);
-    if (object) return @{ OP_OP: OP_REPLACE, OP_VALUE: object};
-    return @{ OP_OP: OP_OBJECT_REMOVE};
+    return nil;
 }
 
 #pragma mark - Object Diff

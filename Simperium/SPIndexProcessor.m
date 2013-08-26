@@ -146,7 +146,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                 // sync systems (e.g. Simplenote GAE), and in particular, cases where there are local, unsynced changes that
                 // should be preserved.
                 if (firstSync) {
-                    NSDictionary *diff = [bucket.differ diff:object withDictionary:data];
+                    NSDictionary *diff = [bucket.differ diff:object fromDictionary:data];
                     if ([diff count] > 0 && [object respondsToSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
                         DDLogVerbose(@"Simperium object %@ has changes: %@", [object simperiumKey], diff);
                         if ([object performSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
