@@ -474,10 +474,12 @@
 - (void)positionTextField:(UITextField *)textField inCell:(UITableViewCell *)cell {
     CGFloat sidePadding = 10.0;
     CGFloat fieldHeight = textField.font.lineHeight;
+    
     textField.frame = CGRectMake(sidePadding,
-                                 (cell.bounds.size.height - fieldHeight) / 2.0,
+                                 floorf((cell.bounds.size.height - fieldHeight) / 2.0),
                                  cell.bounds.size.width - 2 * sidePadding,
                                  fieldHeight);
+    
 }
 
 
