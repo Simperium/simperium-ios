@@ -110,11 +110,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     [channel sendObjectChanges:object];
 }
 
-- (void)authenticationDidFail {
-    DDLogWarn(@"Simperium authentication failed for token %@", simperium.user.authToken);
-    [[NSNotificationCenter defaultCenter] postNotificationName:WebSocketAuthenticationDidFailNotification object:self];
-}
-
 - (void)authenticateChannel:(SPWebSocketChannel *)channel {
     //    NSString *message = @"1:command:parameters";
     NSString *remoteBucketName = [self.bucketNameOverrides objectForKey:channel.name];
@@ -199,12 +194,12 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 - (void)sendHeartbeat:(NSTimer *)timer {
     if (self.webSocket.readyState == SR_OPEN) {
         // Send it (will also schedule another one)
+        //NSLog(@"Simperium sending heartbeat");
         [self send:@"h:1"];
     }
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
-    //NSLog(@"Websocket Connected");
     open = YES;
     
     // Start all channels
@@ -262,13 +257,24 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     NSString *data = [commandStr substringFromIndex:range.location+range.length];
     
     if ([command isEqualToString:COM_AUTH]) {
-        // todo: handle "expired"
-        channel.started = YES;
-        BOOL bFirstStart = bucket.lastChangeSignature == nil;
-        if (bFirstStart) {
-            [channel requestLatestVersionsForBucket:bucket];
-        } else
-            [channel startProcessingChangesForBucket:bucket];
+        if ([data isEqualToString:@"expired"]) {
+            // Ignore this; legacy
+        } else if ([data isEqualToString:simperium.user.email]) {
+            channel.started = YES;
+            BOOL bFirstStart = bucket.lastChangeSignature == nil;
+            if (bFirstStart) {
+                [channel requestLatestVersionsForBucket:bucket];
+            } else
+                [channel startProcessingChangesForBucket:bucket];
+        } else {
+            DDLogWarn(@"Simperium received unexpected auth response: %@", data);
+            NSDictionary *authPayload = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+            NSNumber *code = authPayload[@"code"];
+            if ([code isEqualToNumber:@401]) {
+                // Let Simperium proper deal with it
+                [[NSNotificationCenter defaultCenter] postNotificationName:SPAuthenticationDidFail object:self];
+            }
+        }
     } else if ([command isEqualToString:COM_INDEX]) {
         [channel handleIndexResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_CHANGE]) {

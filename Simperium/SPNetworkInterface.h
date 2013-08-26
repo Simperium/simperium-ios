@@ -22,3 +22,4 @@
 -(void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
 @end
 
+extern NSString * const SPAuthenticationDidFail;

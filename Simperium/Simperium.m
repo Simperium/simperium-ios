@@ -147,7 +147,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         authenticationWindowControllerClass = [SPAuthenticationWindowController class];
 #endif
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(authenticationDidFail)
-                                                     name:@"AuthenticationDidFailNotification" object:nil];
+                                                     name:SPAuthenticationDidFail object:nil];
     }
 
 	return self;

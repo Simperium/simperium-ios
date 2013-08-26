@@ -205,6 +205,7 @@
 		466EB41A17BC4890005F7599 /* SPAuthenticationButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41817BC4890005F7599 /* SPAuthenticationButton.h */; };
 		466EB41B17BC4890005F7599 /* SPAuthenticationButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 466EB41917BC4890005F7599 /* SPAuthenticationButton.m */; };
 		466EB41D17BC49DB005F7599 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 466EB41C17BC49DB005F7599 /* QuartzCore.framework */; };
+		466FFEA417CBF53200399652 /* SPNetworkInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 466FFEA317CBF53200399652 /* SPNetworkInterface.m */; };
 		46A16A8117289FE2003AED55 /* NSString+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 46A16A7F17289FE2003AED55 /* NSString+Simperium.h */; };
 		46A16A8217289FE2003AED55 /* NSString+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 46A16A8017289FE2003AED55 /* NSString+Simperium.m */; };
 		46DD15CA179A6F4B0093678C /* SPMemberJSONList.h in Headers */ = {isa = PBXBuildFile; fileRef = 46DD15C8179A6F4B0093678C /* SPMemberJSONList.h */; };
@@ -424,6 +425,7 @@
 		466EB41817BC4890005F7599 /* SPAuthenticationButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationButton.h; sourceTree = "<group>"; };
 		466EB41917BC4890005F7599 /* SPAuthenticationButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAuthenticationButton.m; sourceTree = "<group>"; };
 		466EB41C17BC49DB005F7599 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		466FFEA317CBF53200399652 /* SPNetworkInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNetworkInterface.m; sourceTree = "<group>"; };
 		46A16A7F17289FE2003AED55 /* NSString+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Simperium.h"; sourceTree = "<group>"; };
 		46A16A8017289FE2003AED55 /* NSString+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Simperium.m"; sourceTree = "<group>"; };
 		46DD15C8179A6F4B0093678C /* SPMemberJSONList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberJSONList.h; sourceTree = "<group>"; };
@@ -896,6 +898,7 @@
 		46B7880216B709AD001AA908 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
+				466FFEA317CBF53200399652 /* SPNetworkInterface.m */,
 				2622FD2B147F32A500C8EEB4 /* SPNetworkInterface.h */,
 				264CD936135DFE6D00C51BAD /* SPHttpInterface.h */,
 				264CD937135DFE6D00C51BAD /* SPHttpInterface.m */,
@@ -1214,6 +1217,7 @@
 				466EB41517BC45F5005F7599 /* SPAuthenticationConfiguration.m in Sources */,
 				466EB41717BC45F5005F7599 /* SPAuthenticationValidator.m in Sources */,
 				466EB41B17BC4890005F7599 /* SPAuthenticationButton.m in Sources */,
+				466FFEA417CBF53200399652 /* SPNetworkInterface.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
