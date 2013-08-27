@@ -438,7 +438,7 @@ static char const * const BucketListKey = "bucketList";
     [updatedObjects addObjectsFromArray:[self updatedBucketObjectsFromEmbeddedObjects:insertedObjects]];
     [updatedObjects addObjectsFromArray:[self updatedBucketObjectsFromEmbeddedObjects:updatedObjects]];
     [updatedObjects addObjectsFromArray:[self updatedBucketObjectsFromEmbeddedObjects:deletedObjects]];
-
+    [updatedObjects minusSet:deletedObjects];
     // Sync all changes
     [delegate storage:self updatedObjects:updatedObjects insertedObjects:insertedObjects deletedObjects:deletedObjects];
 }
