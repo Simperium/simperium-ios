@@ -216,6 +216,8 @@
 		46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */; };
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
+		E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */; };
+		E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -442,6 +444,8 @@
 		46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumAuxiliaryTests.m; sourceTree = "<group>"; };
 		46EE3D55171D0C8E00E6F0A5 /* SimperiumErrorTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumErrorTests.h; sourceTree = "<group>"; };
 		46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumErrorTests.m; sourceTree = "<group>"; };
+		E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTOSViewController.h; sourceTree = "<group>"; };
+		E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTOSViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -891,6 +895,8 @@
 				466EB41117BC45F5005F7599 /* SPAuthenticationConfiguration.m */,
 				466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */,
 				466EB41317BC45F5005F7599 /* SPAuthenticationValidator.m */,
+				E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */,
+				E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */,
 			);
 			name = Authentication;
 			sourceTree = "<group>";
@@ -992,6 +998,7 @@
 				2618988515D2EC130013CBC9 /* SPWebSocketInterface.h in Headers */,
 				264AE51A15D45E2A00E5E04E /* SPWebSocketChannel.h in Headers */,
 				26B733F015E585630081CF4A /* SPRelationshipResolver.h in Headers */,
+				E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */,
 				26653CFB15FE5DEA00461A28 /* SPReachability.h in Headers */,
 				46A16A8117289FE2003AED55 /* NSString+Simperium.h in Headers */,
 				464DC336176946ED00E75D05 /* SFHFKeychainUtils.h in Headers */,
@@ -1157,6 +1164,7 @@
 				264CD947135DFE6D00C51BAD /* SPHttpInterface.m in Sources */,
 				264CD981135DFE7E00C51BAD /* ASIAuthenticationDialog.m in Sources */,
 				264CD984135DFE7E00C51BAD /* ASIDataCompressor.m in Sources */,
+				E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */,
 				264CD986135DFE7E00C51BAD /* ASIDataDecompressor.m in Sources */,
 				264CD988135DFE7E00C51BAD /* ASIDownloadCache.m in Sources */,
 				264CD98A135DFE7E00C51BAD /* ASIFormDataRequest.m in Sources */,

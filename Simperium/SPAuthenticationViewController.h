@@ -26,6 +26,7 @@
 	UITextField *passwordConfirmField;
 	UIActivityIndicatorView *progressView;
 	SPAuthenticationButton *actionButton;
+    UIButton *termsButton;
     UIButton *changeButton;
 
     BOOL editing;

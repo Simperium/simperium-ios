@@ -14,6 +14,7 @@
 #import "SPAuthenticationButton.h"
 #import "SPAuthenticationConfiguration.h"
 #import "SPAuthenticationValidator.h"
+#import "SPTOSViewController.h"
 
 @interface SPAuthenticationViewController()
 
@@ -39,6 +40,7 @@
     
 	[actionButton setTitle: actionTitle forState:UIControlStateNormal];
 	[changeButton setTitle: changeTitle.uppercaseString forState:UIControlStateNormal];
+    termsButton.hidden = !bCreating;
 }
 
 - (void)viewDidLoad {
@@ -72,7 +74,25 @@
     self.tableView.clipsToBounds = NO;
     [self.view addSubview:self.tableView];
 	
-	actionButton = [[SPAuthenticationButton alloc] initWithFrame:CGRectMake(0, 0.0, self.view.frame.size.width, 44)];
+    if (self.view.bounds.size.height <= 480.0) {
+        self.tableView.rowHeight = 38.0;
+    }
+    
+    termsButton = [UIButton buttonWithType:UIButtonTypeCustom];
+	[termsButton addTarget:self
+                    action:@selector(termsAction:)
+           forControlEvents:UIControlEventTouchUpInside];
+    termsButton.titleEdgeInsets = UIEdgeInsetsMake(3, 0, 0, 0);
+    termsButton.titleLabel.font = [UIFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:10.0];
+    termsButton.frame= CGRectMake(10.0, 0.0, self.tableView.frame.size.width-20.0, 24.0);
+	termsButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    NSMutableAttributedString *termsTitle = [[NSMutableAttributedString alloc] initWithString:[@"By signing up, you agree to our Terms of Service »" uppercaseString] attributes:@{NSForegroundColorAttributeName: [greyColor colorWithAlphaComponent:0.4]}];
+    [termsTitle setAttributes:@{NSUnderlineStyleAttributeName: [NSNumber numberWithInt:NSUnderlineStyleSingle], NSForegroundColorAttributeName : [greyColor colorWithAlphaComponent:0.4]}
+                        range:NSMakeRange(32, 16)];
+    [termsButton setAttributedTitle:termsTitle
+                           forState:UIControlStateNormal];;
+    
+	actionButton = [[SPAuthenticationButton alloc] initWithFrame:CGRectMake(0, 30.0, self.view.frame.size.width, 44)];
 	[actionButton addTarget:self
                      action:@selector(goAction:)
            forControlEvents:UIControlEventTouchUpInside];
@@ -90,7 +110,7 @@
     [changeButton setTitleColor:greyColor forState:UIControlStateNormal];
     [changeButton setTitleColor:blueColor forState:UIControlStateHighlighted];
     changeButton.titleLabel.font = [UIFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:12.0];
-    changeButton.frame= CGRectMake(10, 50, self.tableView.frame.size.width-20, 40);
+    changeButton.frame= CGRectMake(10.0, 80.0, self.tableView.frame.size.width-20.0, 40.0);
 	changeButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	
 	progressView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
@@ -107,6 +127,7 @@
 	UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, changeButton.frame.size.height + changeButton.frame.origin.y)];
 	footerView.contentMode = UIViewContentModeTopLeft;
 	[footerView setUserInteractionEnabled:YES];
+    [footerView addSubview:termsButton];
 	[footerView addSubview:actionButton];
 	[footerView addSubview:changeButton];
 	footerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -385,6 +406,22 @@
 
 #pragma mark Actions
 
+- (void)termsAction:(id)sender {
+ 
+    SPTOSViewController *vc = [[SPTOSViewController alloc] init];
+    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:vc];
+    
+    UIViewController *presentingController;
+    if (self.navigationController)
+        presentingController = self.navigationController;
+    else
+        presentingController = self;
+    
+    [presentingController presentViewController:navController
+                                       animated:YES
+                                     completion:nil];
+}
+
 - (void)changeAction:(id)sender {
 	creating = !creating;
     NSArray *indexPaths = [NSArray arrayWithObject:[NSIndexPath indexPathForRow:2 inSection:0]];
@@ -484,6 +521,11 @@
 
 
 #pragma mark Table Data Source Methods
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    
+    return 4.0;
+}
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section  {
     return creating ? 3 : 2;
