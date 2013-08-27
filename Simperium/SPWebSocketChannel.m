@@ -378,6 +378,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // This processing should be moved off the main thread (or fixed at the protocol level)
     NSDictionary *versionDict = [versionString objectFromJSONString];
     NSDictionary *dataDict = [versionDict objectForKey:@"data"];
+    
+    if ([dataDict class] == [NSNull class]) {
+        // No data
+        DDLogError(@"Simperium error: version had no data (%@): %@", bucket.name, key);
+        objectVersionsPending--;
+        return;
+    }
+    
     versionString = [dataDict JSONString];
     
     // If there was an error previously, unflag it
