@@ -510,7 +510,7 @@
 
 - (void)positionTextField:(UITextField *)textField inCell:(UITableViewCell *)cell {
     CGFloat sidePadding = 10.0;
-    CGFloat fieldHeight = textField.font.lineHeight;
+    CGFloat fieldHeight = ceilf(textField.font.lineHeight);
     
     textField.frame = CGRectMake(sidePadding,
                                  floorf((cell.bounds.size.height - fieldHeight) / 2.0),
