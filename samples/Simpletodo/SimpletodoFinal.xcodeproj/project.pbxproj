@@ -29,7 +29,6 @@
 		26CEF5FC14EC419100BEC0BF /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5FB14EC419100BEC0BF /* SystemConfiguration.framework */; };
 		26CEF5FE14EC41AD00BEC0BF /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5FD14EC41AD00BEC0BF /* libz.dylib */; };
 		46B787EA16B70429001AA908 /* libSimperium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 46B787E716B70402001AA908 /* libSimperium.a */; };
-		46CC658916B09A6800D5DC22 /* LoginView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 46CC658816B09A6800D5DC22 /* LoginView.xib */; };
 		46CC658F16B09C7700D5DC22 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */; };
 /* End PBXBuildFile section */
 
@@ -87,7 +86,6 @@
 		26CEF5FB14EC419100BEC0BF /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		26CEF5FD14EC41AD00BEC0BF /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		46B787DD16B70402001AA908 /* Simperium.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Simperium.xcodeproj; path = ../../Simperium.xcodeproj; sourceTree = "<group>"; };
-		46CC658816B09A6800D5DC22 /* LoginView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = LoginView.xib; path = ../../Resources/LoginView.xib; sourceTree = "<group>"; };
 		46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -117,8 +115,6 @@
 			isa = PBXGroup;
 			children = (
 				46B787DD16B70402001AA908 /* Simperium.xcodeproj */,
-				46CC658816B09A6800D5DC22 /* LoginView.xib */,
-				266F06E415E60C3F00308C5D /* libicucore.dylib */,
 				26C93A7214F86D1800BE99F5 /* icon.png */,
 				26C93A7314F86D1800BE99F5 /* icon@2x.png */,
 				46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */,
@@ -141,6 +137,7 @@
 			children = (
 				266F06E115E60C3700308C5D /* Security.framework */,
 				26CEF5FD14EC41AD00BEC0BF /* libz.dylib */,
+				266F06E415E60C3F00308C5D /* libicucore.dylib */,
 				26CEF5FB14EC419100BEC0BF /* SystemConfiguration.framework */,
 				26CEF5F914EC418A00BEC0BF /* MobileCoreServices.framework */,
 				26CEF5F714EC418300BEC0BF /* CFNetwork.framework */,
@@ -271,7 +268,6 @@
 				26156AE414EC3D4C003332BA /* MainStoryboard_iPad.storyboard in Resources */,
 				26C93A7514F86D1800BE99F5 /* icon.png in Resources */,
 				26C93A7614F86D1800BE99F5 /* icon@2x.png in Resources */,
-				46CC658916B09A6800D5DC22 /* LoginView.xib in Resources */,
 				46CC658F16B09C7700D5DC22 /* Default-568h@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
