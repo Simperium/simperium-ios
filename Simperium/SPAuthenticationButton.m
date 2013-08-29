@@ -10,14 +10,23 @@
 #import "SPAuthenticationConfiguration.h"
 #import <QuartzCore/QuartzCore.h>
 
+
+
+static NSString* const SPAuthenticationHighlightedKey = @"highlighted";
+
+
 @implementation SPAuthenticationButton
 @synthesize backgroundHighlightColor;
+
+- (void)dealloc {
+	[self removeObserver:self forKeyPath:SPAuthenticationHighlightedKey];
+}
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
         [self addObserver:self
-               forKeyPath:@"highlighted"
+               forKeyPath:SPAuthenticationHighlightedKey
                   options:NSKeyValueObservingOptionNew
                   context:NULL];
         
