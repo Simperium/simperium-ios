@@ -135,8 +135,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)delayedAuthenticationDidFinish {
-    if (self.succeededBlock)
+    if (self.succeededBlock) {
         self.succeededBlock();
+		
+		// Cleanup!
+		self.failedBlock = nil;
+		self.succeededBlock = nil;
+	}
     
     DDLogInfo(@"Simperium authentication success!");
 
@@ -169,8 +174,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)authDidFail:(ASIHTTPRequest *)request {
-    if (self.failedBlock)
+    if (self.failedBlock) {
         self.failedBlock([request responseStatusCode], [request responseString]);
+		
+		// Cleanup!
+		self.failedBlock = nil;
+		self.succeededBlock = nil;
+	}
     
     DDLogError(@"Simperium authentication error (%d): %@",[request responseStatusCode], [request responseString]);
     
