@@ -13,12 +13,16 @@
 @class SPManagedObject;
 @class SPMember;
 
+extern NSString * const SPSchemaDefinitionMembersKey; // Should be the key to an array of SPMemeberDefinitionDictionaries
+
 @interface SPSchema : NSObject {
     NSString *bucketName;
     NSMutableDictionary *members; // ALL members
     NSMutableArray *binaryMembers; // JUST binary members (for optimization)
     BOOL dynamic;
 }
+
+
 
 @property (nonatomic, copy) NSString *bucketName;
 @property (nonatomic, strong) NSMutableDictionary *members;
@@ -27,7 +31,6 @@
 
 -(id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition;
 -(SPMember *)memberForKey:(NSString *)memberName;
--(void)setDefaults:(id<SPDiffable>)object;
 -(void)addMemberForObject:(id)object key:(NSString *)key;
 
 @end

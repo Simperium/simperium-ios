@@ -60,9 +60,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)awakeFromFetch {
     [super awakeFromFetch];
-    SPGhost *newGhost = [[SPGhost alloc] initFromDictionary: [self.ghostData objectFromJSONString]];
+	SPGhost *newGhost = [[SPGhost alloc] initFromDictionary: [self.ghostData objectFromJSONString]];
     self.ghost = newGhost;
     [self.managedObjectContext userInfo];
+	
     [self configureBucket];
 }
 
@@ -126,10 +127,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     for (NSString *memberKey in [memberData allKeys]) {
         SPMember *member = [bucket.differ.schema memberForKey:memberKey];
         if (member) {
-            id data = [member getValueFromDictionary:memberData key:memberKey object:self];
-            
-            // This sets the actual instance data
-            [self setValue: data forKey: [member keyName]];
+            id JSONValue = memberData[memberKey];
+            [member setMemberValueFromJSONValue:JSONValue onParentObject:self];
         }
 	}
 }
@@ -147,10 +146,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	NSMutableDictionary *dict = [NSMutableDictionary dictionary];
 	
 	for (SPMember *member in [bucket.differ.schema.members allValues]) {
-		id data = [self valueForKey:[member keyName]];
-        
-        // The setValue:forKey:inDictionary: method can perform conversions to JSON-compatible formats
-        [member setValue:data forKey:[member keyName] inDictionary:dict];
+		id data = [member JSONValueForMemberOnParentObject:self];
+        if (data) dict[member.keyName] = data;
 	}
 	
 	// Might be beneficial to eventually cache this and only update it when data has changed
@@ -163,6 +160,44 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (id)object {
     return self;
+}
+
++ (BOOL)simperiumObjectExistsWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context
+{
+    if (!simperiumKey || simperiumKey.length == 0) return nil;
+    NSFetchRequest *fetchRequest = [self fetchRequestForSimperiumObjectWithEntityName:entityName simperiumKey:simperiumKey managedObjectContext:context];
+    return [context countForFetchRequest:fetchRequest error:NULL] != 0;
+}
++ (SPManagedObject *)simperiumObjectWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context faults:(BOOL)allowFaults
+{
+    return [self simperiumObjectWithEntityName:entityName simperiumKey:simperiumKey managedObjectContext:context faults:allowFaults prefetchedRelationships:nil];
+}
++ (SPManagedObject *)simperiumObjectWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context faults:(BOOL)allowFaults prefetchedRelationships:(NSArray *)prefetchedRelationships
+{
+    if (!simperiumKey || simperiumKey.length == 0) return nil;
+    NSFetchRequest *fetchRequest = [self fetchRequestForSimperiumObjectWithEntityName:entityName simperiumKey:simperiumKey managedObjectContext:context];
+    [fetchRequest setReturnsObjectsAsFaults:allowFaults];
+    [fetchRequest setRelationshipKeyPathsForPrefetching:prefetchedRelationships];
+
+    NSError *error;
+    NSArray *items = [context executeFetchRequest:fetchRequest error:&error];
+    
+    if ([items count] == 0)
+        return nil;
+    
+    return [items objectAtIndex:0];
+
+}
+
++ (NSFetchRequest *)fetchRequestForSimperiumObjectWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context
+{    
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:entityName inManagedObjectContext:context];
+    [fetchRequest setEntity:entityDescription];
+    [fetchRequest setFetchLimit:1];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simperiumKey == %@", simperiumKey];
+    [fetchRequest setPredicate:predicate];
+    return fetchRequest;
 }
 
 @end

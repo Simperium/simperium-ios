@@ -15,13 +15,7 @@
 // DiffMatchPatch Array Operations
 
 // Create a diff from the receiver using diff match patch.
-- (NSString *)sp_diffDeltaWithArray:(NSArray *)obj diffMatchPatch:(DiffMatchPatch *)dmp;
 
-// Returns the result of applying a diff to the receiver using diff match patch.
-- (NSArray *)sp_arrayByApplyingDiffDelta:(NSString *)delta diffMatchPatch:(DiffMatchPatch *)dmp;
-
-// Returns a transformed diff on top of another diff using diff match patch.
-- (NSString *)sp_transformDelta:(NSString *)delta onto:(NSString *)otherDelta diffMatchPatch:(DiffMatchPatch *)dmp;
 
 // TODO: Implement OP_LIST methods
 // Create a diff from the receiver

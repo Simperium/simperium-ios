@@ -250,10 +250,10 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
     if (startVersion == nil || [oldVersion isEqualToString:startVersion]) {
         // Remember the old ghost
         SPGhost *oldGhost = [object.ghost copy];
-        NSDictionary *diff = [change objectForKey:CH_VALUE];
+        NSDictionary *remoteDiff = [change objectForKey:CH_VALUE];
         
         // Apply the diff to the ghost and store the new data in the object's ghost
-        [bucket.differ applyGhostDiff: diff to:object];
+        [bucket.differ applyGhostDiff: remoteDiff to:object];
         object.ghost.version = endVersion;
         
         // Slight hack to ensure Core Data realizes the object has changed and needs a save
@@ -265,26 +265,26 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
         // If it wasn't an ack, then local data needs to be updated and the app needs to be notified
         if (!acknowledged && !newlyAdded) {
             DDLogVerbose(@"Simperium non-local MODIFY ENTITY received");
-            NSDictionary *oldDiff = [bucket.differ diff:object withDictionary:[oldGhost memberData]];
-            if ([oldDiff count] > 0) {
+            NSDictionary *localDiff = [bucket.differ diff:object fromDictionary:[oldGhost memberData]];
+            if ([localDiff count] > 0) {
                 // The local client version changed in the meantime, so transform the diff before applying it
-                DDLogVerbose(@"Simperium applying transform to diff: %@", diff);			
-                diff = [bucket.differ transform:object diff:oldDiff oldDiff: diff oldGhost: oldGhost];
+                DDLogVerbose(@"Simperium applying transform to diff: %@", remoteDiff);			
+                NSDictionary *transformedRemoteDiff = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost: oldGhost];
                 
                 // Load from the ghost data so the subsequent diff is applied to the correct data
                 // Do an extra check in case there was a problem with the transform/diff, e.g. if a client's own change was misinterpreted
                 // as another client's change, in other words not properly acknowledged.
-                if ([diff count] > 0)
+                if ([transformedRemoteDiff count] > 0) {
                     [object loadMemberData: [object.ghost memberData]];
-                else
-                    DDLogVerbose(@"Simperium transform resulted in empty diff (invalid ack?)");
+                    remoteDiff = transformedRemoteDiff;
+                }
             }
         }
         
         // Apply the diff to the object itself
-        if (!acknowledged && [diff count] > 0) {
-            DDLogVerbose(@"Simperium applying diff: %@", diff);
-            [bucket.differ applyDiff: diff to:object];
+        if (!acknowledged && [remoteDiff count] > 0) {
+            DDLogVerbose(@"Simperium applying diff: %@", remoteDiff);
+            [bucket.differ applyDiff: remoteDiff to:object];
         }
         [threadSafeStorage save];
         
@@ -299,7 +299,7 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
                 notificationName = ProcessorDidAcknowledgeObjectsNotification;
             } else {
                 notificationName = ProcessorDidChangeObjectNotification;                
-                [userInfo setObject:[diff allKeys] forKey:@"changedMembers"];
+                [userInfo setObject:[remoteDiff allKeys] forKey:@"changedMembers"];
             }
             [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:bucket userInfo:userInfo];
         });
@@ -478,7 +478,7 @@ NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNo
         // modifying the object
         
         // Get a diff of the object (in dictionary form)
-        newData = [bucket.differ diff:object withDictionary: [object.ghost memberData]];
+        newData = [bucket.differ diff:object fromDictionary: [object.ghost memberData]];
         DDLogVerbose(@"Simperium entity diff found %lu changed members", (unsigned long)[newData count]);
         if ([newData count] > 0) {
             change = [self createChangeForKey: object.simperiumKey operation: CH_MODIFY version:object.ghost.version data: newData];
