@@ -536,7 +536,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return YES;
 }
 
-- (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds callback:(SimperiumForceSyncCallback)callback
+- (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumForceSyncCompletion)completion
 {
 	dispatch_group_t group = dispatch_group_create();
 	__block BOOL notified = NO;
@@ -544,7 +544,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	// Sync every bucket
 	for(SPBucket* bucket in self.buckets.allValues) {
 		dispatch_group_enter(group);
-		[bucket forceSyncWithCallback:^() {
+		[bucket forceSyncWithCompletion:^() {
 			dispatch_group_leave(group);
 		}];
 	}
@@ -552,7 +552,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	// Wait until the workers are ready
 	dispatch_group_notify(group, dispatch_get_main_queue(), ^ {
 		if(!notified) {
-			callback(YES);
+			completion(YES);
 			notified = YES;
 		}
 	});
@@ -560,7 +560,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	// Notify anyways after timeout
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeoutSeconds * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
 		if(!notified) {
-			callback(NO);
+			completion(NO);
 			notified = YES;
 		}
     });

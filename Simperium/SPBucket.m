@@ -284,15 +284,15 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
         [self.relationshipResolver resolvePendingRelationshipsToKey:key bucketName:self.name storage:self.storage];
 }
 
-- (void)forceSyncWithCallback:(SPBucketForceSyncCallback)callback {
-	self.forceSyncCallback = callback;
+- (void)forceSyncWithCompletion:(SPBucketForceSyncCompletion)completion {
+	self.forceSyncCompletion = completion;
 	[self.network forceSyncBucket:self];
 }
 
-- (void)bucketWasSynced {
-	if(self.forceSyncCallback) {
-		self.forceSyncCallback();
-		self.forceSyncCallback = nil;
+- (void)bucketDidSync {
+	if(self.forceSyncCompletion) {
+		self.forceSyncCompletion();
+		self.forceSyncCompletion = nil;
 	}
 }
 

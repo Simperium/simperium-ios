@@ -109,7 +109,7 @@ typedef NSUInteger SPBucketChangeType;
 /** For internal use
  */
 
-typedef void (^SPBucketForceSyncCallback)(void);
+typedef void (^SPBucketForceSyncCompletion)(void);
 
 @property (nonatomic, copy) NSString *instanceLabel;
 @property (nonatomic, strong) id<SPStorageProvider> storage;
@@ -120,7 +120,7 @@ typedef void (^SPBucketForceSyncCallback)(void);
 @property (strong) SPIndexProcessor* indexProcessor;
 @property (nonatomic, strong) dispatch_queue_t processorQueue;
 @property (nonatomic, copy) NSString *lastChangeSignature;
-@property (nonatomic, copy) SPBucketForceSyncCallback forceSyncCallback;
+@property (nonatomic, copy) SPBucketForceSyncCompletion forceSyncCompletion;
 
 - (id)initWithSchema:(SPSchema *)aSchema
              storage:(id<SPStorageProvider>)aStorage
@@ -130,7 +130,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver
 - (void)validateObjects;
 - (void)unloadAllObjects;
 - (void)resolvePendingRelationshipsToKeys:(NSSet *)keys;
-- (void)forceSyncWithCallback:(SPBucketForceSyncCallback)callback;
-- (void)bucketWasSynced;
+- (void)forceSyncWithCompletion:(SPBucketForceSyncCompletion)completion;
+- (void)bucketDidSync;
 
 @end

@@ -73,8 +73,8 @@
 - (BOOL)save;
 
 // Force Simperium to sync all its buckets. Success return value will be false if the timeout is reached, and the sync wasn't completed.
-typedef void (^SimperiumForceSyncCallback)(BOOL success);
-- (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds callback:(SimperiumForceSyncCallback)callback;
+typedef void (^SimperiumForceSyncCompletion)(BOOL success);
+- (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumForceSyncCompletion)completion;
 
 // Get a particular bucket (which, for Core Data, corresponds to a particular Entity name in your model).
 // Once you have a bucket instance, you can set a SPBucketDelegate to react to changes.

@@ -204,7 +204,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	if (changes.count == 0) {
 
 		// Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
-		[bucket bucketWasSynced];
+		[bucket bucketDidSync];
 
 	} else {
 		
@@ -223,7 +223,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 					[self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:^(void) {
 						
 						// Signal we're ready
-						[bucket bucketWasSynced];
+						[bucket bucketDidSync];
 					}];
 				});
 			}
