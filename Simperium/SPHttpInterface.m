@@ -975,5 +975,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     DDLogVerbose(@"Simperium sharing successful");
 }
 
+-(void)forceSyncBucket:(SPBucket *)bucket {
+	// TODO
+}
 
 @end

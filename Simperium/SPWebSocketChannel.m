@@ -200,20 +200,35 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
-    // Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
-    // sync will still work for any unsaved changes.
-    [bucket.storage stashUnsavedObjects];
-    
-    dispatch_async(bucket.processorQueue, ^{
-        if (started) {
-            [bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:clientID];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                // After remote changes have been processed, check to see if any local changes were attempted (and
-                // queued) in the meantime, and send them
-                [self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:nil];
-            });
-        }
-    });
+	
+	if (changes.count == 0) {
+
+		// Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
+		[bucket bucketWasSynced];
+
+	} else {
+		
+		DDLogVerbose(@"Simperium handling changes %@", changes);
+		
+		// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
+		// sync will still work for any unsaved changes.
+		[bucket.storage stashUnsavedObjects];
+		
+		dispatch_async(bucket.processorQueue, ^{
+			if (started) {
+				[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:clientID];
+				dispatch_async(dispatch_get_main_queue(), ^{
+					// After remote changes have been processed, check to see if any local changes were attempted (and
+					// queued) in the meantime, and send them
+					[self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:^(void) {
+						
+						// Signal we're ready
+						[bucket bucketWasSynced];
+					}];
+				});
+			}
+		});
+	}
 }
 
 #pragma mark Index handling

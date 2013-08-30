@@ -284,10 +284,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         } else {
             // Incoming changes, handle them
             NSArray *changes = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
-            if ([changes count] > 0) {
-                DDLogVerbose(@"Simperium handling changes %@", changes);
-                [channel handleRemoteChanges: changes bucket:bucket];
-            }
+			[channel handleRemoteChanges: changes bucket:bucket];
         }
     } else if ([command isEqualToString:COM_ENTITY]) {
         // todo: handle ? if entity doesn't exist or it has been deleted
@@ -333,6 +330,12 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 -(void)requestLatestVersionsForBucket:(SPBucket *)b {
     // Not yet implemented
+}
+
+-(void)forceSyncBucket:(SPBucket *)bucket {
+	// Let's reuse the start mechanism. This will post the latest CV + publish pending changes
+	SPWebSocketChannel *channel = [self channelForName:bucket.name];
+	[channel startProcessingChangesForBucket:bucket];
 }
 
 @end

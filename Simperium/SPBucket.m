@@ -284,4 +284,16 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
         [self.relationshipResolver resolvePendingRelationshipsToKey:key bucketName:self.name storage:self.storage];
 }
 
+- (void)forceSyncWithCallback:(SPBucketForceSyncCallback)callback {
+	self.forceSyncCallback = callback;
+	[self.network forceSyncBucket:self];
+}
+
+- (void)bucketWasSynced {
+	if(self.forceSyncCallback) {
+		self.forceSyncCallback();
+		self.forceSyncCallback = nil;
+	}
+}
+
 @end
