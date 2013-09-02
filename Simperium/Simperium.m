@@ -325,9 +325,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 -(void)handleNetworkChange:(NSNotification *)notification {
-    if ([self.reachability currentReachabilityStatus] == NotReachable) {
+	
+	if ([self.reachability currentReachabilityStatus] == NotReachable) {
         [self stopNetworkManagers];
-    } else {
+    } else if(self.user.authenticated) {
         [self startNetworkManagers];
     }
 }
