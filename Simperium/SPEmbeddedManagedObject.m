@@ -19,6 +19,21 @@
 	self.simperiumKey = [NSString sp_makeUUID];
 }
 
+- (NSString *)simperiumKey
+{
+    NSString *keyName = @"simperiumKey";
+    [self willAccessValueForKey:keyName];
+    NSString *primitive = [self primitiveValueForKey:keyName];
+    [self didAccessValueForKey:keyName];
+    if (!primitive.length) {
+        [self willChangeValueForKey:keyName];
+        primitive = [NSString sp_makeUUID];
+        [self setPrimitiveValue:primitive forKey:keyName];
+        [self didChangeValueForKey:keyName];
+    }
+    return primitive;
+}
+
 + (BOOL)simperiumObjectExistsWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context
 {
     if (!simperiumKey || simperiumKey.length == 0) return nil;
