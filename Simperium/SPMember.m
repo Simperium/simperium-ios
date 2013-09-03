@@ -38,10 +38,15 @@ NSString * const SPMemberDefinitionEntityNameKey = @"entityName";
 NSString * const SPMemberDefinitionListMemberKey = @"listMember";
 NSString * const SPMemberDefinitionInverseKeyNameKey = @"inverseName";
 
+static NSString * const SPPolicyItemKey = @"item";
+static NSString * const SPPolicyAttributesKey = @"attributes";
+static NSString * const SPOperationTypeKey = @"otype";
+
 
 @interface SPMember()
 {
     NSDictionary *_dictionaryForInitializer;
+    NSMutableDictionary *_policy;
 }
 @property (nonatomic, copy, readonly) NSString *operationType;
 @property (nonatomic, copy, readonly) NSValueTransformer *JSONValueTransformer;
@@ -50,6 +55,7 @@ NSString * const SPMemberDefinitionInverseKeyNameKey = @"inverseName";
 @end
 
 @implementation SPMember
+@synthesize policy = _policy;
 
 
 
@@ -87,8 +93,19 @@ NSString * const SPMemberDefinitionInverseKeyNameKey = @"inverseName";
 
 - (NSDictionary *)policy
 {
+    if (_policy) {
+        _policy = [[NSMutableDictionary alloc] init];
+        if (self.type == SPMemberTypeTransformable) _policy[SPPolicyAttributesKey] = OP_REPLACE;
+        if (_operationType) _policy[SPPolicyAttributesKey] = _operationType;
+        if (self.type == SPMemberTypeEmbeddedRelatedEntity) {
+            for (SPMember *member in self.embeddedMembers) {
+                
+            }
+        }
+
+    }
     // TODO: implement so that tranformables do replace by default otherwise they'll just stringdiff
-    return nil;
+    return _policy;
 }
 
 -(id)initFromDictionary:(NSDictionary *)dict
