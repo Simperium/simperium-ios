@@ -454,7 +454,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
 	// Persist to "disk"!
 	[self saveWriterContext];
-	
+
+/*
 	// Move the changes to the main MOC. This will NOT trigger main MOC's hasChanges flag.
 	// NOTE: setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
 	// Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
@@ -475,8 +476,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		// Now we can proceed with the merge
 		[self.mainManagedObjectContext mergeChangesFromContextDidSaveNotification:notification];
 	}];
-		
-/*	// Ref.: mergeChangesFromContextDidSaveNotification alternative
+*/
+	// Ref.: mergeChangesFromContextDidSaveNotification alternative
 	[self.mainManagedObjectContext performBlock:^{
 
 		NSDictionary *userInfo = notification.userInfo;
@@ -498,7 +499,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			[self.mainManagedObjectContext deleteObject:localMO];
 		}
 	}];
- */
 }
 
 -(void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
