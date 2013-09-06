@@ -1,15 +1,16 @@
 //
-//  AuthWindowController.h
-//  Simplenote-OSX
+//  SPAuthenticationWindowController.h
+//  Simperium
 //
 //  Created by Michael Johnston on 7/20/13.
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
-#import <Simperium-OSX/SPAuthenticationManager.h>
+#import <Simperium-OSX/SPAuthenticator.h>
 
 @class SPAuthenticationTextField;
+@class SPAuthenticationValidator;
 
 @interface SPAuthenticationWindowController : NSWindowController<NSTextFieldDelegate> {
     NSImageView *logoImageView;
@@ -31,7 +32,8 @@
     CGFloat rowSize;
 }
 
-@property (nonatomic, retain) SPAuthenticationManager *authManager;
+@property (nonatomic, retain) SPAuthenticator *authenticator;
+@property (nonatomic, retain) SPAuthenticationValidator *validator;
 @property (assign) BOOL optional;
 
 - (IBAction) signUpAction:(id)sender;

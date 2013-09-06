@@ -150,5 +150,100 @@
     NSLog(@"%@ end", self.name);
 }
 
+// If you delete more than 50 items in bulk, another client will fail to receive changes past the 50th
+// (max 50 versions in Simperium). A reindex should be triggered, and that reindex should cross-check with
+// local objects, and delete any that exist locally but not remotely. Any objects created locally but
+// not yet synced should be preserved.
+- (void)testDeletionReindex
+{
+    NSLog(@"%@ start", self.name);
+    // Leader sends an object to a follower, follower goes offline, both make changes, follower reconnects
+    Farm *leader = [self createFarm:@"leader"];
+    Farm *follower = [self createFarm:@"follower"];
+    [leader start];
+    [follower start];
+    leader.expectedIndexCompletions = 1;
+    follower.expectedIndexCompletions = 1;
+    [leader connect];
+    [follower connect];
+    STAssertTrue([self waitForCompletion: 4.0 farmArray:farms], @"timed out (initial index)");
+    [self resetExpectations:farms];
+    
+    SPBucket *leaderBucket = [leader.simperium bucketForName:@"Config"];
+    SPBucket *followerBucket = [follower.simperium bucketForName:@"Config"];
+    
+    // Add 50 objects
+    int numConfigs = 50;
+    NSLog(@"****************************ADD MANY*************************");
+    for (int i=0; i<numConfigs; i++) {
+        Config *config = [leaderBucket insertNewObject];
+        config.warpSpeed = [NSNumber numberWithInt:2];
+        config.captainsLog = @"Hi";
+        config.shieldPercent = [NSNumber numberWithFloat:3.14];
+    }
+    [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
+    [leader.simperium save];
+    
+    STAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:farms], @"timed out (adding many)");
+    STAssertTrue([[leaderBucket allObjects] count] == numConfigs, @"didn't add correct number (leader)");
+    STAssertTrue([[followerBucket allObjects] count] == numConfigs, @"didn't add correct number (follower)");
+    [self ensureFarmsEqual:farms entityName:@"Config"];
+    [self resetExpectations:farms];
+    
+    // Add 20 more
+    numConfigs = 20;
+    NSLog(@"****************************ADD MORE*************************");
+    for (int i=0; i<numConfigs; i++) {
+        Config *config = [leaderBucket insertNewObject];
+        config.warpSpeed = [NSNumber numberWithInt:2];
+        config.captainsLog = @"Hi";
+        config.shieldPercent = [NSNumber numberWithFloat:3.14];
+    }
+    [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
+    [leader.simperium save];
+    
+    STAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:farms], @"timed out (receiving many)");
+    [self ensureFarmsEqual:farms entityName:@"Config"];
+    [self resetExpectations:farms];
+    
+    [self waitFor:2.0];
+    [follower disconnect];
+    
+    // Delete 60 objects
+    numConfigs = 60;
+    NSLog(@"****************************DELETE MANY*************************");
+    NSArray *allConfigs = [leaderBucket allObjects];
+    for (int i=0; i<numConfigs; i++) {
+        Config *config = [allConfigs objectAtIndex:i];
+        [leaderBucket deleteObject: config];
+    }
+    
+    // Expect all objects to get deleted
+    [self expectAdditions:0 deletions:numConfigs changes:0 fromLeader:leader expectAcks:YES];
+    [leader.simperium save];
+    STAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:[NSArray arrayWithObject:leader]], @"timed out (deleting many)");
+    [self resetExpectations:farms];
+    
+    NSLog(@"*************************FOLLOWER RECONNECT*******************");
+    // Create an offline object that isn't synced yet to make sure it doesn't get clobbered by reindexing
+    Config *offlineConfig = [followerBucket insertNewObjectForKey:@"offlineConfig"];
+    
+    [self expectAdditions:0 deletions:numConfigs changes:0 fromLeader:leader expectAcks:NO];
+    [follower connect];
 
+    STAssertTrue([self waitForCompletion: numConfigs/6 farmArray:[NSArray arrayWithObject:follower]], @"timed out (deleting many)");
+    int numLeft = [[followerBucket allObjects] count];
+    
+    [self waitFor:1.0];
+    
+    // Expect 10 objects left (70-60) plus the one that was created offline
+    STAssertTrue(numLeft == 10 + 1, @"didn't delete %d configs", numLeft);
+    
+    offlineConfig = [followerBucket objectForKey:@"offlineConfig"];
+    STAssertTrue(offlineConfig != nil, @"offline object was clobbered after re-index");
+    
+    NSLog(@"%@ end", self.name);
+}
+
+// TODO: add a test for 50+ additions as well
 @end

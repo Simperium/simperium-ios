@@ -40,7 +40,7 @@
         
         pendingBinaryDownloads = [NSMutableDictionary dictionaryWithCapacity:3];
         pendingBinaryUploads = [NSMutableDictionary dictionaryWithCapacity:3];
-        delegates = [NSMutableArray arrayWithCapacity:3];
+        delegates = [NSMutableSet setWithCapacity:3];
         transmissionProgress = [NSMutableDictionary dictionaryWithCapacity:3];
         [self loadPendingBinaryDownloads];
         [self loadPendingBinaryUploads];

@@ -8,6 +8,12 @@
 
 #import "SPAuthenticationConfiguration.h"
 
+#define kFontTestString @"Testyj"
+
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
+
 @implementation SPAuthenticationConfiguration
 
 static SPAuthenticationConfiguration *gInstance = NULL;
@@ -27,12 +33,28 @@ static SPAuthenticationConfiguration *gInstance = NULL;
     if ((self = [super init])) {
         _regularFontName = @"HelveticaNeue";
         _mediumFontName = @"HelveticaNeue-Medium";
+        
+#if TARGET_OS_IPHONE
+#else
+        self.controlColor = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
+#endif
     }
     
     return self;
 }
 
 // Just quick and dirty fonts for now. Could be extended with colors.
+// In an app this would likely be done in an external .plist file, but for a framework,
+// keeping in code avoids having to include a resource.
+#if TARGET_OS_IPHONE
+
+- (float)regularFontHeightForSize:(float)size {
+    // Not cached, but could be
+    return [kFontTestString sizeWithFont:[UIFont fontWithName:self.regularFontName size:size]].height;
+}
+
+#else
+
 - (NSFont *)regularFontWithSize:(CGFloat)size {
     return [NSFont fontWithName:_regularFontName size:size];
 }
@@ -41,12 +63,13 @@ static SPAuthenticationConfiguration *gInstance = NULL;
     return [NSFont fontWithName:_mediumFontName size:size];
 }
 
-- (CGFloat)regularFontHeightForSize:(CGFloat)size {
+- (float)regularFontHeightForSize:(float)size {
+    // Not cached, but could be
     NSDictionary *attributes = @{NSFontAttributeName : [self regularFontWithSize:size],
                                  NSFontSizeAttribute : [NSString stringWithFormat:@"%f", size]};
-    NSString *testStr = @"Testyj";
-    return [testStr sizeWithAttributes:attributes].height;
+    return [kFontTestString sizeWithAttributes:attributes].height;
 }
+#endif
 
 
 

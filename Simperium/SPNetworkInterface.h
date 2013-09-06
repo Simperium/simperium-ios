@@ -20,5 +20,7 @@
 -(void)sendObjectDeletion:(id<SPDiffable>)object;
 -(void)sendObjectChanges:(id<SPDiffable>)object;
 -(void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
+-(void)forceSyncBucket:(SPBucket *)bucket;
 @end
 
+extern NSString * const SPAuthenticationDidFail;

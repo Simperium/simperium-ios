@@ -20,7 +20,8 @@ static NSString * const SPPolicyItemKey = @"item";
 static NSString * const SPPolicyAttributesKey = @"attributes";
 static NSString * const SPOperationTypeKey = @"otype";
 
-DiffMatchPatch * SPDiffMatchPatch();
+static DiffMatchPatch * SPDiffMatchPatch();
+
 NSString * SPOperationTypeForClass(Class class);
 
 SPDiff * SPDiffObjects(id obj1, id obj2, NSDictionary *policy)

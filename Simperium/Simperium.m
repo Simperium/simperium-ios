@@ -26,13 +26,13 @@
 #import "DDASLLogger.h"
 #import "DDTTYLogger.h"
 #import "SPCoreDataStorage.h"
-#import "SPAuthenticationManager.h"
+#import "SPAuthenticator.h"
 #import "SPBucket.h"
 #import "SPRelationshipResolver.h"
 #import "SPReachability.h"
 
 #if TARGET_OS_IPHONE
-#import "SPLoginViewController.h"
+#import "SPAuthenticationViewController.h"
 #else
 #import "SPAuthenticationWindowController.h"
 #endif
@@ -52,7 +52,7 @@
 
 
 #if TARGET_OS_IPHONE
-@property (nonatomic, strong) SPLoginViewController *loginViewController;
+@property (nonatomic, strong) SPAuthenticationViewController *authenticationViewController;
 #else
 @property (nonatomic, strong) SPAuthenticationWindowController *authenticationWindowController;
 #endif
@@ -75,7 +75,7 @@
 @synthesize networkEnabled = _networkEnabled;
 @synthesize authenticationEnabled = _authenticationEnabled;
 @synthesize useWebSockets = _useWebSockets;
-@synthesize authManager;
+@synthesize authenticator;
 @synthesize network;
 @synthesize relationshipResolver;
 @synthesize binaryManager;
@@ -91,8 +91,8 @@
 
 #if TARGET_OS_IPHONE
 @synthesize rootViewController;
-@synthesize loginViewController;
-@synthesize loginViewControllerClass;
+@synthesize authenticationViewController;
+@synthesize authenticationViewControllerClass;
 #else
 @synthesize window;
 @synthesize authenticationWindowController;
@@ -135,19 +135,19 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		[ASIHTTPRequest setShouldUpdateNetworkActivityIndicator:NO];
         self.buckets = [NSMutableDictionary dictionary];
         
-        SPAuthenticationManager *manager = [[SPAuthenticationManager alloc] initWithDelegate:self simperium:self];
-        self.authManager = manager;
+        SPAuthenticator *auth = [[SPAuthenticator alloc] initWithDelegate:self simperium:self];
+        self.authenticator = auth;
         
         SPRelationshipResolver *resolver = [[SPRelationshipResolver alloc] init];
         self.relationshipResolver = resolver;
 
 #if TARGET_OS_IPHONE
-        loginViewControllerClass = [SPLoginViewController class];
+        authenticationViewControllerClass = [SPAuthenticationViewController class];
 #else
         authenticationWindowControllerClass = [SPAuthenticationWindowController class];
 #endif
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(authenticationDidFail)
-                                                     name:@"AuthenticationDidFailNotification" object:nil];
+                                                     name:SPAuthenticationDidFail object:nil];
     }
 
 	return self;
@@ -325,9 +325,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 -(void)handleNetworkChange:(NSNotification *)notification {
-    if ([self.reachability currentReachabilityStatus] == NotReachable) {
+	
+	if ([self.reachability currentReachabilityStatus] == NotReachable) {
         [self stopNetworkManagers];
-    } else {
+    } else if(self.user.authenticated) {
         [self startNetworkManagers];
     }
 }
@@ -410,6 +411,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key {
     DDLogInfo(@"Simperium starting... %@", label);
+	
+	// Enforce required parameters
+	NSParameterAssert(identifier);
+	NSParameterAssert(key);
+	
+	// Keep the keys!
     appID = [identifier copy];
     APIKey = [key copy];
     self.rootURL = SPBaseURL;
@@ -432,12 +439,24 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key model:(NSManagedObjectModel *)model context:(NSManagedObjectContext *)context coordinator:(NSPersistentStoreCoordinator *)coordinator
 {
 	DDLogInfo(@"Simperium starting... %@", label);
+	
+	// Enforce required parameters
+	NSParameterAssert(identifier);
+	NSParameterAssert(key);
+	NSParameterAssert(model);
+	NSParameterAssert(context);
+	NSParameterAssert(coordinator);
+	
+	NSAssert((context.concurrencyType == NSMainQueueConcurrencyType), NSLocalizedString(@"Error: you must initialize your context with 'NSMainQueueConcurrencyType' concurrency type.", nil));
+	NSAssert((context.persistentStoreCoordinator == nil), NSLocalizedString(@"Error: NSManagedObjectContext's persistentStoreCoordinator must be nil. Simperium will handle CoreData connections for you.", nil));
+	
+	// Keep the keys!
     appID = [identifier copy];
     APIKey = [key copy];
     self.rootURL = SPBaseURL;
     
     // Setup Core Data storage
-    SPCoreDataStorage *storage = [[SPCoreDataStorage alloc] initWithModel:model context:context coordinator:coordinator];
+    SPCoreDataStorage *storage = [[SPCoreDataStorage alloc] initWithModel:model mainContext:context coordinator:coordinator];
     self.coreDataStorage = storage;
     self.coreDataStorage.delegate = self;
     
@@ -453,8 +472,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Load metadata for pending references among objects
     [self.relationshipResolver loadPendingRelationships:self.coreDataStorage];
     
-    if (self.binaryManager)
+    if (self.binaryManager) {
         [self configureBinaryManager:self.binaryManager];
+	}
     
     // With everything configured, all objects can now be validated. This will pick up any objects that aren't yet
     // known to Simperium (for the case where you're adding Simperium to an existing app).
@@ -518,6 +538,36 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return YES;
 }
 
+- (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumForceSyncCompletion)completion
+{
+	dispatch_group_t group = dispatch_group_create();
+	__block BOOL notified = NO;
+	
+	// Sync every bucket
+	for(SPBucket* bucket in self.buckets.allValues) {
+		dispatch_group_enter(group);
+		[bucket forceSyncWithCompletion:^() {
+			dispatch_group_leave(group);
+		}];
+	}
+
+	// Wait until the workers are ready
+	dispatch_group_notify(group, dispatch_get_main_queue(), ^ {
+		if(!notified) {
+			completion(YES);
+			notified = YES;
+		}
+	});
+	
+	// Notify anyways after timeout
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeoutSeconds * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
+		if(!notified) {
+			completion(NO);
+			notified = YES;
+		}
+    });
+}
+
 -(BOOL)saveWithoutSyncing {
     skipContextProcessing = YES;
     BOOL result = [self save];
@@ -550,14 +600,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     // Clear the token and user
-    [authManager reset];
+    [authenticator reset];
     self.user = nil;
 
     // Don't start network managers again; expect app to handle that
 }
 
 -(NSManagedObjectContext *)managedObjectContext {
-    return coreDataStorage.managedObjectContext;
+    return coreDataStorage.mainManagedObjectContext;
+}
+
+-(NSManagedObjectContext *)writerManagedObjectContext {
+    return coreDataStorage.writerManagedObjectContext;
 }
 
 -(NSManagedObjectModel *)managedObjectModel {
@@ -581,14 +635,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)authenticationDidCancel {
     [self stopNetworking];
-    [self.authManager reset];
+    [self.authenticator reset];
     user.authToken = nil;
     [self closeAuthViewControllerAnimated:YES];
 }
 
 -(void)authenticationDidFail {
     [self stopNetworking];
-    [self.authManager reset];
+    [self.authenticator reset];
     user.authToken = nil;
     
     if (self.authenticationEnabled)
@@ -603,7 +657,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     [self stopNetworking];
     
-    return [self.authManager authenticateIfNecessary];    
+    return [self.authenticator authenticateIfNecessary];    
 }
 
 -(void)delayedOpenAuthViewController {
@@ -613,12 +667,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)openAuthViewControllerAnimated:(BOOL)animated
 {
 #if TARGET_OS_IPHONE
-    if (self.loginViewController && self.rootViewController.presentedViewController == self.loginViewController)
+    if (self.authenticationViewController && self.rootViewController.presentedViewController == self.authenticationViewController)
         return;
     
-    SPLoginViewController *loginController =  [[self.loginViewControllerClass alloc] initWithNibName:@"LoginView" bundle:nil];
-    self.loginViewController = loginController;
-    self.loginViewController.authManager = self.authManager;
+    SPAuthenticationViewController *loginController =  [[self.authenticationViewControllerClass alloc] init];
+    self.authenticationViewController = loginController;
+    self.authenticationViewController.authenticator = self.authenticator;
     
     if (!self.rootViewController) {
         UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
@@ -626,18 +680,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSAssert(self.rootViewController, @"Simperium error: to use built-in authentication, you must configure a rootViewController when you initialize Simperium, or call setParentViewControllerForAuthentication:. This is how Simperium knows where to present a modal view. See enableManualAuthentication in the documentation if you want to use your own authentication interface.");
     }
     
-    UIViewController *controller = self.loginViewController;
+    UIViewController *controller = self.authenticationViewController;
     UINavigationController *navController = nil;
     if (self.authenticationOptional) {
-        navController = [[UINavigationController alloc] initWithRootViewController: self.loginViewController];
+        navController = [[UINavigationController alloc] initWithRootViewController: self.authenticationViewController];
         controller = navController;
     }
     
-    [self.rootViewController presentModalViewController:controller animated:animated];
+	[self.rootViewController presentViewController:controller animated:animated completion:nil];
 #else
     if (!authenticationWindowController) {
         authenticationWindowController = [[self.authenticationWindowControllerClass alloc] init];
-        authenticationWindowController.authManager = self.authManager;
+        authenticationWindowController.authenticator = self.authenticator;
         authenticationWindowController.optional = authenticationOptional;
     }
     
@@ -654,10 +708,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSArray *childViewControllers = self.rootViewController.presentedViewController.childViewControllers;
     
     // Login can either be its own root, or the first child of a nav controller if auth is optional
-    BOOL navLogin = [childViewControllers count] > 0 && [childViewControllers objectAtIndex:0] == self.loginViewController;
-    if ((self.rootViewController.presentedViewController == self.loginViewController && self.loginViewController) || navLogin)
-        [self.rootViewController dismissModalViewControllerAnimated:animated];
-    self.loginViewController = nil;
+    BOOL navLogin = [childViewControllers count] > 0 && [childViewControllers objectAtIndex:0] == self.authenticationViewController;
+    if ((self.rootViewController.presentedViewController == self.authenticationViewController && self.authenticationViewController) || navLogin) {
+        [self.rootViewController dismissViewControllerAnimated:animated completion:nil];
+	}
+    self.authenticationViewController = nil;
 #else
     [self.window setIsVisible:YES];
     [[authenticationWindowController window] close];

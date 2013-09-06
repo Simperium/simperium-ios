@@ -30,7 +30,6 @@
 
 #define INDEX_PAGE_SIZE 500
 #define INDEX_BATCH_SIZE 10
-#define INDEX_QUEUE_SIZE 5
 
 #define CHAN_NUMBER_INDEX 0
 #define CHAN_COMMAND_INDEX 1
@@ -169,20 +168,17 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
 
             dispatch_async(dispatch_get_main_queue(), ^{
+                // Start getting changes from the last cv
                 NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
+                DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, getMessage);
+                [self.webSocketManager send:getMessage];
+                
                 if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
-                    // Send the offline changes
+                    // There are also offline changes; send them right away
+                    // This needs to happen after the above cv is sent, otherwise acks will arrive prematurely if there
+                    // have been remote changes that need to be processed first
                     DDLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
-                    [self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:^{
-                        // Start getting changes after all pending local changes have been sent
-                        DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, getMessage);
-                        [self.webSocketManager send:getMessage];
-                        
-                    }];
-                } else {
-                    // No pending local changes, start getting changes right away
-                    DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, getMessage);
-                    [self.webSocketManager send:getMessage];
+                    [self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:nil];
                 }
             });
         }
@@ -204,20 +200,35 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
-    // Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
-    // sync will still work for any unsaved changes.
-    [bucket.storage stashUnsavedObjects];
-    
-    dispatch_async(bucket.processorQueue, ^{
-        if (started) {
-            [bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:clientID];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                // After remote changes have been processed, check to see if any local changes were attempted (and
-                // queued) in the meantime, and send them
-                [self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:nil];
-            });
-        }
-    });
+	
+	if (changes.count == 0) {
+
+		// Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
+		[bucket bucketDidSync];
+
+	} else {
+		
+		DDLogVerbose(@"Simperium handling changes %@", changes);
+		
+		// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
+		// sync will still work for any unsaved changes.
+		[bucket.storage stashUnsavedObjects];
+		
+		dispatch_async(bucket.processorQueue, ^{
+			if (started) {
+				[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:clientID];
+				dispatch_async(dispatch_get_main_queue(), ^{
+					// After remote changes have been processed, check to see if any local changes were attempted (and
+					// queued) in the meantime, and send them
+					[self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:^(void) {
+						
+						// Signal we're ready
+						[bucket bucketDidSync];
+					}];
+				});
+			}
+		});
+	}
 }
 
 #pragma mark Index handling
@@ -382,6 +393,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // This processing should be moved off the main thread (or fixed at the protocol level)
     NSDictionary *versionDict = [versionString objectFromJSONString];
     NSDictionary *dataDict = [versionDict objectForKey:@"data"];
+    
+    if ([dataDict class] == [NSNull class]) {
+        // No data
+        DDLogError(@"Simperium error: version had no data (%@): %@", bucket.name, key);
+        objectVersionsPending--;
+        return;
+    }
+    
     versionString = [dataDict JSONString];
     
     // If there was an error previously, unflag it

@@ -25,16 +25,19 @@
         int fontSize = 20;
         CGFloat fieldHeight = [[SPAuthenticationConfiguration sharedInstance] regularFontHeightForSize:fontSize];
         CGFloat fieldY = (self.frame.size.height - fieldHeight) / 2;
-        CGRect textFrame = NSMakeRect(paddingX, -fieldY, frame.size.width-paddingX*2, frame.size.height);
+        CGRect textFrame = NSMakeRect(paddingX, fieldY, frame.size.width-paddingX*2, fieldHeight);
 
         Class textFieldClass = secure ? [NSSecureTextField class] : [NSTextField class];
         _textField = [[textFieldClass alloc] initWithFrame:textFrame];
-        [_textField setFont:[[SPAuthenticationConfiguration sharedInstance] regularFontWithSize:fontSize]];
+        NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
+        [_textField setFont:font];
         [_textField setTextColor:[NSColor colorWithCalibratedWhite:0.1 alpha:1.0]];
         [_textField setDrawsBackground:NO];
         [_textField setBezeled:NO];
         [_textField setBordered:NO];
         [_textField setFocusRingType:NSFocusRingTypeNone];
+        [[_textField cell] setWraps:NO];
+        [[_textField cell] setScrollable:YES];
         [self addSubview:_textField];
     }
     
@@ -84,11 +87,6 @@
     if ([self hasFirstResponder]) {
         [[NSColor colorWithCalibratedWhite:0.9 alpha:1.0] setFill];
         [betterBounds fill];
-
-        
-        //        [[NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:200.f/255.f alpha:1.0] setStroke];
-//        [betterBounds setLineWidth:4.0];
-//        [betterBounds stroke];
         
         if (!hasFocus) {
             hasFocus = YES;
@@ -108,9 +106,5 @@
         }
     }
 }
-
-//+ (void)load {
-//    [SPAuthenticationTextField setCellClass:[SPAuthenticationTextFieldCell class]];
-//}
 
 @end

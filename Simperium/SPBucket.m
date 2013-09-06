@@ -119,6 +119,10 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     return [storage objectsForBucketName:self.name predicate:nil];
 }
 
+- (NSArray *)allObjectKeys {
+    return [storage objectKeysForBucketName:self.name];
+}
+
 - (id)insertNewObject {
     id<SPDiffable>diffable = [storage insertNewObjectForBucketName:self.name simperiumKey:nil];
     diffable.bucket = self;
@@ -278,6 +282,18 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 - (void)resolvePendingRelationshipsToKeys:(NSSet *)keys {
     for (NSString *key in keys)
         [self.relationshipResolver resolvePendingRelationshipsToKey:key bucketName:self.name storage:self.storage];
+}
+
+- (void)forceSyncWithCompletion:(SPBucketForceSyncCompletion)completion {
+	self.forceSyncCompletion = completion;
+	[self.network forceSyncBucket:self];
+}
+
+- (void)bucketDidSync {
+	if(self.forceSyncCompletion) {
+		self.forceSyncCompletion();
+		self.forceSyncCompletion = nil;
+	}
 }
 
 @end

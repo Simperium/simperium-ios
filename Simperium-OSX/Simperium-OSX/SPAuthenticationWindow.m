@@ -27,19 +27,18 @@
 }
 
 - (void)mouseDown:(NSEvent *)theEvent {
-    
     // Get the mouse location in window coordinates.
     self.initialLocation = [theEvent locationInWindow];
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent {
-    
     NSRect screenVisibleFrame = [[NSScreen mainScreen] visibleFrame];
     NSRect windowFrame = [self frame];
     NSPoint newOrigin = windowFrame.origin;
     
     // Get the mouse location in window coordinates.
     NSPoint currentLocation = [theEvent locationInWindow];
+    
     // Update the origin with the difference between the new mouse location and the old mouse location.
     newOrigin.x += (currentLocation.x - initialLocation.x);
     newOrigin.y += (currentLocation.y - initialLocation.y);

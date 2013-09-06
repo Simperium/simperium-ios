@@ -20,8 +20,15 @@
 #define WEBSOCKET_URL @"wss://api.simperium.com/sock/1"
 #define INDEX_PAGE_SIZE 500
 #define INDEX_BATCH_SIZE 10
-#define INDEX_QUEUE_SIZE 5
 #define HEARTBEAT 30
+
+#if TARGET_OS_IPHONE
+#define LIBRARY_ID @"ios"
+#else
+#define LIBRARY_ID @"osx"
+#endif
+
+#define LIBRARY_VERSION @0
 
 NSString * const COM_AUTH = @"auth";
 NSString * const COM_INDEX = @"i";
@@ -102,24 +109,21 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     [channel sendObjectChanges:object];
 }
 
-- (void)authenticationDidFail {
-    DDLogWarn(@"Simperium authentication failed for token %@", simperium.user.authToken);
-    [[NSNotificationCenter defaultCenter] postNotificationName:WebSocketAuthenticationDidFailNotification object:self];
-}
-
 - (void)authenticateChannel:(SPWebSocketChannel *)channel {
     //    NSString *message = @"1:command:parameters";
     NSString *remoteBucketName = [self.bucketNameOverrides objectForKey:channel.name];
     if (!remoteBucketName || remoteBucketName.length == 0)
         remoteBucketName = channel.name;
     
-    NSDictionary *jsonData = [NSDictionary dictionaryWithObjectsAndKeys:
-                              [NSNumber numberWithInt:1], @"api",
-                              simperium.clientID, @"clientid",
-                              simperium.appID, @"app_id",
-                              simperium.user.authToken, @"token",
-                              remoteBucketName, @"name",
-                              nil];
+    NSDictionary *jsonData = @{
+                               @"api" : @1,
+                               @"clientid" : simperium.clientID,
+                               @"app_id" : simperium.appID,
+                               @"token" : simperium.user.authToken,
+                               @"name" : remoteBucketName,
+                               @"library" : LIBRARY_ID,
+                               @"version" : LIBRARY_VERSION
+                               };
     
     DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
     NSString *message = [NSString stringWithFormat:@"%d:init:%@", channel.number, [jsonData JSONString]];
@@ -189,12 +193,12 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 - (void)sendHeartbeat:(NSTimer *)timer {
     if (self.webSocket.readyState == SR_OPEN) {
         // Send it (will also schedule another one)
+        //NSLog(@"Simperium sending heartbeat");
         [self send:@"h:1"];
     }
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
-    //NSLog(@"Websocket Connected");
     open = YES;
     
     // Start all channels
@@ -236,7 +240,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         return;
     }
     
-    DDLogVerbose(@"Received \"%@\"", message);
+    DDLogVerbose(@"Simperium (%@) received \"%@\"", simperium.label, message);
     
     // It's an actual message; parse/handle it
     NSNumber *channelNumber = [NSNumber numberWithInt:[channelStr intValue]];
@@ -252,13 +256,24 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     NSString *data = [commandStr substringFromIndex:range.location+range.length];
     
     if ([command isEqualToString:COM_AUTH]) {
-        // todo: handle "expired"
-        channel.started = YES;
-        BOOL bFirstStart = bucket.lastChangeSignature == nil;
-        if (bFirstStart) {
-            [channel requestLatestVersionsForBucket:bucket];
-        } else
-            [channel startProcessingChangesForBucket:bucket];
+        if ([data isEqualToString:@"expired"]) {
+            // Ignore this; legacy
+        } else if ([data isEqualToString:simperium.user.email]) {
+            channel.started = YES;
+            BOOL bFirstStart = bucket.lastChangeSignature == nil;
+            if (bFirstStart) {
+                [channel requestLatestVersionsForBucket:bucket];
+            } else
+                [channel startProcessingChangesForBucket:bucket];
+        } else {
+            DDLogWarn(@"Simperium received unexpected auth response: %@", data);
+            NSDictionary *authPayload = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+            NSNumber *code = authPayload[@"code"];
+            if ([code isEqualToNumber:@401]) {
+                // Let Simperium proper deal with it
+                [[NSNotificationCenter defaultCenter] postNotificationName:SPAuthenticationDidFail object:self];
+            }
+        }
     } else if ([command isEqualToString:COM_INDEX]) {
         [channel handleIndexResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_CHANGE]) {
@@ -269,10 +284,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         } else {
             // Incoming changes, handle them
             NSArray *changes = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
-            if ([changes count] > 0) {
-                DDLogVerbose(@"Simperium handling changes %@", changes);
-                [channel handleRemoteChanges: changes bucket:bucket];
-            }
+			[channel handleRemoteChanges: changes bucket:bucket];
         }
     } else if ([command isEqualToString:COM_ENTITY]) {
         // todo: handle ? if entity doesn't exist or it has been deleted
@@ -318,6 +330,12 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 -(void)requestLatestVersionsForBucket:(SPBucket *)b {
     // Not yet implemented
+}
+
+-(void)forceSyncBucket:(SPBucket *)bucket {
+	// Let's reuse the start mechanism. This will post the latest CV + publish pending changes
+	SPWebSocketChannel *channel = [self channelForName:bucket.name];
+	[channel startProcessingChangesForBucket:bucket];
 }
 
 @end

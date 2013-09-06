@@ -35,7 +35,6 @@ static BOOL useNetworkActivityIndicator = 0;
 static BOOL networkActivity = NO;
 
 static int ddLogLevel = LOG_LEVEL_INFO;
-NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
 
 @interface SPHttpInterface()
 @property (nonatomic, weak) Simperium *simperium;
@@ -123,7 +122,7 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
 
 -(void)authenticationDidFail {
     DDLogWarn(@"Simperium authentication failed for token %@", simperium.user.authToken);
-    [[NSNotificationCenter defaultCenter] postNotificationName:AuthenticationDidFailNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:SPAuthenticationDidFail object:self];
 }
 
 -(void)sendChange:(NSDictionary *)change forKey:(NSString *)key
@@ -976,5 +975,8 @@ NSString * const AuthenticationDidFailNotification = @"AuthenticationDidFailNoti
     DDLogVerbose(@"Simperium sharing successful");
 }
 
+-(void)forceSyncBucket:(SPBucket *)bucket {
+	// TODO
+}
 
 @end

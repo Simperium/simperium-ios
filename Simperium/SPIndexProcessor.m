@@ -55,8 +55,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [batchLists addObject: [NSMutableArray arrayWithCapacity:kBatchSize]];
     }
     
-    int currentBatch = 0;
     // Build the batches
+    int currentBatch = 0;
     NSMutableArray *currentBatchList = [batchLists objectAtIndex:currentBatch];
     for (NSDictionary *dict in indexArray) {
         NSString *key = [dict objectForKey:@"id"];
@@ -71,6 +71,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             currentBatchList = [batchLists objectAtIndex:++currentBatch];
         }
     }
+    
+    // Take this opportunity to check for any objects that exist locally but not remotely, and remove them
+    // (this can happen after reindexing if the client missed some remote deletion changes)
+    NSSet *remoteKeySet = [NSSet setWithArray:[indexDict allKeys]];
+    [self reconcileLocalAndRemoteIndex:remoteKeySet bucket:bucket storage:threadSafeStorage];
     
     // Process each batch while being efficient with memory and faulting
     for (NSMutableArray *batchList in batchLists) {
@@ -97,6 +102,37 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             // Refault to free up the memory
             [threadSafeStorage refaultObjects: [objects allValues]];
         }
+    }
+}
+
+-(void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket storage:(id<SPStorageProvider>)threadSafeStorage {
+    NSArray *localKeys = [threadSafeStorage objectKeysForBucketName:bucket.name];
+    NSMutableSet *localKeySet = [NSMutableSet setWithArray:localKeys];
+    [localKeySet minusSet:remoteKeySet];
+
+    // If any objects exist locally but not remotely, get rid of them
+    if ([localKeySet count] > 0) {
+        NSMutableSet *keysForDeletedObjects = [NSMutableSet setWithCapacity:[localKeySet count]];
+        NSArray *objectsToDelete = [threadSafeStorage objectsForKeys:localKeySet bucketName:bucket.name];
+        
+        for (id<SPDiffable>objectToDelete in objectsToDelete) {
+            NSString *key = [objectToDelete simperiumKey];
+            
+            // If the object has never synced, be careful not to delete it (it won't exist in the remote index yet)
+            if ([objectToDelete ghost] == nil) {
+                DDLogWarn(@"Simperium found local object that doesn't exist remotely yet: %@ (%@)", key, bucket.name);
+                continue;
+            }
+            [keysForDeletedObjects addObject:key];
+            [threadSafeStorage deleteObject:objectToDelete];
+        }
+        DDLogVerbose(@"Simperium deleting %ld objects after re-indexing", (long)[keysForDeletedObjects count]);
+        [threadSafeStorage save];
+        
+        NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  bucket.name, @"bucketName",
+                                  keysForDeletedObjects, @"keys", nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidDeleteObjectKeysNotification" object:bucket userInfo:userInfo];
     }
 }
 

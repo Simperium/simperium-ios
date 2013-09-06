@@ -25,13 +25,13 @@ Folder structure
 
 **Storage**. An `SPStorageProvider` defines an interface for local reading and writing of objects. In particular it defines a `threadSafeStorage` method that returns a thread safe instance. `SPCoreDataProvider` is currently the only fully functional storage provider.
 
+**Authentication**. An `SPAuthenticator` handles all authentication with Simperium, and can be customized or overridden as necessary. There are companion classes for iOS and OSX that provide a code-driven UI for signing in and signing up (`SPAuthenticationViewController` and `SPAuthenticationWindowController`).
+
 **Networking**. An `SPNetworkProvider` defines an interface for remote reading and writing of objects in an `SPBucket`. The network provider sends local data and receives remote data in the background, passing it through threaded processors as necessary. Although there is an HTTP provider, the WebSockets provider is intended to become the default (but is still under development).
 
 **User**. Basic access to a user's data. In the future this will hold custom properties and presence information.
 
 **Helpers**. Exporter, keychain, etc.
-
-**UI**. Some default user interfaces for common needs like authentication.
 
 **Binary**. Basic support for moving binary files, either between client devices or potentially from a server to clients. Currently works by syncing a file URI and then using that to upload/download the corresponding data to/from S3. Still under development.
 

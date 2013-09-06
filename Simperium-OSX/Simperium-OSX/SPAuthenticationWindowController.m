@@ -1,8 +1,8 @@
 //
-//  AuthWindowController.m
-//  Simplenote-OSX
+//  SPAuthenticationWindowController.m
+//  Simperium
 //
-//  Created by Brad Angelcyk on 2/14/13.
+//  Created by Michael Johnston on 8/14/13.
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
@@ -15,10 +15,10 @@
 #import "SPAuthenticationTextField.h"
 #import "SPAuthenticationButton.h"
 #import "SPAuthenticationConfiguration.h"
+#import "SPAuthenticationValidator.h"
 
 static NSUInteger windowWidth = 380;
 static NSUInteger windowHeight = 540;
-static int minimumPasswordLength = 4;
 
 @interface SPAuthenticationWindowController () {
     BOOL earthquaking;
@@ -27,13 +27,17 @@ static int minimumPasswordLength = 4;
 @end
 
 @implementation SPAuthenticationWindowController
-@synthesize authManager;
+@synthesize authenticator;
+@synthesize validator;
+@synthesize optional;
 
 - (id)init {
     rowSize = 50;
     SPAuthenticationWindow *window = [[SPAuthenticationWindow alloc] initWithContentRect:NSMakeRect(0, 0, windowWidth, windowHeight) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
     
     if ((self = [super initWithWindow: window])) {
+        self.validator = [[SPAuthenticationValidator alloc] init];
+        
         SPAuthenticationView *authView = [[SPAuthenticationView alloc] initWithFrame:window.frame];
         [window.contentView addSubview:authView];
         
@@ -41,43 +45,45 @@ static int minimumPasswordLength = 4;
         NSUInteger width = windowWidth - paddingX*2;
         
         int cancelWidth = 60;
-        cancelButton = [self linkButtonWithText:@"Skip" frame:NSMakeRect(windowWidth-cancelWidth, windowHeight-5-20, cancelWidth, 20)];
+        NSString *cancelButtonText = NSLocalizedString(@"Skip", @"Text to display on OSX cancel button");
+
+        cancelButton = [self linkButtonWithText:cancelButtonText frame:NSMakeRect(windowWidth-cancelWidth, windowHeight-5-20, cancelWidth, 20)];
         cancelButton.target = self;
         cancelButton.action = @selector(cancelAction:);
         [authView addSubview:cancelButton];
         
-        NSImage *logoImage = [NSImage imageNamed:@"logo"];
-        CGFloat logoY = windowHeight-45-logoImage.size.height;
-        NSRect logoRect = NSMakeRect(windowWidth/2 - logoImage.size.width/2, logoY, logoImage.size.width, logoImage.size.height);
+        NSImage *logoImage = [NSImage imageNamed:[[SPAuthenticationConfiguration sharedInstance] logoImageName]];
+        CGFloat markerY = windowHeight-45-logoImage.size.height;
+        NSRect logoRect = NSMakeRect(windowWidth/2 - logoImage.size.width/2, markerY, logoImage.size.width, logoImage.size.height);
         logoImageView = [[NSImageView alloc] initWithFrame:logoRect];
         logoImageView.image = logoImage;
         [authView addSubview:logoImageView];
         
-        errorField = [self tipFieldWithText:@"" frame:NSMakeRect(paddingX, logoY - 30, width, 20)];
+        errorField = [self tipFieldWithText:@"" frame:NSMakeRect(paddingX, markerY - 30, width, 20)];
         [errorField setTextColor:[NSColor redColor]];
         [authView addSubview:errorField];
 
-        logoY -= 30;
-        usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize, width, 40) secure:NO];
+        markerY -= 30;
+        usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize, width, 40) secure:NO];
         
-        [usernameField setPlaceholderString:@"Email Address"];
+        [usernameField setPlaceholderString:NSLocalizedString(@"Email Address", @"Placeholder text for login field")];
         usernameField.delegate = self;
         [authView addSubview:usernameField];
         
-        passwordField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize*2, width, 40) secure:YES];
-        [passwordField setPlaceholderString:@"Password"];
+        passwordField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*2, width, 40) secure:YES];
+        [passwordField setPlaceholderString:NSLocalizedString(@"Password", @"Placeholder text for password field")];
         
         passwordField.delegate = self;
         [authView addSubview:passwordField];
 
-        confirmField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize*3, width, 40) secure:YES];
-        [confirmField setPlaceholderString:@"Confirm Password"];
+        confirmField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*3, width, 40) secure:YES];
+        [confirmField setPlaceholderString:NSLocalizedString(@"Confirm Password", @"Placeholder text for confirmation field")];
         confirmField.delegate = self;
         [authView addSubview:confirmField];
                 
-        logoY -= 30;
-        signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize*3, width, 40)];
-        signInButton.title = @"Sign In";
+        markerY -= 30;
+        signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*3, width, 40)];
+        signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
         signInButton.target = self;
         signInButton.action = @selector(signInAction:);
         [authView addSubview:signInButton];
@@ -89,8 +95,8 @@ static int minimumPasswordLength = 4;
         [signInButton addSubview:signInProgress];
 
         
-        signUpButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, logoY - rowSize*4, width, 40)];
-        signUpButton.title = @"Sign Up";
+        signUpButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*4, width, 40)];
+        signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
         signUpButton.target = self;
         signUpButton.action = @selector(signUpAction:);
         [authView addSubview:signUpButton];
@@ -101,17 +107,18 @@ static int minimumPasswordLength = 4;
         [signUpButton addSubview:signUpProgress];
 
         
-        changeToSignUpField = [self tipFieldWithText:@"Need an account?" frame:NSMakeRect(paddingX, logoY - rowSize*3 - 35, width, 20)];
+        NSString *signUpTip = NSLocalizedString(@"Need an account?", @"Link to create an account");
+        changeToSignUpField = [self tipFieldWithText:signUpTip frame:NSMakeRect(paddingX, markerY - rowSize*3 - 35, width, 20)];
         [authView addSubview:changeToSignUpField];
 
-        changeToSignInField = [self tipFieldWithText:@"Already have an account?" frame:NSMakeRect(paddingX, logoY - rowSize*4 - 35, width, 20)];
+        NSString *signInTip = NSLocalizedString(@"Already have an account?", @"Link to sign in to an account");
+        changeToSignInField = [self tipFieldWithText:signInTip frame:NSMakeRect(paddingX, markerY - rowSize*4 - 35, width, 20)];
         [authView addSubview:changeToSignInField];
         
-        logoY -= 5;
-        changeToSignUpButton = [self toggleButtonWithText:@"Sign Up" frame:NSMakeRect(paddingX, changeToSignUpField.frame.origin.y - changeToSignUpField.frame.size.height - 5, width, 30)];
+        changeToSignUpButton = [self toggleButtonWithText:signUpButton.title frame:NSMakeRect(paddingX, changeToSignUpField.frame.origin.y - changeToSignUpField.frame.size.height - 2, width, 30)];
         [authView addSubview:changeToSignUpButton];
         
-        changeToSignInButton = [self toggleButtonWithText:@"Sign In" frame:NSMakeRect(paddingX, changeToSignInField.frame.origin.y - changeToSignInField.frame.size.height - 5, width, 30)];
+        changeToSignInButton = [self toggleButtonWithText:signInButton.title frame:NSMakeRect(paddingX, changeToSignInField.frame.origin.y - changeToSignInField.frame.size.height - 2, width, 30)];
         [authView addSubview:changeToSignInButton];
         
         // Enter sign up mode
@@ -132,13 +139,14 @@ static int minimumPasswordLength = 4;
 
 - (NSTextField *)tipFieldWithText:(NSString *)text frame:(CGRect)frame {
     NSTextField *field = [[NSTextField alloc] initWithFrame:frame];
+    NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:13];
     [field setStringValue:[text uppercaseString]];
     [field setEditable:NO];
     [field setSelectable:NO];
     [field setBordered:NO];
     [field setDrawsBackground:NO];
     [field setAlignment:NSCenterTextAlignment];
-    [field setFont:[[SPAuthenticationConfiguration sharedInstance] mediumFontWithSize:13]];
+    [field setFont:font];
     [field setTextColor:[NSColor colorWithCalibratedWhite:153.f/255.f alpha:1.0]];
     
     return field;
@@ -153,10 +161,10 @@ static int minimumPasswordLength = 4;
     
     NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
     [style setAlignment:NSCenterTextAlignment];
-    NSColor *linkColor = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
-
+    NSColor *linkColor = [SPAuthenticationConfiguration sharedInstance].controlColor;
     
-    NSDictionary *attributes = @{NSFontAttributeName : [[SPAuthenticationConfiguration sharedInstance] mediumFontWithSize:13],
+    NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:13];
+    NSDictionary *attributes = @{NSFontAttributeName : font,
                                  NSForegroundColorAttributeName : linkColor,
                                  NSParagraphStyleAttributeName : style};
     [button setAttributedTitle: [[NSAttributedString alloc] initWithString:[text uppercaseString] attributes:attributes]];
@@ -199,20 +207,20 @@ static int minimumPasswordLength = 4;
         return;
     }
     
-    signInButton.title = @"Signing In...";
+    signInButton.title = NSLocalizedString(@"Signing In...", @"Displayed temporarily while signing in");
     [signInProgress startAnimation:self];
     [signInButton setEnabled:NO];
     [changeToSignUpButton setEnabled:NO];
     [usernameField setEnabled:NO];
     [passwordField setEnabled:NO];
-    [self.authManager authenticateWithUsername:[usernameField stringValue] password:[passwordField stringValue]
+    [self.authenticator authenticateWithUsername:[usernameField stringValue] password:[passwordField stringValue]
                                        success:^{
                                        }
                                        failure:^(int responseCode, NSString *responseString) {
                                            NSLog(@"Error signing in (%d): %@", responseCode, responseString);
                                            [self showAuthenticationErrorForCode:responseCode];
                                            [signInProgress stopAnimation:self];
-                                           signInButton.title = @"Sign In";
+                                           signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
                                            [signInButton setEnabled:YES];
                                            [changeToSignUpButton setEnabled:YES];
                                            [usernameField setEnabled:YES];
@@ -226,7 +234,7 @@ static int minimumPasswordLength = 4;
         return;
     }
     
-    signUpButton.title = @"Signing Up...";
+    signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
     [signUpProgress startAnimation:self];
     [signUpButton setEnabled:NO];
     [changeToSignInButton setEnabled:NO];
@@ -234,14 +242,14 @@ static int minimumPasswordLength = 4;
     [passwordField setEnabled:NO];
     [confirmField setEnabled:NO];
 
-    [self.authManager createWithUsername:[usernameField stringValue] password:[passwordField stringValue]
+    [self.authenticator createWithUsername:[usernameField stringValue] password:[passwordField stringValue]
                                  success:^{
                                      //[self close];
                                  }
                                  failure:^(int responseCode, NSString *responseString) {
                                      NSLog(@"Error signing up (%d): %@", responseCode, responseString);
                                      [self showAuthenticationErrorForCode:responseCode];
-                                     signUpButton.title = @"Sign Up";
+                                     signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
                                      [signUpProgress stopAnimation:self];
                                      [signUpButton setEnabled:YES];
                                      [changeToSignInButton setEnabled:YES];
@@ -252,28 +260,16 @@ static int minimumPasswordLength = 4;
 }
 
 - (IBAction)cancelAction:(id)sender {
-    [authManager cancel];
+    [authenticator cancel];
 }
 
 
 # pragma mark Validation and Error Handling
 
-- (BOOL)isValidEmail:(NSString *)checkString {
-    // From http://stackoverflow.com/a/3638271/1379066
-    BOOL stricterFilter = YES; // Discussion http://blog.logichigh.com/2010/09/02/validating-an-e-mail-address/
-    NSString *stricterFilterString = @"[A-Z0-9a-z\\._%+-]+@([A-Za-z0-9-]+\\.)+[A-Za-z]{2,4}";
-    NSString *laxString = @".+@([A-Za-z0-9]+\\.)+[A-Za-z]{2}[A-Za-z]*";
-    NSString *emailRegex = stricterFilter ? stricterFilterString : laxString;
-    NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
-    
-    return [emailTest evaluateWithObject:checkString];
-}
-
 - (BOOL)validateUsername {
-    // Expect email addresses by default
-    if (![self isValidEmail:usernameField.stringValue]) {
+    if (![self.validator validateUsername:usernameField.stringValue]) {
         [self earthquake:usernameField];
-        [self showAuthenticationError:@"Not a valid email address"];
+        [self showAuthenticationError:NSLocalizedString(@"Not a valid email address", @"Error when you enter a bad email address")];
         
         return NO;
     }
@@ -282,18 +278,17 @@ static int minimumPasswordLength = 4;
 }
 
 - (BOOL)validatePasswordSecurity {
-    if (passwordField.stringValue.length < minimumPasswordLength) {
+    if (![self.validator validatePasswordSecurity:passwordField.stringValue]) {
         [self earthquake:passwordField];
         [self earthquake:confirmField];
         
-        NSString *notLongEnough = [NSString stringWithFormat:@"Password should be at least %d characters", minimumPasswordLength];
+        NSString *errorStr = NSLocalizedString(@"Password should be at least %ld characters", @"Error when your password isn't long enough");
+        NSString *notLongEnough = [NSString stringWithFormat:errorStr, (long)self.validator.minimumPasswordLength];
         [self showAuthenticationError:notLongEnough];
         
         return NO;
     }
     
-    // Could enforce other requirements here
-
     return YES;
 }
 
@@ -309,8 +304,8 @@ static int minimumPasswordLength = 4;
 }
 
 - (BOOL)validateConnection {
-    if (!authManager.connected) {
-        [self showAuthenticationError:@"You're not connected to the internet"];
+    if (!authenticator.connected) {
+        [self showAuthenticationError:NSLocalizedString(@"You're not connected to the internet", @"Error when you're not connected")];
         return NO;
     }
     
@@ -380,18 +375,18 @@ static int minimumPasswordLength = 4;
     switch (responseCode) {
         case 409:
             // User already exists
-            [self showAuthenticationError:@"That email is already being used"];
+            [self showAuthenticationError:NSLocalizedString(@"That email is already being used", @"Error when address is in use")];
             [self earthquake:usernameField];
             [[self window] makeFirstResponder:usernameField];
             break;
         case 401:
             // Bad email or password
-            [self showAuthenticationError:@"Bad email or password"];
+            [self showAuthenticationError:NSLocalizedString(@"Bad email or password", @"Error for bad email or password")];
             break;
 
         default:
             // General network problem
-            [self showAuthenticationError:@"We're having problems. Please try again soon."];
+            [self showAuthenticationError:NSLocalizedString(@"We're having problems. Please try again soon.", @"Generic error")];
             break;
     }
 }
@@ -424,7 +419,8 @@ static int minimumPasswordLength = 4;
 
 - (void)controlTextDidChange:(NSNotification *)obj {
     // Intercept return and invoke actions
-    if ([[NSApp currentEvent].charactersIgnoringModifiers isEqualToString:@"\r"]) {
+    NSEvent *currentEvent = [NSApp currentEvent];
+    if (currentEvent.type == NSKeyDown && [currentEvent.charactersIgnoringModifiers isEqualToString:@"\r"]) {
         if (signingIn && [[obj object] isEqual:passwordField.textField]) {
             [self signInAction:nil];
         } else if (!signingIn && [[obj object] isEqual:confirmField.textField]) {

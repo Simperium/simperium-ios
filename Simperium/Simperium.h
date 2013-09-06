@@ -10,8 +10,9 @@
 #import <CoreData/CoreData.h>
 #import "SPBucket.h"
 #import "SPManagedObject.h"
-#import "SPAuthenticationManager.h"
+#import "SPAuthenticator.h"
 #import "SPUser.h"
+#import "SPAuthenticationConfiguration.h"
 
 @class Simperium;
 @class SPBinaryManager;
@@ -19,7 +20,6 @@
 #if TARGET_OS_IPHONE
 @class UIViewController;
 #else
-#import "SPAuthenticationConfiguration.h"
 @class NSWindow;
 #endif
 
@@ -35,7 +35,7 @@
 @end
 
 // The main class through which you access Simperium.
-@interface Simperium : NSObject<SPAuthenticationDelegate> {
+@interface Simperium : NSObject<SPAuthenticatorDelegate> {
     SPUser *user;
     NSString *label;
     NSString *appID;
@@ -44,10 +44,10 @@
     NSString *clientID;   
     id<SimperiumDelegate> __weak delegate;
     SPBinaryManager *binaryManager;
-    SPAuthenticationManager *authManager;
+    SPAuthenticator *authenticator;
     
 #if TARGET_OS_IPHONE
-    Class __weak loginViewControllerClass;
+    Class __weak authenticationViewControllerClass;
 #else
     Class __weak authWindowControllerClass;
 #endif
@@ -63,14 +63,18 @@
 
 // Starts Simperium with the given credentials (from simperium.com) and an existing Core Data stack.
 - (void)startWithAppID:(NSString *)identifier
-               APIKey:(NSString *)key
-                model:(NSManagedObjectModel *)model
-              context:(NSManagedObjectContext *)context
-          coordinator:(NSPersistentStoreCoordinator *)coordinator;
+				APIKey:(NSString *)key
+				 model:(NSManagedObjectModel *)model
+               context:(NSManagedObjectContext *)context
+		   coordinator:(NSPersistentStoreCoordinator *)coordinator;
 
 // Save and sync all changed objects. If you're using Core Data, this is just a convenience method
 // (you can also just save your context and Simperium will see the changes).
 - (BOOL)save;
+
+// Force Simperium to sync all its buckets. Success return value will be false if the timeout is reached, and the sync wasn't completed.
+typedef void (^SimperiumForceSyncCompletion)(BOOL success);
+- (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumForceSyncCompletion)completion;
 
 // Get a particular bucket (which, for Core Data, corresponds to a particular Entity name in your model).
 // Once you have a bucket instance, you can set a SPBucketDelegate to react to changes.
@@ -78,6 +82,7 @@
 
 // Convenience methods for accessing the Core Data stack.
 - (NSManagedObjectContext *)managedObjectContext;
+- (NSManagedObjectContext *)writerManagedObjectContext;
 - (NSManagedObjectModel *)managedObjectModel;
 - (NSPersistentStoreCoordinator *)persistentStoreCoordinator;
 
@@ -144,10 +149,10 @@
 // Set this if for some reason you want to use multiple Simperium instances (e.g. unit testing).
 @property (copy) NSString *label;
 
-// You can implement your own subclass of SPLoginViewController (iOS) or
-// SPLoginWindowController (OSX) to customize authentication.
+// You can implement your own subclass of SPAuthenticationViewController (iOS) or
+// SPAuthenticationWindowController (OSX) to customize authentication.
 #if TARGET_OS_IPHONE
-@property (nonatomic, weak) Class loginViewControllerClass;
+@property (nonatomic, weak) Class authenticationViewControllerClass;
 #else
 @property (nonatomic, weak) Class authenticationWindowControllerClass;
 #endif
@@ -157,7 +162,7 @@
 
 @property (nonatomic, strong) SPBinaryManager *binaryManager;
 
-@property (nonatomic, strong) SPAuthenticationManager *authManager;
+@property (nonatomic, strong) SPAuthenticator *authenticator;
 
 
 #if TARGET_OS_IPHONE

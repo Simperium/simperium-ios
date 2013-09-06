@@ -58,8 +58,7 @@ typedef NSUInteger SPBucketChangeType;
     SPDiffer *differ;
     id<SPStorageProvider> storage;
     SPSchema *schema;
-    dispatch_queue_t processorQueue;
-    
+   
     id<SPBucketDelegate> __weak delegate;
     
     NSString *lastChangeSignature;
@@ -109,6 +108,9 @@ typedef NSUInteger SPBucketChangeType;
 
 /** For internal use
  */
+
+typedef void (^SPBucketForceSyncCompletion)(void);
+
 @property (nonatomic, copy) NSString *instanceLabel;
 @property (nonatomic, strong) id<SPStorageProvider> storage;
 @property (nonatomic, strong) id<SPNetworkInterface> network;
@@ -116,8 +118,9 @@ typedef NSUInteger SPBucketChangeType;
 @property (nonatomic, strong) SPRelationshipResolver *relationshipResolver;
 @property (strong) SPChangeProcessor* changeProcessor;
 @property (strong) SPIndexProcessor* indexProcessor;
-@property (assign) dispatch_queue_t processorQueue;
+@property (nonatomic, strong) dispatch_queue_t processorQueue;
 @property (nonatomic, copy) NSString *lastChangeSignature;
+@property (nonatomic, copy) SPBucketForceSyncCompletion forceSyncCompletion;
 
 - (id)initWithSchema:(SPSchema *)aSchema
              storage:(id<SPStorageProvider>)aStorage
@@ -127,5 +130,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver
 - (void)validateObjects;
 - (void)unloadAllObjects;
 - (void)resolvePendingRelationshipsToKeys:(NSSet *)keys;
+- (void)forceSyncWithCompletion:(SPBucketForceSyncCompletion)completion;
+- (void)bucketDidSync;
 
 @end

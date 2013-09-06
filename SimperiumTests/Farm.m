@@ -52,8 +52,11 @@
     //[simperium startWithAppName:APP_ID APIKey:API_KEY];
     
     // Core Data testing
-    [simperium startWithAppID:APP_ID APIKey:API_KEY model:[self managedObjectModel]
-                      context:[self managedObjectContext] coordinator:[self persistentStoreCoordinator]];
+    [simperium startWithAppID:APP_ID
+					   APIKey:API_KEY
+						model:[self managedObjectModel]
+				  mainContext:[self managedObjectContext]
+				  coordinator:[self persistentStoreCoordinator]];
     
     [simperium setAllBucketDelegates: self];
     
@@ -111,9 +114,11 @@
     switch(change) {
         case SPBucketChangeAcknowledge:
             expectedAcknowledgments -= 1;
+//            NSLog(@"%@ acknowledged (%d)", simperium.label, expectedAcknowledgments);
             break;
         case SPBucketChangeDelete:
             expectedDeletions -= 1;
+//            NSLog(@"%@ received deletion (%d)", simperium.label, expectedDeletions);
             break;
         case SPBucketChangeInsert:
             expectedAdditions -= 1;
@@ -140,6 +145,7 @@
 
 - (void)bucketDidAcknowledgeDelete:(SPBucket *)bucket {
     expectedAcknowledgments -= 1;
+//    NSLog(@"%@ acknowledged deletion (%d)", simperium.label, expectedAcknowledgments);
 }
 
 - (void)bucket:(SPBucket *)bucket didReceiveObjectForKey:(NSString *)key version:(NSString *)version data:(NSDictionary *)data {
@@ -176,13 +182,7 @@
     {
         return __managedObjectContext;
     }
-    
-    NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
-    if (coordinator != nil)
-    {
-        __managedObjectContext = [[NSManagedObjectContext alloc] init];
-        [__managedObjectContext setPersistentStoreCoordinator:coordinator];
-    }
+	__managedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
     return __managedObjectContext;
 }
 

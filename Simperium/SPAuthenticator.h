@@ -1,5 +1,5 @@
 //
-//  SPAuthenticationManager.h
+//  SPAuthenticator.h
 //  Simperium
 //
 //  Created by Michael Johnston on 12-02-27.
@@ -12,16 +12,16 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 
 @class Simperium;
 
-@protocol SPAuthenticationDelegate <NSObject>
+@protocol SPAuthenticatorDelegate <NSObject>
 @optional
 -(void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token;
 -(void)authenticationDidFail;
 -(void)authenticationDidCancel;
 @end
 
-@interface SPAuthenticationManager : NSObject {
+@interface SPAuthenticator : NSObject {
     Simperium *__weak simperium;
-    id<SPAuthenticationDelegate> delegate;
+    id<SPAuthenticatorDelegate> delegate;
     SucceededBlockType succeededBlock;
     FailedBlockType failedBlock;
     BOOL connected;
@@ -33,11 +33,11 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 @property(nonatomic, copy) NSString *providerString;
 @property(assign) BOOL connected;
 
--(id)initWithDelegate:(id<SPAuthenticationDelegate>)authDelegate simperium:(Simperium *)s;
--(BOOL)authenticateIfNecessary;
--(void)authenticateWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock;
--(void)createWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock;
--(void)reset;
--(void)cancel;
+- (id)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s;
+- (BOOL)authenticateIfNecessary;
+- (void)authenticateWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock;
+- (void)createWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock;
+- (void)reset;
+- (void)cancel;
 
 @end
