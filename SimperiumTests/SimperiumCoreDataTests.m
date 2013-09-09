@@ -54,7 +54,7 @@ static NSString* const kDeletedKey = @"deleted";
 	// Load the contexts
     Farm *leader = [farms lastObject];
 	self.writerContext = leader.simperium.writerManagedObjectContext;
-	self.mainContext = leader.simperium.mainManagedObjectContext;
+	self.mainContext = leader.simperium.managedObjectContext;
 	self.changesByContext = [NSMutableDictionary dictionary];
 	
 	STAssertTrue((self.mainContext.concurrencyType == NSMainQueueConcurrencyType), @"CoreData mainContext Setup Error");
@@ -199,7 +199,7 @@ static NSString* const kDeletedKey = @"deleted";
     [self waitFor:1.0];
 
 	// Prepare everything we need
-	NSManagedObjectContext *followerMainMOC	= follower.simperium.mainManagedObjectContext;
+	NSManagedObjectContext *followerMainMOC	= follower.simperium.managedObjectContext;
 	NSManagedObjectContext *followerWriterMOC = follower.simperium.writerManagedObjectContext;
 		
 	// Listen to the follower MainMOC changes & WriterMOC save notifications
