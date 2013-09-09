@@ -454,49 +454,37 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
 	// Persist to "disk"!
 	[self saveWriterContext];
-
-/*
+	
 	// Move the changes to the main MOC. This will NOT trigger main MOC's hasChanges flag.
 	// NOTE: setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
 	// Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
 	[self.mainManagedObjectContext performBlock:^{
-
+		
+		// Proceed with the regular merge. This should trigger a contextDidChange note
+		[self.mainManagedObjectContext mergeChangesFromContextDidSaveNotification:notification];
+		
 		// Force fault & refresh any updated objects.
 		// Ref.: http://lists.apple.com/archives/cocoa-dev/2008/Jun/msg00264.html
 		// Ref.: http://stackoverflow.com/questions/16296364/nsfetchedresultscontroller-is-not-showing-all-results-after-merging-an-nsmanage/16296538#16296538
 		NSDictionary *userInfo = notification.userInfo;
-		
-		for(NSManagedObject* mo in userInfo[NSUpdatedObjectsKey]) {
-			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
-			[localMO willAccessValueForKey:nil];
-			[self.mainManagedObjectContext refreshObject:localMO mergeChanges:NO];
-
-		}
-		
-		// Now we can proceed with the merge
-		[self.mainManagedObjectContext mergeChangesFromContextDidSaveNotification:notification];
-	}];
-*/
-	// Ref.: mergeChangesFromContextDidSaveNotification alternative
-	[self.mainManagedObjectContext performBlock:^{
-
-		NSDictionary *userInfo = notification.userInfo;
 		NSMutableSet *upsertedObjects = [NSMutableSet set];
-
+		
 		[upsertedObjects unionSet:userInfo[NSUpdatedObjectsKey]];
 		[upsertedObjects unionSet:userInfo[NSRefreshedObjectsKey]];
 		[upsertedObjects unionSet:userInfo[NSInsertedObjectsKey]];
-
+		
 		for(NSManagedObject* mo in upsertedObjects) {
 			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
 			[localMO willAccessValueForKey:nil];
 			[self.mainManagedObjectContext refreshObject:localMO mergeChanges:NO];
 		}
-
+		
 		NSSet* deletedObjects = userInfo[NSDeletedObjectsKey];
 		for(NSManagedObject* mo in deletedObjects) {
 			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
-			[self.mainManagedObjectContext deleteObject:localMO];
+			if(localMO && !localMO.isDeleted) {
+				[self.mainManagedObjectContext deleteObject:localMO];
+			}
 		}
 	}];
 }
