@@ -339,7 +339,8 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 -(void)requestLatestVersionsForBucket:(SPBucket *)b {
-    // Not yet implemented
+    SPWebSocketChannel *channel = [self channelForName:b.name];
+    [channel requestLatestVersionsForBucket:b];
 }
 
 -(void)forceSyncBucket:(SPBucket *)bucket {
