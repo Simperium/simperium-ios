@@ -202,10 +202,10 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     }
 }
 
-- (void)webSocketDidOpen:(SRWebSocket *)webSocket {
+- (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
 	
 	// Reconnection failsafe
-	if(webSocket != self.webSocket) {
+	if(theWebSocket != self.webSocket) {
 		return;
 	}
 	
