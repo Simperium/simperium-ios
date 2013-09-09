@@ -33,14 +33,6 @@ NSString * const CH_LOCAL_ID		= @"ccid";
 NSString * const CH_ERROR           = @"error";
 NSString * const CH_DATA            = @"d";
 
-// Notifications
-NSString * const ProcessorDidAddObjectsNotification = @"ProcessorDidAddObjectsNotification";
-NSString * const ProcessorDidChangeObjectNotification = @"ProcessorDidChangeObjectNotification";
-NSString * const ProcessorDidDeleteObjectKeysNotification = @"ProcessorDidDeleteObjectKeysNotification";
-NSString * const ProcessorDidAcknowledgeObjectsNotification = @"ProcessorDidAcknowledgeObjectsNotification";
-NSString * const ProcessorWillChangeObjectsNotification = @"ProcessorWillChangeObjectsNotification";
-NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAcknowledgeDeleteNotification";
-NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNotification";
 
 @interface SPChangeProcessor()
 -(void)loadSerializedChanges;

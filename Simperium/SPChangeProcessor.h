@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "SPProcessorNotificationsNames.h"
 
 @class SPBucket;
 
@@ -28,13 +29,6 @@ extern NSString * const CH_START_VERSION;
 extern NSString * const CH_END_VERSION;
 extern NSString * const CH_LOCAL_ID;
 
-extern NSString * const ProcessorDidAddObjectsNotification;
-extern NSString * const ProcessorDidChangeObjectNotification;
-extern NSString * const ProcessorDidDeleteObjectKeysNotification;
-extern NSString * const ProcessorDidAcknowledgeObjectsNotification;
-extern NSString * const ProcessorWillChangeObjectsNotification;
-extern NSString * const ProcessorDidAcknowledgeDeleteNotification;
-extern NSString * const ProcessorRequestsReindexing;
 
 - (id)initWithLabel:(NSString *)label;
 - (void)reset;
