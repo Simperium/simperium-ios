@@ -108,7 +108,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 // Perform the actual authentication calls to Simperium
 - (void)authenticateWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock
-{    
+{
+    username = [username lowercaseString];
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, simperium.appID]];
     DDLogInfo(@"Simperium authenticating: %@", [NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, simperium.appID]);
     DDLogVerbose(@"Simperium username is %@", username);
