@@ -199,6 +199,12 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
+	
+	// Reconnection failsafe
+	if(webSocket != self.webSocket) {
+		return;
+	}
+	
     open = YES;
     
     // Start all channels
