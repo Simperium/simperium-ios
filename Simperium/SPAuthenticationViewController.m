@@ -34,12 +34,18 @@
 		NSLocalizedString(@"Sign Up", @"Title of button to create a new account (must be short)") :
 		NSLocalizedString(@"Sign In", @"Title of button for logging in (must be short)");
 	NSString *changeTitle = creating ?
-		NSLocalizedString(@"Already have an account? Sign in", @"A short link to access the account login screen") :
-		NSLocalizedString(@"Don't have an account? Sign up", @"A short link to access the account creation screen");    
+		NSLocalizedString(@"Sign in", @"A short link to access the account login screen") :
+		NSLocalizedString(@"Sign up", @"A short link to access the account creation screen");
+    NSString *changeDetailTitle = creating ?
+    NSLocalizedString(@"Already have an account?", @"A short description to access the account login screen") :
+    NSLocalizedString(@"Don't have an account?", @"A short description to access the account creation screen");
+    
     changeTitle = [changeTitle stringByAppendingString:@" »"];
     
 	[actionButton setTitle: actionTitle forState:UIControlStateNormal];
-	[changeButton setTitle: changeTitle.uppercaseString forState:UIControlStateNormal];
+    [changeButton setTitle:changeTitle.uppercaseString forState:UIControlStateNormal];
+    changeButton.detailTitleLabel.text = changeDetailTitle.uppercaseString;
+
     termsButton.hidden = !bCreating;
 }
 
@@ -103,13 +109,15 @@
     [actionButton setBackgroundHighlightColor:darkBlueColor];
 	actionButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	
-	changeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+	changeButton = [[SPAuthenticationButton alloc] initWithFrame:CGRectZero];
 	[changeButton addTarget:self
                      action:@selector(changeAction:)
            forControlEvents:UIControlEventTouchUpInside];
-    [changeButton setTitleColor:greyColor forState:UIControlStateNormal];
-    [changeButton setTitleColor:blueColor forState:UIControlStateHighlighted];
-    changeButton.titleLabel.font = [UIFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:12.0];
+    [changeButton setTitleColor:blueColor forState:UIControlStateNormal];
+    [changeButton setTitleColor:greyColor forState:UIControlStateHighlighted];
+    changeButton.detailTitleLabel.textColor = greyColor;
+    changeButton.detailTitleLabel.font = [UIFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:12.5];
+    changeButton.titleLabel.font = [UIFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:12.5];
     changeButton.frame= CGRectMake(10.0, 80.0, self.tableView.frame.size.width-20.0, 40.0);
 	changeButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	
@@ -429,11 +437,14 @@
         [self.tableView insertRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
     else
         [self.tableView deleteRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
-	[usernameField becomeFirstResponder];
+
+    [usernameField becomeFirstResponder];
     
     [self setCreating:creating];
-    [self positionTableViewWithDuration:0.3];
     
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self positionTableViewWithDuration:0.3];
+    });
 }
 
 - (void)goAction:(id)sender {
