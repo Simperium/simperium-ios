@@ -183,7 +183,12 @@ static NSString *SFHFKeychainUtilsErrorDomain = @"SFHFKeychainUtilsErrorDomain";
     NSMutableDictionary *attributeQuery = [query mutableCopy];
     [attributeQuery setObject: (id) kCFBooleanTrue forKey:(__bridge_transfer id) kSecReturnAttributes];
     CFTypeRef attrResult = NULL;
-    OSStatus status = SecItemCopyMatching((__bridge_retained CFDictionaryRef) attributeQuery, &attrResult);
+	
+	CFDictionaryRef cfQuery = (CFDictionaryRef)CFBridgingRetain(attributeQuery);
+    OSStatus status = SecItemCopyMatching(cfQuery, &attrResult);
+	CFRelease(cfQuery);
+	cfQuery = nil;
+	
     //NSDictionary *attributeResult = (__bridge_transfer NSDictionary *)attrResult;
     if (status != noErr) {
         // No existing item found--simply return nil for the password
@@ -198,7 +203,12 @@ static NSString *SFHFKeychainUtilsErrorDomain = @"SFHFKeychainUtilsErrorDomain";
     NSMutableDictionary *passwordQuery = [query mutableCopy];
     [passwordQuery setObject: (id) kCFBooleanTrue forKey: (__bridge_transfer id) kSecReturnData];
     CFTypeRef resData = NULL;
-    status = SecItemCopyMatching((__bridge_retained CFDictionaryRef) passwordQuery, (CFTypeRef *) &resData);
+	
+	CFDictionaryRef cfPasswordQuery = (CFDictionaryRef)CFBridgingRetain(passwordQuery);
+    status = SecItemCopyMatching(cfPasswordQuery, (CFTypeRef *) &resData);
+	CFRelease(cfPasswordQuery);
+	cfPasswordQuery = nil;
+	
     NSData *resultData = (__bridge_transfer NSData *)resData;
     if (status != noErr) {
         if (status == errSecItemNotFound) {
@@ -348,7 +358,11 @@ static NSString *SFHFKeychainUtilsErrorDomain = @"SFHFKeychainUtilsErrorDomain";
     NSArray *keys = [[NSArray alloc] initWithObjects: (__bridge_transfer NSString *) kSecClass, kSecAttrAccount, kSecAttrService, kSecReturnAttributes, nil];
     NSArray *objects = [[NSArray alloc] initWithObjects: (__bridge_transfer NSString *) kSecClassGenericPassword, username, serviceName, kCFBooleanTrue, nil];
     NSDictionary *query = [[NSDictionary alloc] initWithObjects: objects forKeys: keys];
-    OSStatus status = SecItemDelete((__bridge_retained CFDictionaryRef) query);
+	
+	CFDictionaryRef cfQuery = (CFDictionaryRef)CFBridgingRetain(query);
+    OSStatus status = SecItemDelete(cfQuery);
+	CFRelease(cfQuery);
+	cfQuery = nil;
     
     if (error != nil && status != noErr)
     {
