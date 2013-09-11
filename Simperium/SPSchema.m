@@ -63,8 +63,11 @@
         for (NSDictionary *memberDict in memberList) {
             NSString *typeStr = [memberDict valueForKey:@"type"];
             SPMember *member = [[[self memberClassForType:typeStr] alloc] initFromDictionary:memberDict];
-            [members setObject:member forKey:member.keyName];
-            
+			
+			if(member) {
+				[members setObject:member forKey:member.keyName];
+			}
+			
             if ([member isKindOfClass:[SPMemberBinary class]])
                 [binaryMembers addObject: member];
         }        
@@ -95,7 +98,9 @@
                                 type, @"type",
                                 key, @"name", nil];
     SPMember *member = [[[self memberClassForType:type] alloc] initFromDictionary:memberDict];
-    [members setObject:member forKey:member.keyName];
+	if(member) {
+		[members setObject:member forKey:member.keyName];
+	}
     
 }
 
