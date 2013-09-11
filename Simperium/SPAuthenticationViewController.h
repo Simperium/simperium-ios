@@ -27,7 +27,7 @@
 	UIActivityIndicatorView *progressView;
 	SPAuthenticationButton *actionButton;
     UIButton *termsButton;
-    UIButton *changeButton;
+    SPAuthenticationButton *changeButton;
 
     BOOL editing;
     

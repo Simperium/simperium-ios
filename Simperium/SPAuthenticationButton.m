@@ -30,6 +30,13 @@ static NSString* const SPAuthenticationHighlightedKey = @"highlighted";
                   options:NSKeyValueObservingOptionNew
                   context:NULL];
         
+        self.titleLabel.textAlignment = NSTextAlignmentCenter;
+        
+        _detailTitleLabel = [[UILabel alloc] init];
+        _detailTitleLabel.backgroundColor = [UIColor clearColor];
+        _detailTitleLabel.textAlignment = NSTextAlignmentCenter;
+        [self addSubview:_detailTitleLabel];
+        
         errorView = [[UIView alloc] initWithFrame:self.bounds];
         errorView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         errorView.backgroundColor = [UIColor colorWithRed:222.0 / 255.0
@@ -55,6 +62,27 @@ static NSString* const SPAuthenticationHighlightedKey = @"highlighted";
     }
     
     return self;
+}
+
+- (void)layoutSubviews {
+    
+    [super layoutSubviews];
+    
+    // layout title labels
+    CGFloat titleLabelHeight = self.titleLabel.font.lineHeight;
+    CGFloat detailTitleLabelHeight = self.detailTitleLabel.text.length > 0 ? self.detailTitleLabel.font.lineHeight : 0;
+    CGFloat height = self.bounds.size.height;
+    CGFloat padding = 10.0;
+    
+    self.detailTitleLabel.frame = CGRectMake(padding,
+                                             (height - (titleLabelHeight + detailTitleLabelHeight)) / 2.0,
+                                             self.bounds.size.width - 2 * padding,
+                                             detailTitleLabelHeight);
+    
+    self.titleLabel.frame = CGRectMake(padding,
+                                       detailTitleLabelHeight + self.detailTitleLabel.frame.origin.y,
+                                       self.bounds.size.width - 2 * padding,
+                                       titleLabelHeight);
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {

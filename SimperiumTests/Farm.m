@@ -55,7 +55,7 @@
     [simperium startWithAppID:APP_ID
 					   APIKey:API_KEY
 						model:[self managedObjectModel]
-				  mainContext:[self managedObjectContext]
+                      context:[self managedObjectContext]
 				  coordinator:[self persistentStoreCoordinator]];
     
     [simperium setAllBucketDelegates: self];

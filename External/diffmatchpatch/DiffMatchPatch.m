@@ -190,7 +190,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 {
   Patch *newPatch = [[[self class] allocWithZone:zone] init];
 
-  newPatch.diffs = [[NSMutableArray alloc] initWithArray:self.diffs copyItems:YES];
+  newPatch.diffs = [[[NSMutableArray alloc] initWithArray:self.diffs copyItems:YES] autorelease];
   newPatch.start1 = self.start1;
   newPatch.start2 = self.start2;
   newPatch.length1 = self.length1;
@@ -2118,7 +2118,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
  */
 - (NSMutableArray *)patch_deepCopy:(NSArray *)patches;
 {
-  NSMutableArray *patchesCopy = [[NSMutableArray alloc] initWithArray:patches copyItems:YES];
+  NSMutableArray *patchesCopy = [[[NSMutableArray alloc] initWithArray:patches copyItems:YES] autorelease];
   return patchesCopy;
 }
 
@@ -2244,7 +2244,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   // Strip the padding off.
   text = [textMutable substringWithRange:NSMakeRange(nullPadding.length,
       textMutable.length - 2 * nullPadding.length)];
-  [patches release];
+
   return [NSArray arrayWithObjects:text, resultsArray, nil];
 }
 

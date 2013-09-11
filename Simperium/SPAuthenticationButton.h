@@ -19,6 +19,7 @@
 }
 
 @property (nonatomic, strong) UIColor *backgroundHighlightColor;
+@property (nonatomic, strong) UILabel *detailTitleLabel;
 
 - (void)showErrorMessage:(NSString *)errorMessage;
 - (void)clearErrorMessage;

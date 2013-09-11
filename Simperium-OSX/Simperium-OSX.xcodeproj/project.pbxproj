@@ -137,6 +137,7 @@
 		2698BE5715C9097A0020565F /* JRSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 2698BE5515C9097A0020565F /* JRSwizzle.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		26C3E1531666FE7500620306 /* SPWebSocketChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */; };
 		26C3E1541666FE7500620306 /* SPWebSocketChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 26C3E14E1666FE7500620306 /* SPWebSocketChannel.m */; };
+		460A505B17DE95B20070F02B /* SPProcessorNotificationNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 460A505A17DE95B20070F02B /* SPProcessorNotificationNames.m */; };
 		4617AEBB179A1A3400545BD9 /* SPReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 4617AEB9179A1A3400545BD9 /* SPReachability.h */; };
 		4617AEBC179A1A3400545BD9 /* SPReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 4617AEBA179A1A3400545BD9 /* SPReachability.m */; };
 		46263BB117A7778E00131791 /* SPAuthenticationConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 46263BAF17A7778E00131791 /* SPAuthenticationConfiguration.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -312,6 +313,8 @@
 		2698BE5515C9097A0020565F /* JRSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JRSwizzle.m; sourceTree = "<group>"; };
 		26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPWebSocketChannel.h; path = ../../Simperium/SPWebSocketChannel.h; sourceTree = "<group>"; };
 		26C3E14E1666FE7500620306 /* SPWebSocketChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocketChannel.m; path = ../../Simperium/SPWebSocketChannel.m; sourceTree = "<group>"; };
+		460A505917DE956C0070F02B /* SPProcessorNotificationsNames.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SPProcessorNotificationsNames.h; path = ../Simperium/SPProcessorNotificationsNames.h; sourceTree = "<group>"; };
+		460A505A17DE95B20070F02B /* SPProcessorNotificationNames.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPProcessorNotificationNames.m; path = ../Simperium/SPProcessorNotificationNames.m; sourceTree = "<group>"; };
 		4617AEB9179A1A3400545BD9 /* SPReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPReachability.h; sourceTree = "<group>"; };
 		4617AEBA179A1A3400545BD9 /* SPReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPReachability.m; sourceTree = "<group>"; };
 		46263BAF17A7778E00131791 /* SPAuthenticationConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPAuthenticationConfiguration.h; path = ../../Simperium/SPAuthenticationConfiguration.h; sourceTree = "<group>"; };
@@ -376,6 +379,8 @@
 		268EDEBD155F06D5006B566F = {
 			isa = PBXGroup;
 			children = (
+				460A505917DE956C0070F02B /* SPProcessorNotificationsNames.h */,
+				460A505A17DE95B20070F02B /* SPProcessorNotificationNames.m */,
 				46DD162B17A1B9660093678C /* QuartzCore.framework */,
 				46A691FD17387ABE0080399F /* SFHFKeychainUtils.h */,
 				46A691FE17387ABE0080399F /* SFHFKeychainUtils.m */,
@@ -896,6 +901,7 @@
 				46263BB217A7778E00131791 /* SPAuthenticationConfiguration.m in Sources */,
 				466EB40E17BC194D005F7599 /* SPAuthenticationValidator.m in Sources */,
 				466FFEA217CBEE7A00399652 /* SPNetworkInterface.m in Sources */,
+				460A505B17DE95B20070F02B /* SPProcessorNotificationNames.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

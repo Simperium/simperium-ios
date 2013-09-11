@@ -30,8 +30,10 @@ NSString * const SPSchemaDefinitionMembersKey = @"members";
         members = [NSMutableDictionary dictionaryWithCapacity:3];
         binaryMembers = [NSMutableArray arrayWithCapacity:3];
         for (NSDictionary *memberDict in memberList) {
+
 			SPMember *member = [[SPMember alloc] initFromDictionary:memberDict];
             [members setObject:member forKey:member.keyName];
+
             if ([member isKindOfClass:[SPMemberBinary class]])
                 [binaryMembers addObject: member];
         }        
@@ -61,6 +63,7 @@ NSString * const SPSchemaDefinitionMembersKey = @"members";
     NSDictionary *memberDict = [NSDictionary dictionaryWithObjectsAndKeys:
                                 type, @"type",
                                 key, @"name", nil];
+
     SPMember *member = [[SPMember alloc] initFromDictionary:memberDict];
     [members setObject:member forKey:member.keyName];
     
