@@ -11,13 +11,9 @@
 
 @class SPBucket;
 
-@interface SPChangeProcessor : NSObject {
-    NSMutableDictionary *changesPending;
-    NSMutableSet *keysForObjectsWithMoreChanges;
-    NSString *instanceLabel;
-}
+@interface SPChangeProcessor : NSObject
 
-@property (copy) NSString *instanceLabel;
+@property (nonatomic, strong, readonly) NSString *instanceLabel;
 
 extern NSString * const CH_KEY;
 extern NSString * const CH_ADD;

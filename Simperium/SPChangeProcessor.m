@@ -35,6 +35,10 @@ NSString * const CH_DATA            = @"d";
 
 
 @interface SPChangeProcessor()
+@property (nonatomic, strong, readwrite) NSString *instanceLabel;
+@property (nonatomic, strong, readwrite) NSMutableDictionary *changesPending;
+@property (nonatomic, strong, readwrite) NSMutableSet *keysForObjectsWithMoreChanges;
+
 -(void)loadSerializedChanges;
 -(void)loadKeysForObjectsWithMoreChanges;
 @end
@@ -53,8 +57,8 @@ NSString * const CH_DATA            = @"d";
 - (id)initWithLabel:(NSString *)label {
     if (self = [super init]) {
         self.instanceLabel = label;
-		changesPending = [NSMutableDictionary dictionaryWithCapacity:3];
-        keysForObjectsWithMoreChanges = [NSMutableSet setWithCapacity:3];
+		self.changesPending = [NSMutableDictionary dictionaryWithCapacity:3];
+        self.keysForObjectsWithMoreChanges = [NSMutableSet setWithCapacity:3];
         
         [self loadSerializedChanges];
         [self loadKeysForObjectsWithMoreChanges];
@@ -68,19 +72,19 @@ NSString * const CH_DATA            = @"d";
     if (key == nil)
         return NO;
     
-    BOOL awaitingAcknowledgement = [changesPending objectForKey:key] != nil;
+    BOOL awaitingAcknowledgement = [self.changesPending objectForKey:key] != nil;
     return awaitingAcknowledgement;
 }
 
 - (void)serializeChangesPending {
-    NSString *pendingJSON = [changesPending JSONString];
+    NSString *pendingJSON = [self.changesPending JSONString];
     NSString *key = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
 	[[NSUserDefaults standardUserDefaults] setObject:pendingJSON forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void)serializeKeysForObjectsWithMoreChanges {
-    NSString *json = [[keysForObjectsWithMoreChanges allObjects] JSONString];
+    NSString *json = [[self.keysForObjectsWithMoreChanges allObjects] JSONString];
     NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", instanceLabel];
 	[[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -91,8 +95,9 @@ NSString * const CH_DATA            = @"d";
     NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
 	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
     NSDictionary *pendingDict = [pendingJSON objectFromJSONString];
-    if (pendingDict && [pendingDict count] > 0)
-        [changesPending setValuesForKeysWithDictionary:pendingDict];
+    if (pendingDict && [pendingDict count] > 0) {
+        [self.changesPending setValuesForKeysWithDictionary:pendingDict];
+	}
 }
 
 - (void)loadKeysForObjectsWithMoreChanges {
@@ -100,21 +105,22 @@ NSString * const CH_DATA            = @"d";
     NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", instanceLabel];
 	NSString *json = [[NSUserDefaults standardUserDefaults] objectForKey:key];
     NSArray *list = [json objectFromJSONString];
-    if (list && [list count] > 0)
-        [keysForObjectsWithMoreChanges addObjectsFromArray:list];
+    if (list && [list count] > 0) {
+        [self.keysForObjectsWithMoreChanges addObjectsFromArray:list];
+	}
 }
 
 - (void)reset {
-    [changesPending removeAllObjects];
-    [keysForObjectsWithMoreChanges removeAllObjects];
+    [self.changesPending removeAllObjects];
+    [self.keysForObjectsWithMoreChanges removeAllObjects];
     [self serializeChangesPending];
     [self serializeKeysForObjectsWithMoreChanges];
 }
 
 // For debugging
 - (void)softReset {
-    [changesPending removeAllObjects];
-    [keysForObjectsWithMoreChanges removeAllObjects];
+    [self.changesPending removeAllObjects];
+    [self.keysForObjectsWithMoreChanges removeAllObjects];
     [self loadSerializedChanges];
     [self loadKeysForObjectsWithMoreChanges];
 }
@@ -144,17 +150,17 @@ NSString * const CH_DATA            = @"d";
                 id<SPDiffable>object = [threadSafeStorage objectForKey:key bucketName :bucket.name];
                 
                 if (!object) {
-                    [changesPending removeObjectForKey:[change objectForKey:CH_KEY]];
+                    [self.changesPending removeObjectForKey:[change objectForKey:CH_KEY]];
                     continue;
                 }
-                NSMutableDictionary *newChange = [[changesPending objectForKey:key] mutableCopy];
+                NSMutableDictionary *newChange = [[self.changesPending objectForKey:key] mutableCopy];
                 [object simperiumKey]; // fire fault
                 [newChange setObject:[object dictionary] forKey:CH_DATA];
-                [changesPending setObject:newChange forKey:key];
+                [self.changesPending setObject:newChange forKey:key];
                 repostNeeded = YES;
             } else {
                 // Catch all, don't resubmit
-                [changesPending removeObjectForKey:[change objectForKey:CH_KEY]];
+                [self.changesPending removeObjectForKey:[change objectForKey:CH_KEY]];
             }
         }
     }
@@ -326,15 +332,16 @@ NSString * const CH_DATA            = @"d";
     if (remove || (object && acknowledged && clientMatches)) {
         // TODO: If this isn't a deletion change, but there's a deletion change pending, then ignore this change
         // Change was awaiting acknowledgement; safe now to remove from changesPending
-        if (acknowledged)
+        if (acknowledged) {
             DDLogVerbose(@"Simperium acknowledged change for %@, cv=%@", changeClientID, changeVersion);
-        [changesPending removeObjectForKey:key];
+		}
+        [self.changesPending removeObjectForKey:key];
     }
     
     // Check for an error
     if ([change objectForKey:CH_ERROR]) {
         DDLogVerbose(@"Simperium error received (%@) for %@, should reload the object here to be safe", bucket.name, key);
-        [changesPending removeObjectForKey:key];
+        [self.changesPending removeObjectForKey:key];
         return NO;
     }
     
@@ -422,7 +429,7 @@ NSString * const CH_DATA            = @"d";
 }
 
 - (void)processLocalChange:(NSDictionary *)change key:(NSString *)key {
-    [changesPending setObject:change forKey: key];
+    [self.changesPending setObject:change forKey: key];
     [self serializeChangesPending];
     
     // Support delayed app termination to ensure local changes have a chance to fully save
@@ -446,17 +453,17 @@ NSString * const CH_DATA            = @"d";
     // relevant
     if (!object) {
         //DDLogWarn(@"Simperium warning: couldn't processLocalObjectWithKey %@ because the object no longer exists", key);
-        [changesPending removeObjectForKey:key];
-        [keysForObjectsWithMoreChanges removeObject:key];
+        [self.changesPending removeObjectForKey:key];
+        [self.keysForObjectsWithMoreChanges removeObject:key];
         [self serializeChangesPending];
         [self serializeKeysForObjectsWithMoreChanges];
         return nil;
     }
     
     // If there are already changes pending for this entity, mark this entity and come back to it later to get the changes
-    if (([changesPending objectForKey:object.simperiumKey] != nil) || later) {
+    if (([self.changesPending objectForKey:object.simperiumKey] != nil) || later) {
         DDLogVerbose(@"Simperium marking object for sending more changes when ready (%@): %@", bucket.name, object.simperiumKey);
-        [keysForObjectsWithMoreChanges addObject:[object simperiumKey]];
+        [self.keysForObjectsWithMoreChanges addObject:[object simperiumKey]];
         [self serializeKeysForObjectsWithMoreChanges];
         return nil;
     }
@@ -504,20 +511,21 @@ NSString * const CH_DATA            = @"d";
 
 - (NSArray *)processPendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges {
     // Check if there are more changes that need to be sent
-    NSMutableDictionary *queuedChanges = [NSMutableDictionary dictionaryWithCapacity:[keysForObjectsWithMoreChanges count]];
+    NSMutableDictionary *queuedChanges = [NSMutableDictionary dictionaryWithCapacity:self.keysForObjectsWithMoreChanges.count];
 
-    if ([keysForObjectsWithMoreChanges count] > 0) {
-        DDLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)[keysForObjectsWithMoreChanges count], bucket.name);
-        NSMutableSet *pendingKeys = [NSMutableSet setWithCapacity:[keysForObjectsWithMoreChanges count]];
+    if (self.keysForObjectsWithMoreChanges.count > 0) {
+        DDLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)self.keysForObjectsWithMoreChanges.count, bucket.name);
+        NSMutableSet *pendingKeys = [NSMutableSet setWithCapacity:self.keysForObjectsWithMoreChanges.count];
 
         //Create a list of the keys to be processed
-        for (NSString *key in keysForObjectsWithMoreChanges) {
+        for (NSString *key in self.keysForObjectsWithMoreChanges) {
             // If there are already changes pending, don't add any more
             // Importantly, this prevents a potential mutation of keysForObjectsWithMoreChanges in processLocalObjectWithKey:later:
-            if ([changesPending objectForKey: key] != nil)
+            if ([self.changesPending objectForKey: key] != nil) {
                 continue;
-          
-          [pendingKeys addObject:key];
+			}
+			
+			[pendingKeys addObject:key];
         }
       
         // Create changes for any objects that have more changes
@@ -525,47 +533,47 @@ NSString * const CH_DATA            = @"d";
             NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
           
             if (change) {
-                [changesPending setObject:change forKey:key];
+                [self.changesPending setObject:change forKey:key];
                 [queuedChanges setObject:change forKey:key];
             } else {
-                [keysForObjectsWithMoreChanges removeObject:key];
+                [self.keysForObjectsWithMoreChanges removeObject:key];
             }
         }];
 
         // Clear any keys that were processed into pending changes
-        [keysForObjectsWithMoreChanges minusSet: [NSSet setWithArray:[queuedChanges allKeys]]];
+        [self.keysForObjectsWithMoreChanges minusSet: [NSSet setWithArray:[queuedChanges allKeys]]];
     }
 
     [self serializeChangesPending];
     [self serializeKeysForObjectsWithMoreChanges];
     
-    return onlyQueuedChanges ? [queuedChanges allValues] : [changesPending allValues];
+    return onlyQueuedChanges ? [queuedChanges allValues] : [self.changesPending allValues];
 }
 
 - (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket {
     // Check if there are more changes that need to be sent
     NSMutableArray *newChangesPending = [NSMutableArray arrayWithCapacity:3];
-    if ([keysForObjectsWithMoreChanges count] > 0) {
-        DDLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)[keysForObjectsWithMoreChanges count], bucket.name);
+    if ([self.keysForObjectsWithMoreChanges count] > 0) {
+        DDLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)[self.keysForObjectsWithMoreChanges count], bucket.name);
         
-        NSMutableSet *keysProcessed = [NSMutableSet setWithCapacity:[keysForObjectsWithMoreChanges count]];
+        NSMutableSet *keysProcessed = [NSMutableSet setWithCapacity:self.keysForObjectsWithMoreChanges.count];
         // Create changes for any objects that have more changes
-        for (NSString *key in keysForObjectsWithMoreChanges) {
+        for (NSString *key in self.keysForObjectsWithMoreChanges) {
             // If there are already changes pending, don't add any more
             // Importantly, this prevents a potential mutation of keysForObjectsWithMoreChanges in processLocalObjectWithKey:later:
-            if ([changesPending objectForKey: key] != nil)
+            if ([self.changesPending objectForKey: key] != nil)
                 continue;
             
             NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
             
             if (change) {
-                [changesPending setObject:change forKey: key];
+                [self.changesPending setObject:change forKey: key];
                 [newChangesPending addObject:change];
             }
             [keysProcessed addObject:key];
         }
         // Clear any keys that were processed into pending changes
-        [keysForObjectsWithMoreChanges minusSet:keysProcessed];
+        [self.keysForObjectsWithMoreChanges minusSet:keysProcessed];
     }
     
     [self serializeChangesPending];
@@ -577,11 +585,11 @@ NSString * const CH_DATA            = @"d";
 
 
 - (int)numChangesPending {
-    return (int)[changesPending count];
+    return (int)[self.changesPending count];
 }
 
 - (int)numKeysForObjectsWithMoreChanges {
-    return (int)[keysForObjectsWithMoreChanges count];
+    return (int)[self.keysForObjectsWithMoreChanges count];
 }
 
 @end
