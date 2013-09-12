@@ -15,12 +15,12 @@
 #pragma mark Private Internal Class
 #pragma mark ====================================================================================
 
-@interface SPChange : NSManagedObject
+@interface SPMetadata : NSManagedObject
 @property (nonatomic, strong, readwrite) NSString *key;
 @property (nonatomic, strong, readwrite) NSData *value;
 @end
 
-@implementation SPChange
+@implementation SPMetadata
 @dynamic key;
 @dynamic value;
 
@@ -114,33 +114,43 @@
 {
 	// Failsafe
 	if(anObject == nil) {
+		[self removeObjectForKey:aKey];
 		return;
 	}
-	
-	// Remove any previous value
-	[self removeObjectForKey:aKey];
 
 	// Upsert Operation
-	[self.managedObjectContext performBlockAndWait:^{
+	[self.managedObjectContext performBlock:^{
 		
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:[self requestForEntityWithKey:aKey] error:&error];
 		NSAssert(results.count <= 1, @"ERROR: SPMetadataStorage has multiple entities with the same key");
 		
-		SPChange *change = (SPChange *)[results firstObject];
+		SPMetadata *change = (SPMetadata *)[results firstObject];
 		
 		if(change) {
 			[change archiveValueWithObject:anObject];
 		} else {
-			change = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([SPChange class]) inManagedObjectContext:self.managedObjectContext];
+			change = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([SPMetadata class]) inManagedObjectContext:self.managedObjectContext];
 			[change setKey:aKey];
 			[change archiveValueWithObject:anObject];
 		}
+		
+		// Save
+		[self.managedObjectContext save:&error];
 	}];
 	
 	// Persist & Update the cache
-	[self saveContext];
 	[self.cache setObject:anObject forKey:aKey];
+}
+
+- (NSArray*)allKeys
+{
+	return [self loadObjectsProperty:@selector(key)];
+}
+
+- (NSArray*)allValues
+{
+	return [self loadObjectsProperty:@selector(unarchiveValue)];
 }
 
 - (void)removeObjectForKey:(id)aKey
@@ -149,7 +159,7 @@
 		return;
 	}
 	
-	[self.managedObjectContext performBlockAndWait:^{
+	[self.managedObjectContext performBlock:^{
 		
 		// Load the objectID
 		NSFetchRequest *request = [self requestForEntityWithKey:aKey];
@@ -159,21 +169,21 @@
 		NSArray *results = [self.managedObjectContext executeFetchRequest:request error:&error];
 		
 		// Once there, delete
-		SPChange *change = [results firstObject];
+		SPMetadata *change = [results firstObject];
 		if(change) {
 			[self.managedObjectContext deleteObject:change];
+			[self.managedObjectContext save:&error];
 		}
 	}];
 	
 	// Persist & Update the cache
-	[self saveContext];
 	[self.cache removeObjectForKey:aKey];
 }
 
 - (void)removeAllObjects
 {
 	// Remove from CoreData
-	[self.managedObjectContext performBlockAndWait:^{
+	[self.managedObjectContext performBlock:^{
 		
 		// Fetch the objectID's
 		NSFetchRequest *fetchRequest = [self requestForEntity];
@@ -186,15 +196,18 @@
 		for(NSManagedObject *object in allObjects) {
 			[self.managedObjectContext deleteObject:object];
 		}
+		
+		[self.managedObjectContext save:&error];
 	}];
 	
 	// Persist & Update the cache
-	[self saveContext];
 	[self.cache removeAllObjects];
 }
 
 
-#pragma mark - Core Data Stack
+#pragma mark ====================================================================================
+#pragma mark Core Data Stack
+#pragma mark ====================================================================================
 
 - (NSManagedObjectModel *)managedObjectModel
 {
@@ -216,8 +229,8 @@
 	[valueAttribute setOptional:NO];
 	[valueAttribute setAllowsExternalBinaryDataStorage:YES];
 	
-	// SPChange Entity
-	NSString* entityName = NSStringFromClass([SPChange class]);
+	// SPMetadata Entity
+	NSString* entityName = NSStringFromClass([SPMetadata class]);
 	NSEntityDescription *entity = [[NSEntityDescription alloc] init];
 	[entity setName:entityName];
 	[entity setManagedObjectClassName:entityName];
@@ -277,15 +290,44 @@
 
 - (NSFetchRequest*)requestForEntity
 {
-	return [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([SPChange class])];
+	return [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([SPMetadata class])];
 }
 
 - (NSFetchRequest*)requestForEntityWithKey:(id)aKey
 {
-	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([SPChange class])];
+	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([SPMetadata class])];
 	request.predicate = [NSPredicate predicateWithFormat:@"key == %@", aKey];
 	
 	return request;
+}
+
+- (NSArray*)loadObjectsProperty:(SEL)property
+{
+	NSMutableArray *keys = [NSMutableArray array];
+	
+	// Remove from CoreData
+	[self.managedObjectContext performBlockAndWait:^{
+		
+		// Fetch the objectID's
+		NSFetchRequest *fetchRequest = [self requestForEntity];
+		[fetchRequest setIncludesPropertyValues:NO];
+		
+		NSError *error = nil;
+		NSArray *allObjects = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+		
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+		
+		// Load all keys
+		for(SPMetadata *change in allObjects) {
+			id value = [change performSelector:property];
+			[keys addObject:value];
+		}
+		
+#pragma clang diagnostic pop
+	}];
+	
+	return keys;
 }
 
 - (void)saveContext

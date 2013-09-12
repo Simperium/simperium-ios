@@ -21,6 +21,9 @@
 - (id)objectForKey:(NSString*)aKey;
 - (void)setObject:(id)anObject forKey:(NSString*)aKey;
 
+- (NSArray*)allKeys;
+- (NSArray*)allValues;
+
 - (void)removeObjectForKey:(id)aKey;
 - (void)removeAllObjects;
 
