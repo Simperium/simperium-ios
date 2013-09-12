@@ -7,6 +7,7 @@
 //
 
 #import "SPChangeProcessor.h"
+#import "SPMetadataStorage.h"
 #import "SPManagedObject.h"
 #import "NSString+Simperium.h"
 #import "SPDiffer.h"
@@ -36,10 +37,11 @@ NSString * const CH_DATA            = @"d";
 
 @interface SPChangeProcessor()
 @property (nonatomic, strong, readwrite) NSString *instanceLabel;
-@property (nonatomic, strong, readwrite) NSMutableDictionary *changesPending;
+//@property (nonatomic, strong, readwrite) NSMutableDictionary *changesPending;
+@property (nonatomic, strong, readwrite) SPMetadataStorage *changesPending;
 @property (nonatomic, strong, readwrite) NSMutableSet *keysForObjectsWithMoreChanges;
 
--(void)loadSerializedChanges;
+//-(void)loadSerializedChanges;
 -(void)loadKeysForObjectsWithMoreChanges;
 @end
 
@@ -57,10 +59,11 @@ NSString * const CH_DATA            = @"d";
 - (id)initWithLabel:(NSString *)label {
     if (self = [super init]) {
         self.instanceLabel = label;
-		self.changesPending = [NSMutableDictionary dictionaryWithCapacity:3];
+//		self.changesPending = [NSMutableDictionary dictionaryWithCapacity:3];
+		self.changesPending = [[SPMetadataStorage alloc] initWithLabel:label];
         self.keysForObjectsWithMoreChanges = [NSMutableSet setWithCapacity:3];
         
-        [self loadSerializedChanges];
+//        [self loadSerializedChanges];
         [self loadKeysForObjectsWithMoreChanges];
     }
     
@@ -76,12 +79,14 @@ NSString * const CH_DATA            = @"d";
     return awaitingAcknowledgement;
 }
 
+/*
 - (void)serializeChangesPending {
     NSString *pendingJSON = [self.changesPending JSONString];
     NSString *key = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
 	[[NSUserDefaults standardUserDefaults] setObject:pendingJSON forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
+*/
 
 - (void)serializeKeysForObjectsWithMoreChanges {
     NSString *json = [[self.keysForObjectsWithMoreChanges allObjects] JSONString];
@@ -90,6 +95,7 @@ NSString * const CH_DATA            = @"d";
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
+/*
 - (void)loadSerializedChanges {
     // Load changes that didn't get a chance to send
     NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
@@ -99,6 +105,7 @@ NSString * const CH_DATA            = @"d";
         [self.changesPending setValuesForKeysWithDictionary:pendingDict];
 	}
 }
+ */
 
 - (void)loadKeysForObjectsWithMoreChanges {
     // Load keys for entities that have more changes to send
@@ -113,7 +120,7 @@ NSString * const CH_DATA            = @"d";
 - (void)reset {
     [self.changesPending removeAllObjects];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
-    [self serializeChangesPending];
+//    [self serializeChangesPending];
     [self serializeKeysForObjectsWithMoreChanges];
 }
 
@@ -121,7 +128,7 @@ NSString * const CH_DATA            = @"d";
 - (void)softReset {
     [self.changesPending removeAllObjects];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
-    [self loadSerializedChanges];
+//    [self loadSerializedChanges];
     [self loadKeysForObjectsWithMoreChanges];
 }
 
@@ -397,7 +404,7 @@ NSString * const CH_DATA            = @"d";
                     [bucket setLastChangeSignature: changeVersion];
                 });        
             }
-            [self serializeChangesPending];
+//            [self serializeChangesPending];
         });
     });
 
@@ -430,7 +437,7 @@ NSString * const CH_DATA            = @"d";
 
 - (void)processLocalChange:(NSDictionary *)change key:(NSString *)key {
     [self.changesPending setObject:change forKey: key];
-    [self serializeChangesPending];
+//    [self serializeChangesPending];
     
     // Support delayed app termination to ensure local changes have a chance to fully save
 #if TARGET_OS_IPHONE
@@ -455,7 +462,7 @@ NSString * const CH_DATA            = @"d";
         //DDLogWarn(@"Simperium warning: couldn't processLocalObjectWithKey %@ because the object no longer exists", key);
         [self.changesPending removeObjectForKey:key];
         [self.keysForObjectsWithMoreChanges removeObject:key];
-        [self serializeChangesPending];
+//        [self serializeChangesPending];
         [self serializeKeysForObjectsWithMoreChanges];
         return nil;
     }
@@ -544,7 +551,7 @@ NSString * const CH_DATA            = @"d";
         [self.keysForObjectsWithMoreChanges minusSet: [NSSet setWithArray:[queuedChanges allKeys]]];
     }
 
-    [self serializeChangesPending];
+//    [self serializeChangesPending];
     [self serializeKeysForObjectsWithMoreChanges];
     
     return onlyQueuedChanges ? [queuedChanges allValues] : [self.changesPending allValues];
@@ -576,7 +583,7 @@ NSString * const CH_DATA            = @"d";
         [self.keysForObjectsWithMoreChanges minusSet:keysProcessed];
     }
     
-    [self serializeChangesPending];
+//    [self serializeChangesPending];
     [self serializeKeysForObjectsWithMoreChanges];
     
     // TODO: to fix duplicate send, make this return only changes for keysProcessed?
