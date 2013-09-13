@@ -37,16 +37,13 @@ NSString * const CH_DATA            = @"d";
 
 @interface SPChangeProcessor()
 @property (nonatomic, strong, readwrite) NSString *instanceLabel;
-//@property (nonatomic, strong, readwrite) NSMutableDictionary *changesPending;
 @property (nonatomic, strong, readwrite) SPMetadataStorage *changesPending;
 @property (nonatomic, strong, readwrite) NSMutableSet *keysForObjectsWithMoreChanges;
 
-//-(void)loadSerializedChanges;
 -(void)loadKeysForObjectsWithMoreChanges;
 @end
 
 @implementation SPChangeProcessor
-@synthesize instanceLabel;
 
 + (int)ddLogLevel {
     return ddLogLevel;
@@ -59,11 +56,9 @@ NSString * const CH_DATA            = @"d";
 - (id)initWithLabel:(NSString *)label {
     if (self = [super init]) {
         self.instanceLabel = label;
-//		self.changesPending = [NSMutableDictionary dictionaryWithCapacity:3];
 		self.changesPending = [[SPMetadataStorage alloc] initWithLabel:label];
         self.keysForObjectsWithMoreChanges = [NSMutableSet setWithCapacity:3];
         
-//        [self loadSerializedChanges];
         [self loadKeysForObjectsWithMoreChanges];
     }
     
@@ -79,37 +74,16 @@ NSString * const CH_DATA            = @"d";
     return awaitingAcknowledgement;
 }
 
-/*
-- (void)serializeChangesPending {
-    NSString *pendingJSON = [self.changesPending JSONString];
-    NSString *key = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
-	[[NSUserDefaults standardUserDefaults] setObject:pendingJSON forKey: key];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
-*/
-
 - (void)serializeKeysForObjectsWithMoreChanges {
     NSString *json = [[self.keysForObjectsWithMoreChanges allObjects] JSONString];
-    NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", instanceLabel];
+    NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", self.instanceLabel];
 	[[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-/*
-- (void)loadSerializedChanges {
-    // Load changes that didn't get a chance to send
-    NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
-	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
-    NSDictionary *pendingDict = [pendingJSON objectFromJSONString];
-    if (pendingDict && [pendingDict count] > 0) {
-        [self.changesPending setValuesForKeysWithDictionary:pendingDict];
-	}
-}
- */
-
 - (void)loadKeysForObjectsWithMoreChanges {
     // Load keys for entities that have more changes to send
-    NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", instanceLabel];
+    NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", self.instanceLabel];
 	NSString *json = [[NSUserDefaults standardUserDefaults] objectForKey:key];
     NSArray *list = [json objectFromJSONString];
     if (list && [list count] > 0) {
@@ -120,7 +94,6 @@ NSString * const CH_DATA            = @"d";
 - (void)reset {
     [self.changesPending removeAllObjects];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
-//    [self serializeChangesPending];
     [self serializeKeysForObjectsWithMoreChanges];
 }
 
@@ -128,7 +101,6 @@ NSString * const CH_DATA            = @"d";
 - (void)softReset {
     [self.changesPending removeAllObjects];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
-//    [self loadSerializedChanges];
     [self loadKeysForObjectsWithMoreChanges];
 }
 
@@ -265,7 +237,7 @@ NSString * const CH_DATA            = @"d";
         NSString *ghostDataCopy = [[[object.ghost dictionary] JSONString] copy];
         object.ghostData = ghostDataCopy;
         
-        DDLogVerbose(@"Simperium MODIFIED ghost version %@ (%@-%@)", endVersion, bucket.name, instanceLabel);
+        DDLogVerbose(@"Simperium MODIFIED ghost version %@ (%@-%@)", endVersion, bucket.name, self.instanceLabel);
         
         // If it wasn't an ack, then local data needs to be updated and the app needs to be notified
         if (!acknowledged && !newlyAdded) {
@@ -404,7 +376,6 @@ NSString * const CH_DATA            = @"d";
                     [bucket setLastChangeSignature: changeVersion];
                 });        
             }
-//            [self serializeChangesPending];
         });
     });
 
@@ -437,7 +408,6 @@ NSString * const CH_DATA            = @"d";
 
 - (void)processLocalChange:(NSDictionary *)change key:(NSString *)key {
     [self.changesPending setObject:change forKey: key];
-//    [self serializeChangesPending];
     
     // Support delayed app termination to ensure local changes have a chance to fully save
 #if TARGET_OS_IPHONE
@@ -462,7 +432,6 @@ NSString * const CH_DATA            = @"d";
         //DDLogWarn(@"Simperium warning: couldn't processLocalObjectWithKey %@ because the object no longer exists", key);
         [self.changesPending removeObjectForKey:key];
         [self.keysForObjectsWithMoreChanges removeObject:key];
-//        [self serializeChangesPending];
         [self serializeKeysForObjectsWithMoreChanges];
         return nil;
     }
@@ -551,7 +520,6 @@ NSString * const CH_DATA            = @"d";
         [self.keysForObjectsWithMoreChanges minusSet: [NSSet setWithArray:[queuedChanges allKeys]]];
     }
 
-//    [self serializeChangesPending];
     [self serializeKeysForObjectsWithMoreChanges];
     
     return onlyQueuedChanges ? [queuedChanges allValues] : [self.changesPending allValues];
@@ -583,7 +551,6 @@ NSString * const CH_DATA            = @"d";
         [self.keysForObjectsWithMoreChanges minusSet:keysProcessed];
     }
     
-//    [self serializeChangesPending];
     [self serializeKeysForObjectsWithMoreChanges];
     
     // TODO: to fix duplicate send, make this return only changes for keysProcessed?

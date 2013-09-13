@@ -154,8 +154,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     dispatch_async(object.bucket.processorQueue, ^{
         NSDictionary *change = [object.bucket.changeProcessor processLocalObjectWithKey:key bucket:object.bucket later:indexing || !started];
-        if (change)
+        if (change) {
             [self sendChange: change forKey: key bucket:object.bucket];
+		}
     });
 }
 
