@@ -1,5 +1,5 @@
 //
-//  SPMetadataStorage.m
+//  SPDictionaryStorage.m
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 9/12/13.
@@ -12,29 +12,12 @@
 
 
 #pragma mark ====================================================================================
-#pragma mark Private Internal Class
+#pragma mark Constants
 #pragma mark ====================================================================================
 
-@interface SPMetadata : NSManagedObject
-@property (nonatomic, strong, readwrite) NSString *key;
-@property (nonatomic, strong, readwrite) NSData *value;
-@end
-
-@implementation SPMetadata
-@dynamic key;
-@dynamic value;
-
--(void)archiveValueWithObject:(id)object
-{
-	self.value = [NSKeyedArchiver archivedDataWithRootObject:object];
-}
-
--(id)unarchiveValue
-{
-	return [NSKeyedUnarchiver unarchiveObjectWithData:self.value];
-}
-
-@end
+static NSString *SPDictionaryEntityName		= @"SPDictionaryEntityName";
+static NSString *SPDictionaryEntityValue	= @"value";
+static NSString *SPDictionaryEntityKey		= @"key";
 
 
 #pragma mark ====================================================================================
@@ -53,7 +36,7 @@
 
 
 #pragma mark ====================================================================================
-#pragma mark SPMetadataStorage
+#pragma mark SPDictionaryStorage
 #pragma mark ====================================================================================
 
 @implementation SPDictionaryStorage
@@ -121,7 +104,13 @@
 	[self.managedObjectContext performBlockAndWait:^{
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:[self requestForEntityWithKey:aKey] error:&error];
-		value = [[results firstObject] unarchiveValue];
+		NSManagedObject *object = [results firstObject];
+		
+		// Unarchive
+		id archivedValue = [object valueForKey:SPDictionaryEntityValue];
+		if(archivedValue) {
+			value = [NSKeyedUnarchiver unarchiveObjectWithData:archivedValue];
+		}
 	}];
 	
 	// Cache
@@ -141,21 +130,24 @@
 		return;
 	}
 
-	// Upsert Operation
 	[self.managedObjectContext performBlock:^{
 		
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:[self requestForEntityWithKey:aKey] error:&error];
 		NSAssert(results.count <= 1, @"ERROR: SPMetadataStorage has multiple entities with the same key");
 		
-		SPMetadata *change = (SPMetadata *)[results firstObject];
+		// Wrap up the value
+		id archivedValue = [NSKeyedArchiver archivedDataWithRootObject:anObject];
 		
+		// Upsert
+		NSManagedObject *change = (NSManagedObject *)[results firstObject];
+				
 		if(change) {
-			[change archiveValueWithObject:anObject];
+			[change setValue:archivedValue forKey:SPDictionaryEntityValue];
 		} else {
-			change = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([SPMetadata class]) inManagedObjectContext:self.managedObjectContext];
-			[change setKey:aKey];
-			[change archiveValueWithObject:anObject];
+			change = [NSEntityDescription insertNewObjectForEntityForName:SPDictionaryEntityName inManagedObjectContext:self.managedObjectContext];
+			[change setValue:aKey forKey:SPDictionaryEntityKey];
+			[change setValue:archivedValue forKey:SPDictionaryEntityValue];
 		}
 		
 		// Save
@@ -168,12 +160,12 @@
 
 - (NSArray*)allKeys
 {
-	return [self loadObjectsProperty:@selector(key)];
+	return [self loadObjectsProperty:SPDictionaryEntityKey];
 }
 
 - (NSArray*)allValues
 {
-	return [self loadObjectsProperty:@selector(unarchiveValue)];
+	return [self loadObjectsProperty:SPDictionaryEntityValue];
 }
 
 - (void)removeObjectForKey:(id)aKey
@@ -192,7 +184,7 @@
 		NSArray *results = [self.managedObjectContext executeFetchRequest:request error:&error];
 		
 		// Once there, delete
-		SPMetadata *change = [results firstObject];
+		NSManagedObject *change = [results firstObject];
 		if(change) {
 			[self.managedObjectContext deleteObject:change];
 			[self.managedObjectContext save:&error];
@@ -253,10 +245,9 @@
 	[valueAttribute setAllowsExternalBinaryDataStorage:YES];
 	
 	// SPMetadata Entity
-	NSString* entityName = NSStringFromClass([SPMetadata class]);
 	NSEntityDescription *entity = [[NSEntityDescription alloc] init];
-	[entity setName:entityName];
-	[entity setManagedObjectClassName:entityName];
+	[entity setName:SPDictionaryEntityName];
+	[entity setManagedObjectClassName:NSStringFromClass([NSManagedObject class])];
 	[entity setProperties:@[keyAttribute, valueAttribute] ];
 	
 	// Done!
@@ -313,18 +304,18 @@
 
 - (NSFetchRequest*)requestForEntity
 {
-	return [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([SPMetadata class])];
+	return [NSFetchRequest fetchRequestWithEntityName:SPDictionaryEntityName];
 }
 
 - (NSFetchRequest*)requestForEntityWithKey:(id)aKey
 {
-	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([SPMetadata class])];
+	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:SPDictionaryEntityName];
 	request.predicate = [NSPredicate predicateWithFormat:@"key == %@", aKey];
 	
 	return request;
 }
 
-- (NSArray*)loadObjectsProperty:(SEL)property
+- (NSArray*)loadObjectsProperty:(NSString*)property
 {
 	NSMutableArray *keys = [NSMutableArray array];
 	
@@ -338,16 +329,13 @@
 		NSError *error = nil;
 		NSArray *allObjects = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
 		
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-		
-		// Load all keys
-		for(SPMetadata *change in allObjects) {
-			id value = [change performSelector:property];
-			[keys addObject:value];
+		// Load properties
+		for(NSManagedObject *change in allObjects) {
+			id value = [change valueForKey:property];
+			if(value) {
+				[keys addObject:value];
+			}
 		}
-		
-#pragma clang diagnostic pop
 	}];
 	
 	return keys;

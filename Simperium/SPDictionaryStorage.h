@@ -1,5 +1,5 @@
 //
-//  SPMetadataStorage.h
+//  SPDictionaryStorage.h
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 9/12/13.
