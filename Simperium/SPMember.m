@@ -167,7 +167,7 @@ NSString * const SPMemberDefinitionInverseKeyNameKey = @"inverseName";
                 id JSONValue = [self.itemMember JSONValueForMemberValue:item context:context];
                 if (JSONValue) [items addObject:JSONValue];
             }
-            if (![value isKindOfClass:[NSOrderedSet class]] || ![value isKindOfClass:[NSArray class]]) {
+            if (![value isKindOfClass:[NSOrderedSet class]] && ![value isKindOfClass:[NSArray class]]) {
                 [items sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
                     return [[obj1 valueForKey:@"simperiumKey"] compare:[obj2 valueForKey:@"simperiumKey"]];
                 }];
