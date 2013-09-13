@@ -7,7 +7,7 @@
 //
 
 #import "SPChangeProcessor.h"
-#import "SPMetadataStorage.h"
+#import "SPDictionaryStorage.h"
 #import "SPManagedObject.h"
 #import "NSString+Simperium.h"
 #import "SPDiffer.h"
@@ -21,6 +21,8 @@
 #import "SPDiffer.h"
 
 static int ddLogLevel = LOG_LEVEL_INFO;
+
+NSInteger const SPChangeEnumBinSize	= 100;
 
 NSString * const CH_KEY				= @"id";
 NSString * const CH_ADD				= @"+";
@@ -37,7 +39,7 @@ NSString * const CH_DATA            = @"d";
 
 @interface SPChangeProcessor()
 @property (nonatomic, strong, readwrite) NSString *instanceLabel;
-@property (nonatomic, strong, readwrite) SPMetadataStorage *changesPending;
+@property (nonatomic, strong, readwrite) SPDictionaryStorage *changesPending;
 @property (nonatomic, strong, readwrite) NSMutableSet *keysForObjectsWithMoreChanges;
 
 -(void)loadKeysForObjectsWithMoreChanges;
@@ -56,7 +58,7 @@ NSString * const CH_DATA            = @"d";
 - (id)initWithLabel:(NSString *)label {
     if (self = [super init]) {
         self.instanceLabel = label;
-		self.changesPending = [[SPMetadataStorage alloc] initWithLabel:label];
+		self.changesPending = [[SPDictionaryStorage alloc] initWithLabel:label];
         self.keysForObjectsWithMoreChanges = [NSMutableSet setWithCapacity:3];
         
         [self loadKeysForObjectsWithMoreChanges];
@@ -485,44 +487,67 @@ NSString * const CH_DATA            = @"d";
     return change;
 }
 
-- (NSArray *)processPendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges {
-    // Check if there are more changes that need to be sent
-    NSMutableDictionary *queuedChanges = [NSMutableDictionary dictionaryWithCapacity:self.keysForObjectsWithMoreChanges.count];
+- (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(void (^)(NSArray *changes))block {
 
-    if (self.keysForObjectsWithMoreChanges.count > 0) {
-        DDLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)self.keysForObjectsWithMoreChanges.count, bucket.name);
-        NSMutableSet *pendingKeys = [NSMutableSet setWithCapacity:self.keysForObjectsWithMoreChanges.count];
-
-        //Create a list of the keys to be processed
-        for (NSString *key in self.keysForObjectsWithMoreChanges) {
-            // If there are already changes pending, don't add any more
-            // Importantly, this prevents a potential mutation of keysForObjectsWithMoreChanges in processLocalObjectWithKey:later:
-            if ([self.changesPending objectForKey: key] != nil) {
-                continue;
-			}
-			
+    if (self.keysForObjectsWithMoreChanges.count == 0) {
+		return;
+	}
+	
+	DDLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)self.keysForObjectsWithMoreChanges.count, bucket.name);
+	
+    NSMutableSet *queuedKeys = [NSMutableSet setWithCapacity:self.keysForObjectsWithMoreChanges.count];
+	NSMutableSet *pendingKeys = [NSMutableSet setWithArray:self.changesPending.allKeys];
+	
+	// Create a list of the keys to be processed
+	for (NSString *key in self.keysForObjectsWithMoreChanges) {
+		// If there are already changes pending, don't add any more
+		// Importantly, this prevents a potential mutation of keysForObjectsWithMoreChanges in processLocalObjectWithKey:later:
+		if ([pendingKeys containsObject:key] == NO) {
+			[queuedKeys addObject:key];
+		}
+	}
+	
+	// Create changes for any objects that have more changes
+	[queuedKeys enumerateObjectsUsingBlock:^(NSString *key, BOOL *stop) {
+		NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
+		
+		if (change) {
+			[self.changesPending setObject:change forKey:key];
 			[pendingKeys addObject:key];
-        }
-      
-        // Create changes for any objects that have more changes
-        [pendingKeys enumerateObjectsUsingBlock:^(NSString *key, BOOL *stop) {
-            NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
-          
-            if (change) {
-                [self.changesPending setObject:change forKey:key];
-                [queuedChanges setObject:change forKey:key];
-            } else {
-                [self.keysForObjectsWithMoreChanges removeObject:key];
-            }
-        }];
+		} else {
+			[self.keysForObjectsWithMoreChanges removeObject:key];
+		}
+	}];
+	
+	// Note:
+	//	pendingKeys: Queued + previously pending
+	//	queuedKeys: Only queued objects
+		
+	// Hit enumerate in partitions of up to kEnumerationBinSize
+	NSMutableArray *changesPartition = [NSMutableArray array];
+	NSSet *changesPendingKeys = (onlyQueuedChanges ? queuedKeys : pendingKeys);
+		
+	for(NSString *key in changesPendingKeys) {
+		id object = [self.changesPending objectForKey:key];
+		if(object) {
+			[changesPartition addObject:object];
+		}
+		
+		if(changesPartition.count >= SPChangeEnumBinSize) {
+			// Multiple GCD queues, same container. We seriously need to send a copy, not our own instance
+			block([changesPartition copy]);
+			[changesPartition removeAllObjects];
+		}
+	}
+	
+	if(changesPartition.count) {
+		block([changesPartition copy]);
+		[changesPartition removeAllObjects];
+	}
 
-        // Clear any keys that were processed into pending changes
-        [self.keysForObjectsWithMoreChanges minusSet: [NSSet setWithArray:[queuedChanges allKeys]]];
-    }
-
+	// Clear any keys that were processed into pending changes & Persist
+	[self.keysForObjectsWithMoreChanges minusSet:queuedKeys];
     [self serializeKeysForObjectsWithMoreChanges];
-    
-    return onlyQueuedChanges ? [queuedChanges allValues] : [self.changesPending allValues];
 }
 
 - (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket {

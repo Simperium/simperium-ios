@@ -230,39 +230,42 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         return;
     
     dispatch_async(bucket.processorQueue, ^{
-        NSArray *changes = [bucket.changeProcessor processPendingChanges:bucket onlyQueuedChanges:NO];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if ([changes count] == 0) {
-                [self getChanges];
-                return;
-            }
-            
-            NSMutableString *sendURL = [simperium.appURL mutableCopy];
-            [sendURL appendFormat:@"%@/changes?clientid=%@&wait=1",remoteBucketName, self.clientID];
-            DDLogVerbose(@"Simperium posting changes: %@", sendURL);
-            
-            // Update activity indicator
-            numTransfers++;
-            [[self class] updateNetworkActivityIndictator];
-
-            // PERFORM GET
-            NSURL *url = [NSURL URLWithString:sendURL];
-            
-            NSString *jsonStr = [changes JSONString];
-            DDLogVerbose(@"  post data = %@", jsonStr);
-            
-            postRequest = [ASIHTTPRequest requestWithURL:url];
-            [postRequest appendPostData:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
-            //[sendRequest addRequestHeader:@"Content-Type" value:@"application/json"];
-            [postRequest addRequestHeader:@"X-Simperium-Token" value:[simperium.user authToken]];
-            [postRequest setDelegate:self];
-            [postRequest setDidFinishSelector:@selector(postChangesFinished:)];
-            [postRequest setDidFailSelector:@selector(postChangesFailed:)];
+		[bucket.changeProcessor enumeratePendingChanges:bucket onlyQueuedChanges:NO block:^(NSArray *changes) {
+			
+			dispatch_async(dispatch_get_main_queue(), ^{
+				
+				NSMutableString *sendURL = [simperium.appURL mutableCopy];
+				[sendURL appendFormat:@"%@/changes?clientid=%@&wait=1",remoteBucketName, self.clientID];
+				DDLogVerbose(@"Simperium posting changes: %@", sendURL);
+NSLog(@"Simperium posting changes: %d", changes.count);
+				// Update activity indicator
+				numTransfers++;
+				[[self class] updateNetworkActivityIndictator];
+				
+				// PERFORM GET
+				NSURL *url = [NSURL URLWithString:sendURL];
+				
+				NSString *jsonStr = [changes JSONString];
+				DDLogVerbose(@"  post data = %@", jsonStr);
+				
+				postRequest = [ASIHTTPRequest requestWithURL:url];
+				[postRequest appendPostData:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
+				//[sendRequest addRequestHeader:@"Content-Type" value:@"application/json"];
+				[postRequest addRequestHeader:@"X-Simperium-Token" value:[simperium.user authToken]];
+				[postRequest setDelegate:self];
+				[postRequest setDidFinishSelector:@selector(postChangesFinished:)];
+				[postRequest setDidFailSelector:@selector(postChangesFailed:)];
 #if TARGET_OS_IPHONE
-            postRequest.shouldContinueWhenAppEntersBackground = YES;
+				postRequest.shouldContinueWhenAppEntersBackground = YES;
 #endif
-            [postRequest startAsynchronous];  
-        });
+				[postRequest startAsynchronous];
+			});
+		}];
+		
+		// Once all changes are sent
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[self getChanges];
+		});
     });
 }
 
