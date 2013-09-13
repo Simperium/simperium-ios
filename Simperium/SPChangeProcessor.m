@@ -62,6 +62,7 @@ NSString * const CH_DATA            = @"d";
         self.keysForObjectsWithMoreChanges = [NSMutableSet setWithCapacity:3];
         
         [self loadKeysForObjectsWithMoreChanges];
+		[self migratePendingChangesIfNeeded];
     }
     
     return self;
@@ -74,6 +75,29 @@ NSString * const CH_DATA            = @"d";
     
     BOOL awaitingAcknowledgement = [self.changesPending objectForKey:key] != nil;
     return awaitingAcknowledgement;
+}
+
+- (void)migratePendingChangesIfNeeded {
+    NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", self.instanceLabel];
+	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
+	
+	// No need to go further
+	if(pendingJSON == nil) {
+		return;
+	}
+	
+	// Proceed migrating!
+    NSDictionary *pendingDict = [pendingJSON objectFromJSONString];
+
+	for(NSString *key in pendingDict.allKeys) {
+		id change = pendingDict[key];
+		if(change) {
+			[self.changesPending setObject:key forKey:change];
+		}
+	}
+	
+	[[NSUserDefaults standardUserDefaults] removeObjectForKey:pendingKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void)serializeKeysForObjectsWithMoreChanges {
