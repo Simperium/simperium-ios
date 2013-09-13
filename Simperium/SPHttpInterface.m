@@ -237,7 +237,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 				NSMutableString *sendURL = [simperium.appURL mutableCopy];
 				[sendURL appendFormat:@"%@/changes?clientid=%@&wait=1",remoteBucketName, self.clientID];
 				DDLogVerbose(@"Simperium posting changes: %@", sendURL);
-NSLog(@"Simperium posting changes: %d", changes.count);
+
 				// Update activity indicator
 				numTransfers++;
 				[[self class] updateNetworkActivityIndictator];
