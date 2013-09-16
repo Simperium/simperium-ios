@@ -104,8 +104,12 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	[self.managedObjectContext performBlockAndWait:^{
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:[self requestForEntityWithKey:aKey] error:&error];
-		NSManagedObject *object = [results firstObject];
-		
+		NSManagedObject *object = nil;
+		if(results.count)
+		{
+			object = (NSManagedObject*)results[0];
+		}
+
 		// Unarchive
 		id archivedValue = [object valueForKey:SPDictionaryEntityValue];
 		if(archivedValue) {
@@ -140,7 +144,11 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		id archivedValue = [NSKeyedArchiver archivedDataWithRootObject:anObject];
 		
 		// Upsert
-		NSManagedObject *change = (NSManagedObject *)[results firstObject];
+		NSManagedObject *change = nil;
+		if(results.count)
+		{
+			change = (NSManagedObject*)results[0];
+		}
 				
 		if(change) {
 			[change setValue:archivedValue forKey:SPDictionaryEntityValue];
@@ -184,7 +192,12 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		NSArray *results = [self.managedObjectContext executeFetchRequest:request error:&error];
 		
 		// Once there, delete
-		NSManagedObject *change = [results firstObject];
+		NSManagedObject *change = nil;
+		if(results.count)
+		{
+			change = (NSManagedObject*)results[0];
+		}
+
 		if(change) {
 			[self.managedObjectContext deleteObject:change];
 			[self.managedObjectContext save:&error];
