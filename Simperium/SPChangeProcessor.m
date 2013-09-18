@@ -513,7 +513,8 @@ NSString * const CH_DATA            = @"d";
 
 - (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(void (^)(NSArray *changes))block {
 
-    if (self.keysForObjectsWithMoreChanges.count == 0) {
+    if (self.keysForObjectsWithMoreChanges.count == 0 && (onlyQueuedChanges || self.changesPending.count == 0)) {
+		NSLog(@"self.keysForObjectsWithMoreChanges.count %d :: self.changesPending.count %d", self.keysForObjectsWithMoreChanges.count, self.changesPending.count);
 		return;
 	}
 	
