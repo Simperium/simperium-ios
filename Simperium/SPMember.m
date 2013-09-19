@@ -257,6 +257,9 @@ static NSString * const SPOperationTypeKey = @"otype";
             }
             
             id memberValue = [self memberValueForJSONValue:JSONValue context:[parentObject managedObjectContext]];
+
+            if (existingObject && memberValue && [memberValue isEqual:existingObject]) return;
+
             if (memberValue) {
                 [parentObject setValue:memberValue forKey:self.keyName];
             } else {
@@ -294,7 +297,9 @@ static NSString * const SPOperationTypeKey = @"otype";
                     [set addObject:object];
                 }
             }
-            
+
+            if ([orderedSet isEqual:embeddedObjects]) return;
+
             // reset the relationship with all the new objects
             if (relationshipDescription.isOrdered) {
                 [parentObject setValue:orderedSet forKey:self.keyName];
