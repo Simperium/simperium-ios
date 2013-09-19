@@ -324,6 +324,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 {
 	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:SPDictionaryEntityName];
 	request.predicate = [NSPredicate predicateWithFormat:@"key == %@", aKey];
+	request.fetchLimit = 1;
 	
 	return request;
 }
