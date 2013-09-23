@@ -330,12 +330,17 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Remember all the retrieved data in case there's more to get
     [self.indexArray addObjectsFromArray:currentIndexArray];
 
-    // If there aren't any instances remotely, just start getting changes
-    if ([self.indexArray count] == 0) {
-        [self allVersionsFinishedForBucket:bucket];
-        return;
-    }
-
+	// Note: No matter what, we need to reconcile the index (requestVersionsForKeys:bucket:)
+	// Ref: https://github.com/Simperium/simperium-ios/issues/144
+	
+/*	// If there aren't any instances remotely, just start getting changes
+	 if ([self.indexArray count] == 0) {
+		 [self requestVersionsForKeys:self.indexArray bucket:bucket];
+		 [self allVersionsFinishedForBucket:bucket];
+		 return;
+	 }
+*/
+	
     // If there's another page, get those too (this will repeat until there are none left)
     if (self.nextMark.length > 0) {
         DDLogVerbose(@"Simperium found another index page mark (%@): %@", self.name, self.nextMark);
