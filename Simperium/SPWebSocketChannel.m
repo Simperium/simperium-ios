@@ -335,7 +335,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	
 /*	// If there aren't any instances remotely, just start getting changes
 	 if ([self.indexArray count] == 0) {
-		 [self requestVersionsForKeys:self.indexArray bucket:bucket];
 		 [self allVersionsFinishedForBucket:bucket];
 		 return;
 	 }
