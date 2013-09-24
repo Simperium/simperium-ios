@@ -40,14 +40,15 @@ static BOOL useNetworkActivityIndicator = 0;
 static int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface SPWebSocketChannel()
-@property (nonatomic, weak) Simperium *simperium;
+@property (nonatomic, weak)   Simperium *simperium;
 @property (nonatomic, strong) NSMutableArray *responseBatch;
 @property (nonatomic, strong) NSMutableDictionary *versionsWithErrors;
-@property (nonatomic, copy) NSString *clientID;
-@property (nonatomic, assign) BOOL indexing;
-@property (nonatomic, assign) BOOL retrievingObjectHistory;
+@property (nonatomic, copy)   NSString *clientID;
 @property (nonatomic, assign) NSInteger retryDelay;
 @property (nonatomic, assign) NSInteger objectVersionsPending;
+@property (nonatomic, assign) BOOL indexing;
+@property (nonatomic, assign) BOOL retrievingObjectHistory;
+@property (nonatomic, assign) BOOL sendingChanges;
 @end
 
 @implementation SPWebSocketChannel
@@ -82,6 +83,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(void(^)())completionBlock {
     // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
     dispatch_async(bucket.processorQueue, ^{
+		
+		// Prevent recursive calls while we're actually posting the changes
+		if(self.sendingChanges) {
+			return;
+		} else {
+			self.sendingChanges = YES;
+		}
+		
         NSArray *changes = [bucket.changeProcessor processPendingChanges:bucket onlyQueuedChanges:onlyQueuedChanges];
         if ([changes count] == 0) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -100,10 +109,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                     DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
                     [self.webSocketManager send:message];
                 }
-                if (completionBlock) {
-                    completionBlock();
-				}
-            }
+			}
+			
+			// Done!
+			if (completionBlock) {
+				completionBlock();
+			}
+
+			self.sendingChanges = NO;
         });
     });
 }
