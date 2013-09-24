@@ -86,7 +86,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         token = [SFHFKeychainUtils getPasswordForUsername:username andServiceName:simperium.appID error:nil];
     
     if (!username || username.length == 0 || !token || token.length == 0) {
-        DDLogInfo(@"Simperium didn't find an existing auth token");
+        DDLogInfo(@"Simperium didn't find an existing auth token (username %@; token %@; appID: %@)", username, token, simperium.appID);
         if ([delegate respondsToSelector:@selector(authenticationDidFail)])
             [delegate authenticationDidFail];
         

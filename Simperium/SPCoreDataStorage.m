@@ -416,6 +416,22 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 # pragma mark Main MOC Notification Handlers
 
+-(void)mainContextWillSave:(NSNotification *)notification
+{
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"objectID.isTemporaryID == YES"];
+    NSArray *unpersistedObjects = [[self.mainManagedObjectContext.insertedObjects filteredSetUsingPredicate:predicate] allObjects];
+    if(unpersistedObjects.count == 0) {
+		return;
+	}
+	
+	// Obtain permanentID's for newly inserted objects
+    NSError *error = nil;
+    BOOL success = [(NSManagedObjectContext *)notification.object obtainPermanentIDsForObjects:unpersistedObjects error:&error];
+    if (!success) {
+        DDLogVerbose(@"Unable to obtain permanent IDs for objects newly inserted into the main context: %@", error);
+    }
+}
+
 -(void)mainContextDidSave:(NSNotification *)notification {
 	
 	// Now that the changes have been pushed to the writerMOC, persist to disk
@@ -446,6 +462,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)addObserversForMainContext:(NSManagedObjectContext *)moc {
 	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+	[nc addObserver:self selector:@selector(mainContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:moc];
     [nc addObserver:self selector:@selector(mainContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:moc];
     [nc addObserver:self selector:@selector(mainContextObjectsDidChange:) name:NSManagedObjectContextObjectsDidChangeNotification object:moc];
 }
@@ -478,8 +495,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		
 		for(NSManagedObject* mo in upsertedObjects) {
 			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
-			[localMO willAccessValueForKey:nil];
-			[self.mainManagedObjectContext refreshObject:localMO mergeChanges:NO];
+			if (localMO.isFault) {
+                [localMO willAccessValueForKey:nil];
+                [self.mainManagedObjectContext refreshObject:localMO mergeChanges:NO];
+            } else {
+                [self.mainManagedObjectContext refreshObject:localMO mergeChanges:YES];
+            }
 		}
 		
 		NSSet* deletedObjects = userInfo[NSDeletedObjectsKey];
