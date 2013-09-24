@@ -407,7 +407,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSDictionary *versionDict = [versionString objectFromJSONString];
     NSDictionary *dataDict = [versionDict objectForKey:@"data"];
     
-    if ([dataDict class] == [NSNull class]) {
+    if ([dataDict class] == [NSNull class] || dataDict == nil) {
         // No data
         DDLogError(@"Simperium error: version had no data (%@): %@", bucket.name, key);
         _objectVersionsPending--;
