@@ -94,9 +94,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSArray *changes = [bucket.changeProcessor processPendingChanges:bucket onlyQueuedChanges:onlyQueuedChanges];
         if ([changes count] == 0) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (completionBlock)
+                if (completionBlock) {
                     completionBlock();
+				}
             });
+			self.sendingChanges = NO;
             return;
         }
         
@@ -115,7 +117,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			if (completionBlock) {
 				completionBlock();
 			}
-
 			self.sendingChanges = NO;
         });
     });
