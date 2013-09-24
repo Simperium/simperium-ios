@@ -390,7 +390,12 @@ NSString * const CH_DATA            = @"d";
                     [bucket setLastChangeSignature: changeVersion];
                 });        
             }
+				
             [self serializeChangesPending];
+			
+			if(changesPending.count == 0) {
+				[bucket bucketDidSync];
+			}
         });
     });
 

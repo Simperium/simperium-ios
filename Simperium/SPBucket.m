@@ -290,7 +290,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 }
 
 - (void)bucketDidSync {
-	if(self.forceSyncCompletion) {
+	if(self.changeProcessor.numChangesPending == 0 && self.forceSyncCompletion) {
 		self.forceSyncCompletion();
 		self.forceSyncCompletion = nil;
 	}

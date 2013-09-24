@@ -229,11 +229,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			dispatch_async(dispatch_get_main_queue(), ^{
 				// After remote changes have been processed, check to see if any local changes were attempted (and
 				// queued) in the meantime, and send them
-				[self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:^(void) {
-					
-					// Signal we're ready
-					[bucket bucketDidSync];
-				}];
+				[self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:nil];
 			});
 		}
 	});
