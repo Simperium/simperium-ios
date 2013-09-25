@@ -48,7 +48,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 @property (nonatomic, assign) NSInteger objectVersionsPending;
 @property (nonatomic, assign) BOOL indexing;
 @property (nonatomic, assign) BOOL retrievingObjectHistory;
-@property (nonatomic, assign) BOOL sendingChanges;
 @end
 
 @implementation SPWebSocketChannel
@@ -84,13 +83,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
     dispatch_async(bucket.processorQueue, ^{
 		
-		// Prevent recursive calls while we're actually posting the changes
-		if(self.sendingChanges) {
-			return;
-		} else {
-			self.sendingChanges = YES;
-		}
-		
         NSArray *changes = [bucket.changeProcessor processPendingChanges:bucket onlyQueuedChanges:onlyQueuedChanges];
         if ([changes count] == 0) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -98,7 +90,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                     completionBlock();
 				}
             });
-			self.sendingChanges = NO;
             return;
         }
         
@@ -117,7 +108,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			if (completionBlock) {
 				completionBlock();
 			}
-			self.sendingChanges = NO;
         });
     });
 }
