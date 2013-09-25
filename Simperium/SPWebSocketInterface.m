@@ -165,13 +165,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     
     // Can't remove the channel because it's needed for offline changes; this is weird and should be fixed
     //[channels removeObjectForKey:bucket.name];
-
-// Note: Proceed closing the socket anyways. There's a possible delay before the open flag gets set to true, while the webSocket is actually open.
-// If the websocket is already being closed, the close method call will handle it.
-//
-//    if (!open) {
-//        return;
-//    }
 	
     DDLogVerbose(@"Simperium stopping network manager (%@)", bucket.name);
     
@@ -222,15 +215,16 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
     self.webSocket = nil;
-
-    if (!open)
-        return;
-    
-    DDLogVerbose(@"Simperium websocket failed (will retry) with error %@", error);
-    
     open = NO;
-    
-    [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
+	
+	// Network enabled = YES: There was a networking glitch, yet, reachability flags are OK. We should retry
+    if (self.simperium.networkEnabled) {
+		DDLogVerbose(@"Simperium websocket failed (will retry) with error %@", error);
+		[self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
+	// Otherwise, the device lost reachability, and the interfaces were shut down by the framework
+	} else {
+		DDLogVerbose(@"Simperium websocket failed (will NOT retry) with error %@", error);
+	}
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {    
