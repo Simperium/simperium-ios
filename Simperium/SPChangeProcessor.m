@@ -78,6 +78,7 @@ NSString * const CH_DATA            = @"d";
 }
 
 - (void)migratePendingChangesIfNeeded {
+    // Note: We've moved changesPending collection to SPDictionaryStorage class, which will help to lower memory requirements.
     NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", self.instanceLabel];
 	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
 	
@@ -87,6 +88,8 @@ NSString * const CH_DATA            = @"d";
 	}
 	
 	// Proceed migrating!
+    DDLogInfo(@"Migrating changesPending collection to SPDictionaryStorage");
+    
     NSDictionary *pendingDict = [pendingJSON objectFromJSONString];
 
 	for(NSString *key in pendingDict.allKeys) {
