@@ -383,9 +383,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             // the object.simperiumKey assignment above
             // HOWEVER, when seeding/migrating data, the object could already have been faulted
             [object performSelector:@selector(configureBucket)];
+
         }
     }
-    
+    [self.mainManagedObjectContext save:nil];
     NSLog(@"Simperium managing %lu %@ object instances", (unsigned long)[results count], bucketName);
 }
 
