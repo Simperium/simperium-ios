@@ -258,7 +258,7 @@ NSString * const CH_DATA            = @"d";
         if (!acknowledged && !newlyAdded) {
             DDLogVerbose(@"Simperium non-local MODIFY ENTITY received");
             NSDictionary *localDiff = [bucket.differ diff:object fromDictionary:[oldGhost memberData]];
-            if ([localDiff count] > 0) {
+            if ([localDiff count] > 0 && oldGhost.memberData.count) {
                 // The local client version changed in the meantime, so transform the diff before applying it
                 DDLogVerbose(@"Simperium applying transform to diff: %@", remoteDiff);			
                 NSDictionary *transformedRemoteDiff = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost: oldGhost];
