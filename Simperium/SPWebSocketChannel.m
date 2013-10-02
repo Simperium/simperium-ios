@@ -40,24 +40,17 @@ static BOOL useNetworkActivityIndicator = 0;
 static int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface SPWebSocketChannel()
-@property (nonatomic, weak) Simperium *simperium;
+@property (nonatomic, weak)   Simperium *simperium;
 @property (nonatomic, strong) NSMutableArray *responseBatch;
 @property (nonatomic, strong) NSMutableDictionary *versionsWithErrors;
-@property (nonatomic, copy) NSString *clientID;
+@property (nonatomic, copy)   NSString *clientID;
+@property (nonatomic, assign) NSInteger retryDelay;
+@property (nonatomic, assign) NSInteger objectVersionsPending;
+@property (nonatomic, assign) BOOL indexing;
+@property (nonatomic, assign) BOOL retrievingObjectHistory;
 @end
 
 @implementation SPWebSocketChannel
-@synthesize simperium;
-@synthesize webSocketManager;
-@synthesize responseBatch;
-@synthesize versionsWithErrors;
-@synthesize nextMark;
-@synthesize indexArray;
-@synthesize clientID;
-@synthesize pendingLastChangeSignature;
-@synthesize started;
-@synthesize name;
-@synthesize number;
 
 + (int)ddLogLevel {
     return ddLogLevel;
@@ -89,27 +82,32 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(void(^)())completionBlock {
     // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
     dispatch_async(bucket.processorQueue, ^{
+		
         NSArray *changes = [bucket.changeProcessor processPendingChanges:bucket onlyQueuedChanges:onlyQueuedChanges];
         if ([changes count] == 0) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (completionBlock)
+                if (completionBlock) {
                     completionBlock();
+				}
             });
             return;
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (started) {
+            if (self.started) {
                 DDLogVerbose(@"Simperium sending all changes (%lu) for bucket %@", (unsigned long)[changes count], bucket.name);
                 for (NSString *change in changes) {
                     NSString *jsonStr = [change JSONString];
-                    NSString *message = [NSString stringWithFormat:@"%d:c:%@", number, jsonStr];
+                    NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
                     DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
                     [self.webSocketManager send:message];
                 }
-                if (completionBlock)
-                    completionBlock();
-            }
+			}
+			
+			// Done!
+			if (completionBlock) {
+				completionBlock();
+			}
         });
     });
 }
@@ -120,7 +118,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [bucket.changeProcessor processLocalChange:change key:key];
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *jsonStr = [change JSONString];
-        NSString *message = [NSString stringWithFormat:@"%d:c:%@", number, jsonStr];
+        NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
         DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
         [self.webSocketManager send:message];
     });
@@ -153,9 +151,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     dispatch_async(object.bucket.processorQueue, ^{
-        NSDictionary *change = [object.bucket.changeProcessor processLocalObjectWithKey:key bucket:object.bucket later:indexing || !started];
-        if (change)
+        NSDictionary *change = [object.bucket.changeProcessor processLocalObjectWithKey:key bucket:object.bucket later:_indexing || !_started];
+        if (change) {
             [self sendChange: change forKey: key bucket:object.bucket];
+		}
     });
 }
 
@@ -163,14 +162,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     __block int numChangesPending;
     __block int numKeysForObjectsWithMoreChanges;
     dispatch_async(bucket.processorQueue, ^{
-        if (started) {
+        if (self.started) {
             numChangesPending = [bucket.changeProcessor numChangesPending];
             numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 // Start getting changes from the last cv
-                NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
-                DDLogVerbose(@"Simperium client %@ sending cv %@", simperium.clientID, getMessage);
+                NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", self.number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
+                DDLogVerbose(@"Simperium client %@ sending cv %@", self.simperium.clientID, getMessage);
                 [self.webSocketManager send:getMessage];
                 
                 if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
@@ -196,45 +195,40 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)resetRetryDelay {
-    retryDelay = 2;
+    self.retryDelay = 2;
 }
 
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
-	
+
+	// Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
 	if (changes.count == 0) {
 
-		// Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
 		[bucket bucketDidSync];
-
-	} else {
-		
-		DDLogVerbose(@"Simperium handling changes %@", changes);
-		
-		// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
-		// sync will still work for any unsaved changes.
-		[bucket.storage stashUnsavedObjects];
-		
-		dispatch_async(bucket.processorQueue, ^{
-			if (started) {
-				[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:clientID];
-				dispatch_async(dispatch_get_main_queue(), ^{
-					// After remote changes have been processed, check to see if any local changes were attempted (and
-					// queued) in the meantime, and send them
-					[self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:^(void) {
-						
-						// Signal we're ready
-						[bucket bucketDidSync];
-					}];
-				});
-			}
-		});
+		return;
 	}
+		
+	DDLogVerbose(@"Simperium handling changes %@", changes);
+	
+	// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
+	// sync will still work for any unsaved changes.
+	[bucket.storage stashUnsavedObjects];
+	
+	dispatch_async(bucket.processorQueue, ^{
+		if (self.started) {
+			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID];
+			dispatch_async(dispatch_get_main_queue(), ^{
+				// After remote changes have been processed, check to see if any local changes were attempted (and
+				// queued) in the meantime, and send them
+				[self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:nil];
+			});
+		}
+	});
 }
 
 #pragma mark Index handling
 
 - (void)requestLatestVersionsForBucket:(SPBucket *)bucket mark:(NSString *)mark {
-    if (!simperium.user) {
+    if (!self.simperium.user) {
         DDLogError(@"Simperium critical error: tried to retrieve index with no user set");
         return;
     }
@@ -246,17 +240,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     //    }
     //
     //    // Get an index of all objects and fetch their latest versions
-    indexing = YES;
+    self.indexing = YES;
     
-    NSString *message = [NSString stringWithFormat:@"%d:i::%@::%d", number, mark ? mark : @"", INDEX_PAGE_SIZE];
+    NSString *message = [NSString stringWithFormat:@"%d:i::%@::%d", self.number, mark ? mark : @"", INDEX_PAGE_SIZE];
     DDLogVerbose(@"Simperium requesting index (%@): %@", self.name, message);
     [self.webSocketManager send:message];
 }
 
 -(void)requestLatestVersionsForBucket:(SPBucket *)bucket {
     // Multiple errors could try to trigger multiple index refreshes
-    if (indexing)
+    if (self.indexing) {
         return;
+	}
     
     // Send any pending changes first
     // This could potentially lead to some duplicate changes being sent if there are some that are awaiting
@@ -273,8 +268,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // since regular syncing is disabled during index retrieval.
     [bucket.storage stashUnsavedObjects];
 
-    if ([bucket.delegate respondsToSelector:@selector(bucketWillStartIndexing:)])
+    if ([bucket.delegate respondsToSelector:@selector(bucketWillStartIndexing:)]) {
         [bucket.delegate bucketWillStartIndexing:bucket];
+	}
 
     self.responseBatch = [NSMutableArray arrayWithCapacity:INDEX_BATCH_SIZE];
 
@@ -284,13 +280,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSArray *indexArrayCopy = [currentIndexArray copy];
     __block int objectRequests = 0;
     dispatch_async(bucket.processorQueue, ^{
-        if (started) {
+        if (self.started) {
             [bucket.indexProcessor processIndex:indexArrayCopy bucket:bucket versionHandler: ^(NSString *key, NSString *version) {
                 objectRequests++;
 
                 // For each version that is processed, create a network request
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", number, key, version];
+                    NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", self.number, key, version];
                     DDLogVerbose(@"Simperium sending object request (%@): %@", self.name, message);
                     [self.webSocketManager send:message];
                 });
@@ -298,8 +294,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 // If no requests need to be queued, then all is good; back to processing
-                objectVersionsPending = objectRequests;
-                if (objectVersionsPending == 0) {
+                self.objectVersionsPending = objectRequests;
+                if (self.objectVersionsPending == 0) {
                     if (self.nextMark.length > 0)
                     // More index pages to get
                         [self requestLatestVersionsForBucket: bucket mark:self.nextMark];
@@ -309,7 +305,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                     return;
                 }
 
-                DDLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)objectVersionsPending, bucket.name);
+                DDLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)self.objectVersionsPending, bucket.name);
             });
         }
     });
@@ -329,13 +325,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     // Remember all the retrieved data in case there's more to get
     [self.indexArray addObjectsFromArray:currentIndexArray];
-
-    // If there aren't any instances remotely, just start getting changes
-    if ([self.indexArray count] == 0) {
-        [self allVersionsFinishedForBucket:bucket];
-        return;
-    }
-
+	
     // If there's another page, get those too (this will repeat until there are none left)
     if (self.nextMark.length > 0) {
         DDLogVerbose(@"Simperium found another index page mark (%@): %@", self.name, self.nextMark);
@@ -349,13 +339,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)processBatchForBucket:(SPBucket *)bucket {
-    if ([self.responseBatch count] == 0)
+    if ([self.responseBatch count] == 0) {
         return;
+	}
 
     NSMutableArray *batch = [self.responseBatch copy];
     BOOL firstSync = bucket.lastChangeSignature == nil;
     dispatch_async(bucket.processorQueue, ^{
-        if (started) {
+        if (self.started) {
             [bucket.indexProcessor processVersions: batch bucket:bucket firstSync: firstSync changeHandler:^(NSString *key) {
                 // Local version was different, so process it as a local change
                 [bucket.changeProcessor processLocalObjectWithKey:key bucket:bucket later:YES];
@@ -363,10 +354,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             
             // Now check if indexing is complete
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (objectVersionsPending > 0)
-                    objectVersionsPending--;
-                if (objectVersionsPending == 0)
+                if (_objectVersionsPending > 0) {
+                    _objectVersionsPending--;
+				}
+                if (_objectVersionsPending == 0) {
                     [self allVersionsFinishedForBucket:bucket];
+				}
             });
         }
     });
@@ -377,7 +370,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
     if ([responseString isEqualToString:@"?"]) {
         DDLogError(@"Simperium error: version not found during version retrieval (%@)", bucket.name);
-        objectVersionsPending--;
+        _objectVersionsPending--;
         return;
     }
 
@@ -394,10 +387,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSDictionary *versionDict = [versionString objectFromJSONString];
     NSDictionary *dataDict = [versionDict objectForKey:@"data"];
     
-    if ([dataDict class] == [NSNull class]) {
+    if ([dataDict class] == [NSNull class] || dataDict == nil) {
         // No data
         DDLogError(@"Simperium error: version had no data (%@): %@", bucket.name, key);
-        objectVersionsPending--;
+        _objectVersionsPending--;
         return;
     }
     
@@ -407,11 +400,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.versionsWithErrors removeObjectForKey:key];
 
     // If retrieving object versions (e.g. for going back in time), return the result directly to the delegate
-    if (retrievingObjectHistory) {
-        if (--objectVersionsPending == 0)
-            retrievingObjectHistory = NO;
-        if ([bucket.delegate respondsToSelector:@selector(bucket:didReceiveObjectForKey:version:data:)])
+    if (_retrievingObjectHistory) {
+        if (--_objectVersionsPending == 0) {
+            _retrievingObjectHistory = NO;
+		}
+        if ([bucket.delegate respondsToSelector:@selector(bucket:didReceiveObjectForKey:version:data:)]) {
             [bucket.delegate bucket:bucket didReceiveObjectForKey:key version:version data:dataDict];
+		}
     } else {
         // Otherwise, process the result for indexing
         // Marshal stuff into an array for later processing
@@ -420,8 +415,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
         // Batch responses for more efficient processing
         // (process the last handful individually though)
-        if ([self.responseBatch count] < INDEX_BATCH_SIZE || [self.responseBatch count] % INDEX_BATCH_SIZE == 0)
+        if ([self.responseBatch count] < INDEX_BATCH_SIZE || [self.responseBatch count] % INDEX_BATCH_SIZE == 0) {
             [self processBatchForBucket:bucket];
+		}
     }
 }
 
@@ -443,8 +439,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSMutableArray *errorArray = [NSMutableArray arrayWithCapacity: [self.versionsWithErrors count]];
         for (NSString *key in [self.versionsWithErrors allKeys]) {
             id errorVersion = [self.versionsWithErrors objectForKey:key];
-            NSDictionary *versionDict = [NSDictionary dictionaryWithObjectsAndKeys:errorVersion, @"v",
-                                                                                   key, @"id", nil];
+            NSDictionary *versionDict = @{ @"v" : errorVersion,
+										   @"id" : key};
             [errorArray addObject:versionDict];
         }
         [self performSelector:@selector(requestVersionsForKeys:) withObject: errorArray afterDelay:1];
@@ -453,24 +449,25 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 
     // All versions were received successfully, so update the lastChangeSignature
-    [bucket setLastChangeSignature:pendingLastChangeSignature];
+    [bucket setLastChangeSignature:self.pendingLastChangeSignature];
     self.pendingLastChangeSignature = nil;
     self.nextMark = nil;
-    indexing = NO;
+    self.indexing = NO;
 
     // There could be some processing happening on the queue still, so don't start until they're done
     dispatch_async(bucket.processorQueue, ^{
-        if (started) {
+        if (self.started) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                if ([bucket.delegate respondsToSelector:@selector(bucketDidFinishIndexing:)])
+                if ([bucket.delegate respondsToSelector:@selector(bucketDidFinishIndexing:)]) {
                     [bucket.delegate bucketDidFinishIndexing:bucket];
+				}
 
                 [self startProcessingChangesForBucket:bucket];
             });
         }
     });
 }
-//
+
 //-(void)getIndexFailed:(ASIHTTPRequest *)request
 //{
 //    gettingVersions = NO;
@@ -482,19 +479,22 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 //    [self performSelector:@selector(requestLatestVersions) withObject:nil afterDelay:retry];
 //}
 
+
 #pragma mark Object Versions
+
 - (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object {
     // If already retrieving versions on this channel, don't do it again
-    if (retrievingObjectHistory)
+    if (self.retrievingObjectHistory) {
         return;
+	}
     
     NSInteger startVersion = [object.ghost.version integerValue];
-    retrievingObjectHistory = YES;
-    objectVersionsPending = MIN(startVersion, numVersions);
+    self.retrievingObjectHistory = YES;
+    self.objectVersionsPending = MIN(startVersion, numVersions);
     
-    for (NSInteger i=startVersion; i>=1 && i>=startVersion-objectVersionsPending; i--) {
+    for (NSInteger i=startVersion; i>=1 && i>=startVersion-_objectVersionsPending; i--) {
         NSString *versionStr = [NSString stringWithFormat:@"%ld", (long)i];
-        NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", number, object.simperiumKey, versionStr];
+        NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", self.number, object.simperiumKey, versionStr];
         DDLogVerbose(@"Simperium sending object version request (%@): %@", self.name, message);
         [self.webSocketManager send:message];
     }

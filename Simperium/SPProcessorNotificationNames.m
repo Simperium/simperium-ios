@@ -12,4 +12,4 @@ NSString * const ProcessorDidDeleteObjectKeysNotification = @"ProcessorDidDelete
 NSString * const ProcessorDidAcknowledgeObjectsNotification = @"ProcessorDidAcknowledgeObjectsNotification";
 NSString * const ProcessorWillChangeObjectsNotification = @"ProcessorWillChangeObjectsNotification";
 NSString * const ProcessorDidAcknowledgeDeleteNotification = @"ProcessorDidAcknowledgeDeleteNotification";
-NSString * const ProcessorRequestsReindexing = @"ProcessorDidAcknowledgeDeleteNotification";
+NSString * const ProcessorRequestsReindexing = @"ProcessorRequestsReindexing";
