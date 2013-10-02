@@ -73,7 +73,8 @@ id SPApplyDiff(id object, SPDiff *diff)
 SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *policy)
 {
     NSCParameterAssert(aop && bop);
-    
+
+    if (!source) return nil;
     NSString *aop_op = aop[OP_OP], *bop_op = bop[OP_OP];
     if ([aop_op isEqual:OP_OBJECT_ADD] && [bop_op isEqual:OP_OBJECT_ADD]) {
         if ([aop[OP_VALUE] isEqual:bop[OP_VALUE]]) return nil;
