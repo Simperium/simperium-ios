@@ -66,8 +66,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)awakeFromFetch {
     [super awakeFromFetch];
-	SPGhost *newGhost = [[SPGhost alloc] initFromDictionary: [self.ghostData objectFromJSONString]];
-    self.ghost = newGhost;
+    
     [self.managedObjectContext userInfo];
 	
     [self configureBucket];
@@ -97,6 +96,19 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         ghost.needsSave = NO;
     }
     [super willSave];
+}
+
+- (SPGhost *)ghost
+{
+    if (ghost == nil) {
+        NSString *ghostData = [self ghostData];
+        if (ghostData) {
+            ghost = [[SPGhost alloc] initFromDictionary:[ghostData objectFromJSONString]];
+        } else {
+            ghost = [[SPGhost alloc] initWithKey:self.simperiumKey memberData:nil];
+        }
+    }
+    return ghost;
 }
 
 //- (void)setGhost:(SPGhost *)aGhost {
