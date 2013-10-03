@@ -96,6 +96,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [self setPrimitiveValue:ghostData forKey:@"ghostData"];
         ghost.needsSave = NO;
     }
+    [super willSave];
 }
 
 //- (void)setGhost:(SPGhost *)aGhost {
