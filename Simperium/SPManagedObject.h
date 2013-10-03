@@ -20,10 +20,7 @@
 	// has key, data, and signature
 	SPGhost *ghost;
     SPBucket *__weak bucket;
-    
-    NSString *simperiumKey;
-    NSString *ghostData;
-	
+    	
 	// Flagged if changed while waiting for server ack (could be tracked externally instead)
 	BOOL updateWaiting;
 }

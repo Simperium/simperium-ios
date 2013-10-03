@@ -111,29 +111,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return ghost;
 }
 
-//- (void)setGhost:(SPGhost *)aGhost {
-//    ghost = aGhost;
-//    ghostData = [[[aGhost dictionary] JSONRepresentation] copy];    
-//}
-
-- (void)setGhostData:(NSString *)aString {
-    // Core Data compliant way to update members
-    [self willChangeValueForKey:@"ghostData"];
-    // NSString implements NSCopying, so copy the attribute value
-    NSString *newStr = [aString copy];
-    [self setPrimitiveValue:newStr forKey:@"ghostData"]; // setPrimitiveContent will make it nil if the string is empty
-    [self didChangeValueForKey:@"ghostData"];
-}
-
-
-- (void)setSimperiumKey:(NSString *)aString {
-    // Core Data compliant way to update members
-    [self willChangeValueForKey:@"simperiumKey"];
-    // NSString implements NSCopying, so copy the attribute value
-    NSString *newStr = [aString copy];
-    [self setPrimitiveValue:newStr forKey:@"simperiumKey"]; // setPrimitiveContent will make it nil if the string is empty
-    [self didChangeValueForKey:@"simperiumKey"];
-}
 
 - (NSString *)localID {
     NSManagedObjectID *key = [self objectID];
