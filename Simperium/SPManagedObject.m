@@ -92,7 +92,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // to a string for storage
     if (ghost.needsSave) {
         // Careful not to use self.ghostData here, which would trigger KVC and cause strange things to happen (since willSave itself is related to Core Data's KVC triggerings). This manifested itself as an erroneous insertion notification being sent to fetchedResultsControllers after an object had been deleted. The underlying cause seemed to be that the deleted object sticks around as a fault, but probably shouldn't.
-        ghostData = [[[ghost dictionary] JSONString] copy];
+        NSString *ghostData = [[[ghost dictionary] JSONString] copy];
+        [self setPrimitiveValue:ghostData forKey:@"ghostData"];
         ghost.needsSave = NO;
     }
 }
