@@ -81,7 +81,11 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
         return SPDiffObjects(aop[OP_VALUE], bop[OP_VALUE], policy);
     }
     if ([aop_op isEqual:OP_OBJECT_REMOVE] && [bop_op isEqual:OP_OBJECT_REMOVE]) return nil;
-    if (![aop_op isEqual:OP_OBJECT_ADD] && [bop_op isEqual:OP_OBJECT_REMOVE]) return @{ OP_OP: OP_OBJECT_ADD, OP_VALUE: SPApplyDiff(source, aop) };
+    if (![aop_op isEqual:OP_OBJECT_ADD] && [bop_op isEqual:OP_OBJECT_REMOVE]) {
+        id valueAfterA = SPApplyDiff(source, aop);
+        if (!valueAfterA) return nil;
+        return @{ OP_OP: OP_OBJECT_ADD, OP_VALUE: valueAfterA };
+    }
     if ([aop_op isEqual:bop_op]) {
         if ([aop_op isEqual:OP_STRING]) return @{ OP_OP: OP_STRING, OP_VALUE: [(NSString *)source sp_stringDiffByTransformingStringDiff:aop[OP_VALUE] ontoStringDiff:bop[OP_VALUE]] };
         if ([aop_op isEqual:OP_OBJECT]) return @{ OP_OP: OP_OBJECT, OP_VALUE: [(NSDictionary *)source sp_objectDiffByTransformingObjectDiff:aop[OP_VALUE] ontoObjectDiff:bop[OP_VALUE] policy:policy] };
