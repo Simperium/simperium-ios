@@ -119,7 +119,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             NSString *key = [objectToDelete simperiumKey];
             
             // If the object has never synced, be careful not to delete it (it won't exist in the remote index yet)
-            if ([objectToDelete ghost] == nil) {
+            if ([[objectToDelete ghost] memberData] == nil) {
                 DDLogWarn(@"Simperium found local object that doesn't exist remotely yet: %@ (%@)", key, bucket.name);
                 continue;
             }
