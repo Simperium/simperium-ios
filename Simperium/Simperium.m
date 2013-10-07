@@ -184,7 +184,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
--(void)setClientID:(NSString *)cid {
+-(void)setClientID:(NSString *)cid
+{
     clientID = [cid copy];
 }
 
@@ -204,7 +205,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 
--(void)setLabel:(NSString *)aLabel {
+-(void)setLabel:(NSString *)aLabel
+{
     label = [aLabel copy];
     
     // Set the clientID as well, otherwise certain change operations won't work (since they'll appear to come from
@@ -212,11 +214,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     clientID = [label copy];
 }
 
--(NSString *)label {
+-(NSString *)label
+{
     return label;
 }
 
--(void)configureBinaryManager:(SPBinaryManager *)manager {    
+-(void)configureBinaryManager:(SPBinaryManager *)manager
+{
     // Binary members need to know about the manager (ugly but avoids singleton/global)
     for (SPBucket *bucket in [buckets allValues]) {
         for (SPMemberBinary *binaryMember in bucket.differ.schema.binaryMembers) {
@@ -225,22 +229,27 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 }
 
--(NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName {
+-(NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName
+{
     return [binaryManager addBinary:binaryData toObject:object bucketName:bucketName attributeName:attributeName];
 }
 
--(void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName {
+-(void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName
+{
     // Make sure the object has a simperiumKey (it might not if it was just created)
-    if (!object.simperiumKey)
+    if (!object.simperiumKey) {
         object.simperiumKey = [NSString sp_makeUUID];
+	}
     return [binaryManager addBinaryWithFilename:filename toObject:object bucketName:bucketName attributeName:attributeName];
 }
 
--(NSData *)dataForFilename:(NSString *)filename {
+-(NSData *)dataForFilename:(NSString *)filename
+{
     return [binaryManager dataForFilename:filename];
 }
 
--(SPBucket *)bucketForName:(NSString *)name { 
+-(SPBucket *)bucketForName:(NSString *)name
+{
     SPBucket *bucket = [buckets objectForKey:name];
     if (!bucket) {
         // First check for an override
@@ -265,8 +274,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             [netManager start:bucket name:bucket.name];
             
 
-        } else
+        } else {
             return nil;
+		}
     }
     
     return bucket;
@@ -278,7 +288,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [bucket.network shareObject: object withEmail:email];
 }
 
--(void)setVerboseLoggingEnabled:(BOOL)on {
+-(void)setVerboseLoggingEnabled:(BOOL)on
+{
     _verboseLoggingEnabled = on;
     for (Class cls in [DDLog registeredClasses]) {
         [DDLog setLogLevel:on ? LOG_LEVEL_VERBOSE : LOG_LEVEL_INFO forClass:cls];
@@ -287,8 +298,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)startNetworkManagers
 {    
-    if (!self.networkEnabled || networkManagersStarted)
+    if (!self.networkEnabled || networkManagersStarted) {
         return;
+	}
     
     DDLogInfo(@"Simperium starting network managers...");
     // Finally, start the network managers to start syncing data
@@ -302,8 +314,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)stopNetworkManagers
 {
-    if (!networkManagersStarted)
+    if (!networkManagersStarted) {
         return;
+	}
     
     for (SPBucket *bucket in [buckets allValues]) {
         [bucket.network stop:bucket];
@@ -335,14 +348,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)setNetworkEnabled:(BOOL)enabled
 {
-    if (_networkEnabled == enabled)
+    if (_networkEnabled == enabled) {
         return;
+	}
     
     _networkEnabled = enabled;
     if (enabled) {
         [self authenticateIfNecessary];
-    } else
+    } else {
         [self stopNetworking];
+	}
 }
 
 -(NSMutableDictionary *)loadBuckets:(NSArray *)schemas
@@ -487,7 +502,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 #pragma mark SPStorageObserver
 
--(BOOL)objectsShouldSync {
+-(BOOL)objectsShouldSync
+{
     // TODO: rename or possibly (re)move this
     return !skipContextProcessing;
 }
@@ -567,7 +583,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     });
 }
 
--(BOOL)saveWithoutSyncing {
+-(BOOL)saveWithoutSyncing
+{
     skipContextProcessing = YES;
     BOOL result = [self save];
     skipContextProcessing = NO;
@@ -605,19 +622,23 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Don't start network managers again; expect app to handle that
 }
 
--(NSManagedObjectContext *)managedObjectContext {
+-(NSManagedObjectContext *)managedObjectContext
+{
     return coreDataStorage.mainManagedObjectContext;
 }
 
--(NSManagedObjectContext *)writerManagedObjectContext {
+-(NSManagedObjectContext *)writerManagedObjectContext
+{
     return coreDataStorage.writerManagedObjectContext;
 }
 
--(NSManagedObjectModel *)managedObjectModel {
+-(NSManagedObjectModel *)managedObjectModel
+{
     return coreDataStorage.managedObjectModel;
 }
 
--(NSPersistentStoreCoordinator *)persistentStoreCoordinator {
+-(NSPersistentStoreCoordinator *)persistentStoreCoordinator
+{
     return coreDataStorage.persistentStoreCoordinator;
 }
 
@@ -632,14 +653,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self closeAuthViewControllerAnimated:YES];
 }
 
--(void)authenticationDidCancel {
+-(void)authenticationDidCancel
+{
     [self stopNetworking];
     [self.authenticator reset];
     user.authToken = nil;
     [self closeAuthViewControllerAnimated:YES];
 }
 
--(void)authenticationDidFail {
+-(void)authenticationDidFail
+{
     [self stopNetworking];
     [self.authenticator reset];
     user.authToken = nil;
@@ -659,7 +682,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return [self.authenticator authenticateIfNecessary];    
 }
 
--(void)delayedOpenAuthViewController {
+-(void)delayedOpenAuthViewController
+{
     [self openAuthViewControllerAnimated:YES];
 }
 
@@ -724,6 +748,5 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
 	
 }
-
 
 @end
