@@ -218,6 +218,7 @@
 		46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */; };
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
+		B59DEF311803575D00F7C0D5 /* SimperiumBinaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 265EF73715B8E26700115E19 /* SimperiumBinaryTests.m */; };
 		E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */; };
 		E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */; };
 /* End PBXBuildFile section */
@@ -632,8 +633,6 @@
 				264CD911135DFD7A00C51BAD /* SimperiumTests */,
 				264CD94B135DFE7E00C51BAD /* External */,
 				264CD8FD135DFD7A00C51BAD /* Frameworks */,
-				264AE50D15D3092200E5E04E /* libicucore.dylib */,
-				26F4BBCF13DCFDB000B8AC56 /* libz.dylib */,
 				264CD8FC135DFD7A00C51BAD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -659,6 +658,8 @@
 				264CD8FE135DFD7A00C51BAD /* Foundation.framework */,
 				264CD909135DFD7A00C51BAD /* UIKit.framework */,
 				264CD90C135DFD7A00C51BAD /* CoreGraphics.framework */,
+				264AE50D15D3092200E5E04E /* libicucore.dylib */,
+				26F4BBCF13DCFDB000B8AC56 /* libz.dylib */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1241,6 +1242,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B59DEF311803575D00F7C0D5 /* SimperiumBinaryTests.m in Sources */,
 				264CD91B135DFD7A00C51BAD /* SimperiumTests.m in Sources */,
 				26ED4418146CF6D000C3D7D6 /* Config.m in Sources */,
 				26ED441B146CF8E600C3D7D6 /* Farm.m in Sources */,

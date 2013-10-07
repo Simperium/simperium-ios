@@ -10,7 +10,6 @@
 #import "SPEnvironment.h"
 #import "SPUser.h"
 #import "SPAuthenticator.h"
-#import "SPBinaryManager.h"
 #import "ASIFormDataRequest.h"
 #import "ASIHTTPRequest.h"
 #import "DDLog.h"
