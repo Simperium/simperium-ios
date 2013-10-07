@@ -10,6 +10,8 @@
 #import "SPManagedObject.h"
 #import "DDLog.h"
 
+
+
 static int ddLogLevel = LOG_LEVEL_INFO;
 
 @implementation SPCoreDataExporter
@@ -22,19 +24,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
--(id)init
-{
-    if ((self = [super init])) {
-    }
-    return self;
-}
-
 -(NSString *)simperiumTypeForAttribute:(NSAttributeDescription *)attribute
 {
     // Check for overrides first
     NSString *override = [[attribute userInfo] objectForKey:@"spOverride"];
-    if (override)
+    if (override) {
         return override;
+	}
     
     switch ([attribute attributeType]) {
         case NSStringAttributeType: return @"text";
@@ -55,44 +51,48 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
     return [[attr name] compare:@"simperiumKey"] == NSOrderedSame ||
         [[attr name] compare:@"ghostData"] == NSOrderedSame;
-    
-    // The below doesn't seem to work in iOS 5
-    //NSEntityDescription *ownerEntity = [attr entity];
-    //return [[ownerEntity name] compare: @"SPEntity"] == NSOrderedSame;
 }
 
 -(void)addMembersFrom:(NSEntityDescription *)entityDesc to:(NSMutableArray *)members
 {
     // Don't add members from SPManagedObject
-    if ([[entityDesc name] compare:@"SPManagedObject"] == NSOrderedSame)
+    if ([[entityDesc name] compare:@"SPManagedObject"] == NSOrderedSame) {
         return;
-        
+	}
+    
     for (NSAttributeDescription *attr in [[entityDesc attributesByName] allValues]) {
         // Don't sync certain attributes
-        if ([self attributeAddedBySimperium:attr])
+        if ([self attributeAddedBySimperium:attr]) {
             continue;
+		}
         
-        if ([attr isTransient])
+        if ([attr isTransient]) {
             continue;
+		}
         
         // Attributes can be manually excluded from syncing
-        if ([[attr userInfo] objectForKey:@"spDisableSync"])
+        if ([[attr userInfo] objectForKey:@"spDisableSync"]) {
             continue;
+		}
         
         NSMutableDictionary *member = [NSMutableDictionary dictionaryWithCapacity:4];
 
         id defaultValue = [attr defaultValue];
-        if (defaultValue)
+        if (defaultValue) {
             [member setObject:defaultValue forKey:@"defaultValue"];
-
-        [member setObject:[attr name] forKey:@"name"];
-        [member setObject:@"default" forKey:@"resolutionPolicy"];
+		}
+		
         NSString *type = [self simperiumTypeForAttribute: attr];
         NSAssert1(type != nil, @"Simperium couldn't load member %@ (unsupported type)", [attr name]);
-        [member setObject: type forKey:@"type"];
+		
+        [member setObject:type forKey:@"type"];
+        [member setObject:attr.name forKey:@"name"];
+        [member setObject:@"default" forKey:@"resolutionPolicy"];
+		
         if (attr.attributeType == NSTransformableAttributeType && attr.valueTransformerName != nil) {
             [member setObject:attr.valueTransformerName forKey:@"valueTransformerName"];
         }
+		
         [members addObject: member];
     }
     
@@ -100,13 +100,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSRelationshipDescription *rel = [[entityDesc relationshipsByName] objectForKey:relationshipName];
         
         // Relationships can be manually excluded from syncing
-        if ([[rel userInfo] objectForKey:@"spDisableSync"])
+        if ([[rel userInfo] objectForKey:@"spDisableSync"]) {
             continue;
+		}
         
         // For now, we're only syncing relationships from many-to-one, not one-to-many, unless there's no inverse
         // (in which case the many-to-one won't exist)
-        if ([rel isToMany] && [rel inverseRelationship] != nil)
+        if ([rel isToMany] && [rel inverseRelationship] != nil) {
             continue;
+		}
         
         NSMutableDictionary *member = [NSMutableDictionary dictionaryWithCapacity:4];
         [member setObject:[rel name] forKey:@"name"];
@@ -124,25 +126,28 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(NSDictionary *)exportModel:(NSManagedObjectModel *)model classMappings:(NSMutableDictionary *)classMappings
 {
-    
     // Construct a dictionary
     NSMutableDictionary *definitions = [NSMutableDictionary dictionaryWithCapacity:[[model entities] count]];
-    for (NSEntityDescription *entityDesc in [model entities])
+    for (NSEntityDescription *entityDesc in model.entities)
     {
         // Certain entities don't need to be synced
-        if ([entityDesc isAbstract])
+        if ([entityDesc isAbstract]) {
             continue;
+		}
         
-        if ([[entityDesc userInfo] objectForKey:@"spDisableSync"])
+        if ([[entityDesc userInfo] objectForKey:@"spDisableSync"]) {
             continue;
+		}
         
-        if ([[entityDesc name] compare:@"SPManagedObject"] == NSOrderedSame)
+        if ([[entityDesc name] compare:@"SPManagedObject"] == NSOrderedSame) {
             continue;
+		}
         
         NSString *className = [entityDesc managedObjectClassName];
         Class cls = NSClassFromString(className);
-        if (![cls isSubclassOfClass:[SPManagedObject class]])
+        if (![cls isSubclassOfClass:[SPManagedObject class]]) {
             continue;
+		}
         
         // Load the entity data
         NSMutableDictionary *data = [NSMutableDictionary dictionaryWithCapacity: 3];
