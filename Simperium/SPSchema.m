@@ -68,25 +68,30 @@
 				[members setObject:member forKey:member.keyName];
 			}
 			
-            if ([member isKindOfClass:[SPMemberBinary class]])
+            if ([member isKindOfClass:[SPMemberBinary class]]) {
                 [binaryMembers addObject: member];
-        }        
+			}
+        }
     }
     
     return self;
 }
 
 
--(NSString *)bucketName {
+-(NSString *)bucketName
+{
 	return bucketName;
 }
 
--(void)addMemberForObject:(id)object key:(NSString *)key {
-    if (!dynamic)
+-(void)addMemberForObject:(id)object key:(NSString *)key
+{
+    if (!dynamic) {
         return;
+	}
     
-    if ([self memberForKey:key])
+    if ([self memberForKey:key]) {
         return;
+	}
     
     NSString *type = @"unsupported";
     if ([object isKindOfClass:[NSString class]])
@@ -104,7 +109,8 @@
     
 }
 
--(SPMember *)memberForKey:(NSString *)memberName {
+-(SPMember *)memberForKey:(NSString *)memberName
+{
     return [members objectForKey:memberName];
 }
 
