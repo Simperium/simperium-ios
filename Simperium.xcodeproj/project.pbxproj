@@ -628,11 +628,12 @@
 		264CD8F0135DFD7900C51BAD = {
 			isa = PBXGroup;
 			children = (
-				466EB41C17BC49DB005F7599 /* QuartzCore.framework */,
 				264CD900135DFD7A00C51BAD /* Simperium */,
 				264CD911135DFD7A00C51BAD /* SimperiumTests */,
 				264CD94B135DFE7E00C51BAD /* External */,
 				264CD8FD135DFD7A00C51BAD /* Frameworks */,
+				264AE50D15D3092200E5E04E /* libicucore.dylib */,
+				26F4BBCF13DCFDB000B8AC56 /* libz.dylib */,
 				264CD8FC135DFD7A00C51BAD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -649,10 +650,9 @@
 		264CD8FD135DFD7A00C51BAD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				466EB41C17BC49DB005F7599 /* QuartzCore.framework */,
 				264AE51015D3094D00E5E04E /* Security.framework */,
-				264AE50D15D3092200E5E04E /* libicucore.dylib */,
 				26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */,
-				26F4BBCF13DCFDB000B8AC56 /* libz.dylib */,
 				26F4BBCD13DCFDA700B8AC56 /* CFNetwork.framework */,
 				26F4BBCB13DCFD9E00B8AC56 /* SystemConfiguration.framework */,
 				264CD9B0135DFFFF00C51BAD /* CoreData.framework */,
