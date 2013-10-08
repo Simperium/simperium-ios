@@ -74,7 +74,6 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
 {
     NSCParameterAssert(aop && bop);
 
-    if (!source) return nil;
     NSString *aop_op = aop[OP_OP], *bop_op = bop[OP_OP];
     if ([aop_op isEqual:OP_OBJECT_ADD] && [bop_op isEqual:OP_OBJECT_ADD]) {
         if ([aop[OP_VALUE] isEqual:bop[OP_VALUE]]) return nil;
@@ -87,7 +86,11 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
         return @{ OP_OP: OP_OBJECT_ADD, OP_VALUE: valueAfterA };
     }
     if ([aop_op isEqual:bop_op]) {
-        if ([aop_op isEqual:OP_STRING]) return @{ OP_OP: OP_STRING, OP_VALUE: [(NSString *)source sp_stringDiffByTransformingStringDiff:aop[OP_VALUE] ontoStringDiff:bop[OP_VALUE]] };
+        if ([aop_op isEqual:OP_STRING]) {
+            NSString *transformedString = [(NSString *)source sp_stringDiffByTransformingStringDiff:aop[OP_VALUE] ontoStringDiff:bop[OP_VALUE]];
+            if (!transformedString) return nil;
+            return @{ OP_OP: OP_STRING, OP_VALUE: transformedString };
+        }
         if ([aop_op isEqual:OP_OBJECT]) return @{ OP_OP: OP_OBJECT, OP_VALUE: [(NSDictionary *)source sp_objectDiffByTransformingObjectDiff:aop[OP_VALUE] ontoObjectDiff:bop[OP_VALUE] policy:policy] };
         if ([aop_op isEqual:OP_LIST]) return @{ OP_OP: OP_LIST, OP_VALUE: [(NSArray *)source sp_arrayDiffByTransformingArrayDiff:aop[OP_VALUE] ontoArrayDiff:bop[OP_VALUE] policy:policy] };
         if ([aop_op isEqual:OP_LIST_DMP]) return @{ OP_OP: OP_LIST_DMP, OP_VALUE: [(NSArray *)source sp_arrayDMPDiffByTransformingArrayDMPDiff:aop[OP_VALUE] ontoArrayDMPDiff:bop[OP_VALUE] policy:policy] };
