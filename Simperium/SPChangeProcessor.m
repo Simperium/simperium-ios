@@ -13,7 +13,7 @@
 #import "SPBinaryManager.h"
 #import "SPStorage.h"
 #import "SPMember.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "SPGhost.h"
 #import "DDLog.h"
 #import "SPBucket.h"
@@ -73,14 +73,14 @@ NSString * const CH_DATA            = @"d";
 }
 
 - (void)serializeChangesPending {
-    NSString *pendingJSON = [changesPending JSONString];
+    NSString *pendingJSON = [changesPending sp_JSONString];
     NSString *key = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
 	[[NSUserDefaults standardUserDefaults] setObject:pendingJSON forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void)serializeKeysForObjectsWithMoreChanges {
-    NSString *json = [[keysForObjectsWithMoreChanges allObjects] JSONString];
+    NSString *json = [[keysForObjectsWithMoreChanges allObjects] sp_JSONString];
     NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", instanceLabel];
 	[[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -90,7 +90,7 @@ NSString * const CH_DATA            = @"d";
     // Load changes that didn't get a chance to send
     NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
 	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
-    NSDictionary *pendingDict = [pendingJSON objectFromJSONString];
+    NSDictionary *pendingDict = [pendingJSON sp_objectFromJSONString];
     if (pendingDict && [pendingDict count] > 0)
         [changesPending setValuesForKeysWithDictionary:pendingDict];
 }
@@ -99,7 +99,7 @@ NSString * const CH_DATA            = @"d";
     // Load keys for entities that have more changes to send
     NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", instanceLabel];
 	NSString *json = [[NSUserDefaults standardUserDefaults] objectForKey:key];
-    NSArray *list = [json objectFromJSONString];
+    NSArray *list = [json sp_objectFromJSONString];
     if (list && [list count] > 0)
         [keysForObjectsWithMoreChanges addObjectsFromArray:list];
 }
@@ -249,7 +249,7 @@ NSString * const CH_DATA            = @"d";
         object.ghost.version = endVersion;
         
         // Slight hack to ensure Core Data realizes the object has changed and needs a save
-        NSString *ghostDataCopy = [[[object.ghost dictionary] JSONString] copy];
+        NSString *ghostDataCopy = [[[object.ghost dictionary] sp_JSONString] copy];
         object.ghostData = ghostDataCopy;
         
         DDLogVerbose(@"Simperium MODIFIED ghost version %@ (%@-%@)", endVersion, bucket.name, instanceLabel);

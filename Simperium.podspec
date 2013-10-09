@@ -52,7 +52,6 @@ Pod::Spec.new do |s|
   s.dependency 'CocoaLumberjack'
   s.dependency 'Google-Diff-Match-Patch'
   s.dependency 'JRSwizzle'
-  s.dependency 'JSONKit'
   s.dependency 'SocketRocket'
 
 end

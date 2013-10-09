@@ -16,7 +16,7 @@
 #import "SPIndexProcessor.h"
 #import "DDLog.h"
 #import "SPGhost.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "SPRelationshipResolver.h"
 
 static int ddLogLevel = LOG_LEVEL_INFO;

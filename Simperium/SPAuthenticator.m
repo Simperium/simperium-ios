@@ -14,7 +14,7 @@
 #import "ASIFormDataRequest.h"
 #import "ASIHTTPRequest.h"
 #import "DDLog.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "SFHFKeychainUtils.h"
 #import "SPReachability.h"
 
@@ -118,7 +118,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSDictionary *authData = [NSDictionary dictionaryWithObjectsAndKeys:
                               username, @"username",
                               password, @"password", nil];
-    NSString *jsonData = [authData JSONString];
+    NSString *jsonData = [authData sp_JSONString];
     [tokenRequest appendPostData:[jsonData dataUsingEncoding:NSUTF8StringEncoding]];
     [tokenRequest addRequestHeader:@"Content-Type" value:@"application/json"];
     [tokenRequest addRequestHeader:@"X-Simperium-API-Key" value:simperium.APIKey];
@@ -158,7 +158,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         return;
     }
     
-    NSDictionary *userDict = [tokenResponse objectFromJSONString];
+    NSDictionary *userDict = [tokenResponse sp_objectFromJSONString];
     NSString *username = [userDict objectForKey:@"username"];
     NSString *token = [userDict objectForKey:@"access_token"];
     
@@ -202,7 +202,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if ([providerString length] > 0)
         [authData setObject:providerString forKey:@"provider"];
     
-    NSString *jsonData = [authData JSONString];
+    NSString *jsonData = [authData sp_JSONString];
     [tokenRequest appendPostData:[jsonData dataUsingEncoding:NSUTF8StringEncoding]];
     [tokenRequest addRequestHeader:@"Content-Type" value:@"application/json"];
     [tokenRequest addRequestHeader:@"X-Simperium-API-Key" value:simperium.APIKey];
