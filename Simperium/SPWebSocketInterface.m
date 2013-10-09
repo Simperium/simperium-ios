@@ -10,7 +10,7 @@
 #import "SPChangeProcessor.h"
 #import "SPUser.h"
 #import "SPBucket.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "DDLog.h"
 #import "DDLogDebug.h"
@@ -126,7 +126,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
                                };
     
     DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
-    NSString *message = [NSString stringWithFormat:@"%d:init:%@", channel.number, [jsonData JSONString]];
+    NSString *message = [NSString stringWithFormat:@"%d:init:%@", channel.number, [jsonData sp_JSONString]];
     [self.webSocket send:message];
 }
 
@@ -271,7 +271,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
                 [channel startProcessingChangesForBucket:bucket];
         } else {
             DDLogWarn(@"Simperium received unexpected auth response: %@", data);
-            NSDictionary *authPayload = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+            NSDictionary *authPayload = [data sp_objectFromJSONString];
             NSNumber *code = authPayload[@"code"];
             if ([code isEqualToNumber:@401]) {
                 // Let Simperium proper deal with it
@@ -287,7 +287,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
             [channel requestLatestVersionsForBucket:bucket];
         } else {
             // Incoming changes, handle them
-            NSArray *changes = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+            NSArray *changes = [data sp_objectFromJSONString];
 			[channel handleRemoteChanges: changes bucket:bucket];
         }
     } else if ([command isEqualToString:COM_ENTITY]) {

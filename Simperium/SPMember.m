@@ -11,7 +11,7 @@
 #import "SPEmbeddedManagedObject.h"
 #import "SPBucket.h"
 #import "SPRelationshipResolver.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "NSData+Simperium.h"
 

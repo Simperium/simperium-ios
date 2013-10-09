@@ -20,7 +20,7 @@
 #import "SPHttpInterface.h"
 #import "SPWebSocketInterface.h"
 #import "ASIHTTPRequest.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "DDLog.h"
 #import "DDASLLogger.h"

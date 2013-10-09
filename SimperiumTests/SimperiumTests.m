@@ -11,7 +11,7 @@
 #import "DDLog.h"
 #import "ASIHTTPRequest.h"
 #import "ASIFormDataRequest.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "Config.h"
 #import "Farm.h"
@@ -150,7 +150,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     if (code != 200)
         return;
         
-    NSDictionary *userDict = [tokenResponse objectFromJSONString];
+    NSDictionary *userDict = [tokenResponse sp_objectFromJSONString];
     
     self.token = [userDict objectForKey:@"access_token"];
     STAssertTrue(token.length > 0, @"invalid token from request: %@", tokenURL);

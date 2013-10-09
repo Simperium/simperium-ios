@@ -20,7 +20,7 @@
 #import "SPGhost.h"
 #import "ASIHTTPRequest.h"
 #import "ASINetworkQueue.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "DDLog.h"
 #import "DDLogDebug.h"
@@ -248,7 +248,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             // PERFORM GET
             NSURL *url = [NSURL URLWithString:sendURL];
             
-            NSString *jsonStr = [changes JSONString];
+            NSString *jsonStr = [changes sp_JSONString];
             DDLogVerbose(@"  post data = %@", jsonStr);
             
             postRequest = [ASIHTTPRequest requestWithURL:url];
@@ -395,7 +395,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [self performSelector:@selector(postChanges) withObject:nil afterDelay:5];
         return;
     }
-    NSArray *changes = [responseString objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+    NSArray *changes = [responseString sp_objectFromJSONString];
     DDLogVerbose(@"GET response received (%@), handling %lu changes...", bucket.name, (unsigned long)[changes count] );
     DDLogDebug(@"  GET response was: %@", responseString);
     
@@ -423,7 +423,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
     // Check for any errors in the response
     if (responseString.length > 0) {
-        NSArray *changes = [responseString objectFromJSONString];
+        NSArray *changes = [responseString sp_objectFromJSONString];
         dispatch_async(bucket.processorQueue, ^{
             if (started) {
                 BOOL repostNeeded = [bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket];
@@ -635,7 +635,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     NSString *responseString = [request responseString];
     DDLogVerbose(@"Simperium received index (%@): %@", bucket.name, responseString);
-    NSDictionary *responseDict = [responseString objectFromJSONString];
+    NSDictionary *responseDict = [responseString sp_objectFromJSONString];
     NSArray *currentIndexArray = [responseDict objectForKey:@"index"];
     id current = [responseDict objectForKey:@"current"];
     
@@ -888,7 +888,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSString *version = [urlComponents lastObject];
     NSString *key = [urlComponents objectAtIndex:[urlComponents count] - 3];
     
-    NSDictionary *memberData = [responseString objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+    NSDictionary *memberData = [responseString sp_objectFromJSONString];
     
     if ([bucket.delegate respondsToSelector:@selector(bucket:didReceiveObjectForKey:version:data:)])
         [bucket.delegate bucket:bucket didReceiveObjectForKey:key version:version data:memberData];
@@ -921,7 +921,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     [shareRequest addRequestHeader:@"X-Simperium-Token" value:[simperium.user authToken]];
     NSDictionary *postData = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:TRUE] forKey:@"write_access"];
-    NSString *jsonStr = [postData JSONString];
+    NSString *jsonStr = [postData sp_JSONString];
     [shareRequest appendPostData:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
     [shareRequest setDelegate:self];
     [shareRequest setDidFinishSelector:@selector(shareFinished:)];

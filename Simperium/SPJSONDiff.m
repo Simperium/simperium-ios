@@ -10,7 +10,7 @@
 
 #import "DiffMatchPatch.h"
 #import "SPMember.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "DDLog.h"
 
 static int ddLogLevel = LOG_LEVEL_INFO;
@@ -350,7 +350,7 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
 		} else if (object == [NSNull null]) {
 			[JSONString appendString:@"null\n"];
 		} else if ([object isKindOfClass:[NSArray class]] || [object isKindOfClass:[NSDictionary class]]) {
-			[JSONString appendFormat:@"%@\n",[[object JSONString] stringByReplacingOccurrencesOfString:@"\n" withString:@""]];
+			[JSONString appendFormat:@"%@\n",[[object sp_JSONString] stringByReplacingOccurrencesOfString:@"\n" withString:@""]];
 		} else {
 			[NSException raise:NSInternalInconsistencyException format:@"Simperium: Cannot create diff match patch with non-json object %@ in %s",object,__PRETTY_FUNCTION__];
 		}
@@ -371,7 +371,7 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
 		return ![evaluatedObject isEqual:@""];
 	}]];
 	NSString *JSONArrayString = [NSString stringWithFormat:@"[ %@ ]", [JSONStrings componentsJoinedByString:@", "]];
-	return [JSONArrayString objectFromJSONString];
+	return [JSONArrayString sp_objectFromJSONString];
 }
 
 #pragma mark - Full Array Diff
