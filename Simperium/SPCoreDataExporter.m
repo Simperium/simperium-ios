@@ -16,11 +16,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 @implementation SPCoreDataExporter
 
-+ (int)ddLogLevel {
++(int)ddLogLevel
+{
     return ddLogLevel;
 }
 
-+ (void)ddSetLogLevel:(int)logLevel {
++(void)ddSetLogLevel:(int)logLevel
+{
     ddLogLevel = logLevel;
 }
 
@@ -56,7 +58,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)addMembersFrom:(NSEntityDescription *)entityDesc to:(NSMutableArray *)members
 {
     // Don't add members from SPManagedObject
-    if ([[entityDesc name] compare:@"SPManagedObject"] == NSOrderedSame) {
+    if ([[entityDesc name] compare:NSStringFromClass([SPManagedObject class])] == NSOrderedSame) {
         return;
 	}
     
@@ -68,6 +70,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         
         if ([attr isTransient]) {
             continue;
+		}
+		
+		// Don't export binaryData attributes. Those fields will be handled by SPBinaryManager
+		if (attr.attributeType == NSBinaryDataAttributeType) {
+			continue;
 		}
         
         // Attributes can be manually excluded from syncing
@@ -128,8 +135,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
     // Construct a dictionary
     NSMutableDictionary *definitions = [NSMutableDictionary dictionaryWithCapacity:[[model entities] count]];
-    for (NSEntityDescription *entityDesc in model.entities)
-    {
+    for (NSEntityDescription *entityDesc in model.entities) {
         // Certain entities don't need to be synced
         if ([entityDesc isAbstract]) {
             continue;
@@ -139,7 +145,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             continue;
 		}
         
-        if ([[entityDesc name] compare:@"SPManagedObject"] == NSOrderedSame) {
+        if ([[entityDesc name] compare:NSStringFromClass([SPManagedObject class])] == NSOrderedSame) {
             continue;
 		}
         
@@ -167,13 +173,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [classMappings setObject:className forKey: [entityDesc name]];
     }
     
-    return definitions;
-    
+#ifdef DEBUG_EXPORT_OUTPUT
     // For now, just print to log to make sure the export worked
     // Also freeze; copy/paste the log to a file, then comment out the export line so
     // this doesn't run again (hacky)
     DDLogVerbose(@"Simperium result of Core Data export: %@", definitions);
-    //NSAssert(0, @"Asserting to look at export log (hack)");
+    NSAssert(0, @"Asserting to look at export log (hack)");
+#endif
+	
+    return definitions;
 }
 
 @end

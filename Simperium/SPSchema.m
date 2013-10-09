@@ -18,7 +18,7 @@
 #import "SPMemberJSONList.h"
 #import "SPMemberList.h"
 #import "SPMemberBase64.h"
-#import "SPMemberBinary.h"
+#import "SPMemberBinaryInfo.h"
 
 @implementation SPSchema
 @synthesize bucketName;
@@ -39,8 +39,8 @@
         return [SPMemberEntity class];
     else if ([type isEqualToString:@"double"])
         return [SPMemberDouble class];
-    else if ([type isEqualToString:@"binary"])
-        return [SPMemberBinary class];
+    else if ([type isEqualToString:@"binaryInfo"])
+        return [SPMemberBinaryInfo class];
     else if ([type isEqualToString:@"list"])
         return [SPMemberList class];
     else if ([type isEqualToString:@"jsonlist"])
@@ -68,7 +68,7 @@
 				[members setObject:member forKey:member.keyName];
 			}
 			
-            if ([member isKindOfClass:[SPMemberBinary class]]) {
+            if ([member isKindOfClass:[SPMemberBinaryInfo class]]) {
                 [binaryMembers addObject: member];
 			}
         }
