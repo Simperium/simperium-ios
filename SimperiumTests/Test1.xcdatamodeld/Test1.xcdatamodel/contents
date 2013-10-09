@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1811" systemVersion="12C60" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="3396" systemVersion="12F45" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="Comment" representedClassName="Comment" parentEntity="SPManagedObject" syncable="YES">
         <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="post" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Post" inverseName="comments" inverseEntity="Post" syncable="YES"/>
     </entity>
     <entity name="Config" representedClassName="Config" parentEntity="SPManagedObject" syncable="YES">
-        <attribute name="binaryFile" optional="YES" attributeType="String" syncable="YES">
+        <attribute name="binaryData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <attribute name="binaryInfo" optional="YES" attributeType="String" syncable="YES">
             <userInfo>
-                <entry key="spOverride" value="binary"/>
+                <entry key="spOverride" value="binaryInfo"/>
             </userInfo>
         </attribute>
         <attribute name="captainsLog" optional="YES" attributeType="String" syncable="YES"/>
@@ -26,9 +27,9 @@
         <attribute name="simperiumKey" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Comment" positionX="72" positionY="198" width="128" height="75"/>
-        <element name="Config" positionX="-20" positionY="228" width="128" height="150"/>
-        <element name="Post" positionX="151" positionY="234" width="128" height="75"/>
-        <element name="SPManagedObject" positionX="153" positionY="96" width="128" height="75"/>
+        <element name="Comment" positionX="0" positionY="0" width="0" height="0"/>
+        <element name="Config" positionX="0" positionY="0" width="0" height="0"/>
+        <element name="Post" positionX="0" positionY="0" width="0" height="0"/>
+        <element name="SPManagedObject" positionX="0" positionY="0" width="0" height="0"/>
     </elements>
 </model>
