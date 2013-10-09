@@ -17,15 +17,15 @@
 
 @protocol SPBinaryManagerDelegate <NSObject>
 @optional
--(void)binaryUploadStarted:(NSString *)ghostKey attributeName:(NSString *)attributeName;
--(void)binaryUploadSuccessful:(NSString *)ghostKey attribute:(NSString *)attributeName;
--(void)binaryUploadFailed:(NSString *)ghostKey attributeName:(NSString *)attributeName error:(NSError *)error;
--(void)binaryUploadProgress:(NSString *)ghostKey attributeName:(NSString *)attributeName percent:(float) percent;
+-(void)binaryUploadStarted:(NSString *)simperiumKey attributeName:(NSString *)attributeName;
+-(void)binaryUploadSuccessful:(NSString *)simperiumKey attribute:(NSString *)attributeName;
+-(void)binaryUploadFailed:(NSString *)simperiumKey attributeName:(NSString *)attributeName error:(NSError *)error;
+-(void)binaryUploadProgress:(NSString *)simperiumKey attributeName:(NSString *)attributeName percent:(float) percent;
 
--(void)binaryDownloadStarted:(NSString *)ghostKey attributeName:(NSString *)attributeName;
--(void)binaryDownloadSuccessful:(NSString *)ghostKey attributeName:(NSString *)attributeName;
--(void)binaryDownloadFailed:(NSString *)ghostKey attributeName:(NSString *)attributeName error:(NSError *)error;
--(void)binaryDownloadProgress:(NSString *)ghostKey attributeName:(NSString *)attributeName percent:(float)percent;
+-(void)binaryDownloadStarted:(NSString *)simperiumKey attributeName:(NSString *)attributeName;
+-(void)binaryDownloadSuccessful:(NSString *)simperiumKey attributeName:(NSString *)attributeName;
+-(void)binaryDownloadFailed:(NSString *)simperiumKey attributeName:(NSString *)attributeName error:(NSError *)error;
+-(void)binaryDownloadProgress:(NSString *)simperiumKey attributeName:(NSString *)attributeName percent:(float)percent;
 @end
 
 
@@ -35,11 +35,6 @@
 
 @interface SPBinaryManager : NSObject
 
--(id)initWithSimperium:(Simperium *)aSimperium;
-
--(void)startDownloadIfNeeded:(NSString *)simperiumKey bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
-
--(void)addDelegate:(id)delegate;
--(void)removeDelegate:(id)delegate;
+@property (nonatomic, weak, readwrite) id<SPBinaryManagerDelegate> delegate;
 
 @end

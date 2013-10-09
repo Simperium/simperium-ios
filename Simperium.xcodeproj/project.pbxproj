@@ -216,6 +216,7 @@
 		46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */; };
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
+		B5554ADF1805CCDC0064F3BB /* SPBinaryManager+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5554ADE1805CCDC0064F3BB /* SPBinaryManager+Internals.h */; };
 		B59DEF311803575D00F7C0D5 /* SimperiumBinaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 265EF73715B8E26700115E19 /* SimperiumBinaryTests.m */; };
 		E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */; };
 		E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */; };
@@ -444,6 +445,7 @@
 		46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumAuxiliaryTests.m; sourceTree = "<group>"; };
 		46EE3D55171D0C8E00E6F0A5 /* SimperiumErrorTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumErrorTests.h; sourceTree = "<group>"; };
 		46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumErrorTests.m; sourceTree = "<group>"; };
+		B5554ADE1805CCDC0064F3BB /* SPBinaryManager+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPBinaryManager+Internals.h"; sourceTree = "<group>"; };
 		E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTOSViewController.h; sourceTree = "<group>"; };
 		E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTOSViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -513,6 +515,7 @@
 			isa = PBXGroup;
 			children = (
 				26EF3BA7147C6BB200E62AD6 /* SPBinaryManager.h */,
+				B5554ADE1805CCDC0064F3BB /* SPBinaryManager+Internals.h */,
 				26EF3BA8147C6BB200E62AD6 /* SPBinaryManager.m */,
 			);
 			name = Binary;
@@ -953,6 +956,7 @@
 				26E83DAA1399D05F00195758 /* NSDate+Simperium.h in Headers */,
 				26B16EFF13B1B79100BEB3E5 /* NSData+Simperium.h in Headers */,
 				26905D9C142CF97D001ACF20 /* DDAbstractDatabaseLogger.h in Headers */,
+				B5554ADF1805CCDC0064F3BB /* SPBinaryManager+Internals.h in Headers */,
 				26905D9E142CF97D001ACF20 /* DDASLLogger.h in Headers */,
 				26905DA0142CF97D001ACF20 /* DDFileLogger.h in Headers */,
 				26905DA2142CF97D001ACF20 /* DDLog.h in Headers */,

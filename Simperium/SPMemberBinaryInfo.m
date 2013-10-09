@@ -8,7 +8,7 @@
 
 #import "SPMemberBinaryInfo.h"
 #import "Simperium.h"
-#import "SPBinaryManager.h"
+#import "SPBinaryManager+Internals.h"
 #import "JSONKit.h"
 
 
@@ -22,8 +22,8 @@
 
 -(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object
 {
-    NSDictionary *payload = [dict objectForKey: key];
-	if(payload == nil) {
+    NSDictionary *binaryInfo = [dict objectForKey: key];
+	if(binaryInfo == nil) {
 		return nil;
 	}
 
@@ -32,10 +32,10 @@
 	NSString *bucketName = [[[object bucket] name] copy];
 
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[self.binaryManager startDownloadIfNeeded:simperiumKey bucketName:bucketName attributeName:self.keyName];
+		[self.binaryManager downloadIfNeeded:bucketName simperiumKey:simperiumKey attributeName:self.keyName binaryInfo:binaryInfo];
 	});
 
-    return [payload JSONString];
+    return [binaryInfo JSONString];
 }
 
 -(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue

@@ -9,7 +9,7 @@
 #import "SPUser.h"
 #import "SPSchema.h"
 #import "SPManagedObject.h"
-#import "SPBinaryManager.h"
+#import "SPBinaryManager+Internals.h"
 #import "SPJSONStorage.h"
 #import "SPStorageObserver.h"
 #import "SPMember.h"
