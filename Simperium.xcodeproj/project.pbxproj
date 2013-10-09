@@ -53,8 +53,8 @@
 		2622FD19147F24E000C8EEB4 /* SPMemberFloat.m in Sources */ = {isa = PBXBuildFile; fileRef = 2622FD17147F24E000C8EEB4 /* SPMemberFloat.m */; };
 		2622FD1C147F24F700C8EEB4 /* SPMemberEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD1A147F24F600C8EEB4 /* SPMemberEntity.h */; };
 		2622FD1D147F24F700C8EEB4 /* SPMemberEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2622FD1B147F24F600C8EEB4 /* SPMemberEntity.m */; };
-		2622FD20147F250400C8EEB4 /* SPMemberBinary.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD1E147F250200C8EEB4 /* SPMemberBinary.h */; };
-		2622FD21147F250400C8EEB4 /* SPMemberBinary.m in Sources */ = {isa = PBXBuildFile; fileRef = 2622FD1F147F250200C8EEB4 /* SPMemberBinary.m */; };
+		2622FD20147F250400C8EEB4 /* SPMemberBinaryInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD1E147F250200C8EEB4 /* SPMemberBinaryInfo.h */; };
+		2622FD21147F250400C8EEB4 /* SPMemberBinaryInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2622FD1F147F250200C8EEB4 /* SPMemberBinaryInfo.m */; };
 		2622FD24147F251200C8EEB4 /* SPMemberList.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD22147F251100C8EEB4 /* SPMemberList.h */; };
 		2622FD25147F251200C8EEB4 /* SPMemberList.m in Sources */ = {isa = PBXBuildFile; fileRef = 2622FD23147F251100C8EEB4 /* SPMemberList.m */; };
 		2622FD28147F251D00C8EEB4 /* SPMemberBase64.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD26147F251C00C8EEB4 /* SPMemberBase64.h */; };
@@ -173,7 +173,6 @@
 		26C93A6E14F850EA00BE99F5 /* SPAuthenticationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 26C93A6C14F850EA00BE99F5 /* SPAuthenticationViewController.m */; };
 		26D4D3B3156C3DA300E822E9 /* JRSwizzle.h in Headers */ = {isa = PBXBuildFile; fileRef = 26D4D3B1156C3DA300E822E9 /* JRSwizzle.h */; };
 		26D4D3B4156C3DA300E822E9 /* JRSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 26D4D3B2156C3DA300E822E9 /* JRSwizzle.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		26E83A811395A1FC00195758 /* SPS3Manager.h in Headers */ = {isa = PBXBuildFile; fileRef = 26E83A7F1395A1FC00195758 /* SPS3Manager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		26E83C2613985DBE00195758 /* SPCoreDataExporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 26E83C2413985DBB00195758 /* SPCoreDataExporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		26E83C2713985DBE00195758 /* SPCoreDataExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 26E83C2513985DBC00195758 /* SPCoreDataExporter.m */; };
 		26E83D9913999C0F00195758 /* SPUser.h in Headers */ = {isa = PBXBuildFile; fileRef = 26E83D9713999C0C00195758 /* SPUser.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -270,8 +269,8 @@
 		2622FD17147F24E000C8EEB4 /* SPMemberFloat.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMemberFloat.m; sourceTree = "<group>"; };
 		2622FD1A147F24F600C8EEB4 /* SPMemberEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberEntity.h; sourceTree = "<group>"; };
 		2622FD1B147F24F600C8EEB4 /* SPMemberEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMemberEntity.m; sourceTree = "<group>"; };
-		2622FD1E147F250200C8EEB4 /* SPMemberBinary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberBinary.h; sourceTree = "<group>"; };
-		2622FD1F147F250200C8EEB4 /* SPMemberBinary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMemberBinary.m; sourceTree = "<group>"; };
+		2622FD1E147F250200C8EEB4 /* SPMemberBinaryInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberBinaryInfo.h; sourceTree = "<group>"; };
+		2622FD1F147F250200C8EEB4 /* SPMemberBinaryInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMemberBinaryInfo.m; sourceTree = "<group>"; };
 		2622FD22147F251100C8EEB4 /* SPMemberList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberList.h; sourceTree = "<group>"; };
 		2622FD23147F251100C8EEB4 /* SPMemberList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMemberList.m; sourceTree = "<group>"; };
 		2622FD26147F251C00C8EEB4 /* SPMemberBase64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberBase64.h; sourceTree = "<group>"; };
@@ -401,8 +400,6 @@
 		26C93A6C14F850EA00BE99F5 /* SPAuthenticationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAuthenticationViewController.m; sourceTree = "<group>"; };
 		26D4D3B1156C3DA300E822E9 /* JRSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JRSwizzle.h; sourceTree = "<group>"; };
 		26D4D3B2156C3DA300E822E9 /* JRSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JRSwizzle.m; sourceTree = "<group>"; };
-		26E83A7F1395A1FC00195758 /* SPS3Manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPS3Manager.h; sourceTree = "<group>"; };
-		26E83A801395A1FC00195758 /* SPS3Manager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPS3Manager.m; sourceTree = "<group>"; };
 		26E83C2413985DBB00195758 /* SPCoreDataExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCoreDataExporter.h; sourceTree = "<group>"; };
 		26E83C2513985DBC00195758 /* SPCoreDataExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCoreDataExporter.m; sourceTree = "<group>"; };
 		26E83D9713999C0C00195758 /* SPUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUser.h; sourceTree = "<group>"; };
@@ -520,8 +517,6 @@
 				26B473F614A116B100397E7F /* SPBinaryTransportDelegate.h */,
 				26EF3BA7147C6BB200E62AD6 /* SPBinaryManager.h */,
 				26EF3BA8147C6BB200E62AD6 /* SPBinaryManager.m */,
-				26E83A7F1395A1FC00195758 /* SPS3Manager.h */,
-				26E83A801395A1FC00195758 /* SPS3Manager.m */,
 			);
 			name = Binary;
 			sourceTree = "<group>";
@@ -553,8 +548,8 @@
 				2622FD23147F251100C8EEB4 /* SPMemberList.m */,
 				2622FD26147F251C00C8EEB4 /* SPMemberBase64.h */,
 				2622FD27147F251D00C8EEB4 /* SPMemberBase64.m */,
-				2622FD1E147F250200C8EEB4 /* SPMemberBinary.h */,
-				2622FD1F147F250200C8EEB4 /* SPMemberBinary.m */,
+				2622FD1E147F250200C8EEB4 /* SPMemberBinaryInfo.h */,
+				2622FD1F147F250200C8EEB4 /* SPMemberBinaryInfo.m */,
 			);
 			name = Diffing;
 			sourceTree = "<group>";
@@ -956,7 +951,6 @@
 				264CD99D135DFE7E00C51BAD /* NSString+JavaSubstring.h in Headers */,
 				264CD99F135DFE7E00C51BAD /* NSString+UnicharUtilities.h in Headers */,
 				264CD9A1135DFE7E00C51BAD /* NSString+UriCompatibility.h in Headers */,
-				26E83A811395A1FC00195758 /* SPS3Manager.h in Headers */,
 				26E83C2613985DBE00195758 /* SPCoreDataExporter.h in Headers */,
 				26E83D9913999C0F00195758 /* SPUser.h in Headers */,
 				26E83DAA1399D05F00195758 /* NSDate+Simperium.h in Headers */,
@@ -981,7 +975,7 @@
 				2622FD14147F24D700C8EEB4 /* SPMemberDouble.h in Headers */,
 				2622FD18147F24E000C8EEB4 /* SPMemberFloat.h in Headers */,
 				2622FD1C147F24F700C8EEB4 /* SPMemberEntity.h in Headers */,
-				2622FD20147F250400C8EEB4 /* SPMemberBinary.h in Headers */,
+				2622FD20147F250400C8EEB4 /* SPMemberBinaryInfo.h in Headers */,
 				2622FD24147F251200C8EEB4 /* SPMemberList.h in Headers */,
 				2622FD28147F251D00C8EEB4 /* SPMemberBase64.h in Headers */,
 				2622FD2D147F32A500C8EEB4 /* SPNetworkInterface.h in Headers */,
@@ -1203,7 +1197,7 @@
 				2622FD15147F24D700C8EEB4 /* SPMemberDouble.m in Sources */,
 				2622FD19147F24E000C8EEB4 /* SPMemberFloat.m in Sources */,
 				2622FD1D147F24F700C8EEB4 /* SPMemberEntity.m in Sources */,
-				2622FD21147F250400C8EEB4 /* SPMemberBinary.m in Sources */,
+				2622FD21147F250400C8EEB4 /* SPMemberBinaryInfo.m in Sources */,
 				2622FD25147F251200C8EEB4 /* SPMemberList.m in Sources */,
 				2622FD29147F251D00C8EEB4 /* SPMemberBase64.m in Sources */,
 				2611E806149FB91100121D6E /* JSONKit.m in Sources */,
