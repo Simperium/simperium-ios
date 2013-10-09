@@ -74,8 +74,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     // Take this opportunity to check for any objects that exist locally but not remotely, and remove them
     // (this can happen after reindexing if the client missed some remote deletion changes)
-    NSSet *remoteKeySet = [NSSet setWithArray:[indexDict allKeys]];
-    [self reconcileLocalAndRemoteIndex:remoteKeySet bucket:bucket storage:threadSafeStorage];
+    
+    /* TODO: re-enable this after more thorough unit testing. Suspect it could be the cause of
+       data loss. Disabling this will mean that remotely deleted notes may linger if the
+       deletion didn't sync before a reindexing.
+       NSSet *remoteKeySet = [NSSet setWithArray:[indexDict allKeys]];
+       [self reconcileLocalAndRemoteIndex:remoteKeySet bucket:bucket storage:threadSafeStorage];
+     */
     
     // Process each batch while being efficient with memory and faulting
     for (NSMutableArray *batchList in batchLists) {
