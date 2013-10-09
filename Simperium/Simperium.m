@@ -13,7 +13,7 @@
 #import "SPJSONStorage.h"
 #import "SPStorageObserver.h"
 #import "SPMember.h"
-#import "SPMemberBinary.h"
+#import "SPMemberBinaryInfo.h"
 #import "SPDiffer.h"
 #import "SPGhost.h"
 #import "SPEnvironment.h"
@@ -223,29 +223,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
     // Binary members need to know about the manager (ugly but avoids singleton/global)
     for (SPBucket *bucket in [buckets allValues]) {
-        for (SPMemberBinary *binaryMember in bucket.differ.schema.binaryMembers) {
+        for (SPMemberBinaryInfo *binaryMember in bucket.differ.schema.binaryMembers) {
             binaryMember.binaryManager = manager;
         }
     }
-}
-
--(NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName
-{
-    return [binaryManager addBinary:binaryData toObject:object bucketName:bucketName attributeName:attributeName];
-}
-
--(void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName
-{
-    // Make sure the object has a simperiumKey (it might not if it was just created)
-    if (!object.simperiumKey) {
-        object.simperiumKey = [NSString sp_makeUUID];
-	}
-    return [binaryManager addBinaryWithFilename:filename toObject:object bucketName:bucketName attributeName:attributeName];
-}
-
--(NSData *)dataForFilename:(NSString *)filename
-{
-    return [binaryManager dataForFilename:filename];
 }
 
 -(SPBucket *)bucketForName:(NSString *)name
@@ -338,7 +319,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 -(void)handleNetworkChange:(NSNotification *)notification {
-	
+
+#warning TODO: Start/STOP BinaryManager
 	if ([self.reachability currentReachabilityStatus] == NotReachable) {
         [self stopNetworkManagers];
     } else if(self.user.authenticated) {
@@ -487,9 +469,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Load metadata for pending references among objects
     [self.relationshipResolver loadPendingRelationships:self.coreDataStorage];
     
-    if (self.binaryManager) {
-        [self configureBinaryManager:self.binaryManager];
-	}
+	SPBinaryManager *binary = [[SPBinaryManager alloc] initWithSimperium:self];
+	self.binaryManager = binary;
+	[self configureBinaryManager:binary];
     
     // With everything configured, all objects can now be validated. This will pick up any objects that aren't yet
     // known to Simperium (for the case where you're adding Simperium to an existing app).
@@ -645,7 +627,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token
 {
-    [binaryManager setupAuth:user];
+#warning TODO: Start BinaryManager
     
     // It's now safe to start the network managers
     [self startNetworking];

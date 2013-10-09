@@ -102,10 +102,6 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 // Opens an authentication interface if necessary.
 - (BOOL)authenticateIfNecessary;
 
-// Manually adds a binary file to be tracked by Simperium (forthcoming).
-- (NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
-- (void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
-
 // Saves without syncing (typically not used).
 - (BOOL)saveWithoutSyncing;
 

@@ -7,62 +7,37 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SPBinaryTransportDelegate.h"
 
-#define BIN_KEY @"SPPathKey"
-#define BIN_BUCKET @"SPPathBucket"
-#define BIN_ATTRIBUTE @"SPPathAttribute"
 
 @class Simperium;
-@class SPUser;
-@class SPManagedObject;
 
-@interface SPBinaryManager : NSObject <SPBinaryTransportDelegate> {
-    NSMutableDictionary *pendingBinaryDownloads;
-    NSMutableDictionary *pendingBinaryUploads;
-    NSMutableDictionary *transmissionProgress;
-    Simperium *simperium;
-    NSMutableSet *delegates;
-    NSString *binaryAuthURL;
-    NSString *directory;
-    NSString *keyPrefix;
-}
+#pragma mark ====================================================================================
+#pragma mark SPBinaryManagerDelegate
+#pragma mark ====================================================================================
 
-@property (nonatomic, copy) NSString *binaryAuthURL;
-@property (nonatomic, copy) NSString *directory;
-@property (nonatomic, copy) NSString *keyPrefix;
-@property(nonatomic, strong, readonly) NSMutableDictionary *pendingBinaryDownloads;
-@property(nonatomic, strong, readonly) NSMutableDictionary *pendingBinaryUploads;
-@property(nonatomic, strong, readonly) NSMutableDictionary *transmissionProgress;
+@protocol SPBinaryManagerDelegate <NSObject>
+@optional
+-(void)binaryUploadStarted:(NSString *)ghostKey attributeName:(NSString *)attributeName;
+-(void)binaryUploadSuccessful:(NSString *)ghostKey attribute:(NSString *)attributeName;
+-(void)binaryUploadFailed:(NSString *)ghostKey attributeName:(NSString *)attributeName error:(NSError *)error;
+-(void)binaryUploadProgress:(NSString *)ghostKey attributeName:(NSString *)attributeName percent:(float) percent;
 
-@property (nonatomic, readonly, strong) NSMutableSet *delegates;
+-(void)binaryDownloadStarted:(NSString *)ghostKey attributeName:(NSString *)attributeName;
+-(void)binaryDownloadSuccessful:(NSString *)ghostKey attributeName:(NSString *)attributeName;
+-(void)binaryDownloadFailed:(NSString *)ghostKey attributeName:(NSString *)attributeName error:(NSError *)error;
+-(void)binaryDownloadProgress:(NSString *)ghostKey attributeName:(NSString *)attributeName percent:(float)percent;
+@end
+
+
+#pragma mark ====================================================================================
+#pragma mark SPBinaryManager
+#pragma mark ====================================================================================
+
+@interface SPBinaryManager : NSObject
 
 -(id)initWithSimperium:(Simperium *)aSimperium;
--(void)setupAuth:(SPUser *)user;
--(BOOL)checkOrGetBinaryAuthentication;
 
--(BOOL)binaryExists:(NSString *)filename;
--(void)addPendingReferenceToFile:(NSString *)filename fromKey:(NSString *)fromKey bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
--(void)resolvePendingReferencesToFile:(NSString *)filename;
-
--(void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
--(NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
--(NSData *)dataForFilename:(NSString *)filename;
--(NSString *)pathForFilename:(NSString *)filename;
-
--(void)startDownloading:(NSString *)filename;
--(void)startUploading:(NSString *)filename;
-
--(void)finishedDownloading:(NSString *)filename;
--(void)finishedUploading:(NSString *)filename;
-
--(int)sizeOfLocalFile:(NSString *)filename;
--(int)sizeOfRemoteFile:(NSString *)filename;
-
--(BOOL)createLocalDirectoryForPrefix: (NSString *)prefixString;
--(NSString *)prefixFilename:(NSString *)filename;
-
--(int)sizeRemainingToTransmit:(NSString *)filename;
+-(void)startDownloadIfNeeded:(NSString *)simperiumKey bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
 
 -(void)addDelegate:(id)delegate;
 -(void)removeDelegate:(id)delegate;

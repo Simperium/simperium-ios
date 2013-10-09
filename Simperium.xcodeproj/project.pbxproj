@@ -165,7 +165,6 @@
 		269CAC2F146DF86000584C56 /* Test1.xcdatamodeld in Resources */ = {isa = PBXBuildFile; fileRef = 26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */; };
 		26B16EFF13B1B79100BEB3E5 /* NSData+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 26B16EFD13B1B78C00BEB3E5 /* NSData+Simperium.h */; };
 		26B16F0013B1B79100BEB3E5 /* NSData+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 26B16EFE13B1B78F00BEB3E5 /* NSData+Simperium.m */; };
-		26B473F714A116B100397E7F /* SPBinaryTransportDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 26B473F614A116B100397E7F /* SPBinaryTransportDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		26B733F015E585630081CF4A /* SPRelationshipResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 26B733EE15E585620081CF4A /* SPRelationshipResolver.h */; };
 		26B733F115E585630081CF4A /* SPRelationshipResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 26B733EF15E585620081CF4A /* SPRelationshipResolver.m */; };
 		26C93A6A14F8159300BE99F5 /* libSimperium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 264CD8FB135DFD7A00C51BAD /* libSimperium.a */; };
@@ -393,7 +392,6 @@
 		269A7F4314743A9C00CB29EE /* SPIndexProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPIndexProcessor.m; sourceTree = "<group>"; };
 		26B16EFD13B1B78C00BEB3E5 /* NSData+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Simperium.h"; sourceTree = "<group>"; };
 		26B16EFE13B1B78F00BEB3E5 /* NSData+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Simperium.m"; sourceTree = "<group>"; };
-		26B473F614A116B100397E7F /* SPBinaryTransportDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBinaryTransportDelegate.h; sourceTree = "<group>"; };
 		26B733EE15E585620081CF4A /* SPRelationshipResolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPRelationshipResolver.h; sourceTree = "<group>"; };
 		26B733EF15E585620081CF4A /* SPRelationshipResolver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPRelationshipResolver.m; sourceTree = "<group>"; };
 		26C93A6B14F850EA00BE99F5 /* SPAuthenticationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationViewController.h; sourceTree = "<group>"; };
@@ -514,7 +512,6 @@
 		2622FCFE147F224200C8EEB4 /* Binary */ = {
 			isa = PBXGroup;
 			children = (
-				26B473F614A116B100397E7F /* SPBinaryTransportDelegate.h */,
 				26EF3BA7147C6BB200E62AD6 /* SPBinaryManager.h */,
 				26EF3BA8147C6BB200E62AD6 /* SPBinaryManager.m */,
 			);
@@ -980,7 +977,6 @@
 				2622FD28147F251D00C8EEB4 /* SPMemberBase64.h in Headers */,
 				2622FD2D147F32A500C8EEB4 /* SPNetworkInterface.h in Headers */,
 				2611E805149FB91100121D6E /* JSONKit.h in Headers */,
-				26B473F714A116B100397E7F /* SPBinaryTransportDelegate.h in Headers */,
 				26C93A6D14F850EA00BE99F5 /* SPAuthenticationViewController.h in Headers */,
 				26563AE414FC3BDE0081C8C1 /* SPAuthenticator.h in Headers */,
 				267CE8FA156C0FD20028801C /* NSMutableDictionary+Simperium.h in Headers */,
