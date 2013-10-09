@@ -8,7 +8,7 @@
 
 #import "UIImage+Simperium.h"
 
-@interface FIXCATEGORYBUGIMAGE;
+@interface FIXCATEGORYBUGIMAGE : NSObject;
 @end
 @implementation FIXCATEGORYBUGIMAGE;
 @end
