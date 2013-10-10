@@ -443,8 +443,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 										   @"id" : key};
             [errorArray addObject:versionDict];
         }
-        [self performSelector:@selector(requestVersionsForKeys:) withObject: errorArray afterDelay:1];
-        //[self performSelector:@selector(requestLatestVersions) withObject:nil afterDelay:10];
+		
+		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1.0f * NSEC_PER_SEC);
+		dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
+			[self performSelector:@selector(requestVersionsForKeys:bucket:) withObject: errorArray withObject:bucket];
+		});
+
         return;
     }
 
