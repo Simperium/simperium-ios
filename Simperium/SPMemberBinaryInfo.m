@@ -31,7 +31,7 @@
 -(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object
 {
     NSDictionary *binaryInfo = [dict objectForKey: key];
-	if(binaryInfo == nil) {
+	if(binaryInfo == nil || binaryInfo.count == 0) {
 		return nil;
 	}
 	
@@ -40,7 +40,7 @@
 	NSString *bucketName = [[[object bucket] name] copy];
 
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[self.binaryManager downloadIfNeeded:bucketName simperiumKey:simperiumKey attributeName:self.keyName binaryInfo:binaryInfo];
+		[self.binaryManager downloadIfNeeded:bucketName simperiumKey:simperiumKey infoKey:self.keyName binaryInfo:binaryInfo];
 	});
 
     return [binaryInfo JSONString];

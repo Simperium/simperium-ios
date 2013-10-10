@@ -13,17 +13,23 @@
 #pragma mark SPBinaryManagerDelegate
 #pragma mark ====================================================================================
 
+extern NSString* const SPBinaryManagerBucketNameKey;
+extern NSString* const SPBinaryManagerSimperiumKey;
+extern NSString* const SPBinaryManagerAttributeDataKey;
+extern NSString* const SPBinaryManagerLengthKey;
+
+
 @protocol SPBinaryManagerDelegate <NSObject>
 @optional
--(void)binaryUploadStarted:(NSString *)simperiumKey attributeName:(NSString *)attributeName;
--(void)binaryUploadSuccessful:(NSString *)simperiumKey attribute:(NSString *)attributeName;
--(void)binaryUploadFailed:(NSString *)simperiumKey attributeName:(NSString *)attributeName error:(NSError *)error;
--(void)binaryUploadProgress:(NSString *)simperiumKey attributeName:(NSString *)attributeName percent:(float) percent;
+-(void)binaryUploadStarted:(NSDictionary *)uploadInfo;
+-(void)binaryUploadSuccessful:(NSDictionary *)uploadInfo;
+-(void)binaryUploadFailed:(NSDictionary *)uploadInfo error:(NSError *)error;
+-(void)binaryUploadProgress:(NSDictionary *)uploadInfo increment:(long long)increment;
 
--(void)binaryDownloadStarted:(NSString *)simperiumKey attributeName:(NSString *)attributeName;
--(void)binaryDownloadSuccessful:(NSString *)simperiumKey attributeName:(NSString *)attributeName;
--(void)binaryDownloadFailed:(NSString *)simperiumKey attributeName:(NSString *)attributeName error:(NSError *)error;
--(void)binaryDownloadProgress:(NSString *)simperiumKey attributeName:(NSString *)attributeName percent:(float)percent;
+-(void)binaryDownloadStarted:(NSDictionary *)downloadInfo;
+-(void)binaryDownloadSuccessful:(NSDictionary *)downloadInfo;
+-(void)binaryDownloadFailed:(NSDictionary *)downloadInfo error:(NSError *)error;
+-(void)binaryDownloadProgress:(NSDictionary *)downloadInfo increment:(long long)increment;
 @end
 
 
