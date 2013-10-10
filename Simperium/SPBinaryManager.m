@@ -48,7 +48,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)savePendingBinaryDownloads;
 -(void)savePendingBinaryUploads;
 
--(NSURL *)downloadUrlForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey attributeName:(NSString *)attributeName;
+-(NSURL *)urlForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey attributeName:(NSString *)attributeName;
 @end
 
 
@@ -118,32 +118,29 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)downloadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey attributeName:(NSString *)attributeName binaryInfo:(NSDictionary *)binaryInfo
 {
-#warning FIX CRASH when binaryInfo != NSDictionary!!!
 #warning TODO: localLength should be persisted somehow else. This is not performant
+#warning TODO: What if the same file is already being downloaded?
 #warning TODO: What if a remote change comes in, while there was another download/upload?  >> CANCEL previous download/upload!
 #warning TODO: What if a remote change comes in, and the object was locally changed but not saved?
 #warning TODO: 'dataName' This is ugly. Seriously
 #warning TODO: Maintain downloadsQueue
 	
+	NSString *dataName = [attributeName stringByReplacingOccurrencesOfString:@"Info" withString:@"Data"];
 	SPManagedObject *object = [[self.simperium bucketForName:bucketName] objectForKey:simperiumKey];
-	NSData *localData = [object valueForKey:attributeName];
 	NSUInteger remoteLength = [binaryInfo[SPContentLengthKey] unsignedIntegerValue];
 		
 	// Are we there yet?
+	NSData *localData = [object valueForKey:dataName];
 	if(localData.length == remoteLength) {
 		return;
 	}
-
-	NSString *dataName = [attributeName stringByReplacingOccurrencesOfString:@"Info" withString:@"Data"];
 
 	// Starting Download: Hit the delegate
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadStarted:attributeName:)] ) {
 		[self.delegate binaryDownloadStarted:simperiumKey attributeName:attributeName];
 	}
 	
-	NSURL *sourceURL = [self downloadUrlForBucket:bucketName simperiumKey:simperiumKey attributeName:attributeName];
-	
-	// Start Download: Go go go go!
+	NSURL *sourceURL = [self urlForBucket:bucketName simperiumKey:simperiumKey attributeName:attributeName];
 	__weak ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:sourceURL];
 	
 	request.requestHeaders = [@{ SPSimperiumTokenKey : self.simperium.user.authToken } mutableCopy];
@@ -155,8 +152,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			return;
 		}
 		
+		// Update the object
 		[object setValue:request.responseData forKey:dataName];
 		[self.simperium save];
+		
+		// Notify the delegate. At last!
+		DDLogWarn(@"Simperium successfully downloaded binary at URL: %@", sourceURL);
 		
 		if( [self.delegate respondsToSelector:@selector(binaryDownloadSuccessful:attributeName:)] ) {
 			[self.delegate binaryDownloadSuccessful:simperiumKey attributeName:attributeName];
@@ -180,6 +181,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	};
 	
 	DDLogWarn(@"Simperium downloading binary at URL: %@", sourceURL);
+	
+#if TARGET_OS_IPHONE
+    request.shouldContinueWhenAppEntersBackground = YES;
+#endif
+	
 	[request startAsynchronous];
 }
 
@@ -200,10 +206,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 
 #pragma mark ====================================================================================
-#pragma mark Private Methods
+#pragma mark Private Helper Methods
 #pragma mark ====================================================================================
 
--(NSURL *)downloadUrlForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey attributeName:(NSString *)attributeName
+-(NSURL *)urlForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey attributeName:(NSString *)attributeName
 {
 	// NOTE: downloadURL should hit the attribute with 'Info' ending!
 	// [Base URL] / [App ID] / [Bucket Name] / i / [Simperium Key] / b / [attributeName]Info
@@ -225,35 +231,5 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
     ddLogLevel = logLevel;
 }
-
-
-#pragma mark ====================================================================================
-#pragma mark LEGACY!
-#pragma mark ====================================================================================
-
-#warning TODO Nuke once ready!
-
-//-(void)startUploading:(NSString *)filename
-//{
-//    
-//	//    UIApplication *app = [UIApplication sharedApplication];
-//	//    UIBackgroundTaskIdentifier tempBgTask = [app beginBackgroundTaskWithExpirationHandler:^{
-//	//
-//	//        NSLog(@"Expired Upload for %@.",filename);
-//	//        [app endBackgroundTask:[[self.bgTasks objectForKey:filename] intValue]];
-//	//        [self.bgTasks setObject:[NSNumber numberWithInt:UIBackgroundTaskInvalid] forKey:filename];
-//	//
-//	//    }];
-//	//
-//	//    [self.bgTasks setObject:[NSNumber numberWithInt: tempBgTask] forKey:filename];
-//
-//    UIBackgroundTaskIdentifier bgTask = [[self.bgTasks objectForKey:request.key] intValue];
-//    if (bgTask != UIBackgroundTaskInvalid) {
-//        [[UIApplication sharedApplication] endBackgroundTask:bgTask];
-//        bgTask = UIBackgroundTaskInvalid;
-//        [self.bgTasks setObject:[NSNumber numberWithInt: UIBackgroundTaskInvalid] forKey:request.key];
-//    }
-//    
-
 
 @end
