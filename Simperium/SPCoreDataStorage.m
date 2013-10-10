@@ -46,6 +46,32 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
+static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
++ (void)registerStoreURLMonitoredBySimperium:(NSURL *)URL
+{
+    @synchronized (self) {
+        if (!StoreURLsMonitoredBySimperium) StoreURLsMonitoredBySimperium = [[NSMutableSet alloc] init];
+        [StoreURLsMonitoredBySimperium addObject:URL];
+    }
+}
+
++ (void)unregisterStoreURLMonitoredBySimperium:(NSURL *)URL
+{
+    @synchronized (self) {
+        [StoreURLsMonitoredBySimperium removeObject:URL];
+    }
+}
+
++ (BOOL)isStoreURLMonitoredBySimperium:(NSURL *)URL
+{
+    BOOL returnValue = NO;
+    @synchronized (self) {
+        returnValue = [StoreURLsMonitoredBySimperium containsObject:URL];
+    }
+    return returnValue;
+}
+
+
 -(id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator
 {
     if (self = [super init]) {
@@ -61,9 +87,17 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		
 		// The new writer MOC will be the only one with direct access to the persistentStoreCoordinator
 		self.writerManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
+        self.writerManagedObjectContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy;
 		self.mainManagedObjectContext.parentContext = self.writerManagedObjectContext;
 
         [self addObserversForMainContext:self.mainManagedObjectContext];
+        NSURL *storeURL = [(NSPersistentStore *)self.persistentStoreCoordinator.persistentStores.firstObject URL];
+        if (storeURL) {
+            if ([SPCoreDataStorage isStoreURLMonitoredBySimperium:storeURL]) {
+                NSLog(@"Simperium Critical Warning: More than one simperium instance is managing a context with a persistent store at %@. This likely means an instance wans't deallocated that should have been.", storeURL);
+            }
+            [SPCoreDataStorage registerStoreURLMonitoredBySimperium:storeURL];
+        }
     }
     return self;
 }
@@ -103,6 +137,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [[NSNotificationCenter defaultCenter] removeObserver:self.sibling name:NSManagedObjectContextDidSaveNotification object:self.mainManagedObjectContext];
     } else {
 		[[NSNotificationCenter defaultCenter] removeObserver:self];
+        NSURL *storeURL = [(NSPersistentStore *)self.persistentStoreCoordinator.persistentStores.firstObject URL];
+        if (storeURL) {
+            [SPCoreDataStorage unregisterStoreURLMonitoredBySimperium:storeURL];
+        }
 	}
 }
 
