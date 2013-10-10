@@ -56,7 +56,7 @@ typedef NSUInteger SPBucketChangeType;
     id<SPNetworkInterface> network;
     SPRelationshipResolver *relationshipResolver;
     SPDiffer *differ;
-    id<SPStorageProvider> storage;
+    id<SPStorageProvider> __weak storage;
     SPSchema *schema;
    
     id<SPBucketDelegate> __weak delegate;
@@ -112,7 +112,7 @@ typedef NSUInteger SPBucketChangeType;
 typedef void (^SPBucketForceSyncCompletion)(void);
 
 @property (nonatomic, copy) NSString *instanceLabel;
-@property (nonatomic, strong) id<SPStorageProvider> storage;
+@property (nonatomic, weak) id<SPStorageProvider> storage;
 @property (nonatomic, strong) id<SPNetworkInterface> network;
 @property (nonatomic, strong) SPDiffer *differ;
 @property (nonatomic, strong) SPRelationshipResolver *relationshipResolver;
