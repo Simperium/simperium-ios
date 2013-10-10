@@ -28,6 +28,8 @@
     NSLog(@"%@ start", self.name);
 	
 #warning TODO: Fill Me!
+//	Test Case: Delete an object before download is complete
+	
 //    [self createAndStartFarms];
 //        
 //    // Leader sends an object to followers

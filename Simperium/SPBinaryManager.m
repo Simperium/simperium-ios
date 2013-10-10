@@ -15,6 +15,7 @@
 #import "NSString+Simperium.h"
 #import "JSONKit.h"
 #import "DDLog.h"
+#import "ASIHTTPRequest.h"
 
 
 
@@ -24,18 +25,11 @@
 
 static NSString* const SPPendingBinaryDownloads = @"SPPendingBinaryDownloads";
 static NSString* const SPPendingBinaryUploads = @"SPPendingBinaryUploads";
+
 static NSString* const SPContentLengthKey = @"content-length";
+static NSString* const SPSimperiumTokenKey = @"X-Simperium-Token";
 
 static int ddLogLevel = LOG_LEVEL_INFO;
-
-
-#pragma mark ====================================================================================
-#pragma mark Callbacks
-#pragma mark ====================================================================================
-
-typedef void(^SPBinarySuccess)(NSData *data);
-typedef void(^SPBinaryFailure)(NSError *error);
-typedef void(^SPBinaryProgress)(float percent);
 
 
 #pragma mark ====================================================================================
@@ -47,7 +41,7 @@ typedef void(^SPBinaryProgress)(float percent);
 @property (nonatomic, strong, readwrite) NSMutableDictionary *pendingBinaryUploads;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *transmissionProgress;
 
-@property (nonatomic, strong, readwrite) Simperium *simperium;
+@property (nonatomic, weak, readwrite) Simperium *simperium;
 
 -(void)loadPendingBinaryDownloads;
 -(void)loadPendingBinaryUploads;
@@ -55,8 +49,6 @@ typedef void(^SPBinaryProgress)(float percent);
 -(void)savePendingBinaryUploads;
 
 -(NSURL *)downloadUrlForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey attributeName:(NSString *)attributeName;
--(void)startDownload:(NSURL *)source success:(SPBinarySuccess)success failure:(SPBinaryFailure)failure progress:(SPBinaryProgress)progress;
--(void)startUpload:(NSURL *)target data:(NSData *)data success:(SPBinarySuccess)success failure:(SPBinaryFailure)failure progress:(SPBinaryProgress)progress;
 @end
 
 
@@ -126,6 +118,13 @@ typedef void(^SPBinaryProgress)(float percent);
 
 -(void)downloadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey attributeName:(NSString *)attributeName binaryInfo:(NSDictionary *)binaryInfo
 {
+#warning FIX CRASH when binaryInfo != NSDictionary!!!
+#warning TODO: localLength should be persisted somehow else. This is not performant
+#warning TODO: What if a remote change comes in, while there was another download/upload?  >> CANCEL previous download/upload!
+#warning TODO: What if a remote change comes in, and the object was locally changed but not saved?
+#warning TODO: 'dataName' This is ugly. Seriously
+#warning TODO: Maintain downloadsQueue
+	
 	SPManagedObject *object = [[self.simperium bucketForName:bucketName] objectForKey:simperiumKey];
 	NSData *localData = [object valueForKey:attributeName];
 	NSUInteger remoteLength = [binaryInfo[SPContentLengthKey] unsignedIntegerValue];
@@ -134,55 +133,69 @@ typedef void(^SPBinaryProgress)(float percent);
 	if(localData.length == remoteLength) {
 		return;
 	}
-	 
+
+	NSString *dataName = [attributeName stringByReplacingOccurrencesOfString:@"Info" withString:@"Data"];
+
 	// Starting Download: Hit the delegate
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadStarted:attributeName:)] ) {
 		[self.delegate binaryDownloadStarted:simperiumKey attributeName:attributeName];
 	}
-
-	// Prepare the callbacks
-	SPBinarySuccess success = ^(NSData *data) {
-#warning TODO: Check if the object wasn't changed locally?
-#warning TODO: Check if the object wasn't deleted locally!
-#warning TODO: localLength should be persisted somehow else. This is not performant
+	
+	NSURL *sourceURL = [self downloadUrlForBucket:bucketName simperiumKey:simperiumKey attributeName:attributeName];
+	
+	// Start Download: Go go go go!
+	__weak ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:sourceURL];
+	
+	request.requestHeaders = [@{ SPSimperiumTokenKey : self.simperium.user.authToken } mutableCopy];
+	
+	request.completionBlock = ^{
+		// The object wasn't deleted, right?
+		SPManagedObject *object = [[self.simperium bucketForName:bucketName] objectForKey:simperiumKey];
+		if(!object) {
+			return;
+		}
+		
+		[object setValue:request.responseData forKey:dataName];
+		[self.simperium save];
 		
 		if( [self.delegate respondsToSelector:@selector(binaryDownloadSuccessful:attributeName:)] ) {
 			[self.delegate binaryDownloadSuccessful:simperiumKey attributeName:attributeName];
 		}
-		
-		[object setValue:data forKey:attributeName];
-		[self.simperium save];
 	};
 	
-	SPBinaryFailure failure = ^(NSError *error) {
+	request.failedBlock = ^{
+		NSError *error = request.error;
+		DDLogWarn(@"Simperium error [%@] while downloading binary at URL: %@", error, sourceURL);
+		
 		if( [self.delegate respondsToSelector:@selector(binaryDownloadFailed:attributeName:error:)] ) {
-			[self.delegate binaryDownloadFailed:simperiumKey attributeName:attributeName error:error];
+			[self.delegate binaryDownloadFailed:simperiumKey attributeName:attributeName error:request.error];
 		}
 	};
 	
-	SPBinaryProgress progress = ^(float percent) {
+	request.downloadSizeIncrementedBlock = ^(long long size) {
 		if( [self.delegate respondsToSelector:@selector(binaryDownloadProgress:attributeName:percent:)] ) {
+			float percent = size * 1.0f / remoteLength * 1.0f;
 			[self.delegate binaryDownloadProgress:simperiumKey attributeName:attributeName percent:percent];
 		}
 	};
 	
-	// Download!
-	NSURL *sourceURL = [self downloadUrlForBucket:bucketName simperiumKey:simperiumKey attributeName:attributeName];
-	[self startDownload:sourceURL success:success failure:failure progress:progress];
+	DDLogWarn(@"Simperium downloading binary at URL: %@", sourceURL);
+	[request startAsynchronous];
 }
 
 -(void)uploadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey attributeName:(NSString *)attributeName binaryData:(NSData *)binaryData
 {
-#warning TODO: Hook Up CoreData. Detect changes & upload
-#warning TODO: What if a local update is performed while a download was in progress?
-#warning TODO: Check if object wasn't changed remotely
+#warning TODO: Hook Up CoreData. Problem: how to detect if a binary field was just locally updated.
+#warning TODO: What if a local change is performed while a download/upload was in progress?	>> CANCEL previous download/upload if any!!
+#warning TODO: Upload!
+#warning TODO: Maintain uploadsQueue
 	
 	// Logic:
 	//	Local size != remote size?
 	//	Download not in progress? <<< WRONG!
 	// Proceed with upload
-
 	
+//	DDLogWarn(@"Simperium uploading binary to URL: %@", target);
 }
 
 
@@ -196,22 +209,6 @@ typedef void(^SPBinaryProgress)(float percent);
 	// [Base URL] / [App ID] / [Bucket Name] / i / [Simperium Key] / b / [attributeName]Info
 	NSString *rawURL = [SPBaseURL stringByAppendingFormat:@"%@/%@/i/%@/b/%@", self.simperium.appID, bucketName.lowercaseString, simperiumKey, attributeName];
 	return [NSURL URLWithString:rawURL];
-}
-
--(void)startDownload:(NSURL *)source success:(SPBinarySuccess)success failure:(SPBinaryFailure)failure progress:(SPBinaryProgress)progress
-{
-	DDLogWarn(@"Simperium downloading binary at URL: %@", source);
-	
-#warning TODO: Download!
-#warning TODO: Maintain downloadsQueue
-}
-
--(void)startUpload:(NSURL *)target data:(NSData *)data success:(SPBinarySuccess)success failure:(SPBinaryFailure)failure progress:(SPBinaryProgress)progress
-{
-	DDLogWarn(@"Simperium uploading binary to URL: %@", target);
-	
-#warning Upload!
-#warning TODO: Maintain uploadsQueue
 }
 
 

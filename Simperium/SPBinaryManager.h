@@ -9,8 +9,6 @@
 #import <Foundation/Foundation.h>
 
 
-@class Simperium;
-
 #pragma mark ====================================================================================
 #pragma mark SPBinaryManagerDelegate
 #pragma mark ====================================================================================
@@ -34,7 +32,5 @@
 #pragma mark ====================================================================================
 
 @interface SPBinaryManager : NSObject
-
 @property (nonatomic, weak, readwrite) id<SPBinaryManagerDelegate> delegate;
-
 @end
