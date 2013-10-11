@@ -10,18 +10,11 @@
 #import "SPNetworkInterface.h"
 
 @class Simperium;
-@class SPBucket;
 @class SRWebSocket;
-@class SRWebSocketChannel;
 
-@interface SPWebSocketInterface : NSObject <SPNetworkInterface> {
-    BOOL open;
-    NSMutableArray *webSocketChannels;
-    SRWebSocket *webSocket;
-    NSTimer *heartbeatTimer;
-}
+@interface SPWebSocketInterface : NSObject <SPNetworkInterface>
 
-@property (nonatomic, strong) SRWebSocket *webSocket;
+@property (nonatomic, strong, readonly) SRWebSocket *webSocket;
 
 - (id)initWithSimperium:(Simperium *)s appURL:(NSString *)url clientID:(NSString *)cid;
 - (void)loadChannelsForBuckets:(NSDictionary *)bucketList overrides:(NSDictionary *)overrides;
