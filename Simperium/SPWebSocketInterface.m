@@ -165,7 +165,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     if (self.webSocket == nil) {
         [self openWebSocket];
         // Channels will get setup after successfully connection
-    } else if (open) {
+    } else if (self.open) {
         [self authenticateChannel:channel];
     }
 }
@@ -306,7 +306,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
-    if (open) {
+    if (self.open) {
         // Closed unexpectedly, retry
         [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
         DDLogVerbose(@"Simperium connection closed (will retry): %ld, %@", (long)code, reason);
