@@ -217,6 +217,8 @@
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
 		B5554ADF1805CCDC0064F3BB /* SPBinaryManager+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5554ADE1805CCDC0064F3BB /* SPBinaryManager+Internals.h */; };
+		B586237C180D932F008E43C8 /* NSFileManager+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B586237A180D932F008E43C8 /* NSFileManager+Simperium.h */; };
+		B586237D180D932F008E43C8 /* NSFileManager+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B586237B180D932F008E43C8 /* NSFileManager+Simperium.m */; };
 		B59DEF311803575D00F7C0D5 /* SimperiumBinaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 265EF73715B8E26700115E19 /* SimperiumBinaryTests.m */; };
 		E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */; };
 		E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */; };
@@ -446,6 +448,8 @@
 		46EE3D55171D0C8E00E6F0A5 /* SimperiumErrorTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumErrorTests.h; sourceTree = "<group>"; };
 		46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumErrorTests.m; sourceTree = "<group>"; };
 		B5554ADE1805CCDC0064F3BB /* SPBinaryManager+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPBinaryManager+Internals.h"; sourceTree = "<group>"; };
+		B586237A180D932F008E43C8 /* NSFileManager+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager+Simperium.h"; sourceTree = "<group>"; };
+		B586237B180D932F008E43C8 /* NSFileManager+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager+Simperium.m"; sourceTree = "<group>"; };
 		E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTOSViewController.h; sourceTree = "<group>"; };
 		E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTOSViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -821,6 +825,8 @@
 				26E83DA91399D05E00195758 /* NSDate+Simperium.m */,
 				26B16EFD13B1B78C00BEB3E5 /* NSData+Simperium.h */,
 				26B16EFE13B1B78F00BEB3E5 /* NSData+Simperium.m */,
+				B586237A180D932F008E43C8 /* NSFileManager+Simperium.h */,
+				B586237B180D932F008E43C8 /* NSFileManager+Simperium.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -942,6 +948,7 @@
 				264CD98E135DFE7E00C51BAD /* ASIHTTPRequestDelegate.h in Headers */,
 				264CD98F135DFE7E00C51BAD /* ASIInputStream.h in Headers */,
 				264CD991135DFE7E00C51BAD /* ASINetworkQueue.h in Headers */,
+				B586237C180D932F008E43C8 /* NSFileManager+Simperium.h in Headers */,
 				264CD993135DFE7E00C51BAD /* ASIProgressDelegate.h in Headers */,
 				264CD994135DFE7E00C51BAD /* ASIReachability.h in Headers */,
 				264CD996135DFE7E00C51BAD /* DiffMatchPatch.h in Headers */,
@@ -1164,6 +1171,7 @@
 				264CD943135DFE6D00C51BAD /* SPGhost.m in Sources */,
 				264CD945135DFE6D00C51BAD /* SPMember.m in Sources */,
 				264CD947135DFE6D00C51BAD /* SPHttpInterface.m in Sources */,
+				B586237D180D932F008E43C8 /* NSFileManager+Simperium.m in Sources */,
 				264CD981135DFE7E00C51BAD /* ASIAuthenticationDialog.m in Sources */,
 				264CD984135DFE7E00C51BAD /* ASIDataCompressor.m in Sources */,
 				E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */,

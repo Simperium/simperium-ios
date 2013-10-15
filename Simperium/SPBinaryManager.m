@@ -16,6 +16,7 @@
 #import "JSONKit.h"
 #import "DDLog.h"
 #import "ASIHTTPRequest.h"
+#import "NSFileManager+Simperium.h"
 
 
 
@@ -27,10 +28,6 @@ NSString* const SPBinaryManagerBucketNameKey = @"SPBinaryManagerBucketNameKey";
 NSString* const SPBinaryManagerSimperiumKey = @"SPBinaryManagerSimperiumKey";
 NSString* const SPBinaryManagerAttributeDataKey = @"SPBinaryManagerAttributeDataKey";
 NSString* const SPBinaryManagerLengthKey = @"SPBinaryManagerLengthKey";
-
-static NSString* const SPLocalBinaryMetadataKey = @"SPLocalBinaryMetadataKey";
-static NSString* const SPPendingBinaryDownloads = @"SPPendingBinaryDownloads";
-static NSString* const SPPendingBinaryUploads = @"SPPendingBinaryUploads";
 
 static NSString* const SPContentLengthKey = @"content-length";
 static NSString* const SPContentHashKey = @"hash";
@@ -44,17 +41,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark ====================================================================================
 
 @interface SPBinaryManager()
-@property (nonatomic, strong, readwrite) NSMutableDictionary *pendingBinaryDownloads;
-@property (nonatomic, strong, readwrite) NSMutableDictionary *pendingBinaryUploads;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *localBinaryMetadata;
+@property (nonatomic, weak,   readwrite) Simperium *simperium;
 
-@property (nonatomic, weak, readwrite) Simperium *simperium;
-
--(void)loadPendingBinaryDownloads;
--(void)loadPendingBinaryUploads;
 -(void)loadLocalBinaryMetadata;
--(void)savePendingBinaryDownloads;
--(void)savePendingBinaryUploads;
 -(void)saveLocalBinaryMetadata;
 
 
@@ -78,78 +68,79 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
     if (self = [super init]) {
         self.simperium = aSimperium;
-        
-        self.pendingBinaryDownloads = [NSMutableDictionary dictionary];
-        self.pendingBinaryUploads = [NSMutableDictionary dictionary];
         self.localBinaryMetadata = [NSMutableDictionary dictionary];
-		
-        [self loadPendingBinaryDownloads];
-        [self loadPendingBinaryUploads];
 		[self loadLocalBinaryMetadata];
+		
+//		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 5.0f * NSEC_PER_SEC);
+//		dispatch_after(popTime, dispatch_get_main_queue(), ^(void)
+//		{
+//			NSData* data = [self randomDataWithBytes:1025];
+//			[self uploadIfNeeded:@"SDTask" simperiumKey:@"a229499265eb4e878f454b86d1a2632c" infoKey:@"binaryInfo" binaryData:data];
+//		});
     }
     
     return self;
 }
+
+//-(NSData *)randomDataWithBytes: (NSUInteger)length
+//{
+//    NSMutableData *mutableData = [NSMutableData dataWithCapacity: length];
+//    for (unsigned int i = 0; i < length; i++) {
+//        NSInteger randomBits = arc4random();
+//        [mutableData appendBytes: (void *) &randomBits length: 1];
+//    }
+//	
+//	return mutableData;
+//}
 
 
 #pragma mark ====================================================================================
 #pragma mark Persistance Helpers
 #pragma mark ====================================================================================
 
-#warning TODO: Performance performance performance!!!
 #warning TODO: Resume on app relaunch
-#warning TODO: Ensure local metadata is in sync with CD. Handle logouts
 #warning TODO: Add retry mechanisms
+#warning TODO: Ensure local metadata is in sync with CD. Handle logouts
 #warning TODO: Hook 'uploadIfNeeded' to CoreData. Problem: how to detect if a binary field was just locally updated.
 #warning TODO: Nuke 'dataKeyForInfoKey'
 #warning TODO: shouldUpload >> CHECK MD5!!!
 
--(void)loadPendingBinaryDownloads
+-(NSString *)binaryDirectoryPath
 {
-	NSString *rawPendings = [[NSUserDefaults standardUserDefaults] objectForKey:SPPendingBinaryDownloads];
-    NSDictionary *pendingDict = [rawPendings objectFromJSONString];
-    if (pendingDict.count) {
-        [self.pendingBinaryDownloads setValuesForKeysWithDictionary:pendingDict];
-	}
+	static NSString *downloadsPath = nil;
+	static dispatch_once_t _once;
+	
+	NSString* const SPBinaryDirectoryName = @"SPBinary";
+	
+    dispatch_once(&_once, ^{
+					  NSFileManager *fm = [NSFileManager defaultManager];
+					  downloadsPath = [[NSFileManager userDocumentDirectory] stringByAppendingPathComponent:SPBinaryDirectoryName];
+					  if (![fm fileExistsAtPath:downloadsPath])
+					  {
+						  [fm createDirectoryAtPath:downloadsPath withIntermediateDirectories:YES attributes:nil error:nil];
+					  }
+                  });
+	
+	return downloadsPath;
 }
 
--(void)loadPendingBinaryUploads
+-(NSString *)binaryMetadataPath
 {
-	NSString *rawPendings = [[NSUserDefaults standardUserDefaults] objectForKey:SPPendingBinaryUploads];
-    NSDictionary *pendingDict = [rawPendings objectFromJSONString];
-    if (pendingDict.count) {
-        [self.pendingBinaryUploads setValuesForKeysWithDictionary:pendingDict];
-	}
+	NSString* const SPBinaryMetadataFilename = @"BinaryMetadata.plist";
+	return [self.binaryDirectoryPath stringByAppendingPathComponent:SPBinaryMetadataFilename];
 }
 
 -(void)loadLocalBinaryMetadata
 {
-	NSString *rawMetadata = [[NSUserDefaults standardUserDefaults] objectForKey:SPLocalBinaryMetadataKey];
-	NSDictionary *localMetadata = [rawMetadata objectFromJSONString];
-    if (localMetadata.count) {
-        [self.localBinaryMetadata setValuesForKeysWithDictionary:localMetadata];
+	NSDictionary *localMetadata = [[NSDictionary alloc] initWithContentsOfFile:self.binaryMetadataPath];
+	if (localMetadata.count) {
+		[self.localBinaryMetadata setValuesForKeysWithDictionary:localMetadata];
 	}
 }
 
 -(void)saveLocalBinaryMetadata
 {
-    NSString *json = [self.localBinaryMetadata JSONString];
-	[[NSUserDefaults standardUserDefaults] setObject:json forKey:SPLocalBinaryMetadataKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
--(void)savePendingBinaryDownloads
-{
-    NSString *json = [self.pendingBinaryDownloads JSONString];
-	[[NSUserDefaults standardUserDefaults] setObject:json forKey:SPPendingBinaryDownloads];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
--(void)savePendingBinaryUploads
-{
-    NSString *json = [self.pendingBinaryUploads JSONString];
-	[[NSUserDefaults standardUserDefaults] setObject:json forKey:SPPendingBinaryUploads];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+	[self.localBinaryMetadata writeToFile:self.binaryMetadataPath atomically:NO];
 }
 
 
@@ -159,9 +150,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)downloadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey infoKey:(NSString *)infoKey binaryInfo:(NSDictionary *)binaryInfo
 {
-	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
-
+	// Is Simperium authenticated?
+	if(self.simperium.user.authenticated == NO)
+	{
+		return;
+	}
+	
 	// We're not already in sync, right?
+	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
 	if([self shouldDownload:url binaryInfo:binaryInfo] == NO)
 	{
 		return;
@@ -186,7 +182,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	};
 	
 	request.downloadSizeIncrementedBlock = ^(long long size) {
-		if( [self.delegate respondsToSelector:@selector(binaryDownloadProgress:percent:)] ) {
+		if( [self.delegate respondsToSelector:@selector(binaryDownloadProgress:increment:)] ) {
 			[self.delegate binaryDownloadProgress:callbackDict increment:size];
 		}
 	};
@@ -232,9 +228,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)uploadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey infoKey:(NSString *)infoKey binaryData:(NSData *)binaryData
 {
-	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
+	// Is Simperium authenticated?
+	if(self.simperium.user.authenticated == NO)
+	{
+		return;
+	}
 	
 	// We're not already in sync, right?
+	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
+	
 	if([self shouldUpload:url binaryData:binaryData] == NO)
 	{
 		return;
@@ -251,7 +253,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 	// Prepare the request
 	__weak ASIHTTPRequest *request = [self requestWithURL:url];
-	
+	request.requestMethod = @"PUT";
+	request.validatesSecureCertificate = NO;
+
 	request.startedBlock = ^{
 		DDLogWarn(@"Simperium starting binary upload to URL: %@", url);
 		
@@ -261,7 +265,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	};
 	
 	request.uploadSizeIncrementedBlock = ^(long long size) {
-		if( [self.delegate respondsToSelector:@selector(binaryUploadProgress:percent:)] ) {
+		if( [self.delegate respondsToSelector:@selector(binaryUploadProgress:increment:)] ) {
 			[self.delegate binaryUploadProgress:callbackDict increment:size];
 		}
 	};
@@ -271,7 +275,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #warning  TODO: Wire this!
 		//		[self.localBinaryMetadata setValue:binaryInfo forKey:sourceURL.absoluteString];
 		//		[self saveLocalBinaryMetadata];
-		
+		NSLog(@"Response: %@", request.responseString);
 		DDLogWarn(@"Simperium successfully uploaded binary to URL: %@", url);
 		
 		if( [self.delegate respondsToSelector:@selector(binaryDownloadSuccessful:)] ) {
