@@ -33,7 +33,7 @@ extern NSString * const CH_LOCAL_ID;
 - (id)initWithLabel:(NSString *)label;
 - (void)reset;
 - (BOOL)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID needsRepost:(BOOL *)needsRepost;
 - (void)processLocalChange:(NSDictionary *)change key:(NSString *)key;
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later;
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;

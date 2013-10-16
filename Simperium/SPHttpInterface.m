@@ -362,7 +362,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
     dispatch_async(bucket.processorQueue, ^{
         if (started) {
-            [bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:clientID];
+            [bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:clientID needsRepost:nil];
             dispatch_async(dispatch_get_main_queue(), ^{
                 numTransfers--;
                 [[self class] updateNetworkActivityIndictator];
