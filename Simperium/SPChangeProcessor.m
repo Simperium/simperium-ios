@@ -133,48 +133,36 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 }
 
 - (BOOL)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
+    BOOL repostNeeded = NO;
     for (NSDictionary *change in changes) {
-		if( [self processRemoteResponseForChange:change bucket:bucket] ) {
-			return YES;
-		}
-	}
-	return NO;
-}
-
-- (BOOL)processRemoteResponseForChange:(NSDictionary *)change bucket:(SPBucket *)bucket {
-	NSNumber *error = change[CH_ERROR];
-	if (!error) {
-		return NO;
-	}
-	
-	long errorCode = error.integerValue;
-	BOOL needsRepost = NO;
-	
-	DDLogError(@"Simperium POST returned error %ld for change %@", errorCode, change);
-		
-	if (errorCode == CH_ERRORS_INVALID_DIFF || errorCode == CH_ERRORS_EXPECTATION_FAILED) {
-		// Resubmit with all data
-		// Create a new context (to be thread-safe) and fetch the entity from it
-		NSString *key = change[CH_KEY];
-		id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
-		id<SPDiffable> object = [threadSafeStorage objectForKey:key bucketName:bucket.name];
-		
-		if (!object) {
-			[changesPending removeObjectForKey:key];
-		} else {
-			NSMutableDictionary *newChange = [changesPending[key] mutableCopy];
-			[object simperiumKey]; // fire fault
-			[newChange setObject:[object dictionary] forKey:CH_DATA];
-			[changesPending setObject:newChange forKey:key];
-			
-			needsRepost = YES;
-		}
-	} else {
-		// Catch all, don't resubmit
-		[changesPending removeObjectForKey:change[CH_KEY]];
-	}
-	
-	return needsRepost;
+        if (change[CH_ERROR] != nil) {
+            long errorCode = [change[CH_ERROR] integerValue];
+            DDLogError(@"Simperium POST returned error %ld for change %@", errorCode, change);
+            
+            if (errorCode == CH_ERRORS_EXPECTATION_FAILED || errorCode == CH_ERRORS_INVALID_DIFF) {
+                // Resubmit with all data
+                // Create a new context (to be thread-safe) and fetch the entity from it
+                NSString *key = change[CH_KEY];
+                id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
+                id<SPDiffable>object = [threadSafeStorage objectForKey:key bucketName :bucket.name];
+                
+                if (!object) {
+                    [changesPending removeObjectForKey:change[CH_KEY]];
+                    continue;
+                }
+                NSMutableDictionary *newChange = [changesPending[key] mutableCopy];
+                [object simperiumKey]; // fire fault
+                [newChange setObject:[object dictionary] forKey:CH_DATA];
+                [changesPending setObject:newChange forKey:key];
+                repostNeeded = YES;
+            } else {
+                // Catch all, don't resubmit
+                [changesPending removeObjectForKey:change[CH_KEY]];
+            }
+        }
+    }
+    
+    return repostNeeded;
 }
 
 - (BOOL)processRemoteDelete:(id<SPDiffable>)object acknowledged:(BOOL)acknowledged bucket:(SPBucket *)bucket
@@ -333,6 +321,13 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     
     DDLogVerbose(@"Simperium client %@ received change (%@) %@: %@", clientID, bucket.name, changeClientID, change);
     
+	// Check for an error
+    if ([change objectForKey:CH_ERROR]) {
+        DDLogVerbose(@"Simperium error received (%@) for %@, should reload the object here to be safe", bucket.name, key);
+        return NO;
+    }
+	
+	// Process
     BOOL clientMatches = [changeClientID compare:clientID] == NSOrderedSame;
     BOOL remove = operation && [operation compare: CH_REMOVE] == NSOrderedSame;
     BOOL acknowledged = [self awaitingAcknowledgementForKey:key] && clientMatches;
@@ -344,13 +339,6 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
         if (acknowledged)
             DDLogVerbose(@"Simperium acknowledged change for %@, cv=%@", changeClientID, changeVersion);
         [changesPending removeObjectForKey:key];
-    }
-    
-    // Check for an error
-    if ([change objectForKey:CH_ERROR]) {
-        DDLogVerbose(@"Simperium error received (%@) for %@, should reload the object here to be safe", bucket.name, key);
-        [changesPending removeObjectForKey:key];
-        return NO;
     }
     
     DDLogVerbose(@"Simperium performing change operation: %@", operation);
@@ -367,7 +355,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     return NO;
 }
 
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID needsRepost:(BOOL *)needsRepost {
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID {
     NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:[changes count]];
     
     // Construct a list of keys for a willChange notification (and ignore acks)
@@ -378,45 +366,42 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		}
     }
 
-    if (changedKeys.count > 0) {
-        NSDictionary *userInfo = @{
-									@"bucketName"	: bucket.name,
-									@"keys"			: changedKeys
-								 };
-		
-		dispatch_sync(dispatch_get_main_queue(), ^{
+	dispatch_async(dispatch_get_main_queue(), ^{
+			
+		if (changedKeys.count > 0) {
+			NSDictionary *userInfo = @{
+										@"bucketName"	: bucket.name,
+										@"keys"			: changedKeys
+									 };
+			
 			[[NSNotificationCenter defaultCenter] postNotificationName:ProcessorWillChangeObjectsNotification object:bucket userInfo:userInfo];
-		});
-    }
-	
-	for (NSDictionary *change in changes) {
-		// Do we need to repost this change?.
-		if([self processRemoteResponseForChange:change bucket:bucket]) {
-			if(needsRepost) {
-				*needsRepost = YES;
+		}
+		
+        // The above notification needs to give the main thread a chance to react before we continue
+        dispatch_async(bucket.processorQueue, ^{
+			
+			for (NSDictionary *change in changes) {
+				// Process the change (this is necessary even if it's an ack, so the ghost data gets set accordingly)
+				if (![self processRemoteChange:change bucket:bucket clientID:clientID]) {
+					continue;
+				}
+				
+				// Remember the last version
+				// This persists...do it inside the loop in case something happens to abort the loop
+				NSString *changeVersion = change[@"cv"];
+				
+				dispatch_async(dispatch_get_main_queue(), ^{
+					[bucket setLastChangeSignature: changeVersion];
+				});        
 			}
-			continue;
-		}
-		
-		// Process the change (this is necessary even if it's an ack, so the ghost data gets set accordingly)
-		if (![self processRemoteChange:change bucket:bucket clientID:clientID]) {
-			continue;
-		}
-		
-		// Remember the last version
-		// This persists...do it inside the loop in case something happens to abort the loop
-		NSString *changeVersion = change[@"cv"];
-		
-		dispatch_async(dispatch_get_main_queue(), ^{
-			[bucket setLastChangeSignature: changeVersion];
-		});        
-	}
-		
-	[self serializeChangesPending];
-	
-	if(changesPending.count == 0) {
-		[bucket bucketDidSync];
-	}
+				
+			[self serializeChangesPending];
+			
+			if(changesPending.count == 0) {
+				[bucket bucketDidSync];
+			}
+		});
+	});
 }
 
 

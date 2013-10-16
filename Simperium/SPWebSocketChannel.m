@@ -217,8 +217,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			return;
 		}
 		
-		BOOL needsRepost = NO;
-		[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID needsRepost:&needsRepost];
+		BOOL needsRepost = [bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket];
+		[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID];
 		
 		dispatch_async(dispatch_get_main_queue(), ^{
 			
