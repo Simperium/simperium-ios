@@ -35,7 +35,8 @@
 //		- What if the exact same file is already being downloaded?
 //		- What if a remote change comes in, and the object was locally changed but not saved?
 //		- What if we set a NIL value?
-	
+//		- What if we set again the same NSData?. (Hash should be the equal)
+//
 //    [self createAndStartFarms];
 //        
 //    // Leader sends an object to followers

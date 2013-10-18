@@ -13,5 +13,7 @@
 @interface SPMemberBinaryInfo : SPMember
 
 @property (nonatomic, strong, readwrite) SPBinaryManager *binaryManager;
+@property (nonatomic, strong, readonly)  NSString *dataKey;
+@property (nonatomic, strong, readonly)  NSString *infoKey;
 
 @end

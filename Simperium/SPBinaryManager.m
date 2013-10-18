@@ -11,7 +11,6 @@
 #import "SPUser.h"
 #import "SPEnvironment.h"
 #import "SPManagedObject.h"
-#import "SPGhost.h"
 #import "JSONKit.h"
 #import "DDLog.h"
 #import "ASIHTTPRequest.h"
@@ -22,7 +21,6 @@
 #warning TODO: Resume on app relaunch
 #warning TODO: Handle logouts
 #warning TODO: Add retry mechanisms
-#warning TODO: Hook 'uploadIfNeeded' to CoreData. Problem: how to detect if a binary field was just locally updated.
 #warning TODO: Nuke 'dataKeyForInfoKey'
 #warning TODO: What happens if upload finishes, the field gets sync'ed (and download begins), and then the localMetadata gets synced?
 #warning FIX FIX FIX: binaryInfo, after an upload, comes as a diff!
@@ -32,19 +30,17 @@
 #pragma mark Notifications
 #pragma mark ====================================================================================
 
-NSString* const SPBinaryManagerBucketNameKey	= @"SPBinaryManagerBucketNameKey";
-NSString* const SPBinaryManagerSimperiumKey		= @"SPBinaryManagerSimperiumKey";
-NSString* const SPBinaryManagerAttributeDataKey	= @"SPBinaryManagerAttributeDataKey";
-NSString* const SPBinaryManagerLengthKey		= @"SPBinaryManagerLengthKey";
+NSString* const SPBinaryManagerBucketNameKey		= @"SPBinaryManagerBucketNameKey";
+NSString* const SPBinaryManagerSimperiumKey			= @"SPBinaryManagerSimperiumKey";
+NSString* const SPBinaryManagerAttributeDataKey		= @"SPBinaryManagerAttributeDataKey";
+NSString* const SPBinaryManagerLengthKey			= @"SPBinaryManagerLengthKey";
 
 
 #pragma mark ====================================================================================
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSString* const SPBinaryDirectoryName		= @"SPBinary";
-static NSString* const SPBinaryMetadataFilename		= @"BinaryMetadata.plist";
-
+static NSString* const SPMetadataFilename			= @"BinaryMetadata.plist";
 static NSString* const SPMetadataLengthKey			= @"content-length";
 static NSString* const SPMetadataHashKey			= @"hash";
 
@@ -88,28 +84,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (self = [super init]) {
         self.simperium = aSimperium;
 		[self loadLocalBinaryMetadata];
-		
-		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 5.0f * NSEC_PER_SEC);
-		dispatch_after(popTime, dispatch_get_main_queue(), ^(void)
-		{
-			int length = arc4random() % 1000;
-			NSData* data = [self randomDataWithBytes:length];
-			[self uploadIfNeeded:@"SDTask" simperiumKey:@"5fa7544d5d9645aeafbb1859011757ca" infoKey:@"binaryInfo" binaryData:data];
-		});
     }
     
     return self;
-}
-
--(NSData *)randomDataWithBytes: (NSUInteger)length
-{
-    NSMutableData *mutableData = [NSMutableData dataWithCapacity: length];
-    for (unsigned int i = 0; i < length; i++) {
-        NSInteger randomBits = arc4random();
-        [mutableData appendBytes: (void *) &randomBits length: 1];
-    }
-	
-	return mutableData;
 }
 
 
@@ -123,19 +100,20 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	static dispatch_once_t _once;
 	
     dispatch_once(&_once, ^{
-					  NSFileManager *fm = [NSFileManager defaultManager];
-					  downloadsPath = [[NSFileManager userDocumentDirectory] stringByAppendingPathComponent:SPBinaryDirectoryName];
-					  if (![fm fileExistsAtPath:downloadsPath]) {
-						  [fm createDirectoryAtPath:downloadsPath withIntermediateDirectories:YES attributes:nil error:nil];
-					  }
-                  });
+								NSFileManager *fm = [NSFileManager defaultManager];
+								NSString *folder = NSStringFromClass([self class]);
+								downloadsPath = [[NSFileManager userDocumentDirectory] stringByAppendingPathComponent:folder];
+								if (![fm fileExistsAtPath:downloadsPath]) {
+									[fm createDirectoryAtPath:downloadsPath withIntermediateDirectories:YES attributes:nil error:nil];
+								}
+							});
 	
 	return downloadsPath;
 }
 
 -(NSString *)binaryMetadataPath
 {
-	return [self.binaryDirectoryPath stringByAppendingPathComponent:SPBinaryMetadataFilename];
+	return [self.binaryDirectoryPath stringByAppendingPathComponent:SPMetadataFilename];
 }
 
 -(void)loadLocalBinaryMetadata
@@ -328,7 +306,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(BOOL)shouldDownload:(NSURL *)remoteURL binaryInfo:(NSDictionary *)binaryInfo
 {
 	NSDictionary *localInfo = self.localBinaryMetadata[remoteURL.absoluteString];
-	return ([localInfo[SPMetadataHashKey] isEqual:binaryInfo[SPMetadataHashKey]] == NO);
+	return (localInfo == nil || [localInfo[SPMetadataHashKey] isEqual:binaryInfo[SPMetadataHashKey]] == NO);
 }
 
 -(BOOL)shouldUpload:(NSURL *)remoteURL binaryData:(NSData *)binaryData
@@ -336,12 +314,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	NSDictionary *localInfo = self.localBinaryMetadata[remoteURL.absoluteString];
 	
 	// Speed speed: if the length itself is different, don't even check the hash
-	if([localInfo[SPMetadataLengthKey] unsignedIntegerValue] != binaryData.length) {
+	if(localInfo == nil || [localInfo[SPMetadataLengthKey] unsignedIntegerValue] != binaryData.length) {
 		return YES;
 	// Hash..!
 	} else {
 		NSString *binaryHash = [NSString sp_md5StringFromData:binaryData];
-		return [localInfo[SPMetadataHashKey] isEqualToString:binaryHash];
+		return ([localInfo[SPMetadataHashKey] isEqualToString:binaryHash] == NO);
 	}
 }
 

@@ -10,7 +10,6 @@
 #import "SPManagedObject.h"
 #import "NSString+Simperium.h"
 #import "SPDiffer.h"
-#import "SPBinaryManager.h"
 #import "SPStorage.h"
 #import "SPMember.h"
 #import "JSONKit.h"
@@ -18,6 +17,10 @@
 #import "DDLog.h"
 #import "SPBucket.h"
 #import "SPDiffer.h"
+#import "SPSchema.h"
+#import "SPBinaryManager+Internals.h"
+#import "SPMemberBinaryInfo.h"
+
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
@@ -443,10 +446,20 @@ NSString * const CH_DATA            = @"d";
 }
 
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later {
+		
     // Create a new context (to be thread-safe) and fetch the entity from it
     id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
     id<SPDiffable> object = [storage objectForKey:key bucketName:bucket.name];
     
+    // Handle Binary Members!
+	for(SPMemberBinaryInfo* member in bucket.differ.schema.binaryMembers) {
+		NSData *binaryData = [[object simperiumValueForKey:member.dataKey] copy];
+		
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[member.binaryManager uploadIfNeeded:bucket.name simperiumKey:key infoKey:member.infoKey binaryData:binaryData];
+		});
+	}
+	
     // If the object no longer exists, it was likely previously deleted, in which case this change is no longer
     // relevant
     if (!object) {
@@ -465,7 +478,7 @@ NSString * const CH_DATA            = @"d";
         [self serializeKeysForObjectsWithMoreChanges];
         return nil;
     }
-    
+	
     NSDictionary *change, *newData;
     DDLogVerbose(@"Simperium processing local object changes (%@): %@", bucket.name, object.simperiumKey); 
     
@@ -491,19 +504,7 @@ NSString * const CH_DATA            = @"d";
         newData = [bucket.differ diffForAddition:object];
         change = [self createChangeForKey: object.simperiumKey operation:CH_MODIFY version: object.ghost.version data: newData];
     }
-        
-    // Check for any changes to binary members, in which case a file needs to be uploaded
-//    SPEntityDefinition *entityDefinition = [objectManager definitionForEntityName: entityClassName];
-//    dispatch_async(dispatch_get_main_queue(), ^{
-//        for (SPMemberBinary *binaryMember in entityDefinition.binaryMembers) {
-//            NSDictionary *binaryDict = [newData objectForKey:binaryMember.keyName];
-//            NSString *binaryFilename = [binaryDict objectForKey:CH_VALUE];
-//            if (binaryFilename) {
-//                [simperium.binaryManager startUploading:binaryFilename];
-//            }
-//        }
-//    });
-    
+	
     return change;
 }
 

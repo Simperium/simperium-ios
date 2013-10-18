@@ -79,5 +79,14 @@
 	return otherValue;
 }
 
-@end
+-(NSString*)dataKey
+{
+	return [self.keyName stringByReplacingOccurrencesOfString:@"Info" withString:@"Data"];
+}
 
+-(NSString *)infoKey
+{
+	return self.keyName;
+}
+
+@end
