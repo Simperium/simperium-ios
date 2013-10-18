@@ -10,6 +10,8 @@
 #import "Simperium.h"
 #import "SPBinaryManager+Internals.h"
 #import "JSONKit.h"
+#import "DiffMatchPatch.h"
+#import "NSArray+Simperium.h"
 
 
 
@@ -42,7 +44,7 @@
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[self.binaryManager downloadIfNeeded:bucketName simperiumKey:simperiumKey infoKey:self.keyName binaryInfo:binaryInfo];
 	});
-
+	
     return [binaryInfo JSONString];
 }
 
@@ -69,10 +71,10 @@
 }
 
 -(id)applyDiff:(id)thisValue otherValue:(id)otherValue
-{
-	NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
-			 @"Simperium error: couldn't apply diff to ints because their classes weren't NSString");
-	
+{	
+//	NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
+//			 @"Simperium error: couldn't apply diff to ints because their classes weren't NSString");
+
 	// Integer changes just replace the previous value by default
 	return otherValue;
 }

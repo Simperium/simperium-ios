@@ -12,26 +12,39 @@
 #import "SPEnvironment.h"
 #import "SPManagedObject.h"
 #import "SPGhost.h"
-#import "NSString+Simperium.h"
 #import "JSONKit.h"
 #import "DDLog.h"
 #import "ASIHTTPRequest.h"
 #import "NSFileManager+Simperium.h"
+#import "NSString+Simperium.h"
 
+
+#warning TODO: Resume on app relaunch
+#warning TODO: Add retry mechanisms
+#warning TODO: Ensure local metadata is in sync with CD. Handle logouts
+#warning TODO: Hook 'uploadIfNeeded' to CoreData. Problem: how to detect if a binary field was just locally updated.
+#warning TODO: Nuke 'dataKeyForInfoKey'
+#warning FIX FIX FIX: binaryInfo, after an upload, comes as a diff!
 
 
 #pragma mark ====================================================================================
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-NSString* const SPBinaryManagerBucketNameKey = @"SPBinaryManagerBucketNameKey";
-NSString* const SPBinaryManagerSimperiumKey = @"SPBinaryManagerSimperiumKey";
-NSString* const SPBinaryManagerAttributeDataKey = @"SPBinaryManagerAttributeDataKey";
-NSString* const SPBinaryManagerLengthKey = @"SPBinaryManagerLengthKey";
+NSString* const SPBinaryManagerBucketNameKey	= @"SPBinaryManagerBucketNameKey";
+NSString* const SPBinaryManagerSimperiumKey		= @"SPBinaryManagerSimperiumKey";
+NSString* const SPBinaryManagerAttributeDataKey	= @"SPBinaryManagerAttributeDataKey";
+NSString* const SPBinaryManagerLengthKey		= @"SPBinaryManagerLengthKey";
 
-static NSString* const SPContentLengthKey = @"content-length";
-static NSString* const SPContentHashKey = @"hash";
-static NSString* const SPSimperiumTokenKey = @"X-Simperium-Token";
+static NSString* const SPBinaryDirectoryName	= @"SPBinary";
+static NSString* const SPBinaryMetadataFilename	= @"BinaryMetadata.plist";
+
+static NSString* const SPMetadataLengthKey		= @"content-length";
+static NSString* const SPMetadataHashKey		= @"hash";
+
+static NSString* const SPSimperiumTokenKey		= @"X-Simperium-Token";
+
+static NSInteger const SPDownloadSuccessCode	= 200;
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
@@ -44,9 +57,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *localBinaryMetadata;
 @property (nonatomic, weak,   readwrite) Simperium *simperium;
 
+-(NSString *)binaryDirectoryPath;
+-(NSString *)binaryMetadataPath;
+
 -(void)loadLocalBinaryMetadata;
 -(void)saveLocalBinaryMetadata;
-
 
 -(BOOL)shouldDownload:(NSURL *)remoteURL binaryInfo:(NSDictionary *)binaryInfo;
 -(BOOL)shouldUpload:(NSURL *)remoteURL binaryData:(NSData *)binaryData;
@@ -54,7 +69,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(NSURL *)remoteUrlForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey infoKey:(NSString *)infoKey;
 -(ASIHTTPRequest *)requestWithURL:(NSURL *)url;
 -(void)cancelRequestsWithURL:(NSURL *)url;
-
 @end
 
 
@@ -68,55 +82,45 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
     if (self = [super init]) {
         self.simperium = aSimperium;
-        self.localBinaryMetadata = [NSMutableDictionary dictionary];
 		[self loadLocalBinaryMetadata];
 		
-//		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 5.0f * NSEC_PER_SEC);
-//		dispatch_after(popTime, dispatch_get_main_queue(), ^(void)
-//		{
-//			NSData* data = [self randomDataWithBytes:1025];
-//			[self uploadIfNeeded:@"SDTask" simperiumKey:@"a229499265eb4e878f454b86d1a2632c" infoKey:@"binaryInfo" binaryData:data];
-//		});
+		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 5.0f * NSEC_PER_SEC);
+		dispatch_after(popTime, dispatch_get_main_queue(), ^(void)
+		{
+			int length = arc4random() % 1000;
+			NSData* data = [self randomDataWithBytes:length];
+			[self uploadIfNeeded:@"SDTask" simperiumKey:@"5fa7544d5d9645aeafbb1859011757ca" infoKey:@"binaryInfo" binaryData:data];
+		});
     }
     
     return self;
 }
 
-//-(NSData *)randomDataWithBytes: (NSUInteger)length
-//{
-//    NSMutableData *mutableData = [NSMutableData dataWithCapacity: length];
-//    for (unsigned int i = 0; i < length; i++) {
-//        NSInteger randomBits = arc4random();
-//        [mutableData appendBytes: (void *) &randomBits length: 1];
-//    }
-//	
-//	return mutableData;
-//}
+-(NSData *)randomDataWithBytes: (NSUInteger)length
+{
+    NSMutableData *mutableData = [NSMutableData dataWithCapacity: length];
+    for (unsigned int i = 0; i < length; i++) {
+        NSInteger randomBits = arc4random();
+        [mutableData appendBytes: (void *) &randomBits length: 1];
+    }
+	
+	return mutableData;
+}
 
 
 #pragma mark ====================================================================================
 #pragma mark Persistance Helpers
 #pragma mark ====================================================================================
 
-#warning TODO: Resume on app relaunch
-#warning TODO: Add retry mechanisms
-#warning TODO: Ensure local metadata is in sync with CD. Handle logouts
-#warning TODO: Hook 'uploadIfNeeded' to CoreData. Problem: how to detect if a binary field was just locally updated.
-#warning TODO: Nuke 'dataKeyForInfoKey'
-#warning TODO: shouldUpload >> CHECK MD5!!!
-
 -(NSString *)binaryDirectoryPath
 {
 	static NSString *downloadsPath = nil;
 	static dispatch_once_t _once;
 	
-	NSString* const SPBinaryDirectoryName = @"SPBinary";
-	
     dispatch_once(&_once, ^{
 					  NSFileManager *fm = [NSFileManager defaultManager];
 					  downloadsPath = [[NSFileManager userDocumentDirectory] stringByAppendingPathComponent:SPBinaryDirectoryName];
-					  if (![fm fileExistsAtPath:downloadsPath])
-					  {
+					  if (![fm fileExistsAtPath:downloadsPath]) {
 						  [fm createDirectoryAtPath:downloadsPath withIntermediateDirectories:YES attributes:nil error:nil];
 					  }
                   });
@@ -126,16 +130,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(NSString *)binaryMetadataPath
 {
-	NSString* const SPBinaryMetadataFilename = @"BinaryMetadata.plist";
 	return [self.binaryDirectoryPath stringByAppendingPathComponent:SPBinaryMetadataFilename];
 }
 
 -(void)loadLocalBinaryMetadata
 {
-	NSDictionary *localMetadata = [[NSDictionary alloc] initWithContentsOfFile:self.binaryMetadataPath];
-	if (localMetadata.count) {
-		[self.localBinaryMetadata setValuesForKeysWithDictionary:localMetadata];
+	NSMutableDictionary *metadata = [NSMutableDictionary dictionary];
+	NSDictionary *persisted = [[NSDictionary alloc] initWithContentsOfFile:self.binaryMetadataPath];
+	if (persisted.count) {
+		[metadata setValuesForKeysWithDictionary:persisted];
 	}
+	
+	self.localBinaryMetadata = metadata;
 }
 
 -(void)saveLocalBinaryMetadata
@@ -145,21 +151,19 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 
 #pragma mark ====================================================================================
-#pragma mark Protected Methods
+#pragma mark Protected Methods: Download
 #pragma mark ====================================================================================
 
 -(void)downloadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey infoKey:(NSString *)infoKey binaryInfo:(NSDictionary *)binaryInfo
 {
 	// Is Simperium authenticated?
-	if(self.simperium.user.authenticated == NO)
-	{
+	if(self.simperium.user.authenticated == NO) {
 		return;
 	}
 	
 	// We're not already in sync, right?
 	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
-	if([self shouldDownload:url binaryInfo:binaryInfo] == NO)
-	{
+	if([self shouldDownload:url binaryInfo:binaryInfo] == NO) {
 		return;
 	}
 
@@ -169,10 +173,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 									SPBinaryManagerBucketNameKey		: bucketName,
 									SPBinaryManagerSimperiumKey			: simperiumKey,
 									SPBinaryManagerAttributeDataKey		: dataKey,
-									SPBinaryManagerLengthKey			: binaryInfo[SPContentLengthKey]
-								};
+									SPBinaryManagerLengthKey			: binaryInfo[SPMetadataLengthKey]
+								 };
 	
-	// Prepare the request itself
+	// Prepare the request
 	__weak ASIHTTPRequest *request = [self requestWithURL:url];
 	
 	request.startedBlock = ^{
@@ -226,19 +230,21 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[request startAsynchronous];
 }
 
+
+#pragma mark ====================================================================================
+#pragma mark Protected Methods: Upload
+#pragma mark ====================================================================================
+
 -(void)uploadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey infoKey:(NSString *)infoKey binaryData:(NSData *)binaryData
 {
 	// Is Simperium authenticated?
-	if(self.simperium.user.authenticated == NO)
-	{
+	if(self.simperium.user.authenticated == NO) {
 		return;
 	}
 	
 	// We're not already in sync, right?
 	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
-	
-	if([self shouldUpload:url binaryData:binaryData] == NO)
-	{
+	if([self shouldUpload:url binaryData:binaryData] == NO) {
 		return;
 	}
 	
@@ -271,12 +277,19 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	};
 	
 	request.completionBlock = ^{
+		if(request.responseStatusCode != SPDownloadSuccessCode) {
+			DDLogError(@"Simperium encountered error %d while trying to upload binary: %@",
+					   request.responseStatusCode, request.responseStatusMessage);
+			return;
+		}
+		
 		// Update the local metadata
-#warning  TODO: Wire this!
-		//		[self.localBinaryMetadata setValue:binaryInfo forKey:sourceURL.absoluteString];
-		//		[self saveLocalBinaryMetadata];
-		NSLog(@"Response: %@", request.responseString);
-		DDLogWarn(@"Simperium successfully uploaded binary to URL: %@", url);
+		NSDictionary *binaryInfo = [request.responseString objectFromJSONString];
+		[self.localBinaryMetadata setValue:binaryInfo forKey:url.absoluteString];
+		[self saveLocalBinaryMetadata];
+		
+		// Hit the delegate
+		DDLogWarn(@"Simperium successfully uploaded binary to URL: %@. Response: %@", url, binaryInfo);
 		
 		if( [self.delegate respondsToSelector:@selector(binaryDownloadSuccessful:)] ) {
 			[self.delegate binaryDownloadSuccessful:callbackDict];
@@ -309,14 +322,22 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(BOOL)shouldDownload:(NSURL *)remoteURL binaryInfo:(NSDictionary *)binaryInfo
 {
 	NSDictionary *localInfo = self.localBinaryMetadata[remoteURL.absoluteString];
-	return ([localInfo[SPContentLengthKey] isEqual:binaryInfo[SPContentLengthKey]] == NO ||
-			[localInfo[SPContentHashKey] isEqual:binaryInfo[SPContentHashKey]] == NO);
+	return ([localInfo[SPMetadataLengthKey] isEqual:binaryInfo[SPMetadataLengthKey]] == NO ||
+			[localInfo[SPMetadataHashKey] isEqual:binaryInfo[SPMetadataHashKey]] == NO);
 }
 
 -(BOOL)shouldUpload:(NSURL *)remoteURL binaryData:(NSData *)binaryData
 {
 	NSDictionary *localInfo = self.localBinaryMetadata[remoteURL.absoluteString];
-	return ([localInfo[SPContentLengthKey] unsignedIntegerValue] != binaryData.length);
+	
+	// Speed speed: if the length itself is different, don't even check the hash
+	if([localInfo[SPMetadataLengthKey] unsignedIntegerValue] != binaryData.length) {
+		return YES;
+	// Hash..!
+	} else {
+		NSString *binaryHash = [NSString sp_md5StringFromData:binaryData];
+		return [localInfo[SPMetadataHashKey] isEqualToString:binaryHash];
+	}
 }
 
 
@@ -329,14 +350,17 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	// NOTE: downloadURL should hit the attribute with 'Info' ending!
 	//		[Base URL] / [App ID] / [Bucket Name] / i / [Simperium Key] / b / [attributeName]Info
 	
-	NSString *url = [SPBaseURL stringByAppendingFormat:@"%@/%@/i/%@/b/%@", self.simperium.appID, bucketName.lowercaseString, simperiumKey, infoKey];
-	return [NSURL URLWithString:url];
+	return [NSURL URLWithString:[SPBaseURL stringByAppendingFormat:@"%@/%@/i/%@/b/%@",
+								 self.simperium.appID, bucketName.lowercaseString, simperiumKey, infoKey]];
 }
 
 -(ASIHTTPRequest *)requestWithURL:(NSURL *)url
 {
 	ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
-	request.requestHeaders = [@{ SPSimperiumTokenKey : self.simperium.user.authToken } mutableCopy];
+	
+	request.requestHeaders = [@{
+									SPSimperiumTokenKey : self.simperium.user.authToken
+								} mutableCopy];
 	
 #if TARGET_OS_IPHONE
     request.shouldContinueWhenAppEntersBackground = YES;
