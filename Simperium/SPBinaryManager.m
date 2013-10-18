@@ -20,15 +20,16 @@
 
 
 #warning TODO: Resume on app relaunch
+#warning TODO: Handle logouts
 #warning TODO: Add retry mechanisms
-#warning TODO: Ensure local metadata is in sync with CD. Handle logouts
 #warning TODO: Hook 'uploadIfNeeded' to CoreData. Problem: how to detect if a binary field was just locally updated.
 #warning TODO: Nuke 'dataKeyForInfoKey'
+#warning TODO: What happens if upload finishes, the field gets sync'ed (and download begins), and then the localMetadata gets synced?
 #warning FIX FIX FIX: binaryInfo, after an upload, comes as a diff!
 
 
 #pragma mark ====================================================================================
-#pragma mark Constants
+#pragma mark Notifications
 #pragma mark ====================================================================================
 
 NSString* const SPBinaryManagerBucketNameKey	= @"SPBinaryManagerBucketNameKey";
@@ -36,15 +37,19 @@ NSString* const SPBinaryManagerSimperiumKey		= @"SPBinaryManagerSimperiumKey";
 NSString* const SPBinaryManagerAttributeDataKey	= @"SPBinaryManagerAttributeDataKey";
 NSString* const SPBinaryManagerLengthKey		= @"SPBinaryManagerLengthKey";
 
-static NSString* const SPBinaryDirectoryName	= @"SPBinary";
-static NSString* const SPBinaryMetadataFilename	= @"BinaryMetadata.plist";
 
-static NSString* const SPMetadataLengthKey		= @"content-length";
-static NSString* const SPMetadataHashKey		= @"hash";
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
 
-static NSString* const SPSimperiumTokenKey		= @"X-Simperium-Token";
+static NSString* const SPBinaryDirectoryName		= @"SPBinary";
+static NSString* const SPBinaryMetadataFilename		= @"BinaryMetadata.plist";
 
-static NSInteger const SPDownloadSuccessCode	= 200;
+static NSString* const SPMetadataLengthKey			= @"content-length";
+static NSString* const SPMetadataHashKey			= @"hash";
+
+static NSString* const SPBinaryManagerTokenKey		= @"X-Simperium-Token";
+static NSInteger const SPBinaryManagerSuccessCode	= 200;
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
@@ -259,6 +264,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 	// Prepare the request
 	__weak ASIHTTPRequest *request = [self requestWithURL:url];
+	
 	request.requestMethod = @"PUT";
 	request.validatesSecureCertificate = NO;
 
@@ -277,7 +283,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	};
 	
 	request.completionBlock = ^{
-		if(request.responseStatusCode != SPDownloadSuccessCode) {
+		if(request.responseStatusCode != SPBinaryManagerSuccessCode) {
 			DDLogError(@"Simperium encountered error %d while trying to upload binary: %@",
 					   request.responseStatusCode, request.responseStatusMessage);
 			return;
@@ -322,8 +328,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(BOOL)shouldDownload:(NSURL *)remoteURL binaryInfo:(NSDictionary *)binaryInfo
 {
 	NSDictionary *localInfo = self.localBinaryMetadata[remoteURL.absoluteString];
-	return ([localInfo[SPMetadataLengthKey] isEqual:binaryInfo[SPMetadataLengthKey]] == NO ||
-			[localInfo[SPMetadataHashKey] isEqual:binaryInfo[SPMetadataHashKey]] == NO);
+	return ([localInfo[SPMetadataHashKey] isEqual:binaryInfo[SPMetadataHashKey]] == NO);
 }
 
 -(BOOL)shouldUpload:(NSURL *)remoteURL binaryData:(NSData *)binaryData
@@ -359,7 +364,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:url];
 	
 	request.requestHeaders = [@{
-									SPSimperiumTokenKey : self.simperium.user.authToken
+									SPBinaryManagerTokenKey : self.simperium.user.authToken
 								} mutableCopy];
 	
 #if TARGET_OS_IPHONE

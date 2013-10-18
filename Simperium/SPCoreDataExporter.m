@@ -55,6 +55,36 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [[attr name] compare:@"ghostData"] == NSOrderedSame;
 }
 
+-(void)prepareBinaryAttributesFrom:(NSEntityDescription *)entityDesc
+{
+	/**		
+		Notes:
+		======
+		Binary Sync needs two attributes:
+			- [name]Info :: NSStringAttributeType
+			- [name]Data :: NSBinaryDataAttributeType
+	
+		The Info attribute needs an 'spOverride' with 'binaryInfo' in it.
+		In this method we'll enforce that if the 'Data' attribute is present, an 'Info' counterpart should be present as well.
+		Plus, we'll inject the binaryInfo override, so the metadata can be handled by SPMemberBinaryInfo
+	 */
+	
+    for (NSAttributeDescription *attr in [entityDesc.attributesByName allValues]) {
+		if(attr.attributeType != NSBinaryDataAttributeType) {
+			continue;
+		}
+		
+		NSString *infoKey = [attr.name stringByReplacingOccurrencesOfString:@"Data" withString:@"Info"];
+		NSAttributeDescription *infoAttr = [[entityDesc attributesByName] objectForKey:infoKey];
+		NSAssert(infoAttr, @"Simperium: Missing metadata attribute [%@] for Binary Member [%@]", infoKey, attr.name);
+		
+		// Inject the binaryInfo override: The Binary Metadata attribute needs to be handled by SPMemberBinaryInfo
+		NSMutableDictionary *userInfo = [infoAttr.userInfo mutableCopy];
+		userInfo[@"spOverride"] = @"binaryInfo";
+		infoAttr.userInfo = userInfo;
+	}
+}
+
 -(void)addMembersFrom:(NSEntityDescription *)entityDesc to:(NSMutableArray *)members
 {
     // Don't add members from SPManagedObject
@@ -167,6 +197,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSMutableArray *members = [NSMutableArray arrayWithCapacity:[[entityDesc properties] count]];
         [data setObject: members forKey:@"members"];
         
+		// Validate & Wire Binary Attributes!
+		[self prepareBinaryAttributesFrom:entityDesc];
+		
         // Add all this entity's attributes and relationships
         [self addMembersFrom:entityDesc to:members];
         
