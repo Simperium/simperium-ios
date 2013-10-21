@@ -220,6 +220,11 @@
 		B586237C180D932F008E43C8 /* NSFileManager+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B586237A180D932F008E43C8 /* NSFileManager+Simperium.h */; };
 		B586237D180D932F008E43C8 /* NSFileManager+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B586237B180D932F008E43C8 /* NSFileManager+Simperium.m */; };
 		B59DEF311803575D00F7C0D5 /* SimperiumBinaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 265EF73715B8E26700115E19 /* SimperiumBinaryTests.m */; };
+		B5F8D64518157CF2005DA845 /* SPHttpRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F8D64318157CF2005DA845 /* SPHttpRequest.h */; };
+		B5F8D64618157CF2005DA845 /* SPHttpRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F8D64418157CF2005DA845 /* SPHttpRequest.m */; };
+		B5F8D64A1815A86F005DA845 /* SPHttpRequestQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F8D6481815A86F005DA845 /* SPHttpRequestQueue.h */; };
+		B5F8D64B1815A86F005DA845 /* SPHttpRequestQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F8D6491815A86F005DA845 /* SPHttpRequestQueue.m */; };
+		B5F8D64D1815AC8D005DA845 /* SPHttpRequest+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F8D64C1815AC8D005DA845 /* SPHttpRequest+Internals.h */; };
 		E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */; };
 		E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */; };
 /* End PBXBuildFile section */
@@ -450,6 +455,11 @@
 		B5554ADE1805CCDC0064F3BB /* SPBinaryManager+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPBinaryManager+Internals.h"; sourceTree = "<group>"; };
 		B586237A180D932F008E43C8 /* NSFileManager+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager+Simperium.h"; sourceTree = "<group>"; };
 		B586237B180D932F008E43C8 /* NSFileManager+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager+Simperium.m"; sourceTree = "<group>"; };
+		B5F8D64318157CF2005DA845 /* SPHttpRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHttpRequest.h; sourceTree = "<group>"; };
+		B5F8D64418157CF2005DA845 /* SPHttpRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHttpRequest.m; sourceTree = "<group>"; };
+		B5F8D6481815A86F005DA845 /* SPHttpRequestQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHttpRequestQueue.h; sourceTree = "<group>"; };
+		B5F8D6491815A86F005DA845 /* SPHttpRequestQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHttpRequestQueue.m; sourceTree = "<group>"; };
+		B5F8D64C1815AC8D005DA845 /* SPHttpRequest+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPHttpRequest+Internals.h"; sourceTree = "<group>"; };
 		E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTOSViewController.h; sourceTree = "<group>"; };
 		E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTOSViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -521,6 +531,11 @@
 				26EF3BA7147C6BB200E62AD6 /* SPBinaryManager.h */,
 				B5554ADE1805CCDC0064F3BB /* SPBinaryManager+Internals.h */,
 				26EF3BA8147C6BB200E62AD6 /* SPBinaryManager.m */,
+				B5F8D64318157CF2005DA845 /* SPHttpRequest.h */,
+				B5F8D64C1815AC8D005DA845 /* SPHttpRequest+Internals.h */,
+				B5F8D64418157CF2005DA845 /* SPHttpRequest.m */,
+				B5F8D6481815A86F005DA845 /* SPHttpRequestQueue.h */,
+				B5F8D6491815A86F005DA845 /* SPHttpRequestQueue.m */,
 			);
 			name = Binary;
 			sourceTree = "<group>";
@@ -965,6 +980,7 @@
 				26905D9C142CF97D001ACF20 /* DDAbstractDatabaseLogger.h in Headers */,
 				B5554ADF1805CCDC0064F3BB /* SPBinaryManager+Internals.h in Headers */,
 				26905D9E142CF97D001ACF20 /* DDASLLogger.h in Headers */,
+				B5F8D64518157CF2005DA845 /* SPHttpRequest.h in Headers */,
 				26905DA0142CF97D001ACF20 /* DDFileLogger.h in Headers */,
 				26905DA2142CF97D001ACF20 /* DDLog.h in Headers */,
 				26905DA4142CF97D001ACF20 /* DDTTYLogger.h in Headers */,
@@ -986,6 +1002,7 @@
 				2622FD20147F250400C8EEB4 /* SPMemberBinaryInfo.h in Headers */,
 				2622FD24147F251200C8EEB4 /* SPMemberList.h in Headers */,
 				2622FD28147F251D00C8EEB4 /* SPMemberBase64.h in Headers */,
+				B5F8D64A1815A86F005DA845 /* SPHttpRequestQueue.h in Headers */,
 				2622FD2D147F32A500C8EEB4 /* SPNetworkInterface.h in Headers */,
 				2611E805149FB91100121D6E /* JSONKit.h in Headers */,
 				26C93A6D14F850EA00BE99F5 /* SPAuthenticationViewController.h in Headers */,
@@ -999,6 +1016,7 @@
 				267CE907156C0FD20028801C /* SPSchema.h in Headers */,
 				267CE90D156C351B0028801C /* SPStorageProvider.h in Headers */,
 				26D4D3B3156C3DA300E822E9 /* JRSwizzle.h in Headers */,
+				B5F8D64D1815AC8D005DA845 /* SPHttpRequest+Internals.h in Headers */,
 				2618987C15D2EB310013CBC9 /* base64.h in Headers */,
 				2618987D15D2EB310013CBC9 /* NSData+SRB64Additions.h in Headers */,
 				2618987F15D2EB310013CBC9 /* SocketRocket-Prefix.pch in Headers */,
@@ -1205,6 +1223,7 @@
 				2622FD15147F24D700C8EEB4 /* SPMemberDouble.m in Sources */,
 				2622FD19147F24E000C8EEB4 /* SPMemberFloat.m in Sources */,
 				2622FD1D147F24F700C8EEB4 /* SPMemberEntity.m in Sources */,
+				B5F8D64B1815A86F005DA845 /* SPHttpRequestQueue.m in Sources */,
 				2622FD21147F250400C8EEB4 /* SPMemberBinaryInfo.m in Sources */,
 				2622FD25147F251200C8EEB4 /* SPMemberList.m in Sources */,
 				2622FD29147F251D00C8EEB4 /* SPMemberBase64.m in Sources */,
@@ -1216,6 +1235,7 @@
 				267CE902156C0FD20028801C /* SPDiffer.m in Sources */,
 				267CE904156C0FD20028801C /* SPJSONStorage.m in Sources */,
 				267CE906156C0FD20028801C /* SPObject.m in Sources */,
+				B5F8D64618157CF2005DA845 /* SPHttpRequest.m in Sources */,
 				267CE908156C0FD20028801C /* SPSchema.m in Sources */,
 				26D4D3B4156C3DA300E822E9 /* JRSwizzle.m in Sources */,
 				260722A315BF26A300786BD4 /* DDASLLogger.m in Sources */,

@@ -10,7 +10,6 @@
 #import "Simperium.h"
 #import "SPBinaryManager+Internals.h"
 #import "JSONKit.h"
-#import "DiffMatchPatch.h"
 #import "NSArray+Simperium.h"
 
 
