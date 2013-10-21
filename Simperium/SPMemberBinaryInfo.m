@@ -14,6 +14,8 @@
 #import "NSArray+Simperium.h"
 
 
+NSString* const SPMemberBinaryInfoSuffix = @"Info";
+
 
 @implementation SPMemberBinaryInfo
 
@@ -42,7 +44,7 @@
 	NSString *bucketName = [[[object bucket] name] copy];
 
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[self.binaryManager downloadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:self.dataKey binaryInfo:binaryInfo];
+		[object.bucket.binaryManager downloadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:self.dataKey infoKey:self.infoKey binaryInfo:binaryInfo];
 	});
 	
     return [binaryInfo JSONString];
@@ -81,10 +83,10 @@
 
 -(NSString*)dataKey
 {
-	NSInteger length = SPBinaryManagerInfoSuffix.length;
+	NSInteger length = SPMemberBinaryInfoSuffix.length;
 	NSRange range = { self.keyName.length - length, length };
 	
-	NSAssert([[self.keyName substringWithRange:range] isEqualToString:SPBinaryManagerInfoSuffix],
+	NSAssert([[self.keyName substringWithRange:range] isEqualToString:SPMemberBinaryInfoSuffix],
 			 @"Simperium error: Binary Metadata Attribute should be named: [attributeName]Info");
 	
 	return [self.keyName stringByReplacingCharactersInRange:range withString:@""];

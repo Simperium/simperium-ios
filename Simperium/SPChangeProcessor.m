@@ -456,7 +456,7 @@ NSString * const CH_DATA            = @"d";
 		NSData *binaryData = [[object simperiumValueForKey:member.dataKey] copy];
 		
 		dispatch_async(dispatch_get_main_queue(), ^{
-			[member.binaryManager uploadIfNeeded:bucket.name simperiumKey:key dataKey:member.dataKey binaryData:binaryData];
+			[bucket.binaryManager uploadIfNeeded:bucket.name simperiumKey:key dataKey:member.dataKey infoKey:member.infoKey binaryData:binaryData];
 		});
 	}
 	

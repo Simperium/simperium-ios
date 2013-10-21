@@ -13,7 +13,6 @@
 #pragma mark SPBinaryManagerDelegate
 #pragma mark ====================================================================================
 
-extern NSString* const SPBinaryManagerInfoSuffix;
 extern NSString* const SPBinaryManagerBucketNameKey;
 extern NSString* const SPBinaryManagerSimperiumKey;
 extern NSString* const SPBinaryManagerAttributeDataKey;

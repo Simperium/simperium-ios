@@ -9,7 +9,7 @@
 #import "SPCoreDataExporter.h"
 #import "SPManagedObject.h"
 #import "DDLog.h"
-#import "SPBinaryManager.h"
+#import "SPMemberBinaryInfo.h"
 
 
 
@@ -75,7 +75,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			continue;
 		}
 		
-		NSString *infoKey = [attr.name stringByAppendingString:SPBinaryManagerInfoSuffix];
+		NSString *infoKey = [attr.name stringByAppendingString:SPMemberBinaryInfoSuffix];
 		NSAttributeDescription *infoAttr = [[entityDesc attributesByName] objectForKey:infoKey];
 		NSAssert(infoAttr, @"Simperium: Missing metadata attribute [%@] for Binary Member [%@]", infoKey, attr.name);
 		

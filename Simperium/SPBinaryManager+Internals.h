@@ -18,7 +18,16 @@
 
 -(id)initWithSimperium:(Simperium *)aSimperium;
 
--(void)downloadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey binaryInfo:(NSDictionary *)binaryInfo;
--(void)uploadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey binaryData:(NSData *)binaryData;
+-(void)downloadIfNeeded:(NSString *)bucketName
+		   simperiumKey:(NSString *)simperiumKey
+				dataKey:(NSString *)dataKey
+				infoKey:(NSString *)infoKey
+			 binaryInfo:(NSDictionary *)binaryInfo;
+
+-(void)uploadIfNeeded:(NSString *)bucketName
+		 simperiumKey:(NSString *)simperiumKey
+			  dataKey:(NSString *)dataKey
+			  infoKey:(NSString *)infoKey
+		   binaryData:(NSData *)binaryData;
 
 @end

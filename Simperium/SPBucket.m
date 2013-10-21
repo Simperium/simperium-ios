@@ -18,6 +18,7 @@
 #import "SPGhost.h"
 #import "JSONKit.h"
 #import "SPRelationshipResolver.h"
+#import "SPBinaryManager.h"
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
@@ -47,14 +48,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
-relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
+	   binaryManager:(SPBinaryManager *)binaryManager relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 {
     if ((self = [super init])) {
         name = [aSchema.bucketName copy];
         self.storage = aStorage;
         self.network = netInterface;
         self.relationshipResolver = resolver;
-
+		self.binaryManager = binaryManager;
+		
         SPDiffer *aDiffer = [[SPDiffer alloc] initWithSchema:aSchema];
         self.differ = aDiffer;
 

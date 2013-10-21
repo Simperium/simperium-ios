@@ -219,16 +219,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return label;
 }
 
--(void)configureBinaryManager:(SPBinaryManager *)manager
-{
-    // Binary members need to know about the manager (ugly but avoids singleton/global)
-    for (SPBucket *bucket in [buckets allValues]) {
-        for (SPMemberBinaryInfo *binaryMember in bucket.differ.schema.binaryMembers) {
-            binaryMember.binaryManager = manager;
-        }
-    }
-}
-
 -(SPBucket *)bucketForName:(NSString *)name
 {
     SPBucket *bucket = [buckets objectForKey:name];
@@ -248,7 +238,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             SPHttpInterface *netManager = [[SPHttpInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
             
             // New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkInterface:network
+            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkInterface:network binaryManager:self.binaryManager
                                  relationshipResolver:self.relationshipResolver label:self.label];
             [netManager setBucket:bucket overrides:self.bucketOverrides];
             [buckets setObject:bucket forKey:name];
@@ -318,8 +308,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self stopNetworkManagers];
 }
 
--(void)handleNetworkChange:(NSNotification *)notification {
-
+-(void)handleNetworkChange:(NSNotification *)notification
+{
 #warning TODO: Start/STOP BinaryManager
 	if ([self.reachability currentReachabilityStatus] == NotReachable) {
         [self stopNetworkManagers];
@@ -362,12 +352,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                 SPWebSocketInterface *webSocketManager = [[SPWebSocketInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
                 self.network = webSocketManager;
             }
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
+            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network binaryManager:self.binaryManager
                                  relationshipResolver:self.relationshipResolver label:self.label];
         } else {
             // For http, each bucket has its own network manager
             SPHttpInterface *netInterface = [[SPHttpInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:netInterface
+            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:netInterface binaryManager:self.binaryManager
                                  relationshipResolver:self.relationshipResolver label:self.label];
             [(SPHttpInterface *)netInterface setBucket:bucket overrides:self.bucketOverrides]; // tightly coupled for now; will fix in websockets netmanager
         }
@@ -457,6 +447,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     self.coreDataStorage = storage;
     self.coreDataStorage.delegate = self;
     
+	// Setup BinaryManager
+	SPBinaryManager *binary = [[SPBinaryManager alloc] initWithSimperium:self];
+	self.binaryManager = binary;
+	
     // Get the schema from Core Data    
     NSArray *schemas = [self.coreDataStorage exportSchemas];
     
@@ -468,10 +462,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     // Load metadata for pending references among objects
     [self.relationshipResolver loadPendingRelationships:self.coreDataStorage];
-    
-	SPBinaryManager *binary = [[SPBinaryManager alloc] initWithSimperium:self];
-	self.binaryManager = binary;
-	[self configureBinaryManager:binary];
     
     // With everything configured, all objects can now be validated. This will pick up any objects that aren't yet
     // known to Simperium (for the case where you're adding Simperium to an existing app).
@@ -628,7 +618,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token
 {
 #warning TODO: Start BinaryManager
-    
     // It's now safe to start the network managers
     [self startNetworking];
         

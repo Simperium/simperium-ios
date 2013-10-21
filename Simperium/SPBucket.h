@@ -17,6 +17,7 @@
 @class SPChangeProcessor;
 @class SPIndexProcessor;
 @class SPRelationshipResolver;
+@class SPBinaryManager;
 
 /** SPBucketChangeType is used in the bucket:didChangeObjectForKey:forChangeType: method of SPBucketDelegate. It's similar to NSFetchedResultsChangeType, which is used with an NSFetchedResultsControllerDelegate.
  */
@@ -111,20 +112,22 @@ typedef NSUInteger SPBucketChangeType;
 
 typedef void (^SPBucketForceSyncCompletion)(void);
 
-@property (nonatomic, copy) NSString *instanceLabel;
-@property (nonatomic, strong) id<SPStorageProvider> storage;
-@property (nonatomic, strong) id<SPNetworkInterface> network;
-@property (nonatomic, strong) SPDiffer *differ;
-@property (nonatomic, strong) SPRelationshipResolver *relationshipResolver;
-@property (strong) SPChangeProcessor* changeProcessor;
-@property (strong) SPIndexProcessor* indexProcessor;
-@property (nonatomic, strong) dispatch_queue_t processorQueue;
-@property (nonatomic, copy) NSString *lastChangeSignature;
-@property (nonatomic, copy) SPBucketForceSyncCompletion forceSyncCompletion;
+@property (nonatomic, copy)		NSString *instanceLabel;
+@property (nonatomic, strong)	id<SPStorageProvider> storage;
+@property (nonatomic, strong)	id<SPNetworkInterface> network;
+@property (nonatomic, strong)	SPDiffer *differ;
+@property (nonatomic, strong)	SPRelationshipResolver *relationshipResolver;
+@property (nonatomic, strong)	SPChangeProcessor* changeProcessor;
+@property (nonatomic, strong)	SPIndexProcessor* indexProcessor;
+@property (nonatomic, strong)	SPBinaryManager* binaryManager;
+@property (nonatomic, strong)	dispatch_queue_t processorQueue;
+@property (nonatomic, copy)		NSString *lastChangeSignature;
+@property (nonatomic, copy)		SPBucketForceSyncCompletion forceSyncCompletion;
 
 - (id)initWithSchema:(SPSchema *)aSchema
              storage:(id<SPStorageProvider>)aStorage
-     networkInterface:(id<SPNetworkInterface>)netInterface
+	networkInterface:(id<SPNetworkInterface>)netInterface
+	   binaryManager:(SPBinaryManager *)binaryManager
 relationshipResolver:(SPRelationshipResolver *)resolver
                label:(NSString *)label;
 - (void)validateObjects;

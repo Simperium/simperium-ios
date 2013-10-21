@@ -10,4 +10,5 @@
 
 @interface NSFileManager (Simperium)
 +(NSString*)userDocumentDirectory;
++(NSString *)binaryDirectory;
 @end
