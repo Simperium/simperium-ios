@@ -12,17 +12,31 @@
 
 
 #pragma mark ====================================================================================
+#pragma mark Helpers
+#pragma mark ====================================================================================
+
+// Ref: http://stackoverflow.com/questions/7017281/performselector-may-cause-a-leak-because-its-selector-is-unknown/7073761#7073761
+
+#define SuppressPerformSelectorLeakWarning(Stuff) \
+	do { \
+		_Pragma("clang diagnostic push") \
+		_Pragma("clang diagnostic ignored \"-Warc-performSelector-leaks\"") \
+		Stuff; \
+		_Pragma("clang diagnostic pop") \
+	} while (0)
+
+
+#pragma mark ====================================================================================
 #pragma mark Private
 #pragma mark ====================================================================================
 
 @interface SPHttpRequest ()
 @property (nonatomic, strong, readwrite) NSURL *url;
-@property (nonatomic, strong, readwrite) NSDictionary *headers;
-@property (nonatomic, strong, readwrite) NSDictionary *userInfo;
 @property (nonatomic, assign, readwrite) SPHttpRequestMethods method;
 
 @property (nonatomic, strong, readwrite) NSURLConnection *connection;
-@property (nonatomic, strong, readwrite) NSMutableData *receivedData;
+@property (nonatomic, strong, readwrite) NSMutableData *responseMutable;
+@property (nonatomic, strong, readwrite) NSError *error;
 @property (nonatomic, assign, readwrite) NSUInteger retryCount;
 @property (nonatomic, strong, readwrite) NSDate *lastActivityDate;
 @end
@@ -33,7 +47,7 @@
 #pragma mark ====================================================================================
 
 static NSTimeInterval const SPHttpRequestQueueTimeout	= 30;
-static NSUInteger const SPHttpRequestQueueMaxRetries	= 2;
+static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 
 
 #pragma mark ====================================================================================
@@ -42,34 +56,27 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 2;
 
 @implementation SPHttpRequest
 
--(id)initWithURL:(NSURL*)url
-		 headers:(NSDictionary*)headers
-		userInfo:(NSDictionary *)userInfo
-		  method:(SPHttpRequestMethods)method
-		delegate:(id<SPHttpRequestDelegate>)delegate
+-(id)initWithURL:(NSURL*)url method:(SPHttpRequestMethods)method
 {
 	if((self = [super init])) {
 		self.url = url;
-		self.headers = headers;
-		self.userInfo = userInfo;
 		self.method = method;
-		self.delegate = delegate;
 	}
 		
 	return self;
 }
 
 #warning TODO: Persistance
+#warning TODO: iOS BG
 
--(void)enqueue
-{
-    [[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:self];
-}
+//#if TARGET_OS_IPHONE
+//request.shouldContinueWhenAppEntersBackground = YES;
+//#endif
 
--(void)dequeue
+
+-(NSData *)response
 {
-    [self stop];
-    [[SPHttpRequestQueue sharedInstance] dequeueHttpRequest:self];
+	return self.responseMutable;
 }
 
 
@@ -80,7 +87,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 2;
 -(void)begin
 {
     ++_retryCount;
-    self.receivedData = [NSMutableData data];
+    self.responseMutable = [NSMutableData data];
     self.lastActivityDate = [NSDate date];
     self.connection = [[NSURLConnection alloc] initWithRequest:self.request delegate:self startImmediately:NO];
     
@@ -88,6 +95,12 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 2;
 	[self.connection start];
 	
 	[self performSelector:@selector(checkActivityTimeout) withObject:nil afterDelay:0.1f inModes:@[ NSRunLoopCommonModes ]];
+	
+	if([self.delegate respondsToSelector:self.selectorStarted]) {
+		SuppressPerformSelectorLeakWarning(
+			[self.delegate performSelector:self.selectorStarted withObject:self];
+		);
+	}
 }
 
 -(void)stop
@@ -98,7 +111,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 2;
     // Cleanup
     [self.connection cancel];
     self.connection = nil;
-    self.receivedData = nil;
+    self.responseMutable = nil;
 }
 
 -(void)cancel
@@ -140,12 +153,14 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 2;
     if(self.retryCount < SPHttpRequestQueueMaxRetries) {
         [self begin];
     } else {
-		if([self.delegate respondsToSelector:@selector(httpRequestFailed:error:)]) {
-			NSError *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPHttpRequestErrorsTimeout userInfo:nil];
-			[self.delegate httpRequestFailed:self error:error];
+		if([self.delegate respondsToSelector:self.selectorFailed]) {
+			self.error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPHttpRequestErrorsTimeout userInfo:nil];			
+			SuppressPerformSelectorLeakWarning(
+				[self.delegate performSelector:self.selectorFailed withObject:self];
+			);
 		}
 		
-        [self dequeue];
+		[[SPHttpRequestQueue sharedInstance] dequeueHttpRequest:self];
     }
 }
 
@@ -156,30 +171,42 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 2;
 
 -(void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
-    self.receivedData.length = 0;
+    self.responseMutable.length = 0;
     self.lastActivityDate = [NSDate date];
 }
 
 -(void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
-    [self.receivedData appendData:data];
+    [self.responseMutable appendData:data];
     self.lastActivityDate = [NSDate date];
+	
+	if([self.delegate respondsToSelector:self.selectorProgress]) {
+		SuppressPerformSelectorLeakWarning(
+			[self.delegate performSelector:self.selectorProgress withObject:self];
+		);
+	}
 }
 
 -(void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-	if([self.delegate respondsToSelector:@selector(httpRequestFailed:error:)]) {
-		[self.delegate httpRequestFailed:self error:error];
+	if([self.delegate respondsToSelector:self.selectorFailed]) {
+		SuppressPerformSelectorLeakWarning(
+			[self.delegate performSelector:self.selectorFailed withObject:self];
+		);
 	}
-    [self dequeue];
+	
+	[[SPHttpRequestQueue sharedInstance] dequeueHttpRequest:self];
 }
 
 -(void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-	if([self.delegate respondsToSelector:@selector(httpRequestSuccessful:data:)]) {
-		[self.delegate httpRequestSuccessful:self data:self.receivedData];
+	if([self.delegate respondsToSelector:self.selectorSuccess]) {
+		SuppressPerformSelectorLeakWarning(
+			[self.delegate performSelector:self.selectorSuccess withObject:self];
+		);
 	}
-    [self dequeue];
+
+	[[SPHttpRequestQueue sharedInstance] dequeueHttpRequest:self];
 }
 
 -(void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
@@ -192,13 +219,9 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 2;
 #pragma mark Static Helpers
 #pragma mark ====================================================================================
 
-+(SPHttpRequest *)requestWithURL:(NSURL *)url
-						 headers:(NSDictionary *)headers
-						userInfo:(NSDictionary *)userInfo
-						  method:(SPHttpRequestMethods)method
-						delegate:(id<SPHttpRequestDelegate>)delegate
++(SPHttpRequest *)requestWithURL:(NSURL*)url method:(SPHttpRequestMethods)method
 {
-	return [[self alloc] initWithURL:url headers:headers userInfo:userInfo method:method delegate:delegate];
+	return [[self alloc] initWithURL:url method:method];
 }
 
 @end

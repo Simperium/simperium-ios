@@ -17,6 +17,7 @@ extern NSString* const SPBinaryManagerBucketNameKey;
 extern NSString* const SPBinaryManagerSimperiumKey;
 extern NSString* const SPBinaryManagerAttributeDataKey;
 extern NSString* const SPBinaryManagerLengthKey;
+extern NSString* const SPBinaryManagerHashKey;
 
 
 @protocol SPBinaryManagerDelegate <NSObject>
@@ -24,12 +25,12 @@ extern NSString* const SPBinaryManagerLengthKey;
 -(void)binaryUploadStarted:(NSDictionary *)uploadInfo;
 -(void)binaryUploadSuccessful:(NSDictionary *)uploadInfo;
 -(void)binaryUploadFailed:(NSDictionary *)uploadInfo error:(NSError *)error;
--(void)binaryUploadProgress:(NSDictionary *)uploadInfo increment:(long long)increment;
+-(void)binaryUploadProgress:(NSDictionary *)uploadInfo progress:(float)progress;
 
 -(void)binaryDownloadStarted:(NSDictionary *)downloadInfo;
 -(void)binaryDownloadSuccessful:(NSDictionary *)downloadInfo;
 -(void)binaryDownloadFailed:(NSDictionary *)downloadInfo error:(NSError *)error;
--(void)binaryDownloadProgress:(NSDictionary *)downloadInfo increment:(long long)increment;
+-(void)binaryDownloadProgress:(NSDictionary *)downloadInfo progress:(float)progress;
 @end
 
 

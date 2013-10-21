@@ -71,6 +71,8 @@
 
 -(void)dequeueHttpRequest:(SPHttpRequest*)httpRequest
 {
+	[httpRequest stop];
+	
     dispatch_sync(self.queueLock, ^(void) {
                       if([self.pendingRequests containsObject:httpRequest]) {
                           [self.pendingRequests removeObject:httpRequest];
