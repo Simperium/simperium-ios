@@ -21,7 +21,6 @@
 #warning TODO: Resume on app relaunch
 #warning TODO: Handle logouts
 #warning TODO: Add retry mechanisms
-#warning TODO: Nuke 'dataKeyForInfoKey'
 #warning TODO: What happens if upload finishes, the field gets sync'ed (and download begins), and then the localMetadata gets synced?
 #warning FIX FIX FIX: binaryInfo, after an upload, comes as a diff!
 
@@ -29,6 +28,8 @@
 #pragma mark ====================================================================================
 #pragma mark Notifications
 #pragma mark ====================================================================================
+
+NSString* const SPBinaryManagerInfoSuffix			= @"Info";
 
 NSString* const SPBinaryManagerBucketNameKey		= @"SPBinaryManagerBucketNameKey";
 NSString* const SPBinaryManagerSimperiumKey			= @"SPBinaryManagerSimperiumKey";
@@ -67,7 +68,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(BOOL)shouldDownload:(NSURL *)remoteURL binaryInfo:(NSDictionary *)binaryInfo;
 -(BOOL)shouldUpload:(NSURL *)remoteURL binaryData:(NSData *)binaryData;
 
--(NSURL *)remoteUrlForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey infoKey:(NSString *)infoKey;
+-(NSURL *)remoteUrlForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey;
 -(ASIHTTPRequest *)requestWithURL:(NSURL *)url;
 -(void)cancelRequestsWithURL:(NSURL *)url;
 @end
@@ -137,7 +138,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark Protected Methods: Download
 #pragma mark ====================================================================================
 
--(void)downloadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey infoKey:(NSString *)infoKey binaryInfo:(NSDictionary *)binaryInfo
+-(void)downloadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey binaryInfo:(NSDictionary *)binaryInfo
 {
 	// Is Simperium authenticated?
 	if(self.simperium.user.authenticated == NO) {
@@ -145,13 +146,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	}
 	
 	// We're not already in sync, right?
-	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
+	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey dataKey:dataKey];
 	if([self shouldDownload:url binaryInfo:binaryInfo] == NO) {
 		return;
 	}
 
 	// Wrap up parameters
-	NSString *dataKey = [infoKey stringByReplacingOccurrencesOfString:@"Info" withString:@"Data"];
 	NSDictionary *callbackDict = @{
 									SPBinaryManagerBucketNameKey		: bucketName,
 									SPBinaryManagerSimperiumKey			: simperiumKey,
@@ -218,7 +218,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark Protected Methods: Upload
 #pragma mark ====================================================================================
 
--(void)uploadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey infoKey:(NSString *)infoKey binaryData:(NSData *)binaryData
+-(void)uploadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey binaryData:(NSData *)binaryData
 {
 	// Is Simperium authenticated?
 	if(self.simperium.user.authenticated == NO) {
@@ -226,13 +226,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	}
 	
 	// We're not already in sync, right?
-	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
+	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey dataKey:dataKey];
 	if([self shouldUpload:url binaryData:binaryData] == NO) {
 		return;
 	}
 	
 	// Wrap up parameters
-	NSString *dataKey = [infoKey stringByReplacingOccurrencesOfString:@"Info" withString:@"Data"];
 	NSDictionary *callbackDict = @{
 									SPBinaryManagerBucketNameKey		: bucketName,
 									SPBinaryManagerSimperiumKey			: simperiumKey,
@@ -328,10 +327,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark Private Requests Helpers
 #pragma mark ====================================================================================
 
--(NSURL *)remoteUrlForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey infoKey:(NSString *)infoKey
+-(NSURL *)remoteUrlForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey
 {
 	// NOTE: downloadURL should hit the attribute with 'Info' ending!
 	//		[Base URL] / [App ID] / [Bucket Name] / i / [Simperium Key] / b / [attributeName]Info
+	
+	NSString *infoKey = [dataKey stringByAppendingString:SPBinaryManagerInfoSuffix];
 	
 	return [NSURL URLWithString:[SPBaseURL stringByAppendingFormat:@"%@/%@/i/%@/b/%@",
 								 self.simperium.appID, bucketName.lowercaseString, simperiumKey, infoKey]];

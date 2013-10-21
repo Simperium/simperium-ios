@@ -9,6 +9,7 @@
 #import "SPCoreDataExporter.h"
 #import "SPManagedObject.h"
 #import "DDLog.h"
+#import "SPBinaryManager.h"
 
 
 
@@ -61,8 +62,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		Notes:
 		======
 		Binary Sync needs two attributes:
+			- [name]	 :: NSBinaryDataAttributeType
 			- [name]Info :: NSStringAttributeType
-			- [name]Data :: NSBinaryDataAttributeType
 	
 		The Info attribute needs an 'spOverride' with 'binaryInfo' in it.
 		In this method we'll enforce that if the 'Data' attribute is present, an 'Info' counterpart should be present as well.
@@ -74,7 +75,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			continue;
 		}
 		
-		NSString *infoKey = [attr.name stringByReplacingOccurrencesOfString:@"Data" withString:@"Info"];
+		NSString *infoKey = [attr.name stringByAppendingString:SPBinaryManagerInfoSuffix];
 		NSAttributeDescription *infoAttr = [[entityDesc attributesByName] objectForKey:infoKey];
 		NSAssert(infoAttr, @"Simperium: Missing metadata attribute [%@] for Binary Member [%@]", infoKey, attr.name);
 		

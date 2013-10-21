@@ -42,7 +42,7 @@
 	NSString *bucketName = [[[object bucket] name] copy];
 
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[self.binaryManager downloadIfNeeded:bucketName simperiumKey:simperiumKey infoKey:self.keyName binaryInfo:binaryInfo];
+		[self.binaryManager downloadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:self.dataKey binaryInfo:binaryInfo];
 	});
 	
     return [binaryInfo JSONString];
@@ -72,8 +72,8 @@
 
 -(id)applyDiff:(id)thisValue otherValue:(id)otherValue
 {	
-//	NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
-//			 @"Simperium error: couldn't apply diff to ints because their classes weren't NSString");
+	NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
+			 @"Simperium error: couldn't apply diff to ints because their classes weren't NSString");
 
 	// Integer changes just replace the previous value by default
 	return otherValue;
@@ -81,7 +81,13 @@
 
 -(NSString*)dataKey
 {
-	return [self.keyName stringByReplacingOccurrencesOfString:@"Info" withString:@"Data"];
+	NSInteger length = SPBinaryManagerInfoSuffix.length;
+	NSRange range = { self.keyName.length - length, length };
+	
+	NSAssert([[self.keyName substringWithRange:range] isEqualToString:SPBinaryManagerInfoSuffix],
+			 @"Simperium error: Binary Metadata Attribute should be named: [attributeName]Info");
+	
+	return [self.keyName stringByReplacingCharactersInRange:range withString:@""];
 }
 
 -(NSString *)infoKey
