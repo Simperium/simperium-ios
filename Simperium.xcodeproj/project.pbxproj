@@ -225,6 +225,8 @@
 		B5F8D64A1815A86F005DA845 /* SPHttpRequestQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F8D6481815A86F005DA845 /* SPHttpRequestQueue.h */; };
 		B5F8D64B1815A86F005DA845 /* SPHttpRequestQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F8D6491815A86F005DA845 /* SPHttpRequestQueue.m */; };
 		B5F8D64D1815AC8D005DA845 /* SPHttpRequest+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F8D64C1815AC8D005DA845 /* SPHttpRequest+Internals.h */; };
+		B5F8D6501815E40F005DA845 /* NSURLResponse+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F8D64E1815E40F005DA845 /* NSURLResponse+Simperium.h */; };
+		B5F8D6511815E40F005DA845 /* NSURLResponse+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F8D64F1815E40F005DA845 /* NSURLResponse+Simperium.m */; };
 		E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */; };
 		E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */; };
 /* End PBXBuildFile section */
@@ -460,6 +462,8 @@
 		B5F8D6481815A86F005DA845 /* SPHttpRequestQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHttpRequestQueue.h; sourceTree = "<group>"; };
 		B5F8D6491815A86F005DA845 /* SPHttpRequestQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHttpRequestQueue.m; sourceTree = "<group>"; };
 		B5F8D64C1815AC8D005DA845 /* SPHttpRequest+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPHttpRequest+Internals.h"; sourceTree = "<group>"; };
+		B5F8D64E1815E40F005DA845 /* NSURLResponse+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURLResponse+Simperium.h"; sourceTree = "<group>"; };
+		B5F8D64F1815E40F005DA845 /* NSURLResponse+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURLResponse+Simperium.m"; sourceTree = "<group>"; };
 		E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTOSViewController.h; sourceTree = "<group>"; };
 		E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTOSViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -842,6 +846,8 @@
 				26B16EFE13B1B78F00BEB3E5 /* NSData+Simperium.m */,
 				B586237A180D932F008E43C8 /* NSFileManager+Simperium.h */,
 				B586237B180D932F008E43C8 /* NSFileManager+Simperium.m */,
+				B5F8D64E1815E40F005DA845 /* NSURLResponse+Simperium.h */,
+				B5F8D64F1815E40F005DA845 /* NSURLResponse+Simperium.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -984,6 +990,7 @@
 				26905DA0142CF97D001ACF20 /* DDFileLogger.h in Headers */,
 				26905DA2142CF97D001ACF20 /* DDLog.h in Headers */,
 				26905DA4142CF97D001ACF20 /* DDTTYLogger.h in Headers */,
+				B5F8D6501815E40F005DA845 /* NSURLResponse+Simperium.h in Headers */,
 				26905DA8142D344C001ACF20 /* DDLogDebug.h in Headers */,
 				2669E6E1144D5CA100C33988 /* UIImage+Simperium.h in Headers */,
 				26ED43EB146CE1FD00C3D7D6 /* Config.h in Headers */,
@@ -1187,6 +1194,7 @@
 				264CD93D135DFE6D00C51BAD /* SPManagedObject.m in Sources */,
 				264CD941135DFE6D00C51BAD /* SPEnvironment.m in Sources */,
 				264CD943135DFE6D00C51BAD /* SPGhost.m in Sources */,
+				B5F8D6511815E40F005DA845 /* NSURLResponse+Simperium.m in Sources */,
 				264CD945135DFE6D00C51BAD /* SPMember.m in Sources */,
 				264CD947135DFE6D00C51BAD /* SPHttpInterface.m in Sources */,
 				B586237D180D932F008E43C8 /* NSFileManager+Simperium.m in Sources */,

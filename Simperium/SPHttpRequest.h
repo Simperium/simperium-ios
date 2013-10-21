@@ -16,7 +16,7 @@
 @class SPHttpRequest;
 
 typedef NS_ENUM(NSUInteger, SPHttpRequestMethods) {
-	SPHttpRequestMethodsPost,
+	SPHttpRequestMethodsPut,
     SPHttpRequestMethodsGet
 };
 
@@ -32,11 +32,14 @@ typedef NS_ENUM(NSUInteger, SPHttpRequestErrors) {
 @interface SPHttpRequest : NSObject
 
 @property (nonatomic, strong, readonly)  NSURL *url;
-@property (nonatomic, strong, readonly)  NSData* response;
+@property (nonatomic, strong, readonly)  NSData* responseData;
+@property (nonatomic, strong, readonly)  NSString* responseString;
 @property (nonatomic, strong, readonly)  NSError* error;
+@property (nonatomic, assign, readonly)  float uploadProgress;
 
 @property (nonatomic, strong, readwrite) NSDictionary *headers;
 @property (nonatomic, strong, readwrite) NSDictionary *userInfo;
+@property (nonatomic, strong, readwrite) NSData *postData;
 
 @property (nonatomic, weak,   readwrite) id delegate;
 @property (nonatomic, assign, readwrite) SEL selectorStarted;

@@ -8,6 +8,7 @@
 
 #import "SPHttpRequest.h"
 #import "SPHttpRequestQueue.h"
+#import "NSURLResponse+Simperium.h"
 
 
 
@@ -33,8 +34,10 @@
 @interface SPHttpRequest ()
 @property (nonatomic, strong, readwrite) NSURL *url;
 @property (nonatomic, assign, readwrite) SPHttpRequestMethods method;
+@property (nonatomic, assign, readwrite) float uploadProgress;
 
 @property (nonatomic, strong, readwrite) NSURLConnection *connection;
+@property (nonatomic, assign, readwrite) NSStringEncoding encoding;
 @property (nonatomic, strong, readwrite) NSMutableData *responseMutable;
 @property (nonatomic, strong, readwrite) NSError *error;
 @property (nonatomic, assign, readwrite) NSUInteger retryCount;
@@ -74,9 +77,20 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 //#endif
 
 
--(NSData *)response
+-(NSData *)responseData
 {
 	return self.responseMutable;
+}
+
+-(NSString *)responseString
+{
+	NSString *responseString = nil;
+	
+	if (self.responseData) {
+		responseString = [[NSString alloc] initWithBytes:self.responseData.bytes length:self.responseData.length encoding:self.encoding];
+	}
+	
+	return responseString;
 }
 
 
@@ -133,8 +147,9 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
         [request setValue:self.headers[headerField] forHTTPHeaderField:headerField];
     }
     
-    request.HTTPMethod = (self.method == SPHttpRequestMethodsPost) ? @"POST" : @"GET";
-    
+    request.HTTPMethod = (self.method == SPHttpRequestMethodsPut) ? @"PUT" : @"GET";
+	request.HTTPBody = self.postData;
+	
     return request;
 }
 
@@ -173,6 +188,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 {
     self.responseMutable.length = 0;
     self.lastActivityDate = [NSDate date];
+	self.encoding = [response encoding];
 }
 
 -(void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
@@ -212,6 +228,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 -(void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
 {
     self.lastActivityDate = [NSDate date];
+	self.uploadProgress = totalBytesWritten * 1.0f / totalBytesExpectedToWrite * 1.0f;
 }
 
 

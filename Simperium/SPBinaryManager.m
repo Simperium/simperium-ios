@@ -42,7 +42,6 @@ NSString* const SPBinaryManagerHashKey				= @"hash";
 
 static NSString* const SPBinaryManagerInfoFilename	= @"BinaryMetadata.plist";
 static NSString* const SPBinaryManagerTokenKey		= @"X-Simperium-Token";
-static NSInteger const SPBinaryManagerSuccessCode	= 200;
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
@@ -156,6 +155,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
 }
 
+
+#pragma mark ====================================================================================
+#pragma mark Private Methods: SPHttpRequest DOWNLOAD delegates
+#pragma mark ====================================================================================
+
 -(void)downloadStarted:(SPHttpRequest *)request
 {
 	DDLogWarn(@"Simperium downloading binary at URL: %@", request.url);
@@ -167,7 +171,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)downloadProgress:(SPHttpRequest *)request
 {
-	float progress = [request.userInfo[SPBinaryManagerLengthKey] floatValue] / (request.response.length * 1.0f);
+	float progress = [request.userInfo[SPBinaryManagerLengthKey] floatValue] / (request.responseData.length * 1.0f);
 	DDLogWarn(@"Simperium downloaded [%f%%] of [%@]", progress, request.url);
 	
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadProgress:progress:)] ) {
@@ -200,7 +204,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	}
 	
 	// Update the local binary
-	[object setValue:request.response forKey:dataKey];
+	[object setValue:request.responseData forKey:dataKey];
 	[self.simperium save];
 	
 	// Update the local metadata. Remote metadata is already up to date!
@@ -226,81 +230,91 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)uploadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey
 			  infoKey:(NSString *)infoKey binaryData:(NSData *)binaryData
 {
-//	// Is Simperium authenticated?
-//	if(self.simperium.user.authenticated == NO) {
-//		return;
-//	}
-//	
-//	// We're not already in sync, right?
-//	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
-//	if([self shouldUpload:url binaryData:binaryData] == NO) {
-//		return;
-//	}
-//	
-//	// Wrap up parameters
-//	NSDictionary *callbackDict = @{
-//									SPBinaryManagerBucketNameKey		: bucketName,
-//									SPBinaryManagerSimperiumKey			: simperiumKey,
-//									SPBinaryManagerAttributeDataKey		: dataKey,
-//									SPBinaryManagerLengthKey			: @(binaryData.length)
-//								 };
-//
-//	// Prepare the request
-//	__weak ASIHTTPRequest *request = [self requestWithURL:url];
-//	
-//	request.requestMethod = @"PUT";
-//	request.validatesSecureCertificate = NO;
-//
-//	request.startedBlock = ^{
-//		DDLogWarn(@"Simperium starting binary upload to URL: %@", url);
-//		
-//		if( [self.delegate respondsToSelector:@selector(binaryUploadStarted:)] ) {
-//			[self.delegate binaryUploadStarted:callbackDict];
-//		}
-//	};
-//	
-//	request.uploadSizeIncrementedBlock = ^(long long size) {
-//		if( [self.delegate respondsToSelector:@selector(binaryUploadProgress:increment:)] ) {
-//			[self.delegate binaryUploadProgress:callbackDict increment:size];
-//		}
-//	};
-//	
-//	request.completionBlock = ^{
-//		if(request.responseStatusCode != SPBinaryManagerSuccessCode) {
-//			DDLogError(@"Simperium encountered error %d while trying to upload binary: %@",
-//					   request.responseStatusCode, request.responseStatusMessage);
-//			return;
-//		}
-//		
-//		// Update the local metadata
-//		NSDictionary *binaryInfo = [request.responseString objectFromJSONString];
-//		[self.localBinaryMetadata setValue:binaryInfo forKey:url.absoluteString];
-//		[self saveLocalBinaryMetadata];
-//		
-//		// Hit the delegate
-//		DDLogWarn(@"Simperium successfully uploaded binary to URL: %@. Response: %@", url, binaryInfo);
-//		
-//		if( [self.delegate respondsToSelector:@selector(binaryDownloadSuccessful:)] ) {
-//			[self.delegate binaryDownloadSuccessful:callbackDict];
-//		}
-//	};
-//	
-//	request.failedBlock = ^{
-//		DDLogWarn(@"Simperium error [%@] while uploading binary to URL: %@", request.error, url);
-//		
-//		if( [self.delegate respondsToSelector:@selector(binaryUploadFailed:error:)] ) {
-//			[self.delegate binaryUploadFailed:callbackDict error:request.error];
-//		}
-//	};
-//	
-//	[request appendPostData:binaryData];
-//	
-//	// Cancel previous requests!
-//	[self cancelRequestsWithURL:url];
-//	
-//	// Go go go go go!
-//	DDLogWarn(@"Simperium uploading binary to URL: %@", url);
-//	[request startAsynchronous];
+	// Is Simperium authenticated?
+	if(self.simperium.user.authenticated == NO) {
+		return;
+	}
+
+	// We're not already in sync, right?
+	NSURL *url = [self remoteUrlForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
+	if([self shouldUpload:url binaryData:binaryData] == NO) {
+		return;
+	}
+	
+	// Prepare the request
+	SPHttpRequest *request = [SPHttpRequest requestWithURL:url method:SPHttpRequestMethodsPut];
+	
+	request.headers = @{
+		SPBinaryManagerTokenKey : self.simperium.user.authToken
+	};
+	
+	request.userInfo = @{
+		SPBinaryManagerBucketNameKey	: bucketName,
+		SPBinaryManagerSimperiumKey		: simperiumKey,
+		SPBinaryManagerAttributeDataKey	: dataKey,
+		SPBinaryManagerLengthKey		: @(binaryData.length)
+	};
+	
+	request.postData = binaryData;
+	
+	request.delegate = self;
+	request.selectorStarted = @selector(uploadStarted:);
+	request.selectorProgress = @selector(uploadProgress:);
+	request.selectorSuccess = @selector(uploadSuccess:);
+	request.selectorFailed = @selector(uploadFailed:);
+	
+	// Cancel previous requests with the same URL
+	[[SPHttpRequestQueue sharedInstance] cancelRequestsWithURL:url];
+	
+	// Go!
+	[[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
+}
+
+
+#pragma mark ====================================================================================
+#pragma mark Private Methods: SPHttpRequest UPLOAD delegates
+#pragma mark ====================================================================================
+
+-(void)uploadStarted:(SPHttpRequest *)request
+{
+	DDLogWarn(@"Simperium starting binary upload to URL: %@", request.url);
+
+	if( [self.delegate respondsToSelector:@selector(binaryUploadStarted:)] ) {
+		[self.delegate binaryUploadStarted:request.userInfo];
+	}
+}
+
+-(void)uploadProgress:(SPHttpRequest *)request
+{
+	DDLogWarn(@"Simperium downloaded [%f%%] of [%@]", request.uploadProgress, request.url);
+	
+	if( [self.delegate respondsToSelector:@selector(binaryUploadProgress:progress:)] ) {
+		[self.delegate binaryUploadProgress:request.userInfo progress:request.uploadProgress];
+	}
+}
+
+-(void)uploadFailed:(SPHttpRequest *)request
+{
+	DDLogWarn(@"Simperium error [%@] while uploading binary to URL: %@", request.error, request.url);
+
+	if( [self.delegate respondsToSelector:@selector(binaryUploadFailed:error:)] ) {
+		[self.delegate binaryUploadFailed:request.userInfo error:request.error];
+	}
+}
+
+-(void)uploadSuccess:(SPHttpRequest *)request
+{
+	DDLogWarn(@"Simperium successfully uploaded binary to URL: %@", request.url);
+		
+	// Update the local metadata
+	NSDictionary *binaryInfo = [request.responseString objectFromJSONString];
+	[self.localBinaryMetadata setValue:binaryInfo forKey:request.url.absoluteString];
+	[self saveLocalBinaryMetadata];
+	
+	// Notify the delegate (!)
+	if( [self.delegate respondsToSelector:@selector(binaryUploadSuccessful:)] ) {
+		[self.delegate binaryUploadSuccessful:request.userInfo];
+	}
 }
 
 
@@ -312,6 +326,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
 	// NOTE: downloadURL should hit the attribute with 'Info' ending!
 	//		[Base URL] / [App ID] / [Bucket Name] / i / [Simperium Key] / b / [attributeName]Info
+	
 	NSString* url = [SPBaseURL stringByAppendingFormat:@"%@/%@/i/%@/b/%@", self.simperium.appID, bucketName.lowercaseString, simperiumKey, infoKey];
 	return [NSURL URLWithString:url];
 }
