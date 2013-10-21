@@ -195,7 +195,7 @@
 		26F4BBD013DCFDB000B8AC56 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBCF13DCFDB000B8AC56 /* libz.dylib */; };
 		26F4BBD413DCFDC100B8AC56 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */; };
 		460A505E17DE96350070F02B /* SPProcessorNotificationNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */; };
-		460A505F17DE96350070F02B /* SPProcessorNotificationsNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 460A505D17DE96350070F02B /* SPProcessorNotificationsNames.h */; };
+		460A505F17DE96350070F02B /* SPProcessorNotificationNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */; };
 		464DC336176946ED00E75D05 /* SFHFKeychainUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 464DC334176946ED00E75D05 /* SFHFKeychainUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		464DC337176946ED00E75D05 /* SFHFKeychainUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 464DC335176946ED00E75D05 /* SFHFKeychainUtils.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41017BC45F5005F7599 /* SPAuthenticationConfiguration.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -420,7 +420,7 @@
 		26F4BBCF13DCFDB000B8AC56 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPProcessorNotificationNames.m; sourceTree = "<group>"; };
-		460A505D17DE96350070F02B /* SPProcessorNotificationsNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessorNotificationsNames.h; sourceTree = "<group>"; };
+		460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessorNotificationNames.h; sourceTree = "<group>"; };
 		464DC334176946ED00E75D05 /* SFHFKeychainUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SFHFKeychainUtils.h; sourceTree = "<group>"; };
 		464DC335176946ED00E75D05 /* SFHFKeychainUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SFHFKeychainUtils.m; sourceTree = "<group>"; };
 		466EB41017BC45F5005F7599 /* SPAuthenticationConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationConfiguration.h; sourceTree = "<group>"; };
@@ -576,8 +576,8 @@
 		2622FD01147F237800C8EEB4 /* System */ = {
 			isa = PBXGroup;
 			children = (
+				460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */,
 				460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */,
-				460A505D17DE96350070F02B /* SPProcessorNotificationsNames.h */,
 				267CE8EF156C0FD20028801C /* SPBucket.h */,
 				267CE8F0156C0FD20028801C /* SPBucket.m */,
 				269A7F3D147355D100CB29EE /* SPChangeProcessor.h */,
@@ -1015,7 +1015,7 @@
 				466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */,
 				466EB41617BC45F5005F7599 /* SPAuthenticationValidator.h in Headers */,
 				466EB41A17BC4890005F7599 /* SPAuthenticationButton.h in Headers */,
-				460A505F17DE96350070F02B /* SPProcessorNotificationsNames.h in Headers */,
+				460A505F17DE96350070F02B /* SPProcessorNotificationNames.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1354,6 +1354,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Simperium/Simperium-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				INSTALL_PATH = "$(BUILT_PRODUCTS_DIR)";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1380,6 +1381,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Simperium/Simperium-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				INSTALL_PATH = "$(BUILT_PRODUCTS_DIR)";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";

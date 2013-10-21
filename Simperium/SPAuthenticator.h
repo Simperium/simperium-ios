@@ -21,7 +21,7 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 
 @interface SPAuthenticator : NSObject {
     Simperium *__weak simperium;
-    id<SPAuthenticatorDelegate> delegate;
+    id<SPAuthenticatorDelegate> __weak delegate;
     SucceededBlockType succeededBlock;
     FailedBlockType failedBlock;
     BOOL connected;

@@ -202,7 +202,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 	// Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
 	if (changes.count == 0) {
-
 		[bucket bucketDidSync];
 		return;
 	}
@@ -214,14 +213,21 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[bucket.storage stashUnsavedObjects];
 	
 	dispatch_async(bucket.processorQueue, ^{
-		if (self.started) {
-			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID];
-			dispatch_async(dispatch_get_main_queue(), ^{
-				// After remote changes have been processed, check to see if any local changes were attempted (and
-				// queued) in the meantime, and send them
-				[self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:nil];
-			});
+		if (!self.started) {
+			return;
 		}
+		
+		BOOL needsRepost = [bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket];
+		[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID];
+		
+		dispatch_async(dispatch_get_main_queue(), ^{
+			
+			// Note #1: After remote changes have been processed, check to see if any local changes were attempted (and
+			//			queued) in the meantime, and send them.
+			
+			// Note #2: If we need to repost, we'll need to re-send everything. Not just the queued changes.
+			[self sendChangesForBucket:bucket onlyQueuedChanges:!needsRepost completionBlock:nil];
+		});
 	});
 }
 
@@ -443,8 +449,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 										   @"id" : key};
             [errorArray addObject:versionDict];
         }
-        [self performSelector:@selector(requestVersionsForKeys:) withObject: errorArray afterDelay:1];
-        //[self performSelector:@selector(requestLatestVersions) withObject:nil afterDelay:10];
+		
+		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1.0f * NSEC_PER_SEC);
+		dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
+			[self performSelector:@selector(requestVersionsForKeys:bucket:) withObject: errorArray withObject:bucket];
+		});
+
         return;
     }
 

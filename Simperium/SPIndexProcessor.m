@@ -137,7 +137,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
                                   bucket.name, @"bucketName",
                                   keysForDeletedObjects, @"keys", nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidDeleteObjectKeysNotification" object:bucket userInfo:userInfo];
+        [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
     }
 }
 
