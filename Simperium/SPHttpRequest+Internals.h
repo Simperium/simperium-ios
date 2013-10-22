@@ -15,6 +15,7 @@
 #pragma mark ====================================================================================
 
 @interface SPHttpRequest (Internals)
+@property (nonatomic, weak, readwrite) SPHttpRequestQueue *httpRequestQueue;
 -(void)begin;
 -(void)stop;
 -(void)cancel;

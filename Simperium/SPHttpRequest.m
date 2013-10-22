@@ -32,8 +32,9 @@
 #pragma mark ====================================================================================
 
 @interface SPHttpRequest ()
+@property (nonatomic, weak,   readwrite) SPHttpRequestQueue *httpRequestQueue;
 @property (nonatomic, strong, readwrite) NSURL *url;
-@property (nonatomic, assign, readwrite)  int statusCode;
+@property (nonatomic, assign, readwrite) int statusCode;
 @property (nonatomic, assign, readwrite) SPHttpRequestMethods method;
 @property (nonatomic, assign, readwrite) float uploadProgress;
 
@@ -176,7 +177,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 			);
 		}
 		
-		[[SPHttpRequestQueue sharedInstance] dequeueHttpRequest:self];
+		[self.httpRequestQueue dequeueHttpRequest:self];
     }
 }
 
@@ -228,8 +229,8 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 			[self.delegate performSelector:self.selectorFailed withObject:self];
 		);
 	}
-	
-	[[SPHttpRequestQueue sharedInstance] dequeueHttpRequest:self];
+
+	[self.httpRequestQueue dequeueHttpRequest:self];
 }
 
 -(void)connectionDidFinishLoading:(NSURLConnection *)connection
@@ -240,7 +241,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 		);
 	}
 
-	[[SPHttpRequestQueue sharedInstance] dequeueHttpRequest:self];
+	[self.httpRequestQueue dequeueHttpRequest:self];
 }
 
 -(void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite

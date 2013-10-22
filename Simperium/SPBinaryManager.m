@@ -55,10 +55,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark ====================================================================================
 
 @interface SPBinaryManager()
+@property (nonatomic, strong, readwrite) SPHttpRequestQueue *httpRequestsQueue;
+@property (nonatomic, weak,   readwrite) Simperium *simperium;
+
 @property (nonatomic, strong, readwrite) NSMutableDictionary *localMetadata;
 @property (nonatomic, strong, readwrite) NSMutableSet *downloads;
 @property (nonatomic, strong, readwrite) NSMutableSet *uploads;
-@property (nonatomic, weak,   readwrite) Simperium *simperium;
 
 -(NSString *)localMetadataPath;
 
@@ -78,6 +80,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(id)initWithSimperium:(Simperium *)aSimperium
 {
     if (self = [super init]) {
+		// We'll have our own Http Queue
+		self.httpRequestsQueue = [[SPHttpRequestQueue alloc] init];
+		
 		// Load local metadata
 		self.localMetadata = [NSMutableDictionary dictionary];
 		[self loadLocalMetadata];
@@ -174,10 +179,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	request.selectorFailed = @selector(downloadFailed:);
 	
 	// Cancel previous requests with the same URL
-	[[SPHttpRequestQueue sharedInstance] cancelRequestsWithURL:url];
+	[self.httpRequestsQueue cancelRequestsWithURL:url];
 	
 	// Go!
-	[[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
+	[self.httpRequestsQueue enqueueHttpRequest:request];
 }
 
 
@@ -307,10 +312,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	request.selectorFailed = @selector(uploadFailed:);
 	
 	// Cancel previous requests with the same URL
-	[[SPHttpRequestQueue sharedInstance] cancelRequestsWithURL:url];
+	[self.httpRequestsQueue cancelRequestsWithURL:url];
 	
 	// Go!
-	[[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
+	[self.httpRequestsQueue enqueueHttpRequest:request];
 }
 
 

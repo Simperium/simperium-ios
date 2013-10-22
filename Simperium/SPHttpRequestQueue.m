@@ -12,6 +12,13 @@
 
 
 #pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static NSInteger const SPHttpRequestsMaxConcurrentDownloads = 10;
+
+
+#pragma mark ====================================================================================
 #pragma mark Private Methods
 #pragma mark ====================================================================================
 
@@ -30,15 +37,13 @@
 
 @implementation SPHttpRequestQueue
 
-#warning TODO: Init should have a label
-#warning TODO: Can we simplify this?
-
 -(id)init
 {
     if((self = [super init]))
     {
-        self.queueLock = dispatch_queue_create("com.simperium.http_request_queue", NULL);
+        self.queueLock = dispatch_queue_create("com.simperium.SPHttpRequestQueue", NULL);
 		self.enabled = true;
+		self.maxConcurrentConnections = SPHttpRequestsMaxConcurrentDownloads;
         self.pendingRequests = [NSMutableArray array];
         self.activeRequests = [NSMutableArray array];
     }
@@ -50,22 +55,11 @@
 #pragma mark Public Methods
 #pragma mark ====================================================================================
 
-+(instancetype)sharedInstance
-{
-    static dispatch_once_t _once;
-    static id _sharedInstance  = nil;
-    
-    dispatch_once(&_once, ^{
-                      _sharedInstance = [[[self class] alloc] init];
-                  });
-    
-    return _sharedInstance;
-}
-
 -(void)enqueueHttpRequest:(SPHttpRequest*)httpRequest
 {
     dispatch_sync(self.queueLock, ^(void) {
-                      [self.pendingRequests addObject:httpRequest];
+					httpRequest.httpRequestQueue = self;
+                    [self.pendingRequests addObject:httpRequest];
                   });
     
     [self processNextRequest];
@@ -90,7 +84,7 @@
 
 -(void)processNextRequest
 {
-    if( (self.pendingRequests.count == 0) || (self.enabled == false) ) {
+    if((self.pendingRequests.count == 0) || (self.activeRequests.count >= _maxConcurrentConnections) || (self.enabled == false)) {
         return;
     }
     

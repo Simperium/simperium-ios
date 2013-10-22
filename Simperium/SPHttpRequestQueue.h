@@ -18,9 +18,9 @@
 
 @interface SPHttpRequestQueue : NSObject
 
+@property (nonatomic, assign, readwrite) NSUInteger maxConcurrentConnections;
 @property (nonatomic, assign, readwrite) BOOL enabled;
 
-+(instancetype)sharedInstance;
 -(void)enqueueHttpRequest:(SPHttpRequest*)httpRequest;
 -(void)dequeueHttpRequest:(SPHttpRequest*)httpRequest;
 

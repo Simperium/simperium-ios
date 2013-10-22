@@ -14,6 +14,7 @@
 #pragma mark ====================================================================================
 
 @class SPHttpRequest;
+@class SPHttpRequestQueue;
 
 typedef NS_ENUM(NSUInteger, SPHttpRequestMethods) {
 	SPHttpRequestMethodsPut,
@@ -30,7 +31,6 @@ typedef NS_ENUM(NSUInteger, SPHttpRequestErrors) {
 #pragma mark ====================================================================================
 
 @interface SPHttpRequest : NSObject
-
 @property (nonatomic, strong, readonly)  NSURL *url;
 @property (nonatomic, assign, readonly)  int statusCode;
 @property (nonatomic, strong, readonly)  NSData* responseData;
@@ -49,5 +49,4 @@ typedef NS_ENUM(NSUInteger, SPHttpRequestErrors) {
 @property (nonatomic, assign, readwrite) SEL selectorProgress;
 
 +(SPHttpRequest *)requestWithURL:(NSURL*)url method:(SPHttpRequestMethods)method;
-
 @end
