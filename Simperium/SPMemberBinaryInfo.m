@@ -42,9 +42,7 @@ NSString* const SPMemberBinaryInfoSuffix = @"Info";
 	NSString *simperiumKey = [object.simperiumKey copy];
 	NSString *bucketName = [[[object bucket] name] copy];
 
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[object.bucket.binaryManager downloadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:self.dataKey infoKey:self.infoKey binaryInfo:binaryInfo];
-	});
+	[object.bucket.binaryManager downloadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:self.dataKey infoKey:self.infoKey binaryInfo:binaryInfo];
 	
     return [binaryInfo JSONString];
 }

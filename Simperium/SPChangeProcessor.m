@@ -457,10 +457,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     // Handle Binary Members!
 	for(SPMemberBinaryInfo* member in bucket.differ.schema.binaryMembers) {
 		NSData *binaryData = [[object simperiumValueForKey:member.dataKey] copy];
-		
-		dispatch_async(dispatch_get_main_queue(), ^{
-			[bucket.binaryManager uploadIfNeeded:bucket.name simperiumKey:key dataKey:member.dataKey infoKey:member.infoKey binaryData:binaryData];
-		});
+		[bucket.binaryManager uploadIfNeeded:bucket.name simperiumKey:key dataKey:member.dataKey infoKey:member.infoKey binaryData:binaryData];
 	}
 	
     // If the object no longer exists, it was likely previously deleted, in which case this change is no longer

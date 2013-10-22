@@ -20,9 +20,8 @@
 #import "SPHttpRequestQueue.h"
 
 
-#warning TODO: SPBinaryManager should have its own GCD queue
 #warning TODO: Don't upload if local mtime < remoteMtime
-#warning TODO: Resume on app relaunch
+#warning TODO: Resume on app relaunch: persistance
 #warning TODO: Handle logouts
 #warning TODO: Add retry mechanisms
 #warning TODO: Handle Nulls
@@ -56,6 +55,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface SPBinaryManager()
 @property (nonatomic, strong, readwrite) SPHttpRequestQueue *httpRequestsQueue;
+@property (nonatomic, strong, readwrite) dispatch_queue_t binaryManagerQueue;
 @property (nonatomic, weak,   readwrite) Simperium *simperium;
 
 @property (nonatomic, strong, readwrite) NSMutableDictionary *localMetadata;
@@ -80,7 +80,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(id)initWithSimperium:(Simperium *)aSimperium
 {
     if (self = [super init]) {
-		// We'll have our own Http Queue
+		// We'll have our own Http Queue: Multiple Simperium instances shouldn't interfere with each other
+		self.binaryManagerQueue = dispatch_queue_create("com.simperium.SPBinaryManager", NULL);
 		self.httpRequestsQueue = [[SPHttpRequestQueue alloc] init];
 		
 		// Load local metadata
@@ -132,6 +133,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)downloadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey
 				infoKey:(NSString *)infoKey binaryInfo:(NSDictionary *)binaryInfo
 {
+	dispatch_async(self.binaryManagerQueue, ^{
+		[self _downloadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:dataKey infoKey:infoKey binaryInfo:binaryInfo];
+	});
+}
+
+-(void)_downloadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey
+				infoKey:(NSString *)infoKey binaryInfo:(NSDictionary *)binaryInfo
+{
 	// Is Simperium authenticated?
 	if(self.simperium.user.authenticated == NO) {
 		return;
@@ -146,14 +155,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	NSString *remoteHash		= binaryInfo[SPBinaryManagerHashKey];
 	NSNumber *remoteMtime		= binaryInfo[SPBinaryManagerModificationTimeKey];
 
-	@synchronized(self) {
-		if ([localHash isEqual:remoteHash] || [self.downloads containsObject:remoteHash] || [self.uploads containsObject:remoteHash]) {
-			return;
-		} else if(localMtime.intValue >= remoteMtime.intValue) {
-			return;
-		} else {
-			[self.downloads addObject:remoteHash];
-		}
+	if ([localHash isEqual:remoteHash] || [self.downloads containsObject:remoteHash] || [self.uploads containsObject:remoteHash]) {
+		return;
+	} else if(localMtime.intValue >= remoteMtime.intValue) {
+		return;
+	} else {
+		[self.downloads addObject:remoteHash];
 	}
 		
 	// Prepare the request
@@ -178,11 +185,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	request.selectorSuccess = @selector(downloadSuccess:);
 	request.selectorFailed = @selector(downloadFailed:);
 	
-	// Cancel previous requests with the same URL
-	[self.httpRequestsQueue cancelRequestsWithURL:url];
-	
 	// Go!
-	[self.httpRequestsQueue enqueueHttpRequest:request];
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[self.httpRequestsQueue cancelRequestsWithURL:url];
+		[self.httpRequestsQueue enqueueHttpRequest:request];
+	});
 }
 
 
@@ -268,6 +275,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)uploadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey
 			  infoKey:(NSString *)infoKey binaryData:(NSData *)binaryData
 {
+	dispatch_async(self.binaryManagerQueue, ^{
+		[self _uploadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:dataKey infoKey:infoKey binaryData:binaryData];
+	});
+}
+
+-(void)_uploadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey
+			   infoKey:(NSString *)infoKey binaryData:(NSData *)binaryData
+{
 	// Is Simperium authenticated?
 	if(self.simperium.user.authenticated == NO) {
 		return;
@@ -280,12 +295,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	NSString *localHash  = [NSString sp_md5StringFromData:binaryData];
 	NSString *remoteHash = self.localMetadata[url.absoluteString][SPBinaryManagerHashKey];
 	
-	@synchronized(self) {
-		if ([localHash isEqualToString:remoteHash] || [self.uploads containsObject:localHash]) {
-			return;
-		} else {
-			[self.uploads addObject:localHash];
-		}
+	if ([localHash isEqualToString:remoteHash] || [self.uploads containsObject:localHash]) {
+		return;
+	} else {
+		[self.uploads addObject:localHash];
 	}
 	
 	// Prepare the request
@@ -311,11 +324,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	request.selectorSuccess = @selector(uploadSuccess:);
 	request.selectorFailed = @selector(uploadFailed:);
 	
-	// Cancel previous requests with the same URL
-	[self.httpRequestsQueue cancelRequestsWithURL:url];
-	
-	// Go!
-	[self.httpRequestsQueue enqueueHttpRequest:request];
+	// Cancel previous requests with the same URL & Enqueue this request!
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[self.httpRequestsQueue cancelRequestsWithURL:url];
+		[self.httpRequestsQueue enqueueHttpRequest:request];
+	});
 }
 
 

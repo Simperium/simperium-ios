@@ -86,8 +86,10 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 	return self;
 }
 
-#warning TODO: Persistance
 
+#pragma mark ====================================================================================
+#pragma mark Private Methods: Custom getters
+#pragma mark ====================================================================================
 
 -(NSData *)responseData
 {
@@ -104,7 +106,6 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 	
 	return responseString;
 }
-
 
 
 #pragma mark ====================================================================================
