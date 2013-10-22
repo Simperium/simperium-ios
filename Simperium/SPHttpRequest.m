@@ -33,6 +33,7 @@
 
 @interface SPHttpRequest ()
 @property (nonatomic, strong, readwrite) NSURL *url;
+@property (nonatomic, assign, readwrite)  int statusCode;
 @property (nonatomic, assign, readwrite) SPHttpRequestMethods method;
 @property (nonatomic, assign, readwrite) float uploadProgress;
 
@@ -189,6 +190,23 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
     self.responseMutable.length = 0;
     self.lastActivityDate = [NSDate date];
 	self.encoding = [response encoding];
+	
+	// Ref: http://stackoverflow.com/questions/6918760/nsurlconnectiondelegate-getting-http-status-codes
+	if ([response isKindOfClass:[NSHTTPURLResponse class]])
+	{
+		NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
+		self.statusCode = (int)[httpResponse statusCode];
+	}
+	else
+	{
+		self.statusCode = 501;
+	}
+	
+	if (self.statusCode >= 400)
+	{
+		NSError *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:self.statusCode userInfo:nil];
+		[self connection:connection didFailWithError:error];
+	}
 }
 
 -(void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data

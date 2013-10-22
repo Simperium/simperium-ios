@@ -32,10 +32,10 @@
 //		- Delete an object before download is complete
 //		- What if a remote change comes in, while there was another download/upload?  >> CANCEL previous download/upload!
 //		- What if a local change is performed while a download/upload was in progress?	>> CANCEL previous download/upload if any!!
-//		- What if the exact same file is already being downloaded?
+//		- What if the exact same file is already being downloaded / was downloaded / is being uploaded ?
 //		- What if a remote change comes in, and the object was locally changed but not saved?
 //		- What if we set a NIL value?
-//		- What if we set again the same NSData?. (Hash should be the equal)
+//		- What if a NSData is already uploaded / being uploaded?
 //
 //    [self createAndStartFarms];
 //        

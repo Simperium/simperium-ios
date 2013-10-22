@@ -31,6 +31,8 @@
 @implementation SPHttpRequestQueue
 
 #warning TODO: Init should have a label
+#warning TODO: Can we simplify this?
+
 -(id)init
 {
     if((self = [super init]))

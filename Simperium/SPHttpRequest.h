@@ -32,6 +32,7 @@ typedef NS_ENUM(NSUInteger, SPHttpRequestErrors) {
 @interface SPHttpRequest : NSObject
 
 @property (nonatomic, strong, readonly)  NSURL *url;
+@property (nonatomic, assign, readonly)  int statusCode;
 @property (nonatomic, strong, readonly)  NSData* responseData;
 @property (nonatomic, strong, readonly)  NSString* responseString;
 @property (nonatomic, strong, readonly)  NSError* error;
