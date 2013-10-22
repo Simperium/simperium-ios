@@ -211,12 +211,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)downloadFailed:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium error [%@] while downloading binary at URL: %@", request.error, request.url);
+	DDLogWarn(@"Simperium error [%@] while downloading binary at URL: %@", request.responseError, request.url);
 	
 	[self.downloads removeObject:request.userInfo[SPBinaryManagerHashKey]];
 	
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadFailed:error:)] ) {
-		[self.delegate binaryDownloadFailed:request.userInfo error:request.error];
+		[self.delegate binaryDownloadFailed:request.userInfo error:request.responseError];
 	}
 }
 
@@ -343,13 +343,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)uploadFailed:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium error [%@] while uploading binary to URL: %@", request.error, request.url);
+	DDLogWarn(@"Simperium error [%@] while uploading binary to URL: %@", request.responseError, request.url);
 
 	NSString *hash = request.userInfo[SPBinaryManagerHashKey];
 	[self.uploads removeObject:hash];
 	
 	if( [self.delegate respondsToSelector:@selector(binaryUploadFailed:error:)] ) {
-		[self.delegate binaryUploadFailed:request.userInfo error:request.error];
+		[self.delegate binaryUploadFailed:request.userInfo error:request.responseError];
 	}
 }
 

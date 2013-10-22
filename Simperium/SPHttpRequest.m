@@ -10,6 +10,10 @@
 #import "SPHttpRequestQueue.h"
 #import "NSURLResponse+Simperium.h"
 
+#if TARGET_OS_IPHONE
+	// Needed for background task support
+	#import <UIKit/UIKit.h>
+#endif
 
 
 #pragma mark ====================================================================================
@@ -32,18 +36,24 @@
 #pragma mark ====================================================================================
 
 @interface SPHttpRequest ()
-@property (nonatomic, weak,   readwrite) SPHttpRequestQueue *httpRequestQueue;
-@property (nonatomic, strong, readwrite) NSURL *url;
-@property (nonatomic, assign, readwrite) int statusCode;
-@property (nonatomic, assign, readwrite) SPHttpRequestMethods method;
-@property (nonatomic, assign, readwrite) float uploadProgress;
+@property (nonatomic, weak,   readwrite) SPHttpRequestQueue			*httpRequestQueue;
+@property (nonatomic, assign, readwrite) SPHttpRequestMethods		method;
 
-@property (nonatomic, strong, readwrite) NSURLConnection *connection;
-@property (nonatomic, assign, readwrite) NSStringEncoding encoding;
-@property (nonatomic, strong, readwrite) NSMutableData *responseMutable;
-@property (nonatomic, strong, readwrite) NSError *error;
-@property (nonatomic, assign, readwrite) NSUInteger retryCount;
-@property (nonatomic, strong, readwrite) NSDate *lastActivityDate;
+#if TARGET_OS_IPHONE
+@property (nonatomic, assign, readwrite) BOOL						shouldContinueWhenAppEntersBackground;
+@property (nonatomic, assign, readwrite) UIBackgroundTaskIdentifier	backgroundTask;
+#endif
+
+@property (nonatomic, strong, readwrite) NSURL						*url;
+@property (nonatomic, assign, readwrite) float						uploadProgress;
+@property (nonatomic, assign, readwrite) int						responseCode;
+@property (nonatomic, strong, readwrite) NSMutableData				*responseMutable;
+@property (nonatomic, strong, readwrite) NSError					*responseError;
+
+@property (nonatomic, strong, readwrite) NSURLConnection			*connection;
+@property (nonatomic, assign, readwrite) NSStringEncoding			encoding;
+@property (nonatomic, assign, readwrite) NSUInteger					retryCount;
+@property (nonatomic, strong, readwrite) NSDate						*lastActivityDate;
 @end
 
 
@@ -66,17 +76,17 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 	if((self = [super init])) {
 		self.url = url;
 		self.method = method;
+		
+#if TARGET_OS_IPHONE
+		self.shouldContinueWhenAppEntersBackground = YES;
+		self.backgroundTask = UIBackgroundTaskInvalid;
+#endif
 	}
 		
 	return self;
 }
 
 #warning TODO: Persistance
-#warning TODO: iOS BG
-
-//#if TARGET_OS_IPHONE
-//request.shouldContinueWhenAppEntersBackground = YES;
-//#endif
 
 
 -(NSData *)responseData
@@ -96,6 +106,50 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 }
 
 
+
+#pragma mark ====================================================================================
+#pragma mark Private Methods: iOS Background support
+#pragma mark ====================================================================================
+
+-(void)beginBackgroundTask
+{
+#if TARGET_OS_IPHONE
+	if (!self.shouldContinueWhenAppEntersBackground)
+	{
+		return;
+	}
+	
+	self.backgroundTask = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+		dispatch_async(dispatch_get_main_queue(), ^{
+			if (self.backgroundTask != UIBackgroundTaskInvalid)
+			{
+				[[UIApplication sharedApplication] endBackgroundTask:self.backgroundTask];
+				self.backgroundTask = UIBackgroundTaskInvalid;
+				[self cancel];
+			}
+		});
+	}];
+#endif
+}
+
+-(void)endBackgroundTasks
+{
+#if TARGET_OS_IPHONE
+	if (!self.shouldContinueWhenAppEntersBackground)
+	{
+		return;
+	}
+	
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if (self.backgroundTask != UIBackgroundTaskInvalid) {
+			[[UIApplication sharedApplication] endBackgroundTask:self.backgroundTask];
+			self.backgroundTask = UIBackgroundTaskInvalid;
+		}
+	});
+#endif
+}
+
+
 #pragma mark ====================================================================================
 #pragma mark Protected Methods: Called from SPHttpRequestQueue
 #pragma mark ====================================================================================
@@ -107,6 +161,8 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
     self.lastActivityDate = [NSDate date];
     self.connection = [[NSURLConnection alloc] initWithRequest:self.request delegate:self startImmediately:NO];
     
+	[self beginBackgroundTask];
+	
 	[self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 	[self.connection start];
 	
@@ -124,6 +180,9 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
     // Disable the timeout check
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     
+	// Warp up BG task
+	[self endBackgroundTasks];
+	
     // Cleanup
     [self.connection cancel];
     self.connection = nil;
@@ -171,7 +230,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
         [self begin];
     } else {
 		if([self.delegate respondsToSelector:self.selectorFailed]) {
-			self.error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPHttpRequestErrorsTimeout userInfo:nil];			
+			self.responseError = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPHttpRequestErrorsTimeout userInfo:nil];			
 			SuppressPerformSelectorLeakWarning(
 				[self.delegate performSelector:self.selectorFailed withObject:self];
 			);
@@ -196,16 +255,16 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 	if ([response isKindOfClass:[NSHTTPURLResponse class]])
 	{
 		NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
-		self.statusCode = (int)[httpResponse statusCode];
+		self.responseCode = (int)[httpResponse statusCode];
 	}
 	else
 	{
-		self.statusCode = 501;
+		self.responseCode = 501;
 	}
 	
-	if (self.statusCode >= 400)
+	if (self.responseCode >= 400)
 	{
-		NSError *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:self.statusCode userInfo:nil];
+		NSError *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:self.responseCode userInfo:nil];
 		[self connection:connection didFailWithError:error];
 	}
 }
