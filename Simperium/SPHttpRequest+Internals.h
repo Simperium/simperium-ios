@@ -18,5 +18,4 @@
 @property (nonatomic, weak, readwrite) SPHttpRequestQueue *httpRequestQueue;
 -(void)begin;
 -(void)stop;
--(void)cancel;
 @end

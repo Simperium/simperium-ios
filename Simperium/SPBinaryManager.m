@@ -22,9 +22,8 @@
 
 #warning TODO: Don't upload if local mtime < remoteMtime
 #warning TODO: Resume on app relaunch: persistance
-#warning TODO: Handle logouts
 #warning TODO: Add retry mechanisms
-#warning TODO: Handle Nulls
+#warning TODO: Should Nulls be actually uploaded?
 
 
 #pragma mark ====================================================================================
@@ -82,7 +81,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (self = [super init]) {
 		// We'll have our own Http Queue: Multiple Simperium instances shouldn't interfere with each other
 		self.binaryManagerQueue = dispatch_queue_create("com.simperium.SPBinaryManager", NULL);
+	
 		self.httpRequestsQueue = [[SPHttpRequestQueue alloc] init];
+		self.httpRequestsQueue.enabled = NO;
 		
 		// Load local metadata
 		self.localMetadata = [NSMutableDictionary dictionary];
@@ -97,6 +98,27 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     return self;
+}
+
+-(void)start
+{
+	self.httpRequestsQueue.enabled = YES;
+}
+
+-(void)stop
+{
+	self.httpRequestsQueue.enabled = NO;
+}
+
+-(void)reset
+{
+	[self.httpRequestsQueue cancelAllRequest];
+	[self.downloads removeAllObjects];
+	[self.uploads removeAllObjects];
+	
+	// Nuke local metadata as well
+	[self.localMetadata removeAllObjects];
+	[self saveLocalMetadata];
 }
 
 
@@ -208,11 +230,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)downloadProgress:(SPHttpRequest *)request
 {
-	float progress = [request.userInfo[SPBinaryManagerLengthKey] floatValue] / (request.responseData.length * 1.0f);
-	DDLogWarn(@"Simperium downloaded [%f%%] of [%@]", progress, request.url);
+	DDLogWarn(@"Simperium downloaded [%.1f%%] of [%@]", request.downloadProgress, request.url);
 	
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadProgress:progress:)] ) {
-		[self.delegate binaryDownloadProgress:request.userInfo progress:progress];
+		[self.delegate binaryDownloadProgress:request.userInfo progress:request.downloadProgress];
 	}
 }
 
@@ -220,7 +241,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 {
 	DDLogWarn(@"Simperium error [%@] while downloading binary at URL: %@", request.responseError, request.url);
 	
-	[self.downloads removeObject:request.userInfo[SPBinaryManagerHashKey]];
+	NSString *hash = request.userInfo[SPBinaryManagerHashKey];
+	[self.downloads removeObject:hash];
 	
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadFailed:error:)] ) {
 		[self.delegate binaryDownloadFailed:request.userInfo error:request.responseError];
@@ -347,7 +369,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)uploadProgress:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium uploaded [%f.1%%] of [%@]", request.uploadProgress, request.url);
+	DDLogWarn(@"Simperium uploaded [%.1f%%] of [%@]", request.uploadProgress, request.url);
 	
 	if( [self.delegate respondsToSelector:@selector(binaryUploadProgress:progress:)] ) {
 		[self.delegate binaryUploadProgress:request.userInfo progress:request.uploadProgress];

@@ -30,6 +30,12 @@
 		_Pragma("clang diagnostic pop") \
 	} while (0)
 
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static NSString* const SPHttpRequestLengthKey = @"Content-Length";
+
 
 #pragma mark ====================================================================================
 #pragma mark Private
@@ -45,6 +51,8 @@
 #endif
 
 @property (nonatomic, strong, readwrite) NSURL						*url;
+@property (nonatomic, assign, readwrite) NSInteger					downloadLength;
+@property (nonatomic, assign, readwrite) float						downloadProgress;
 @property (nonatomic, assign, readwrite) float						uploadProgress;
 @property (nonatomic, assign, readwrite) int						responseCode;
 @property (nonatomic, strong, readwrite) NSMutableData				*responseMutable;
@@ -62,7 +70,7 @@
 #pragma mark ====================================================================================
 
 static NSTimeInterval const SPHttpRequestQueueTimeout	= 30;
-static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
+static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 
 
 #pragma mark ====================================================================================
@@ -126,7 +134,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 			{
 				[[UIApplication sharedApplication] endBackgroundTask:self.backgroundTask];
 				self.backgroundTask = UIBackgroundTaskInvalid;
-				[self cancel];
+				[self stop];
 			}
 		});
 	}];
@@ -157,7 +165,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 
 -(void)begin
 {
-    ++_retryCount;
+    ++self.retryCount;
     self.responseMutable = [NSMutableData data];
     self.lastActivityDate = [NSDate date];
     self.connection = [[NSURLConnection alloc] initWithRequest:self.request delegate:self startImmediately:NO];
@@ -188,12 +196,6 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
     [self.connection cancel];
     self.connection = nil;
     self.responseMutable = nil;
-}
-
--(void)cancel
-{
-	self.delegate = nil;
-	[self stop];
 }
 
 
@@ -257,6 +259,9 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 	{
 		NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
 		self.responseCode = (int)[httpResponse statusCode];
+		
+		NSString *length = httpResponse.allHeaderFields[SPHttpRequestLengthKey];
+		self.downloadLength = [length intValue];
 	}
 	else
 	{
@@ -274,6 +279,8 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 {
     [self.responseMutable appendData:data];
     self.lastActivityDate = [NSDate date];
+	
+	self.downloadProgress = self.responseMutable.length * 1.0f / self.downloadLength * 1.0f;
 	
 	if([self.delegate respondsToSelector:self.selectorProgress]) {
 		SuppressPerformSelectorLeakWarning(
@@ -308,6 +315,12 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 3;
 {
     self.lastActivityDate = [NSDate date];
 	self.uploadProgress = totalBytesWritten * 1.0f / totalBytesExpectedToWrite * 1.0f;
+	
+	if([self.delegate respondsToSelector:self.selectorProgress]) {
+		SuppressPerformSelectorLeakWarning(
+			[self.delegate performSelector:self.selectorProgress withObject:self];
+		);
+	}
 }
 
 

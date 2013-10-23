@@ -280,6 +280,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSString *nameOverride = [bucketOverrides objectForKey:bucket.name];
         [bucket.network start:bucket name:nameOverride && nameOverride.length > 0 ? nameOverride : bucket.name];
 	}
+	
+	[self.binaryManager start];
+	
     networkManagersStarted = YES;
 }
 
@@ -292,6 +295,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     for (SPBucket *bucket in [buckets allValues]) {
         [bucket.network stop:bucket];
     }
+	
+	[self.binaryManager stop];
+	
     networkManagersStarted = NO;
 }
 
@@ -310,7 +316,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)handleNetworkChange:(NSNotification *)notification
 {
-#warning TODO: Start/STOP BinaryManager
 	if ([self.reachability currentReachabilityStatus] == NotReachable) {
         [self stopNetworkManagers];
     } else if(self.user.authenticated) {
@@ -587,6 +592,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         skipContextProcessing = NO;
     }
     
+	// Reset the binary manager!
+	[self.binaryManager reset];
+	
     // Clear the token and user
     [authenticator reset];
     self.user = nil;
@@ -617,7 +625,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token
 {
-#warning TODO: Start BinaryManager
     // It's now safe to start the network managers
     [self startNetworking];
         

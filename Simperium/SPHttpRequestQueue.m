@@ -103,6 +103,19 @@ static NSInteger const SPHttpRequestsMaxConcurrentDownloads = 10;
 	_enabled = enabled;
 	if(enabled) {
 		[self processNextRequest];
+	} else {
+		// No active requests?. We're cool then.
+		if(self.activeRequests.count == 0) {
+			return;
+		}
+		
+		// Re-enqueue all active requests
+		[self.activeRequests makeObjectsPerformSelector:@selector(stop)];
+		
+		dispatch_sync(self.queueLock, ^(void) {
+			[self.pendingRequests addObjectsFromArray:self.activeRequests];
+			[self.activeRequests removeAllObjects];
+		});
 	}
 }
 
@@ -112,8 +125,8 @@ static NSInteger const SPHttpRequestsMaxConcurrentDownloads = 10;
 		return;
 	}
 		
-    [self.activeRequests makeObjectsPerformSelector:@selector(cancel)];
-    [self.pendingRequests makeObjectsPerformSelector:@selector(cancel)];
+    [self.activeRequests makeObjectsPerformSelector:@selector(stop)];
+    [self.pendingRequests makeObjectsPerformSelector:@selector(stop)];
 	
     dispatch_sync(self.queueLock, ^(void) {
                       [self.activeRequests removeAllObjects];
@@ -123,11 +136,32 @@ static NSInteger const SPHttpRequestsMaxConcurrentDownloads = 10;
 
 -(void)cancelRequestsWithURL:(NSURL *)url
 {
-	for (SPHttpRequest *request in self.activeRequests){
+	NSSet *pendingCancelled = [self cancelRequestsWithURL:url fromQueue:self.activeRequests];
+	NSSet *activeCancelled = [self cancelRequestsWithURL:url fromQueue:self.activeRequests];
+		
+    dispatch_sync(self.queueLock, ^(void) {
+		[self.activeRequests removeObjectsInArray:activeCancelled.allObjects];
+		[self.pendingRequests removeObjectsInArray:pendingCancelled.allObjects];
+	});
+}
+
+
+#pragma mark ====================================================================================
+#pragma mark Private Helpers
+#pragma mark ====================================================================================
+
+-(NSSet *)cancelRequestsWithURL:(NSURL *)url fromQueue:(NSArray *)queue
+{
+	NSMutableSet *cancelled = [NSMutableSet set];
+	
+	for (SPHttpRequest *request in queue){
 		if([request.url isEqual:url]) {
-			[request cancel];
+			[request stop];
+			[cancelled addObject:request];
 		}
 	}
+	
+	return cancelled;
 }
 
 @end
