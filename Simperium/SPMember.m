@@ -93,18 +93,9 @@ static NSString * const SPOperationTypeKey = @"otype";
 
 - (NSDictionary *)policy
 {
-    if (_policy) {
-        _policy = [[NSMutableDictionary alloc] init];
-        if (self.type == SPMemberTypeTransformable) _policy[SPPolicyAttributesKey] = OP_REPLACE;
-        if (_operationType) _policy[SPPolicyAttributesKey] = _operationType;
-        if (self.type == SPMemberTypeEmbeddedRelatedEntity) {
-            for (SPMember *member in self.embeddedMembers) {
-                
-            }
-        }
-
+    if (!_policy) {
+        // TODO: Implement
     }
-    // TODO: implement so that tranformables do replace by default otherwise they'll just stringdiff
     return _policy;
 }
 

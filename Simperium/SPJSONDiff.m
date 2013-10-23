@@ -36,9 +36,10 @@ SPDiff * SPDiffObjects(id obj1, id obj2, NSDictionary *policy)
         double delta = [obj1 doubleValue] - [obj2 doubleValue];
         if (ABS(delta) < 0.00001) return nil;
     }
-
+    
+    // TODO: Obtain the operation type from the policy if possible
     Class class = [obj1 class] ?: [obj2 class];
-    NSString *operationType = policy[SPPolicyAttributesKey][SPOperationTypeKey] ?: SPOperationTypeForClass(class);
+    NSString *operationType =  SPOperationTypeForClass(class);
     
     if ([operationType isEqual:OP_REPLACE]) return @{ OP_OP: OP_REPLACE, OP_VALUE: obj2 }; // prematue-optimization
     if ([operationType isEqual:OP_STRING] && [obj1 isKindOfClass:[NSString class]] && [obj2 isKindOfClass:[NSString class]]) return @{ OP_OP: OP_STRING, OP_VALUE: [(NSString *)obj1 sp_stringDiffToTargetString:(NSString *)obj2] };
