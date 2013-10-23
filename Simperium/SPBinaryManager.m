@@ -23,7 +23,6 @@
 #warning TODO: Don't upload if local mtime < remoteMtime
 #warning TODO: Add retry mechanisms
 #warning TODO: Should Nulls be actually uploaded?
-#warning TODO: Local metadata path should be different per instance
 
 
 #pragma mark ====================================================================================
@@ -148,7 +147,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(NSString *)pendingSyncsPath
 {
-	return [[NSFileManager binaryDirectory] stringByAppendingPathComponent:SPBinaryManagerPendingSyncsFilename];
+	NSString *filename = [NSString stringWithFormat:@"%@%@", self.simperium.label, SPBinaryManagerPendingSyncsFilename];
+	return [[NSFileManager binaryDirectory] stringByAppendingPathComponent:filename];
 }
 
 -(void)loadPendingSyncs
@@ -166,7 +166,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(NSString *)localMetadataPath
 {
-	return [[NSFileManager binaryDirectory] stringByAppendingPathComponent:SPBinaryManagerMetadataFilename];
+	NSString *filename = [NSString stringWithFormat:@"%@%@", self.simperium.label, SPBinaryManagerMetadataFilename];
+	return [[NSFileManager binaryDirectory] stringByAppendingPathComponent:filename];
 }
 
 -(void)loadLocalMetadata
