@@ -30,6 +30,12 @@ SPDiff * SPDiffObjects(id obj1, id obj2, NSDictionary *policy)
     if ([obj1 isEqual:obj2]) return nil;
     if (!obj1 && obj2) return @{ OP_OP: OP_OBJECT_ADD, OP_VALUE: obj2 };
     if (!obj2 && obj1) return @{ OP_OP: OP_OBJECT_REMOVE };
+    
+    // Allow for floating point rounding variance
+    if ([obj1 isKindOfClass:[NSNumber class]] && [obj2 isKindOfClass:[NSNumber class]]) {
+        double delta = [obj1 doubleValue] - [obj2 doubleValue];
+        if (ABS(delta) < 0.00001) return nil;
+    }
 
     Class class = [obj1 class] ?: [obj2 class];
     NSString *operationType = policy[SPPolicyAttributesKey][SPOperationTypeKey] ?: SPOperationTypeForClass(class);
