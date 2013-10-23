@@ -26,5 +26,6 @@
 
 -(void)cancelAllRequest;
 -(void)cancelRequestsWithURL:(NSURL *)url;
+-(BOOL)hasRequestWithTag:(NSString *)tag;
 
 @end

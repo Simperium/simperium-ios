@@ -16,7 +16,7 @@
 extern NSString* const SPBinaryManagerBucketNameKey;
 extern NSString* const SPBinaryManagerSimperiumKey;
 extern NSString* const SPBinaryManagerAttributeDataKey;
-extern NSString* const SPBinaryManagerLengthKey;
+extern NSString* const SPBinaryManagerAttributeInfoKey;
 extern NSString* const SPBinaryManagerHashKey;
 
 

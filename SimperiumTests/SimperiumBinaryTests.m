@@ -40,6 +40,7 @@
 //		-	What if you loose connectivity?
 //		-	What if the user logs out?
 //		-	Test Backgrounding
+//		-	Test Resume
 //
 //    [self createAndStartFarms];
 //        

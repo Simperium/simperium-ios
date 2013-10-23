@@ -145,6 +145,21 @@ static NSInteger const SPHttpRequestsMaxConcurrentDownloads = 10;
 	});
 }
 
+-(BOOL)hasRequestWithTag:(NSString *)tag
+{
+	NSMutableSet *allRequests = [NSMutableSet set];
+	[allRequests addObjectsFromArray:self.activeRequests];
+	[allRequests addObjectsFromArray:self.pendingRequests];
+	
+	for(SPHttpRequest *request in allRequests) {
+		if([request.tag isEqualToString:tag]) {
+			return YES;
+		}
+	}
+	
+	return NO;
+}
+
 
 #pragma mark ====================================================================================
 #pragma mark Private Helpers

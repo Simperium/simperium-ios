@@ -41,6 +41,7 @@ typedef NS_ENUM(NSUInteger, SPHttpRequestErrors) {
 
 @property (nonatomic, assign, readwrite) SPHttpRequestMethods	method;
 @property (nonatomic, strong, readwrite) NSDictionary			*headers;
+@property (nonatomic, strong, readwrite) NSString				*tag;
 @property (nonatomic, strong, readwrite) NSDictionary			*userInfo;
 @property (nonatomic, strong, readwrite) NSData					*postData;
 
