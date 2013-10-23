@@ -43,7 +43,6 @@ static NSString* const SPHttpRequestLengthKey = @"Content-Length";
 
 @interface SPHttpRequest ()
 @property (nonatomic, weak,   readwrite) SPHttpRequestQueue			*httpRequestQueue;
-@property (nonatomic, assign, readwrite) SPHttpRequestMethods		method;
 
 #if TARGET_OS_IPHONE
 @property (nonatomic, assign, readwrite) BOOL						shouldContinueWhenAppEntersBackground;
@@ -79,11 +78,11 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 
 @implementation SPHttpRequest
 
--(id)initWithURL:(NSURL*)url method:(SPHttpRequestMethods)method
+-(id)initWithURL:(NSURL*)url
 {
 	if((self = [super init])) {
 		self.url = url;
-		self.method = method;
+		self.method = SPHttpRequestMethodsGet;
 		
 #if TARGET_OS_IPHONE
 		self.shouldContinueWhenAppEntersBackground = YES;
@@ -328,9 +327,9 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 #pragma mark Static Helpers
 #pragma mark ====================================================================================
 
-+(SPHttpRequest *)requestWithURL:(NSURL*)url method:(SPHttpRequestMethods)method
++(SPHttpRequest *)requestWithURL:(NSURL*)url
 {
-	return [[self alloc] initWithURL:url method:method];
+	return [[self alloc] initWithURL:url];
 }
 
 @end
