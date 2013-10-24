@@ -24,4 +24,8 @@
 -(void)uploadIfNeeded:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey dataKey:(NSString *)dataKey
 			  infoKey:(NSString *)infoKey binaryData:(NSData *)binaryData;
 
+-(void)start;
+-(void)stop;
+-(void)reset;
+
 @end
