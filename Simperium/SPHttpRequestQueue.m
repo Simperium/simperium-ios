@@ -58,9 +58,9 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 -(void)enqueueHttpRequest:(SPHttpRequest*)httpRequest
 {
     dispatch_sync(self.queueLock, ^(void) {
-					httpRequest.httpRequestQueue = self;
-                    [self.pendingRequests addObject:httpRequest];
-                  });
+		httpRequest.httpRequestQueue = self;
+		[self.pendingRequests addObject:httpRequest];
+	});
     
     [self processNextRequest];
 }
@@ -70,14 +70,14 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 	[httpRequest stop];
 	
     dispatch_sync(self.queueLock, ^(void) {
-                      if([self.pendingRequests containsObject:httpRequest]) {
-                          [self.pendingRequests removeObject:httpRequest];
-					  }
-                      
-                      if([self.activeRequests containsObject:httpRequest]) {
-                          [self.activeRequests removeObject:httpRequest];
-                      }
-                  });
+		if([self.pendingRequests containsObject:httpRequest]) {
+			[self.pendingRequests removeObject:httpRequest];
+		}
+
+		if([self.activeRequests containsObject:httpRequest]) {
+			[self.activeRequests removeObject:httpRequest];
+		}
+	});
     
     [self processNextRequest];
 }
@@ -88,14 +88,18 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
         return;
     }
     
+	__block __strong SPHttpRequest* nextRequest = nil;
+	
     dispatch_sync(self.queueLock, ^(void) {
-                      SPHttpRequest* nextRequest = [self.pendingRequests objectAtIndex:0];
-                      
-                      [self.activeRequests addObject:nextRequest];
-                      [self.pendingRequests removeObjectAtIndex:0];
-                      
-					  [nextRequest begin];
-                  });
+		nextRequest = [self.pendingRequests objectAtIndex:0];
+
+		[self.activeRequests addObject:nextRequest];
+		[self.pendingRequests removeObjectAtIndex:0];
+	});
+	
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[nextRequest begin];
+	});
 }
 
 -(void)setEnabled:(BOOL)enabled
@@ -103,21 +107,22 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 	_enabled = enabled;
 	if(enabled) {
 		[self processNextRequest];
-	} else {
-		// No active requests?. We're cool then.
-		if(self.activeRequests.count == 0) {
-			return;
-		}
-		
-		dispatch_sync(self.queueLock, ^(void) {
-			// Stop please!
-			[self.activeRequests makeObjectsPerformSelector:@selector(stop)];
-			
-			// Re-enqueue all active requests
-			[self.pendingRequests addObjectsFromArray:self.activeRequests];
-			[self.activeRequests removeAllObjects];
-		});
+		return;
 	}
+	
+	// No active requests?. We're cool then.
+	if(self.activeRequests.count == 0) {
+		return;
+	}
+	
+	dispatch_sync(self.queueLock, ^(void) {
+		// Stop please!
+		[self.activeRequests makeObjectsPerformSelector:@selector(stop)];
+		
+		// Re-enqueue all active requests
+		[self.pendingRequests addObjectsFromArray:self.activeRequests];
+		[self.activeRequests removeAllObjects];
+	});
 }
 
 
@@ -139,17 +144,17 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 	}
 			
     dispatch_sync(self.queueLock, ^(void) {
-					[self.activeRequests makeObjectsPerformSelector:@selector(stop)];
-					[self.pendingRequests makeObjectsPerformSelector:@selector(stop)];
-                    [self.activeRequests removeAllObjects];
-                    [self.pendingRequests removeAllObjects];
-                  });
+		[self.activeRequests makeObjectsPerformSelector:@selector(stop)];
+		[self.pendingRequests makeObjectsPerformSelector:@selector(stop)];
+		[self.activeRequests removeAllObjects];
+		[self.pendingRequests removeAllObjects];
+	});
 }
 
 -(void)cancelRequestsWithURL:(NSURL *)url
 {
 	dispatch_sync(self.queueLock, ^(void) {
-		NSSet *pendingCancelled = [self cancelRequestsWithURL:url fromQueue:self.activeRequests];
+		NSSet *pendingCancelled = [self cancelRequestsWithURL:url fromQueue:self.pendingRequests];
 		NSSet *activeCancelled = [self cancelRequestsWithURL:url fromQueue:self.activeRequests];
 		
 		[self.activeRequests removeObjectsInArray:activeCancelled.allObjects];
