@@ -30,11 +30,13 @@
 		_Pragma("clang diagnostic pop") \
 	} while (0)
 
+
 #pragma mark ====================================================================================
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSString* const SPHttpRequestLengthKey = @"Content-Length";
+static NSString* const SPHttpRequestLengthKey		= @"Content-Length";
+static float const SPHttpRequestProgressThreshold	= 0.2;
 
 
 #pragma mark ====================================================================================
@@ -50,6 +52,7 @@ static NSString* const SPHttpRequestLengthKey = @"Content-Length";
 #endif
 
 @property (nonatomic, strong, readwrite) NSURL						*url;
+@property (nonatomic, assign, readwrite) SPHttpRequestStatus		status;
 @property (nonatomic, assign, readwrite) NSInteger					downloadLength;
 @property (nonatomic, assign, readwrite) float						downloadProgress;
 @property (nonatomic, assign, readwrite) float						uploadProgress;
@@ -61,6 +64,8 @@ static NSString* const SPHttpRequestLengthKey = @"Content-Length";
 @property (nonatomic, assign, readwrite) NSStringEncoding			encoding;
 @property (nonatomic, assign, readwrite) NSUInteger					retryCount;
 @property (nonatomic, strong, readwrite) NSDate						*lastActivityDate;
+@property (nonatomic, assign, readwrite) float						lastReportedDownloadProgress;
+@property (nonatomic, assign, readwrite) float						lastReportedUploadProgress;
 @end
 
 
@@ -83,6 +88,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 	if((self = [super init])) {
 		self.url = url;
 		self.method = SPHttpRequestMethodsGet;
+		self.status	= SPHttpRequestStatusWorking;
 		
 #if TARGET_OS_IPHONE
 		self.shouldContinueWhenAppEntersBackground = YES;
@@ -165,6 +171,8 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 -(void)begin
 {
     ++self.retryCount;
+	self.lastReportedDownloadProgress = 0;
+	self.lastReportedUploadProgress = 0;
     self.responseMutable = [NSMutableData data];
     self.lastActivityDate = [NSDate date];
     self.connection = [[NSURLConnection alloc] initWithRequest:self.request delegate:self startImmediately:NO];
@@ -280,6 +288,16 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
     self.lastActivityDate = [NSDate date];
 	
 	self.downloadProgress = self.responseMutable.length * 1.0f / self.downloadLength * 1.0f;
+
+	// Calculate the progress
+	self.downloadProgress = self.responseMutable.length * 1.0f / self.downloadLength * 1.0f;
+	
+	// Hit the delegate only if the delta is above the threshold. Don't spam our delegate
+	if((_downloadProgress - _lastReportedDownloadProgress) < SPHttpRequestProgressThreshold) {
+		return;
+	}
+	
+	self.lastReportedDownloadProgress = self.downloadProgress;
 	
 	if([self.delegate respondsToSelector:self.selectorProgress]) {
 		SuppressPerformSelectorLeakWarning(
@@ -290,30 +308,44 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 
 -(void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
+	self.responseError = error;
+	self.status	= SPHttpRequestStatusDone;
+	
 	if([self.delegate respondsToSelector:self.selectorFailed]) {
 		SuppressPerformSelectorLeakWarning(
 			[self.delegate performSelector:self.selectorFailed withObject:self];
 		);
 	}
-
+	
 	[self.httpRequestQueue dequeueHttpRequest:self];
 }
 
 -(void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
+	self.status	= SPHttpRequestStatusDone;
+	
 	if([self.delegate respondsToSelector:self.selectorSuccess]) {
 		SuppressPerformSelectorLeakWarning(
 			[self.delegate performSelector:self.selectorSuccess withObject:self];
 		);
 	}
-
+	
 	[self.httpRequestQueue dequeueHttpRequest:self];
 }
 
 -(void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
 {
     self.lastActivityDate = [NSDate date];
+	
+	// Calculate the progress
 	self.uploadProgress = totalBytesWritten * 1.0f / totalBytesExpectedToWrite * 1.0f;
+	
+	// Hit the delegate only if the delta is above the threshold. Don't spam our delegate
+	if((_uploadProgress - _lastReportedUploadProgress) < SPHttpRequestProgressThreshold) {
+		return;
+	}
+	
+	self.lastReportedUploadProgress = self.uploadProgress;
 	
 	if([self.delegate respondsToSelector:self.selectorProgress]) {
 		SuppressPerformSelectorLeakWarning(

@@ -15,7 +15,7 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSInteger const SPHttpRequestsMaxConcurrentDownloads = 10;
+static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 
 
 #pragma mark ====================================================================================
@@ -43,7 +43,7 @@ static NSInteger const SPHttpRequestsMaxConcurrentDownloads = 10;
     {
         self.queueLock = dispatch_queue_create("com.simperium.SPHttpRequestQueue", NULL);
 		self.enabled = true;
-		self.maxConcurrentConnections = SPHttpRequestsMaxConcurrentDownloads;
+		self.maxConcurrentConnections = SPHttpRequestsMaxConcurrentRequests;
         self.pendingRequests = [NSMutableArray array];
         self.activeRequests = [NSMutableArray array];
     }
@@ -109,14 +109,27 @@ static NSInteger const SPHttpRequestsMaxConcurrentDownloads = 10;
 			return;
 		}
 		
-		// Re-enqueue all active requests
-		[self.activeRequests makeObjectsPerformSelector:@selector(stop)];
-		
 		dispatch_sync(self.queueLock, ^(void) {
+			// Stop please!
+			[self.activeRequests makeObjectsPerformSelector:@selector(stop)];
+			
+			// Re-enqueue all active requests
 			[self.pendingRequests addObjectsFromArray:self.activeRequests];
 			[self.activeRequests removeAllObjects];
 		});
 	}
+}
+
+
+-(NSSet *)requests
+{
+	NSMutableSet *requests = [NSMutableSet set];
+    dispatch_sync(self.queueLock, ^(void) {
+		[requests addObjectsFromArray:self.activeRequests];
+		[requests addObjectsFromArray:self.pendingRequests];
+	});
+	
+	return requests;
 }
 
 -(void)cancelAllRequest
@@ -124,40 +137,24 @@ static NSInteger const SPHttpRequestsMaxConcurrentDownloads = 10;
 	if( (self.activeRequests.count == 0) && (self.pendingRequests.count == 0) ) {
 		return;
 	}
-		
-    [self.activeRequests makeObjectsPerformSelector:@selector(stop)];
-    [self.pendingRequests makeObjectsPerformSelector:@selector(stop)];
-	
+			
     dispatch_sync(self.queueLock, ^(void) {
-                      [self.activeRequests removeAllObjects];
-                      [self.pendingRequests removeAllObjects];
+					[self.activeRequests makeObjectsPerformSelector:@selector(stop)];
+					[self.pendingRequests makeObjectsPerformSelector:@selector(stop)];
+                    [self.activeRequests removeAllObjects];
+                    [self.pendingRequests removeAllObjects];
                   });
 }
 
 -(void)cancelRequestsWithURL:(NSURL *)url
 {
-	NSSet *pendingCancelled = [self cancelRequestsWithURL:url fromQueue:self.activeRequests];
-	NSSet *activeCancelled = [self cancelRequestsWithURL:url fromQueue:self.activeRequests];
+	dispatch_sync(self.queueLock, ^(void) {
+		NSSet *pendingCancelled = [self cancelRequestsWithURL:url fromQueue:self.activeRequests];
+		NSSet *activeCancelled = [self cancelRequestsWithURL:url fromQueue:self.activeRequests];
 		
-    dispatch_sync(self.queueLock, ^(void) {
 		[self.activeRequests removeObjectsInArray:activeCancelled.allObjects];
 		[self.pendingRequests removeObjectsInArray:pendingCancelled.allObjects];
 	});
-}
-
--(BOOL)hasRequestWithTag:(NSString *)tag
-{
-	NSMutableSet *allRequests = [NSMutableSet set];
-	[allRequests addObjectsFromArray:self.activeRequests];
-	[allRequests addObjectsFromArray:self.pendingRequests];
-	
-	for(SPHttpRequest *request in allRequests) {
-		if([request.tag isEqualToString:tag]) {
-			return YES;
-		}
-	}
-	
-	return NO;
 }
 
 

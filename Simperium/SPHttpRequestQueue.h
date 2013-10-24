@@ -19,6 +19,7 @@
 @interface SPHttpRequestQueue : NSObject
 
 @property (nonatomic, assign, readwrite) NSUInteger maxConcurrentConnections;
+@property (nonatomic, assign, readonly)  NSSet *requests;
 @property (nonatomic, assign, readwrite) BOOL enabled;
 
 -(void)enqueueHttpRequest:(SPHttpRequest*)httpRequest;
@@ -26,6 +27,5 @@
 
 -(void)cancelAllRequest;
 -(void)cancelRequestsWithURL:(NSURL *)url;
--(BOOL)hasRequestWithTag:(NSString *)tag;
 
 @end

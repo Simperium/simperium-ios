@@ -25,6 +25,11 @@ typedef NS_ENUM(NSUInteger, SPHttpRequestErrors) {
 	SPHttpRequestErrorsTimeout
 };
 
+typedef NS_ENUM(NSUInteger, SPHttpRequestStatus) {
+	SPHttpRequestStatusWorking,
+	SPHttpRequestStatusDone
+};
+
 
 #pragma mark ====================================================================================
 #pragma mark SPHttpRequest
@@ -32,6 +37,7 @@ typedef NS_ENUM(NSUInteger, SPHttpRequestErrors) {
 
 @interface SPHttpRequest : NSObject
 @property (nonatomic, strong, readonly)  NSURL					*url;
+@property (nonatomic, assign, readonly)  SPHttpRequestStatus	status;
 @property (nonatomic, assign, readonly)  float					downloadProgress;
 @property (nonatomic, assign, readonly)  float					uploadProgress;
 @property (nonatomic, assign, readonly)  int					responseCode;
@@ -41,7 +47,6 @@ typedef NS_ENUM(NSUInteger, SPHttpRequestErrors) {
 
 @property (nonatomic, assign, readwrite) SPHttpRequestMethods	method;
 @property (nonatomic, strong, readwrite) NSDictionary			*headers;
-@property (nonatomic, strong, readwrite) NSString				*tag;
 @property (nonatomic, strong, readwrite) NSDictionary			*userInfo;
 @property (nonatomic, strong, readwrite) NSData					*postData;
 
