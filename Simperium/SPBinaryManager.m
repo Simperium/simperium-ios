@@ -52,7 +52,7 @@ NS_ENUM(NSInteger, SPBinaryManagerOperations) {
 	SPBinaryManagerOperationsUpload
 };
 
-static int ddLogLevel = LOG_LEVEL_INFO;
+static int ddLogLevel = LOG_LEVEL_WARN;
 
 
 #pragma mark ====================================================================================
@@ -132,7 +132,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[self.activeDownloads removeAllObjects];
 	[self.activeUploads removeAllObjects];
 	
-	// Save pending syncs: (None!)
+	// Reset pending syncs
 	self.didResumeSyncs = NO;
 	[self savePendingSyncs];
 	
@@ -162,8 +162,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			self.didResumeSyncs = YES;
 		}
 		
-		NSArray *pendings = [NSMutableDictionary dictionaryWithContentsOfFile:self.pendingSyncsPath];
-		
+		NSArray *pendings = [NSArray arrayWithContentsOfFile:self.pendingSyncsPath];
 		for(NSDictionary *userInfo in pendings) {
 			[self resumePendingSync:userInfo];
 		}
@@ -201,14 +200,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	dispatch_async(self.binaryManagerQueue, ^{
 
 		NSMutableArray *pendingSyncs = [NSMutableArray array];
-		
 		for(SPHttpRequest *request in self.httpRequestsQueue.requests) {
 			if(request.userInfo && request.status != SPHttpRequestStatusDone) {
-				[pendingSyncs addObject:request];
+				[pendingSyncs addObject:request.userInfo];
 			}
 		}
 
-		[pendingSyncs writeToFile:self.pendingSyncsPath atomically:NO];
+		[pendingSyncs writeToFile:self.pendingSyncsPath atomically:YES];
 	});
 }
 
@@ -293,14 +291,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	request.selectorFailed = @selector(downloadFailed:);
 	
 	// Update: Active + Pendings Syncs
-	[self savePendingSyncs];
-	[self.activeDownloads setObject:remoteHash forKey:simperiumKey];
+	[self.httpRequestsQueue cancelRequestsWithURL:request.url];
+	[self.httpRequestsQueue enqueueHttpRequest:request];
 	
-	// Go!
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[self.httpRequestsQueue cancelRequestsWithURL:request.url];
-		[self.httpRequestsQueue enqueueHttpRequest:request];
-	});
+	// Update: Active + Pendings Syncs
+	[self.activeDownloads setObject:remoteHash forKey:simperiumKey];
+	[self savePendingSyncs];
 }
 
 
@@ -395,7 +391,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			   infoKey:(NSString *)infoKey binaryData:(NSData *)binaryData
 {
 	// Is Simperium authenticated?
-	if(self.simperium.user.authenticated == NO) {
+	if(!self.simperium.user.authenticated || !self.simperium.networkEnabled) {
 		return;
 	}
 	
@@ -430,15 +426,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	request.selectorSuccess = @selector(uploadSuccess:);
 	request.selectorFailed = @selector(uploadFailed:);
 	
-	// Update: Active + Pendings Syncs
-	[self savePendingSyncs];
-	[self.activeUploads setObject:localHash forKey:simperiumKey];
-	
 	// Cancel previous requests with the same URL & Enqueue this request!
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[self.httpRequestsQueue cancelRequestsWithURL:request.url];
-		[self.httpRequestsQueue enqueueHttpRequest:request];
-	});
+	[self.httpRequestsQueue cancelRequestsWithURL:request.url];
+	[self.httpRequestsQueue enqueueHttpRequest:request];
+	
+	// Update: Active + Pendings Syncs
+	[self.activeUploads setObject:localHash forKey:simperiumKey];
+	[self savePendingSyncs];
 }
 
 

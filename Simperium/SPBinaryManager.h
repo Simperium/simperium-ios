@@ -40,7 +40,4 @@ extern NSString* const SPBinaryManagerHashKey;
 
 @interface SPBinaryManager : NSObject
 @property (nonatomic, weak, readwrite) id<SPBinaryManagerDelegate> delegate;
--(void)start;
--(void)stop;
--(void)reset;
 @end
