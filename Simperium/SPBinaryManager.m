@@ -23,7 +23,8 @@
 #warning TODO: Don't upload if local mtime < remoteMtime
 #warning TODO: Add retry mechanisms
 #warning TODO: Should Nulls be actually uploaded?
-
+#warning TODO: What if a remote change comes in, and the object was locally changed but not saved?
+#warning TODO: Disable Logs
 
 #pragma mark ====================================================================================
 #pragma mark Notifications
@@ -64,20 +65,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 @property (nonatomic, weak,   readwrite) Simperium *simperium;
 
 @property (nonatomic, strong, readwrite) NSMutableDictionary *localMetadata;
-@property (nonatomic, strong, readwrite) NSMutableDictionary *pendingSyncs;
-@property (nonatomic, assign, readwrite) BOOL didReloadSyncs;
+@property (nonatomic, strong, readwrite) NSMutableDictionary *activeUploads;
+@property (nonatomic, strong, readwrite) NSMutableDictionary *activeDownloads;
+@property (nonatomic, assign, readwrite) BOOL didResumeSyncs;
 
--(NSString *)localMetadataPath;
 -(NSString *)pendingSyncsPath;
-
--(void)loadLocalMetadata;
--(void)saveLocalMetadata;
-
--(void)loadPendingSyncs;
+-(void)resumePendingSyncs;
+-(void)resumePendingSync:(NSDictionary *)syncInfo;
 -(void)savePendingSyncs;
 
--(void)reloadPendingSyncs;
--(BOOL)reloadPendingSync:(NSDictionary *)syncInfo;
+-(NSString *)localMetadataPath;
+-(void)loadLocalMetadata;
+-(void)saveLocalMetadata;
 
 -(SPHttpRequest *)requestForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey infoKey:(NSString *)infoKey;
 @end
@@ -95,15 +94,19 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		// We'll need this one!
         self.simperium = aSimperium;
 		
-		// We'll have our own Http Queue: Multiple Simperium instances shouldn't interfere with each other
+		// Wrap up local ops in a GCD queue
 		self.binaryManagerQueue = dispatch_queue_create("com.simperium.SPBinaryManager", NULL);
 	
+		// We'll have our own Http Queue: Multiple Simperium instances shouldn't interfere with each other
 		self.httpRequestsQueue = [[SPHttpRequestQueue alloc] init];
 		self.httpRequestsQueue.enabled = NO;
 		
-		// Load local metadata + pendings
+		// Active Upload/Download: simperiumKey >> hash
+		self.activeUploads = [NSMutableDictionary dictionary];
+		self.activeDownloads = [NSMutableDictionary dictionary];
+		
+		// Load local metadata
 		[self loadLocalMetadata];
-		[self loadPendingSyncs];
     }
     
     return self;
@@ -112,12 +115,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)start
 {
 	self.httpRequestsQueue.enabled = YES;
-	
-	// Proceed reloading syncs
-	if(!self.didReloadSyncs) {
-		[self reloadPendingSyncs];
-		self.didReloadSyncs = YES;
-	}
+	[self resumePendingSyncs];
 }
 
 -(void)stop
@@ -130,9 +128,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	// HttpRequest should stop now
 	[self.httpRequestsQueue cancelAllRequest];
 	
-	// No more pending syncs
-	self.didReloadSyncs = NO;
-	[self.pendingSyncs removeAllObjects];
+	// Cleanup
+	[self.activeDownloads removeAllObjects];
+	[self.activeUploads removeAllObjects];
+	
+	// Save pending syncs: (None!)
+	self.didResumeSyncs = NO;
 	[self savePendingSyncs];
 	
 	// Nuke local metadata as well
@@ -142,7 +143,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 
 #pragma mark ====================================================================================
-#pragma mark Persistance Helpers
+#pragma mark Persistance Helpers: Metadata
 #pragma mark ====================================================================================
 
 -(NSString *)pendingSyncsPath
@@ -151,18 +152,70 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	return [[NSFileManager binaryDirectory] stringByAppendingPathComponent:filename];
 }
 
--(void)loadPendingSyncs
+-(void)resumePendingSyncs
 {
-	self.pendingSyncs = [NSMutableDictionary dictionaryWithContentsOfFile:self.pendingSyncsPath];
+	dispatch_async(self.binaryManagerQueue, ^{
+		// Do this just once: performance please!
+		if(self.didResumeSyncs) {
+			return;
+		} else {
+			self.didResumeSyncs = YES;
+		}
+		
+		NSArray *pendings = [NSMutableDictionary dictionaryWithContentsOfFile:self.pendingSyncsPath];
+		
+		for(NSDictionary *userInfo in pendings) {
+			[self resumePendingSync:userInfo];
+		}
+	});
+}
+
+-(void)resumePendingSync:(NSDictionary *)syncInfo
+{
+	// Unwrap Parameters
+	NSString *bucketName	= syncInfo[SPBinaryManagerBucketNameKey];
+	NSString *simperiumKey	= syncInfo[SPBinaryManagerSimperiumKey];
+	NSString *dataKey		= syncInfo[SPBinaryManagerAttributeDataKey];
+	NSString *infoKey		= syncInfo[SPBinaryManagerAttributeInfoKey];
+	NSNumber *operation		= syncInfo[SPBinaryManagerOperation];
+	
+	// Download: Just go on
+	if(operation.intValue == SPBinaryManagerOperationsDownload)
+	{
+		[self _downloadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:dataKey infoKey:infoKey binaryInfo:syncInfo];
+		return;
+	}
+	
+	// Upload: Retrieve the data from the storage
+	id<SPStorageProvider> storage = [[[self.simperium bucketForName:bucketName] storage] threadSafeStorage];
+	id<SPDiffable> object = [storage objectForKey:simperiumKey bucketName:bucketName];
+	
+	if(object) {
+		NSData *binaryData = [[object simperiumValueForKey:dataKey] copy];
+		[self _uploadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:dataKey infoKey:infoKey binaryData:binaryData];
+	}
 }
 
 -(void)savePendingSyncs
 {
 	dispatch_async(self.binaryManagerQueue, ^{
-		[self.pendingSyncs writeToFile:self.pendingSyncsPath atomically:NO];
+
+		NSMutableArray *pendingSyncs = [NSMutableArray array];
+		
+		for(SPHttpRequest *request in self.httpRequestsQueue.requests) {
+			if(request.userInfo && request.status != SPHttpRequestStatusDone) {
+				[pendingSyncs addObject:request];
+			}
+		}
+
+		[pendingSyncs writeToFile:self.pendingSyncsPath atomically:NO];
 	});
 }
 
+
+#pragma mark ====================================================================================
+#pragma mark Persistance Helpers: Metadata
+#pragma mark ====================================================================================
 
 -(NSString *)localMetadataPath
 {
@@ -180,60 +233,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	dispatch_async(self.binaryManagerQueue, ^{
 		[self.localMetadata writeToFile:self.localMetadataPath atomically:NO];
 	});
-}
-
-
-#pragma mark ====================================================================================
-#pragma mark Private Methods: Sync Resuming!
-#pragma mark ====================================================================================
-
--(void)reloadPendingSyncs
-{
-	dispatch_async(self.binaryManagerQueue, ^{
-		NSMutableSet *failed = [NSMutableSet set];
-		
-		// Resume pending Syncs
-		for(NSString *hash in self.pendingSyncs.allKeys) {
-			NSDictionary *syncInfo = self.pendingSyncs[hash];
-			if(![self reloadPendingSync:syncInfo]) {
-				[failed addObject:hash];
-			}
-		}
-		
-		// Cleanup: Remove failed resume operations
-		if(failed.count) {
-			[self.pendingSyncs removeObjectsForKeys:failed.allObjects];
-			[self savePendingSyncs];
-		}
-	});
-}
-
--(BOOL)reloadPendingSync:(NSDictionary *)syncInfo
-{
-	// Unwrap Parameters
-	NSString *bucketName	= syncInfo[SPBinaryManagerBucketNameKey];
-	NSString *simperiumKey	= syncInfo[SPBinaryManagerSimperiumKey];
-	NSString *dataKey		= syncInfo[SPBinaryManagerAttributeDataKey];
-	NSString *infoKey		= syncInfo[SPBinaryManagerAttributeInfoKey];
-	NSNumber *operation		= syncInfo[SPBinaryManagerOperation];
-	
-	// Download: Just go on
-	if(operation.intValue == SPBinaryManagerOperationsDownload)
-	{
-		[self _downloadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:dataKey infoKey:infoKey binaryInfo:syncInfo];
-		return YES;
-	}
-
-	// Upload: Retrieve the data from the storage
-	id<SPStorageProvider> storage = [[[self.simperium bucketForName:bucketName] storage] threadSafeStorage];
-	id<SPDiffable> object = [storage objectForKey:simperiumKey bucketName:bucketName];
-	
-	if(object) {
-		NSData *binaryData = [[object simperiumValueForKey:dataKey] copy];
-		[self _uploadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:dataKey infoKey:infoKey binaryData:binaryData];
-	}
-	
-	return (object != nil);
 }
 
 
@@ -264,13 +263,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	NSString *remoteHash		= binaryInfo[SPBinaryManagerHashKey];
 	NSNumber *remoteMtime		= binaryInfo[SPBinaryManagerModificationTimeKey];
 
-	if ([localHash isEqual:remoteHash] || [self.httpRequestsQueue hasRequestWithTag:remoteHash]) {
+	if ([localHash isEqual:remoteHash] || [self.activeDownloads[simperiumKey] isEqualToString:remoteHash] || self.activeUploads[simperiumKey] != nil) {
 		return;
 	} else if(localMtime.intValue >= remoteMtime.intValue) {
 		return;
 	}
 	
-	// Save right away this operation's data. If anything, we'll be able to resume
+	// Wrap up the download parameters
 	NSDictionary *userInfo = @{
 		SPBinaryManagerBucketNameKey		: bucketName,
 		SPBinaryManagerSimperiumKey			: simperiumKey,
@@ -280,14 +279,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		SPBinaryManagerModificationTimeKey	: remoteMtime,
 		SPBinaryManagerOperation			: @(SPBinaryManagerOperationsDownload)
 	};
-	
-	[self.pendingSyncs setObject:userInfo forKey:remoteHash];
-	[self savePendingSyncs];
-	
+		
 	// Prepare the request
 	SPHttpRequest *request = [self requestForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
 	
-	request.tag	= remoteHash;
 	request.method = SPHttpRequestMethodsGet;
 	request.userInfo = userInfo;
 	
@@ -296,6 +291,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	request.selectorProgress = @selector(downloadProgress:);
 	request.selectorSuccess = @selector(downloadSuccess:);
 	request.selectorFailed = @selector(downloadFailed:);
+	
+	// Update: Active + Pendings Syncs
+	[self savePendingSyncs];
+	[self.activeDownloads setObject:remoteHash forKey:simperiumKey];
 	
 	// Go!
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -311,7 +310,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)downloadStarted:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium downloading binary at URL: %@", request.url);
+	DDLogWarn(@"Simperium starting binary download from URL: %@", request.url);
 	
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadStarted:)] ) {
 		[self.delegate binaryDownloadStarted:request.userInfo];
@@ -329,12 +328,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)downloadFailed:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium error [%@] while downloading binary at URL: %@", request.responseError, request.url);
+	DDLogError(@"Simperium error [%@] while downloading binary at URL: %@", request.responseError, request.url);
 	
-	NSString *hash = request.userInfo[SPBinaryManagerHashKey];
-	[self.pendingSyncs removeObjectForKey:hash];
+	// Update: Active + Pendings Syncs
+	NSString *simperiumKey = request.userInfo[SPBinaryManagerSimperiumKey];
+	[self.activeDownloads removeObjectForKey:simperiumKey];
 	[self savePendingSyncs];
 	
+	// Delegates, please!
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadFailed:error:)] ) {
 		[self.delegate binaryDownloadFailed:request.userInfo error:request.responseError];
 	}
@@ -349,7 +350,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	NSString *bucketName	= userInfo[SPBinaryManagerBucketNameKey];
 	NSString *simperiumKey	= userInfo[SPBinaryManagerSimperiumKey];
 	NSString *dataKey		= userInfo[SPBinaryManagerAttributeDataKey];
-	NSString *hash			= userInfo[SPBinaryManagerHashKey];
 	
 	// Load the object
 	SPManagedObject *object = [[self.simperium bucketForName:bucketName] objectForKey:simperiumKey];
@@ -363,11 +363,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		[self.localMetadata removeObjectForKey:simperiumKey];
 	}
 
+	// Update: Metadata
 	[self saveLocalMetadata];
 	
-	// Cleanup!
-	[self.pendingSyncs removeObjectForKey:hash];
+	// Update: Pending Syncs
 	[self savePendingSyncs];
+	
+	// Update: Active Syncs
+	[self.activeDownloads removeObjectForKey:simperiumKey];
 	
 	// Notify the delegate (!)
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadSuccessful:)] ) {
@@ -400,11 +403,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	NSString *localHash  = [NSString sp_md5StringFromData:binaryData];
 	NSString *remoteHash = self.localMetadata[simperiumKey][SPBinaryManagerHashKey];
 	
-	if ([localHash isEqualToString:remoteHash] || [self.httpRequestsQueue hasRequestWithTag:localHash]) {
+	if ([localHash isEqualToString:remoteHash] || [self.activeUploads[simperiumKey] isEqualToString:localHash]) {
 		return;
 	}
 	
-	// Save right away this operation's data. If anything, we'll be able to resume
+	// Wrap up the Upload parameters
 	NSDictionary *userInfo = @{
 		SPBinaryManagerBucketNameKey	: bucketName,
 		SPBinaryManagerSimperiumKey		: simperiumKey,
@@ -414,13 +417,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		SPBinaryManagerOperation		: @(SPBinaryManagerOperationsUpload)
 	};
 	
-	[self.pendingSyncs setObject:userInfo forKey:localHash];
-	[self savePendingSyncs];
-	
 	// Prepare the request
 	SPHttpRequest *request = [self requestForBucket:bucketName simperiumKey:simperiumKey infoKey:infoKey];
 	
-	request.tag	= localHash;
 	request.method = SPHttpRequestMethodsPut;
 	request.userInfo = userInfo;
 	request.postData = binaryData;
@@ -430,6 +429,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	request.selectorProgress = @selector(uploadProgress:);
 	request.selectorSuccess = @selector(uploadSuccess:);
 	request.selectorFailed = @selector(uploadFailed:);
+	
+	// Update: Active + Pendings Syncs
+	[self savePendingSyncs];
+	[self.activeUploads setObject:localHash forKey:simperiumKey];
 	
 	// Cancel previous requests with the same URL & Enqueue this request!
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -463,12 +466,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)uploadFailed:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium error [%@] while uploading binary to URL: %@", request.responseError, request.url);
+	DDLogError(@"Simperium error [%@] while uploading binary to URL: %@", request.responseError, request.url);
 
-	NSString *hash = request.userInfo[SPBinaryManagerHashKey];
-	[self.pendingSyncs removeObjectForKey:hash];
+	// Update: Active + Pendings Syncs
+	NSString *simperiumKey = request.userInfo[SPBinaryManagerSimperiumKey];
+	[self.activeUploads removeObjectForKey:simperiumKey];
 	[self savePendingSyncs];
 	
+	// Delegates, please!
 	if( [self.delegate respondsToSelector:@selector(binaryUploadFailed:error:)] ) {
 		[self.delegate binaryUploadFailed:request.userInfo error:request.responseError];
 	}
@@ -481,15 +486,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	// Unwrap Parameters
 	NSDictionary *metadata	= [request.responseString objectFromJSONString];
 	NSString *simperiumKey	= request.userInfo[SPBinaryManagerSimperiumKey];
-	NSString *hash			= request.userInfo[SPBinaryManagerHashKey];
 
-	// Update the local metadata
+	// Update: Metadata
 	[self.localMetadata setValue:metadata forKey:simperiumKey];
 	[self saveLocalMetadata];
 	
-	// Cleanup
-	[self.pendingSyncs removeObjectForKey:hash];
+	// Update: Pendings File
 	[self savePendingSyncs];
+	
+	// Update: Active Syncs
+	[self.activeUploads removeObjectForKey:simperiumKey];
 	
 	// Notify the delegate (!)
 	if( [self.delegate respondsToSelector:@selector(binaryUploadSuccessful:)] ) {
