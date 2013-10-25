@@ -36,7 +36,7 @@
 #pragma mark ====================================================================================
 
 static NSString* const SPHttpRequestLengthKey		= @"Content-Length";
-static float const SPHttpRequestProgressThreshold	= 0.2;
+static float const SPHttpRequestProgressThreshold	= 0.1;
 
 
 #pragma mark ====================================================================================
@@ -170,6 +170,20 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 
 -(void)begin
 {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[self _begin];
+	});
+}
+
+-(void)stop
+{
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[self _stop];
+	});
+}
+
+-(void)_begin
+{
     ++self.retryCount;
 	self.lastReportedDownloadProgress = 0;
 	self.lastReportedUploadProgress = 0;
@@ -191,18 +205,18 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 	}
 }
 
--(void)stop
+-(void)_stop
 {
-    // Disable the timeout check
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    
+	// Disable the timeout check
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
+	
 	// Warp up BG task
 	[self endBackgroundTasks];
-	
-    // Cleanup
-    [self.connection cancel];
-    self.connection = nil;
-    self.responseMutable = nil;
+		
+	// Cleanup
+	[self.connection cancel];
+	self.connection = nil;
+	self.responseMutable = nil;
 }
 
 

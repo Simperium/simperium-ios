@@ -28,19 +28,38 @@
     NSLog(@"%@ start", self.name);
 	
 #warning TODO: Write UnitTests!
+
+/*
+ -	Test Login:
+ 		-	Before auth, sync ops should NOT be accepted << ok?
+ 		-	Sync should begin after the user gets authenticated
+ -	Test Logout:
+ 		-	Pending Downloads / Uploads should get killed, and queues emptied
+ -	Test Resume:
+ 		-	Pending Uploads:
+ 				-	If the object was deleted, the pending should be removed, and nothing should break
+ 				-	If the object is still alive, the app should retrieve the data again from CoreData, and re-engage
+ 		-	Pending Downloads
+ 				-	Download operations should be resumed
+ -	Test Connectivity:
+ 		-	Active uploads/downloads should get moved to the pendings queue
+ 		-	Right after connectivity gets re-acquired, pendings should be re-engaged
+ -	Test backgrounding:
+ 		-	iOS shouldn't kill the app
+ -	Test Downloads
+ 		-	If the object gets deleted before a download is complete, nothing should break
+ 		-	If a **new** change comes in (remote mTime > local mTime), any previous Upload/Download for the same entity should get cancelled
+ 		-	If the exact same file is already being downloaded (or was downloaded), don't do anything (hash verification)
+ 		-	If the exact same file is being uploaded (and SPHttpRequest delegate wasn't hit, thus, metadata didn't get updated), it shouldn't get redownloaded
+		-	Test pending/active downloads queue
+ 		-	Null values shouldn't break anything
+ -	Test Uploads
+ 		-	If there was any pending Upload/Download, it should get cancelled
+ 		-	If the exact NSData is already being uploaded for that object, don't do anything <<< verify that we can have the same data for multiple objects
+ 		-	Null values shouldn't break anything
+		-	Test pending/active downloads queue
+ */
 	
-//	Test Cases
-//		-	Delete an object before download is complete
-//		-	What if a remote change comes in, while there was another download/upload?  >> CANCEL previous download/upload!
-//		-	What if a local change is performed while a download/upload was in progress?	>> CANCEL previous download/upload if any!!
-//		-	What if the exact same file is already being downloaded / was downloaded / is being uploaded ?
-//		-	What if a remote change comes in, and the object was locally changed but not saved?
-//		-	What if we set a NIL value?
-//		-	What if a NSData is already uploaded / being uploaded?
-//		-	What if you loose connectivity?
-//		-	What if the user logs out?
-//		-	Test Backgrounding
-//		-	Test Resume
 //
 //    [self createAndStartFarms];
 //        

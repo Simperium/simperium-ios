@@ -70,6 +70,7 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 	[httpRequest stop];
 	
     dispatch_sync(self.queueLock, ^(void) {
+		
 		if([self.pendingRequests containsObject:httpRequest]) {
 			[self.pendingRequests removeObject:httpRequest];
 		}
@@ -87,17 +88,11 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
     if((self.pendingRequests.count == 0) || (self.activeRequests.count >= _maxConcurrentConnections) || (self.enabled == false)) {
         return;
     }
-    
-	__block __strong SPHttpRequest* nextRequest = nil;
-	
-    dispatch_sync(self.queueLock, ^(void) {
-		nextRequest = [self.pendingRequests objectAtIndex:0];
 
+    dispatch_sync(self.queueLock, ^(void) {
+		SPHttpRequest* nextRequest = [self.pendingRequests objectAtIndex:0];
 		[self.activeRequests addObject:nextRequest];
 		[self.pendingRequests removeObjectAtIndex:0];
-	});
-	
-	dispatch_async(dispatch_get_main_queue(), ^{
 		[nextRequest begin];
 	});
 }
@@ -114,7 +109,7 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 	if(self.activeRequests.count == 0) {
 		return;
 	}
-	
+		
 	dispatch_sync(self.queueLock, ^(void) {
 		// Stop please!
 		[self.activeRequests makeObjectsPerformSelector:@selector(stop)];
@@ -143,9 +138,10 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 		return;
 	}
 			
+	[self.activeRequests makeObjectsPerformSelector:@selector(stop)];
+	[self.pendingRequests makeObjectsPerformSelector:@selector(stop)];
+	
     dispatch_sync(self.queueLock, ^(void) {
-		[self.activeRequests makeObjectsPerformSelector:@selector(stop)];
-		[self.pendingRequests makeObjectsPerformSelector:@selector(stop)];
 		[self.activeRequests removeAllObjects];
 		[self.pendingRequests removeAllObjects];
 	});

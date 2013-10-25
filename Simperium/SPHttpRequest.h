@@ -57,4 +57,7 @@ typedef NS_ENUM(NSUInteger, SPHttpRequestStatus) {
 @property (nonatomic, assign, readwrite) SEL					selectorProgress;
 
 +(SPHttpRequest *)requestWithURL:(NSURL*)url;
+
+-(void)cancel;
+
 @end

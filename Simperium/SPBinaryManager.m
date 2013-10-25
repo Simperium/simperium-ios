@@ -20,11 +20,6 @@
 #import "SPHttpRequestQueue.h"
 
 
-#warning TODO: Don't upload if local mtime < remoteMtime
-#warning TODO: Add retry mechanisms
-#warning TODO: Should Nulls be actually uploaded?
-#warning TODO: What if a remote change comes in, and the object was locally changed but not saved?
-#warning TODO: Disable Logs
 
 #pragma mark ====================================================================================
 #pragma mark Notifications
@@ -52,7 +47,8 @@ NS_ENUM(NSInteger, SPBinaryManagerOperations) {
 	SPBinaryManagerOperationsUpload
 };
 
-static int ddLogLevel = LOG_LEVEL_WARN;
+static int ddLogLevel = LOG_LEVEL_VERBOSE;
+#define DEBUG_MD5_INTEGRITY 1
 
 
 #pragma mark ====================================================================================
@@ -254,16 +250,23 @@ static int ddLogLevel = LOG_LEVEL_WARN;
 		return;
 	}
 
+	// Grab Remote + Local metadata
+	NSString *remoteHash			= binaryInfo[SPBinaryManagerHashKey];
+	NSNumber *remoteMtime			= binaryInfo[SPBinaryManagerModificationTimeKey];
+	NSDictionary *localMetadata		= self.localMetadata[simperiumKey];
+	NSString *localHash				= localMetadata[SPBinaryManagerHashKey];
+	NSNumber *localMtime			= localMetadata[SPBinaryManagerModificationTimeKey];
+		
+	// Grab Upload + Download Metadata
+	NSString *uploadHash			= self.activeUploads[simperiumKey];
+	NSDictionary *downloadMetadata	= self.activeDownloads[simperiumKey];
+	NSString *downloadHash			= downloadMetadata[SPBinaryManagerHashKey];
+	NSNumber *downloadMtime			= downloadMetadata[SPBinaryManagerModificationTimeKey];
+	
 	// Are we there yet?
-	NSDictionary *localMetadata	= self.localMetadata[simperiumKey];
-	NSString *localHash			= localMetadata[SPBinaryManagerHashKey];
-	NSNumber *localMtime		= localMetadata[SPBinaryManagerModificationTimeKey];
-	NSString *remoteHash		= binaryInfo[SPBinaryManagerHashKey];
-	NSNumber *remoteMtime		= binaryInfo[SPBinaryManagerModificationTimeKey];
-
-	if ([localHash isEqual:remoteHash] || [self.activeDownloads[simperiumKey] isEqualToString:remoteHash] || self.activeUploads[simperiumKey] != nil) {
-		return;
-	} else if(localMtime.intValue >= remoteMtime.intValue) {
+	if(	uploadHash != nil ||
+	    [downloadHash isEqualToString:remoteHash] || downloadMtime.intValue >= remoteMtime.intValue ||
+		[localHash isEqual:remoteHash] || localMtime.intValue >= remoteMtime.intValue) {
 		return;
 	}
 	
@@ -295,7 +298,7 @@ static int ddLogLevel = LOG_LEVEL_WARN;
 	[self.httpRequestsQueue enqueueHttpRequest:request];
 	
 	// Update: Active + Pendings Syncs
-	[self.activeDownloads setObject:remoteHash forKey:simperiumKey];
+	[self.activeDownloads setObject:binaryInfo forKey:simperiumKey];
 	[self savePendingSyncs];
 }
 
@@ -342,19 +345,27 @@ static int ddLogLevel = LOG_LEVEL_WARN;
 	DDLogWarn(@"Simperium successfully downloaded binary at URL: %@", request.url);
 	
 	// Unwrap Params
-	NSDictionary *userInfo  = request.userInfo;
-	NSString *bucketName	= userInfo[SPBinaryManagerBucketNameKey];
-	NSString *simperiumKey	= userInfo[SPBinaryManagerSimperiumKey];
-	NSString *dataKey		= userInfo[SPBinaryManagerAttributeDataKey];
+	NSDictionary *metadata  = request.userInfo;
+	NSString *bucketName	= metadata[SPBinaryManagerBucketNameKey];
+	NSString *simperiumKey	= metadata[SPBinaryManagerSimperiumKey];
+	NSString *dataKey		= metadata[SPBinaryManagerAttributeDataKey];
 	
 	// Load the object
 	SPManagedObject *object = [[self.simperium bucketForName:bucketName] objectForKey:simperiumKey];
 	
 	if(object) {
+		[self.localMetadata setObject:metadata forKey:simperiumKey];
+
+#ifdef DEBUG_MD5_INTEGRITY
+		NSString *localHash = [NSString sp_md5StringFromData:request.responseData];
+		NSString *remoteHash = metadata[SPBinaryManagerHashKey];
+		if([localHash isEqual:remoteHash] == NO)
+		{
+			DDLogError(@"Simperium Local MD5 does not match Remote MD5");
+		}
+#endif
 		[object setValue:request.responseData forKey:dataKey];
 		[self.simperium save];
-		
-		[self.localMetadata setValue:userInfo forKey:simperiumKey];
 	} else {
 		[self.localMetadata removeObjectForKey:simperiumKey];
 	}
@@ -370,7 +381,7 @@ static int ddLogLevel = LOG_LEVEL_WARN;
 	
 	// Notify the delegate (!)
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadSuccessful:)] ) {
-		[self.delegate binaryDownloadSuccessful:userInfo];
+		[self.delegate binaryDownloadSuccessful:metadata];
 	}
 }
 
@@ -482,7 +493,7 @@ static int ddLogLevel = LOG_LEVEL_WARN;
 	NSString *simperiumKey	= request.userInfo[SPBinaryManagerSimperiumKey];
 
 	// Update: Metadata
-	[self.localMetadata setValue:metadata forKey:simperiumKey];
+	[self.localMetadata setObject:metadata forKey:simperiumKey];
 	[self saveLocalMetadata];
 	
 	// Update: Pendings File
