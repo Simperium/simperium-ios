@@ -58,6 +58,4 @@ typedef NS_ENUM(NSUInteger, SPHttpRequestStatus) {
 
 +(SPHttpRequest *)requestWithURL:(NSURL*)url;
 
--(void)cancel;
-
 @end

@@ -293,6 +293,10 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 	{
 		NSError *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:self.responseCode userInfo:nil];
 		[self connection:connection didFailWithError:error];
+		
+		// Abort!
+		[self _stop];
+		[self.httpRequestQueue dequeueHttpRequest:self];
 	}
 }
 
