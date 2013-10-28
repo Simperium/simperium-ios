@@ -48,7 +48,7 @@ NS_ENUM(NSInteger, SPBinaryManagerOperations) {
 };
 
 static int ddLogLevel = LOG_LEVEL_VERBOSE;
-#define DEBUG_MD5_INTEGRITY 1
+//#define DEBUG_MD5_INTEGRITY 1
 
 
 #pragma mark ====================================================================================
@@ -250,6 +250,9 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 		return;
 	}
 
+	// Handle bucket overrides
+	bucketName = ( [self.simperium.bucketOverrides objectForKey:bucketName] ?: bucketName );
+	
 	// Grab Remote + Local metadata
 	NSString *remoteHash			= binaryInfo[SPBinaryManagerHashKey];
 	NSNumber *remoteMtime			= binaryInfo[SPBinaryManagerModificationTimeKey];
@@ -406,6 +409,9 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 		return;
 	}
 	
+	// Handle bucket overrides
+	bucketName = ( [self.simperium.bucketOverrides objectForKey:bucketName] ?: bucketName );
+	
 	// Are we there yet?
 	NSString *localHash  = [NSString sp_md5StringFromData:binaryData];
 	NSString *remoteHash = self.localMetadata[simperiumKey][SPBinaryManagerHashKey];
@@ -493,8 +499,10 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 	NSString *simperiumKey	= request.userInfo[SPBinaryManagerSimperiumKey];
 
 	// Update: Metadata
-	[self.localMetadata setObject:metadata forKey:simperiumKey];
-	[self saveLocalMetadata];
+	if(metadata) {
+		[self.localMetadata setObject:metadata forKey:simperiumKey];
+		[self saveLocalMetadata];
+	}
 	
 	// Update: Pendings File
 	[self savePendingSyncs];
@@ -513,10 +521,12 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 #pragma mark Private Helpers
 #pragma mark ====================================================================================
 
+// NOTE: downloadURL should hit the attribute with 'Info' ending!
+//		[Base URL] / [App ID] / [Bucket Name] / i / [Simperium Key] / b / [attributeName]Info
+
 -(SPHttpRequest *)requestForBucket:(NSString *)bucketName simperiumKey:(NSString *)simperiumKey infoKey:(NSString *)infoKey
 {
-	// NOTE: downloadURL should hit the attribute with 'Info' ending!
-	//		[Base URL] / [App ID] / [Bucket Name] / i / [Simperium Key] / b / [attributeName]Info
+	// Build the URL
 	NSString *rawUrl = [SPBaseURL stringByAppendingFormat:@"%@/%@/i/%@/b/%@", self.simperium.appID, bucketName.lowercaseString, simperiumKey, infoKey];
 	
 	SPHttpRequest *request = [SPHttpRequest requestWithURL:[NSURL URLWithString:rawUrl]];
