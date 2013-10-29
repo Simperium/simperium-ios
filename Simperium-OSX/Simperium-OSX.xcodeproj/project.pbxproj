@@ -313,7 +313,6 @@
 		2698BE5515C9097A0020565F /* JRSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JRSwizzle.m; sourceTree = "<group>"; };
 		26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPWebSocketChannel.h; path = ../../Simperium/SPWebSocketChannel.h; sourceTree = "<group>"; };
 		26C3E14E1666FE7500620306 /* SPWebSocketChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocketChannel.m; path = ../../Simperium/SPWebSocketChannel.m; sourceTree = "<group>"; };
-		460A505917DE956C0070F02B /* SPProcessorNotificationsNames.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SPProcessorNotificationsNames.h; path = ../Simperium/SPProcessorNotificationsNames.h; sourceTree = "<group>"; };
 		460A505A17DE95B20070F02B /* SPProcessorNotificationNames.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPProcessorNotificationNames.m; path = ../Simperium/SPProcessorNotificationNames.m; sourceTree = "<group>"; };
 		4617AEB9179A1A3400545BD9 /* SPReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPReachability.h; sourceTree = "<group>"; };
 		4617AEBA179A1A3400545BD9 /* SPReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPReachability.m; sourceTree = "<group>"; };
@@ -379,7 +378,6 @@
 		268EDEBD155F06D5006B566F = {
 			isa = PBXGroup;
 			children = (
-				460A505917DE956C0070F02B /* SPProcessorNotificationsNames.h */,
 				460A505A17DE95B20070F02B /* SPProcessorNotificationNames.m */,
 				46DD162B17A1B9660093678C /* QuartzCore.framework */,
 				46A691FD17387ABE0080399F /* SFHFKeychainUtils.h */,
