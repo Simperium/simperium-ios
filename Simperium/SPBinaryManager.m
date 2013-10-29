@@ -130,11 +130,11 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 	
 	// Reset pending syncs
 	self.didResumeSyncs = NO;
-	[self savePendingSyncs];
+	[[NSFileManager defaultManager] removeItemAtPath:self.pendingSyncsPath error:nil];
 	
 	// Nuke local metadata as well
 	[self.localMetadata removeAllObjects];
-	[self saveLocalMetadata];
+	[[NSFileManager defaultManager] removeItemAtPath:self.localMetadataPath error:nil];
 }
 
 

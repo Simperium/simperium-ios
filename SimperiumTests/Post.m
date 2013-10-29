@@ -14,7 +14,8 @@
 
 @dynamic title;
 @dynamic comments;
-
+@dynamic picture;
+@dynamic pictureInfo;
 
 -(NSString *)description {
     return [NSString stringWithFormat:@"Post\n\ttitle: %@, numComments: %d", self.title, [self.comments count]];
@@ -28,8 +29,9 @@
     int numComments = [self.comments count];
     int otherNumComments = [other.comments count];
     BOOL numCommentsEqual =  numComments = otherNumComments;
-    
-    BOOL isEqual = titleEqual && numCommentsEqual;
+    BOOL pictureEquals = ((self.picture == nil && other.picture == nil) || ([self.picture isEqualToData:other.picture]));
+	
+    BOOL isEqual = titleEqual && numCommentsEqual && pictureEquals;
     
     if (!isEqual)
         NSLog(@"Argh, Post not equal");

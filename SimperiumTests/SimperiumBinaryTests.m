@@ -8,11 +8,103 @@
 
 #import "SimperiumBinaryTests.h"
 #import "Farm.h"
+#import "Post.h"
+#import "JSONKit.h"
+#import "SPEnvironment.h"
+#import "NSString+Simperium.h"
 
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+NSInteger const SPTestBigFileSize			= 1;
+NSInteger const SPTestBigFileBytes			= SPTestBigFileSize * 1024 * 1024;
+NSTimeInterval const SPTestBigFileTimeout	= SPTestBigFileSize * 60;
+
+NSInteger const SPTestSmallFileBytes		= 10 * 1024;
+NSTimeInterval const SPTestSmallFileTimeout	= 20;
+
+
+#pragma mark ====================================================================================
+#pragma mark Private
+#pragma mark ====================================================================================
+
+@interface SimperiumBinaryTests ()
+@property (nonatomic, strong, readwrite) Farm *leader;
+@property (nonatomic, strong, readwrite) Farm *follower;
+@property (nonatomic, strong, readwrite) SPBucket *leaderBucket;
+@property (nonatomic, strong, readwrite) SPBucket *followerBucket;
+@end
+
+
+#pragma mark ====================================================================================
+#pragma mark SimperiumBinaryTests
+#pragma mark ====================================================================================
 
 @implementation SimperiumBinaryTests
 
--(NSData *)randomDataWithBytes: (NSUInteger)length
++(void)setUp
+{
+	//	Note:
+	//	=====
+	//	This **HACK** will initialize a disposable bucket with a binary endpoint, specified with the constant BINARY_BACKEND.
+	//	Remove this once we've got a reusable buckets mechanism.
+	//
+	//	Requirements:
+	//		BINARY_BACKEND	: Should be set with the endpoint name
+	//		ADMIN_TOKEN		: Should be an admin token (Generated with the dashboard)
+	
+	NSAssert(BINARY_BACKEND.length > 0, @"Please specify the binary endpoint!");
+	NSAssert(ADMIN_TOKEN.length > 0, @"Please specify an admin token!");
+	
+	NSDictionary *rawPayload = @{ @"binary_backend": BINARY_BACKEND, @"key": BINARY_BACKEND};
+	NSString *bucket = [[[self class] postBucket] lowercaseString];
+	NSString *rawUrl = [SPBaseURL stringByAppendingFormat:@"%@/__options__/i/%@", APP_ID, bucket];
+	
+	NSURL *url = [NSURL URLWithString:rawUrl];
+	NSData *payload = [rawPayload JSONData];
+	
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData timeoutInterval:20.0];
+	
+	[request setValue:ADMIN_TOKEN forHTTPHeaderField:@"X-Simperium-Token"];
+	request.HTTPBody = payload;
+	request.HTTPMethod = @"POST";
+	
+	NSError *error = nil;
+	[NSURLConnection sendSynchronousRequest:request returningResponse:nil error:&error];
+	NSAssert(error == nil, @"Error enabling binary backend");
+}
+
+
+#pragma mark ====================================================================================
+#pragma mark Helpers
+#pragma mark ====================================================================================
+
++(NSString *)postBucket
+{
+	static dispatch_once_t pred;
+	static NSString* postBucket = nil;
+	
+	dispatch_once(&pred, ^{
+		NSString *bucketSuffix = [[NSString sp_makeUUID] substringToIndex:8];
+		postBucket = [NSString stringWithFormat:@"Post-%@", bucketSuffix];
+	});
+	
+	return postBucket;
+}
+
+-(NSDictionary *)bucketOverrides
+{
+	[self uniqueBucketFor:nil];
+	if(!self.overrides) {
+		self.overrides = @{ @"Post" : [[self class] postBucket] };
+	}
+	return self.overrides;
+}
+
+-(NSData *)randomDataWithLength:(NSUInteger)length
 {
     NSMutableData *mutableData = [NSMutableData dataWithCapacity: length];
     for (unsigned int i = 0; i < length; i++) {
@@ -23,67 +115,162 @@
 	return mutableData;
 }
 
--(void)testSmallBinaryFile
-{
-    NSLog(@"%@ start", self.name);
-	
-#warning TODO: Write UnitTests!
 
-/*
- -	Test Login:
- 		-	Before auth, sync ops should NOT be accepted << ok?
- 		-	Sync should begin after the user gets authenticated
- -	Test Logout:
- 		-	Pending Downloads / Uploads should get killed, and queues emptied
- -	Test Resume:
- 		-	Pending Uploads:
- 				-	If the object was deleted, the pending should be removed, and nothing should break
- 				-	If the object is still alive, the app should retrieve the data again from CoreData, and re-engage
- 		-	Pending Downloads
- 				-	Download operations should be resumed
- -	Test Connectivity:
- 		-	Active uploads/downloads should get moved to the pendings queue
- 		-	Right after connectivity gets re-acquired, pendings should be re-engaged
- -	Test backgrounding:
- 		-	iOS shouldn't kill the app
- -	Test Downloads
- 		-	If the object gets deleted before a download is complete, nothing should break
- 		-	If a **new** change comes in (remote mTime > local mTime), any previous Upload/Download for the same entity should get cancelled
- 		-	If the exact same file is already being downloaded (or was downloaded), don't do anything (hash verification)
- 		-	If the exact same file is being uploaded (and SPHttpRequest delegate wasn't hit, thus, metadata didn't get updated), it shouldn't get redownloaded
-		-	Test pending/active downloads queue
- 		-	Null values shouldn't break anything
- -	Test Uploads
- 		-	If there was any pending Upload/Download, it should get cancelled
- 		-	If the exact NSData is already being uploaded for that object, don't do anything <<< verify that we can have the same data for multiple objects
- 		-	Null values shouldn't break anything
-		-	Test pending/active downloads queue
+#pragma mark ====================================================================================
+#pragma mark Execute Per UnitTest!
+#pragma mark ====================================================================================
+
+/**
+	Note:
+	=====
+	Binary uploads generate metadata changes. In this scenario, it translates into 'expectedChanges'. I.e.:
+		 Leader							Follower
+		 1. Insert acknowledge			1.	Insert Sync
+		 2. Binary Upload itself		2.	Binary Metadata change
+		 3. Binary Metadata Change		3.	Binary Download
  */
+
+-(void)setUp
+{
+	[super setUp];
 	
-//
-//    [self createAndStartFarms];
-//        
-//    // Leader sends an object to followers
-//    Farm *leader = [farms objectAtIndex:0];
-//    [leader.simperium.binaryManager addDelegate:leader];
-//    [self connectFarms];
-//    [self waitFor:2];
-//    [leader.simperium.binaryManager setupAuth:leader.simperium.user];
-//    [self waitFor:2];
-//    
-//    SPBucket *leaderBucket = [leader.simperium bucketForName:@"Config"];
-//    leader.config = [leaderBucket insertNewObject];
-//    NSData *data = [self randomDataWithBytes:8096];
-//    [leader.simperium addBinary:data toObject:leader.config bucketName:@"Config" attributeName:@"binaryFile"];
-//    [leader.simperium save];
-//    [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
-//    STAssertTrue([self waitForCompletion], @"timed out");
-//    //    STAssertTrue([leader.config.warpSpeed isEqualToNumber: refWarpSpeed], @"");
-//    
-//    [self ensureFarmsEqual:farms entityName:@"Config"];
-    
-    NSLog(@"%@ end", self.name); 
+	// Load the farms
+	self.leader = [self createFarm:@"leader"];
+	self.follower = [self createFarm:@"follower"];
+	
+	// Start + Connect
+    [self.leader start];
+    [self.follower start];
+		
+    [self.leader connect];
+    [self.follower connect];
+	
+	[self waitFor:1];
+	
+	// Load the buckets
+	NSString *bucketName = NSStringFromClass([Post class]);
+	self.leaderBucket = [self.leader.simperium bucketForName:bucketName];
+	self.followerBucket = [self.follower.simperium bucketForName:bucketName];
 }
 
+-(void)tearDown
+{
+	// Cleanup
+	[self.leaderBucket deleteAllObjects];
+	[self.leader.simperium save];
+	[self waitFor:5.0f];
+	
+	// Delete local data
+	[self.leader.simperium signOutAndRemoveLocalData:YES];
+	[self.follower.simperium signOutAndRemoveLocalData:YES];
+	
+	// And...
+	self.leader = nil;
+	self.follower = nil;
+	
+	self.leaderBucket = nil;
+	self.followerBucket = nil;
+	
+	[super tearDown];
+}
+
+
+#pragma mark ====================================================================================
+#pragma mark UnitTests!
+#pragma mark ====================================================================================
+
+-(void)testBigFiles
+{
+	// Inserting + Adding a binary without connectivity. Should hit (NO) delegate!
+    Post *leadPost = [self.leaderBucket insertNewObject];
+    leadPost.picture = [self randomDataWithLength:SPTestBigFileBytes];
+    [self.leader.simperium save];
+				
+	self.leader.expectedAcknowledgments = 1;
+	self.leader.expectedBinaryUploads = 1;
+	self.leader.expectedChanges = 1;
+
+    self.follower.expectedAdditions = 1;
+	self.follower.expectedBinaryDownloads = 1;
+	self.follower.expectedChanges = 1;
+	
+    STAssertTrue([self waitForCompletion:SPTestBigFileTimeout farmArray:farms], @"BinarySync Upload/Download timeout");
+	
+	// Verify data integrity
+	Post *followPost = [self.followerBucket objectForKey:leadPost.simperiumKey];
+	STAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
+}
+
+-(void)testNetworking
+{
+	// Follower: Disconnect right now!
+	[self.follower disconnect];
+	
+	// Leader: Insert
+    Post *leadPost = [self.leaderBucket insertNewObject];
+    leadPost.picture = [self randomDataWithLength:SPTestSmallFileBytes];
+    [self.leader.simperium save];
+		
+	// Leader: Ensure Upload is ready
+	self.leader.expectedAcknowledgments = 1;
+	self.leader.expectedBinaryUploads = 1;
+	self.leader.expectedChanges = 1;
+	
+    STAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.leader] ], @"BinarySync Upload timeout");
+	
+	// Follower: Enable / disable networking
+    [self.follower connect];
+	[self waitFor:1.0f];
+
+	[self.follower disconnect];
+	[self waitFor:1.0f];
+
+	// Follower: Allow sync to happen. No changes expected, we'll just get the 'ready' version
+    self.follower.expectedAdditions = 1;
+	self.follower.expectedBinaryDownloads = 1;
+	
+    [self.follower connect];
+    STAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.follower] ], @"BinarySync Download timeout");
+	
+	// Verify data integrity	
+	Post *followPost = [self.followerBucket objectForKey:leadPost.simperiumKey];
+	STAssertNotNil(followPost, @"Post did not sync");
+	STAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
+}
+
+-(void)testUploads
+{
+	// Insert a new object, right away
+    Post *leadPost = [self.leaderBucket insertNewObject];
+	[self.leader.simperium save];
+
+	self.leader.expectedAcknowledgments = 1;
+	self.leader.expectedChanges = 1;
+	self.leader.expectedBinaryUploads = 1;
+	
+    self.follower.expectedAdditions = 1;
+	self.follower.expectedBinaryDownloads = 1;
+	self.follower.expectedChanges = 1;
+	
+    STAssertTrue([self waitForCompletion], @"BinarySync Upload/Download timeout");
+	
+	// Change the picture... several times. Only the latest version should get sync'ed
+	for(NSInteger i = 0; ++i < 10; ) {
+		leadPost.picture = [self randomDataWithLength:SPTestSmallFileBytes];
+		[self.leader.simperium save];
+		[self waitFor:0.1f];
+	}
+	self.leader.expectedChanges = 1;
+	self.leader.expectedBinaryUploads = 1;
+	
+	self.follower.expectedBinaryDownloads = 1;
+	self.follower.expectedChanges = 1;
+	
+    STAssertTrue([self waitForCompletion], @"BinarySync Upload/Download timeout");
+	
+	// Verify data integrity
+	Post *followPost = [self.followerBucket objectForKey:leadPost.simperiumKey];
+	STAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
+}
 
 @end

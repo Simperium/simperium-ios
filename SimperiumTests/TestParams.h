@@ -18,3 +18,5 @@
 #define SERVER @"https://auth.simperium.com"
 #define USERNAME @"test@simperium.com"
 #define PASSWORD @"test3s"
+#define BINARY_BACKEND @""
+#define ADMIN_TOKEN @""

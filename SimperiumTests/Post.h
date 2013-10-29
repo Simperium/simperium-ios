@@ -16,6 +16,9 @@
 
 @property (nonatomic, strong) NSString * title;
 @property (nonatomic, strong) NSSet *comments;
+@property (nonatomic, strong) NSData *picture;
+@property (nonatomic, strong) NSString *pictureInfo;
+
 @end
 
 @interface Post (CoreDataGeneratedAccessors)

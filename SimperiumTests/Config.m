@@ -10,26 +10,24 @@
 
 
 @implementation Config
+
 @dynamic warpSpeed;
-@dynamic binaryFile;
 @dynamic captainsLog;
 @dynamic shieldsUp;
-@dynamic shieldColor;
 @dynamic shieldPercent;
 @dynamic cost;
-@dynamic smallImageTest;
 @dynamic date;
 
 -(void)awakeFromInsert {
     [super awakeFromInsert];
     
     // Try setting to nil to make sure it works
-    captainsLog = nil;
+    self.captainsLog = nil;
 }
 
 -(NSString *)description {
     return [NSString stringWithFormat:@"Config\n\twarpSpeed: %d\n\tcaptainsLog:%@\n\tshieldPercent:%f\n",
-            [warpSpeed intValue], captainsLog, [shieldPercent floatValue]];
+            [self.warpSpeed intValue], self.captainsLog, [self.shieldPercent floatValue]];
 }
 
 -(BOOL)isEqualToObject:(TestObject *)otherObj {

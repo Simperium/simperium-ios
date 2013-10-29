@@ -11,11 +11,8 @@
 #import <CoreData/CoreData.h>
 #import "SPManagedObject.h"
 
-@interface TestObject : SPManagedObject {
-}
 
 
-
+@interface TestObject : SPManagedObject
 -(BOOL)isEqualToObject:(TestObject *)other;
-
 @end
