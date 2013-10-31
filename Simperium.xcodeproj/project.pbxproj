@@ -218,6 +218,9 @@
 		46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */; };
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
+		B5F5D39418219CCE0048754C /* DDFileLogger+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */; };
+		B5F5D39518219CCE0048754C /* DDFileLogger+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */; };
+		B5F5D39618219CCE0048754C /* DDFileLogger+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */; };
 		E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */; };
 		E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */; };
 /* End PBXBuildFile section */
@@ -448,6 +451,8 @@
 		46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumAuxiliaryTests.m; sourceTree = "<group>"; };
 		46EE3D55171D0C8E00E6F0A5 /* SimperiumErrorTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumErrorTests.h; sourceTree = "<group>"; };
 		46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumErrorTests.m; sourceTree = "<group>"; };
+		B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DDFileLogger+Simperium.h"; sourceTree = "<group>"; };
+		B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DDFileLogger+Simperium.m"; sourceTree = "<group>"; };
 		E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTOSViewController.h; sourceTree = "<group>"; };
 		E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTOSViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -825,6 +830,8 @@
 				26E83DA91399D05E00195758 /* NSDate+Simperium.m */,
 				26B16EFD13B1B78C00BEB3E5 /* NSData+Simperium.h */,
 				26B16EFE13B1B78F00BEB3E5 /* NSData+Simperium.m */,
+				B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */,
+				B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -1007,6 +1014,7 @@
 				E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */,
 				26653CFB15FE5DEA00461A28 /* SPReachability.h in Headers */,
 				46A16A8117289FE2003AED55 /* NSString+Simperium.h in Headers */,
+				B5F5D39418219CCE0048754C /* DDFileLogger+Simperium.h in Headers */,
 				464DC336176946ED00E75D05 /* SFHFKeychainUtils.h in Headers */,
 				1854D50F1799F6D2006C4211 /* NSArray+Simperium.h in Headers */,
 				46DD15CA179A6F4B0093678C /* SPMemberJSONList.h in Headers */,
@@ -1164,6 +1172,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				269CAC2C146DDA7C00584C56 /* Simperium.m in Sources */,
+				B5F5D39518219CCE0048754C /* DDFileLogger+Simperium.m in Sources */,
 				264CD93D135DFE6D00C51BAD /* SPManagedObject.m in Sources */,
 				264CD941135DFE6D00C51BAD /* SPEnvironment.m in Sources */,
 				264CD943135DFE6D00C51BAD /* SPGhost.m in Sources */,
@@ -1258,6 +1267,7 @@
 				46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */,
 				246F22C8179B3EDB009547B6 /* SimperiumCoreDataTests.m in Sources */,
 				1854D5111799F6D2006C4211 /* NSArray+Simperium.m in Sources */,
+				B5F5D39618219CCE0048754C /* DDFileLogger+Simperium.m in Sources */,
 				1854D514179A18B1006C4211 /* DiffMatchPatchArrayTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
