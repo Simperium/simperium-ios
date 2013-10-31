@@ -13,6 +13,10 @@ Then, drag and drop Simperium.xcodeproj into your application's project, then ad
 
 If for some reason you want to build a binary framework, open Simperium.xcodeproj, then select and build the Framework target for iOS Device. You can build a release version of the Framework target by choosing Product -> Build for Archiving.
 
+OSX
+---
+Everything works pretty much the same on OSX. Some changes are noted [in the online documentation](http://simperium.com/docs/ios/).
+
 Folder structure
 ----------------
 **Simperium**. Everything is accessed from a `Simperium` instance. This class can be safely instantiated more than once in the same app (e.g. for unit testing).
