@@ -139,7 +139,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         self.label = @"";
         _networkEnabled = YES;
         _authenticationEnabled = YES;
-        _useWebSockets = NO;
+        _useWebSockets = YES;
         dynamicSchemaEnabled = YES;
 		[ASIHTTPRequest setShouldUpdateNetworkActivityIndicator:NO];
         self.buckets = [NSMutableDictionary dictionary];
