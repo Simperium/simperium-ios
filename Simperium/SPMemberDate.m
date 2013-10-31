@@ -14,7 +14,17 @@
 	return [NSDate date];
 }
 
--(id)fromJSON:(id)value {
+-(id)dateValueFromNumber:(id)value {
+	if ([value isKindOfClass:[NSNumber class]])
+		return value;
+	
+	// Convert from NSDate to NSNumber
+	//NSInteger gmtOffset = [[NSTimeZone localTimeZone] secondsFromGMT];
+	return [NSNumber numberWithDouble:[value timeIntervalSince1970]];//+gmtOffset];
+}
+
+-(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
+    id value = [dict objectForKey: key];
     if (!value)
         return nil;
     
@@ -26,33 +36,9 @@
 	return [NSDate dateWithTimeIntervalSince1970:[(NSString *)value doubleValue]];//-gmtOffset];
 }
 
--(id)toJSON:(id)value {
-	if ([value isKindOfClass:[NSNumber class]])
-		return value;
-	
-	// Convert from NSDate to NSNumber
-	//NSInteger gmtOffset = [[NSTimeZone localTimeZone] secondsFromGMT];
-	return [NSNumber numberWithDouble:[value timeIntervalSince1970]];//+gmtOffset];
-}
-
--(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
-    id value = [dict objectForKey: key];
-    value = [self fromJSON: value];
-    return value;
-}
-
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self toJSON: value];
+    id convertedValue = [self dateValueFromNumber: value];
     [dict setValue:convertedValue forKey:key];
-}
-
-
--(id)defaultValueAsStringForSQL {
-	return @"0";
-}
-
--(NSString *)typeAsStringForSQL {
-	return @"REAL";
 }
 
 -(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
@@ -69,7 +55,7 @@
 	// Construct the diff in the expected format
 	return [NSDictionary dictionaryWithObjectsAndKeys:
 			OP_REPLACE, OP_OP,
-			[self toJSON: otherValue], OP_VALUE, nil];
+			[self dateValueFromNumber: otherValue], OP_VALUE, nil];
 }
 
 -(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
@@ -82,19 +68,6 @@
 	// TODO: Not sure if this should be a copy or not
 	return otherValue;
 }
-
-//-(id)sqlLoadWithStatement:(sqlite3_stmt *)statement queryPosition:(int)position
-//{
-//	return [NSNumber numberWithDouble: sqlite3_column_double(statement, position)];
-//    //	return [NSDate dateWithTimeIntervalSince1970:sqlite3_column_double(statement, position)];
-//}
-//
-//-(void)sqlBind:(id)data withStatement:(sqlite3_stmt *)statement queryPosition:(int)position
-//{
-//	sqlite3_bind_double(statement, position, [data doubleValue]);
-//    //	sqlite3_bind_double(statement, position, [data timeIntervalSince1970]);
-//}
-
 
 @end
 

@@ -41,10 +41,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return self;
 }
 
--(void)dealloc
-{
-    [super dealloc];
-}
 
 // Process an index of keys from the Simperium service for a particular bucket
 -(void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(void(^)(NSString *key, NSString *version))versionHandler 
@@ -59,8 +55,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [batchLists addObject: [NSMutableArray arrayWithCapacity:kBatchSize]];
     }
     
-    int currentBatch = 0;
     // Build the batches
+    int currentBatch = 0;
     NSMutableArray *currentBatchList = [batchLists objectAtIndex:currentBatch];
     for (NSDictionary *dict in indexArray) {
         NSString *key = [dict objectForKey:@"id"];
@@ -76,146 +72,191 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         }
     }
     
+    // Take this opportunity to check for any objects that exist locally but not remotely, and remove them
+    // (this can happen after reindexing if the client missed some remote deletion changes)
+    
+    /* TODO: re-enable this after more thorough unit testing. Suspect it could be the cause of
+       data loss. Disabling this will mean that remotely deleted notes may linger if the
+       deletion didn't sync before a reindexing.
+       NSSet *remoteKeySet = [NSSet setWithArray:[indexDict allKeys]];
+       [self reconcileLocalAndRemoteIndex:remoteKeySet bucket:bucket storage:threadSafeStorage];
+     */
+    
     // Process each batch while being efficient with memory and faulting
     for (NSMutableArray *batchList in batchLists) {
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        @autoreleasepool {
         // Batch fault the entities for efficiency
-        NSDictionary *objects = [threadSafeStorage faultObjectsForKeys:batchList bucketName:bucket.name];
-        
-        for (NSString *key in batchList) {
-            id version = [indexDict objectForKey: key];
+            NSDictionary *objects = [threadSafeStorage faultObjectsForKeys:batchList bucketName:bucket.name];
             
-            // Store versions as strings, but if they come off the wire as numbers, then handle that too
-            if ([version isKindOfClass:[NSNumber class]])
-                version = [NSString stringWithFormat:@"%d", [version integerValue]];
-            
-            // Check to see if this entity already exists locally and is up to date
-            id<SPDiffable> object = [objects objectForKey:key];
-            if (object && object.ghost != nil && object.ghost.version != nil && [version isEqualToString:object.ghost.version])
-                continue;
-            
-            // Allow caller to use the key and version
-            dispatch_async(dispatch_get_main_queue(), ^{
+            for (NSString *key in batchList) {
+                id version = [indexDict objectForKey: key];
+                
+                // Store versions as strings, but if they come off the wire as numbers, then handle that too
+                if ([version isKindOfClass:[NSNumber class]])
+                    version = [NSString stringWithFormat:@"%ld", (long)[version integerValue]];
+                
+                // Check to see if this entity already exists locally and is up to date
+                id<SPDiffable> object = [objects objectForKey:key];
+                if (object && object.ghost != nil && object.ghost.version != nil && [version isEqualToString:object.ghost.version])
+                    continue;
+                
+                // Allow caller to use the key and version
                 versionHandler(key, version);
-            });
+            }
+            
+            // Refault to free up the memory
+            [threadSafeStorage refaultObjects: [objects allValues]];
         }
+    }
+}
+
+-(void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket storage:(id<SPStorageProvider>)threadSafeStorage {
+    NSArray *localKeys = [threadSafeStorage objectKeysForBucketName:bucket.name];
+    NSMutableSet *localKeySet = [NSMutableSet setWithArray:localKeys];
+    [localKeySet minusSet:remoteKeySet];
+
+    // If any objects exist locally but not remotely, get rid of them
+    if ([localKeySet count] > 0) {
+        NSMutableSet *keysForDeletedObjects = [NSMutableSet setWithCapacity:[localKeySet count]];
+        NSArray *objectsToDelete = [threadSafeStorage objectsForKeys:localKeySet bucketName:bucket.name];
         
-        // Refault to free up the memory
-        [threadSafeStorage refaultObjects: [objects allValues]];
-        [pool release];
+        for (id<SPDiffable>objectToDelete in objectsToDelete) {
+            NSString *key = [objectToDelete simperiumKey];
+            
+            // If the object has never synced, be careful not to delete it (it won't exist in the remote index yet)
+            if ([[objectToDelete ghost] memberData] == nil) {
+                DDLogWarn(@"Simperium found local object that doesn't exist remotely yet: %@ (%@)", key, bucket.name);
+                continue;
+            }
+            [keysForDeletedObjects addObject:key];
+            [threadSafeStorage deleteObject:objectToDelete];
+        }
+        DDLogVerbose(@"Simperium deleting %ld objects after re-indexing", (long)[keysForDeletedObjects count]);
+        [threadSafeStorage save];
+        
+        NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  bucket.name, @"bucketName",
+                                  keysForDeletedObjects, @"keys", nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
     }
 }
 
 // Process actual version data from the Simperium service for a particular bucket
 -(void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket firstSync:(BOOL)firstSync changeHandler:(void(^)(NSString *key))changeHandler
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSMutableSet *addedKeys = [NSMutableSet setWithCapacity:5];
-    NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:5];
-    id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
-    
-    // Batch fault all the objects into a dictionary for efficiency
-    NSMutableArray *objectKeys = [NSMutableArray arrayWithCapacity:[versions count]];
-    for (NSArray *versionData in versions) {
-        [objectKeys addObject:[versionData objectAtIndex:0]];
-    }
-    NSDictionary *objects = [threadSafeStorage faultObjectsForKeys:objectKeys bucketName:bucket.name];
-    
-    // Process all version data
-    for (NSArray *versionData in versions)
-    {
-        // Unmarshal the data
-        NSString *key = [versionData objectAtIndex:0];
-        NSString *responseString = [versionData objectAtIndex:1];
-        NSString *version = [versionData objectAtIndex:2];
-        NSMutableDictionary *data = [responseString objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
-                          
-        id<SPDiffable> object = [objects objectForKey:key];
-        SPGhost *ghost = nil;
+    @autoreleasepool {
+        NSMutableSet *addedKeys = [NSMutableSet setWithCapacity:5];
+        NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:5];
+        id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
         
-        if (!object) {
-            // The object doesn't exist locally yet, so create it
-            object = [threadSafeStorage insertNewObjectForBucketName:bucket.name simperiumKey:key];
-            object.bucket = bucket; // set it manually since it won't be set automatically yet
-            [object loadMemberData:data];    
-            [addedKeys addObject:key];
-                        
-            NSMutableDictionary *newMemberData = [[object dictionary] mutableCopy];
-            ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData:newMemberData];
-            [newMemberData release];
-            DDLogVerbose(@"Simperium added object from index (%@): %@", bucket.name, [object simperiumKey]);
-        } else {
-            // The object already exists locally; update it if necessary
-            BOOL overwriteLocalData = NO;
+        // Batch fault all the objects into a dictionary for efficiency
+        NSMutableArray *objectKeys = [NSMutableArray arrayWithCapacity:[versions count]];
+        for (NSArray *versionData in versions) {
+            [objectKeys addObject:[versionData objectAtIndex:0]];
+        }
+        NSDictionary *objects = [threadSafeStorage faultObjectsForKeys:objectKeys bucketName:bucket.name];
+        
+        // Process all version data
+        for (NSArray *versionData in versions)
+        {
+            // Unmarshal the data
+            NSString *key = [versionData objectAtIndex:0];
+            NSString *responseString = [versionData objectAtIndex:1];
+            NSString *version = [versionData objectAtIndex:2];
+            NSMutableDictionary *data = [responseString objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+                              
+            id<SPDiffable> object = [objects objectForKey:key];
+            SPGhost *ghost = nil;
             
-            // The firstSync flag is set if there has not yet been a successful sync. In that case, additional checks
-            // are performed to see if the local data should be preserved instead. This handles migrations from existing
-            // sync systems (e.g. Simplenote GAE), and in particular, cases where there are local, unsynced changes that
-            // should be preserved.
-            if (firstSync) {
-                NSDictionary *diff = [bucket.differ diff:object withDictionary:data];
-                if ([diff count] > 0 && [object respondsToSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
-                    DDLogVerbose(@"Simperium object %@ has changes: %@", [object simperiumKey], diff);
-                    if ([object performSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
-                        // The app has determined this object's local changes should be taken from index regardless of any local changes
-                        DDLogVerbose(@"Simperium local object found (%@) with local changes, and OVERWRITING those changes", bucket.name);
-                        overwriteLocalData = YES;
-                    } else
-                        // There's a local, unsynced change, which can only happen on first sync when migrating from an earlier version of an app.
-                        // Allow the caller to deal with this case
-                        changeHandler(key);
+            if (!object) {
+                // The object doesn't exist locally yet, so create it
+                object = [threadSafeStorage insertNewObjectForBucketName:bucket.name simperiumKey:key];
+                object.bucket = bucket; // set it manually since it won't be set automatically yet
+                [object loadMemberData:data];    
+                [addedKeys addObject:key];
+                            
+                NSMutableDictionary *newMemberData = [[object dictionary] mutableCopy];
+                ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData:newMemberData];
+                DDLogVerbose(@"Simperium added object from index (%@): %@", bucket.name, [object simperiumKey]);
+            } else {
+                // The object already exists locally; update it if necessary
+                BOOL overwriteLocalData = NO;
+                
+                // The firstSync flag is set if there has not yet been a successful sync. In that case, additional checks
+                // are performed to see if the local data should be preserved instead. This handles migrations from existing
+                // sync systems (e.g. Simplenote GAE), and in particular, cases where there are local, unsynced changes that
+                // should be preserved.
+                if (firstSync) {
+                    NSDictionary *diff = [bucket.differ diff:object withDictionary:data];
+                    if ([diff count] > 0 && [object respondsToSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
+                        DDLogVerbose(@"Simperium object %@ has changes: %@", [object simperiumKey], diff);
+                        if ([object performSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
+                            // The app has determined this object's local changes should be taken from index regardless of any local changes
+                            DDLogVerbose(@"Simperium local object found (%@) with local changes, and OVERWRITING those changes", bucket.name);
+                            overwriteLocalData = YES;
+                        } else
+                            // There's a local, unsynced change, which can only happen on first sync when migrating from an earlier version of an app.
+                            // Allow the caller to deal with this case
+                            changeHandler(key);
+                    }
+                    
+                    // Set the ghost data (this expects all properties to be present in memberData)
+                    ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData: data];                
+                } else if (object.version != nil && ![version isEqualToString:object.version]) {
+                    // Safe to do here since the local change has already been posted
+                    overwriteLocalData = YES;
                 }
                 
-                // Set the ghost data (this expects all properties to be present in memberData)
-                ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData: data];                
-            } else if (object.version != nil && ![version isEqualToString:object.version]) {
-                // Safe to do here since the local change has already been posted
-                overwriteLocalData = YES;
+                // Overwrite local changes if necessary
+                if (overwriteLocalData) {
+                    [object loadMemberData:data];
+                    
+                    // Be sure to load all members into ghost (since the version results might only contain a subset of members that were changed)
+                    NSMutableDictionary *ghostMemberData = [[object dictionary] mutableCopy];
+                     // might have already been allocated above
+                    ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData: ghostMemberData];
+                    [changedKeys addObject:key];
+                    DDLogVerbose(@"Simperium loaded new data into object %@ (%@)", [object simperiumKey], bucket.name);
+                }
+
             }
             
-            // Overwrite local changes if necessary
-            if (overwriteLocalData) {
-                [object loadMemberData:data];
-                
-                // Be sure to load all members into ghost (since the version results might only contain a subset of members that were changed)
-                NSMutableDictionary *ghostMemberData = [[object dictionary] mutableCopy];
-                [ghost release]; // might have already been allocated above
-                ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData: ghostMemberData];
-                [ghostMemberData release];
-                [changedKeys addObject:key];
-                DDLogVerbose(@"Simperium loaded new data into object %@ (%@)", [object simperiumKey], bucket.name);
+            // If there is a new/changed ghost, store it
+            if (ghost) {
+                DDLogVerbose(@"Simperium updating ghost data for object %@ (%@)", [object simperiumKey], bucket.name);
+                ghost.version = version;
+                object.ghost = ghost;
+                object.simperiumKey = object.simperiumKey; // ugly hack to force entity to save since ghost isn't transient
             }
-
         }
         
-        // If there is a new/changed ghost, store it
-        if (ghost) {
-            DDLogVerbose(@"Simperium updating ghost data for object %@ (%@)", [object simperiumKey], bucket.name);
-            ghost.version = version;
-            object.ghost = ghost;
-            object.simperiumKey = object.simperiumKey; // ugly hack to force entity to save since ghost isn't transient
-            [ghost release];
-        }
-    }
-    
-    // Store after processing the batch for efficiency
-    [threadSafeStorage save];
-    [threadSafeStorage refaultObjects:[objects allValues]];
-    
-    // Do all main thread work afterwards as well
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSDictionary *userInfoAdded = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  bucket.name, @"bucketName",
-                                  addedKeys, @"keys", nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidAddObjectsNotification" object:bucket userInfo:userInfoAdded];
+        // Store after processing the batch for efficiency
+        [threadSafeStorage save];
+        [threadSafeStorage refaultObjects:[objects allValues]];
+        
+        // Do all main thread work afterwards as well
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Manually resolve any pending references to added objects
+            [bucket resolvePendingRelationshipsToKeys:addedKeys];
+            [bucket.storage save];
 
-        NSDictionary *userInfoChanged = [NSDictionary dictionaryWithObjectsAndKeys:
-                                       bucket.name, @"bucketName",
-                                       changedKeys, @"keys", nil];        
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidChangeObjectsNotification" object:bucket userInfo:userInfoChanged];
-    });
-    
-    [pool release];
+            // Revisit the use of NSNotification if there is demand. Currently it's too slow when lots of data is being
+            // indexed across buckets, so it's not done by default
+            if (bucket.notifyWhileIndexing) {
+                NSDictionary *userInfoAdded = [NSDictionary dictionaryWithObjectsAndKeys:
+                                          bucket.name, @"bucketName",
+                                          addedKeys, @"keys", nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidAddObjectsNotification object:bucket userInfo:userInfoAdded];
+
+                for (NSString *key in changedKeys) {
+                    NSDictionary *userInfoChanged = [NSDictionary dictionaryWithObjectsAndKeys:
+                                                   bucket.name, @"bucketName",
+                                                   key, @"key", nil];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidChangeObjectNotification object:bucket userInfo:userInfoChanged];
+                }
+            }
+        });    
+    }
 }
 
 @end

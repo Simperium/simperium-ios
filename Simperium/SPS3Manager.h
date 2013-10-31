@@ -35,11 +35,11 @@
     
 }
 
-@property(nonatomic, retain, readonly) NSMutableDictionary *downloadsInProgressData;
-@property(nonatomic, retain, readonly) NSMutableDictionary *downloadsInProgressRequests;
-@property(nonatomic, retain, readonly) NSMutableDictionary *uploadsInProgressRequests;
-@property(nonatomic, retain, readonly) NSMutableDictionary *bgTasks;
-@property(nonatomic, retain) NSString *bucketName;
+@property(nonatomic, strong, readonly) NSMutableDictionary *downloadsInProgressData;
+@property(nonatomic, strong, readonly) NSMutableDictionary *downloadsInProgressRequests;
+@property(nonatomic, strong, readonly) NSMutableDictionary *uploadsInProgressRequests;
+@property(nonatomic, strong, readonly) NSMutableDictionary *bgTasks;
+@property(nonatomic, strong) NSString *bucketName;
 
 -(id)initWithSimperium:(Simperium *)aSimperium;
 -(int)sizeOfRemoteFile:(NSString *)filename;

@@ -42,18 +42,19 @@
         SPGhost *ghost = [[SPGhost alloc] initWithKey: [object simperiumKey] memberData: nil];
         object.ghost = ghost;
         object.ghost.version = @"0";
-        [ghost release];
     }
 }
 
 -(void)configureInsertedObject:(id<SPDiffable>)object
 {
-    if (object.simperiumKey == nil || object.simperiumKey.length == 0)
+    if (object.simperiumKey == nil || object.simperiumKey.length == 0) {
         object.simperiumKey = [NSString sp_makeUUID];
+	}
     
     [self configureNewGhost:object];
     
     // nil values should be OK now...try disabling defaults
     //[entityManager setDefaults:entity];  
 }
+
 @end

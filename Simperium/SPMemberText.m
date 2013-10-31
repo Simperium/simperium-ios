@@ -13,26 +13,14 @@
 -(id)initFromDictionary:(NSDictionary *)dict
 {
     if (self = [super initFromDictionary:dict]) {
-        dmp = [[[DiffMatchPatch alloc] init] retain];
+        dmp = [[DiffMatchPatch alloc] init];
     }
     return self;
 }
 
--(void)dealloc {
-    [dmp release];
-    [super dealloc];
-}
 
 -(id)defaultValue {
 	return @"";
-}
-
--(id)defaultValueAsStringForSQL {
-	return @"''";
-}
-
--(NSString *)typeAsStringForSQL {
-	return @"TEXT";
 }
 
 -(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
@@ -101,17 +89,5 @@
 	
 	return [NSDictionary dictionary];
 }
-
-//-(id)sqlLoadWithStatement:(sqlite3_stmt *)statement queryPosition:(int)position
-//{
-//	char *str = (char *)sqlite3_column_text(statement, position);
-//	return str == NULL ? @"" : [NSString stringWithUTF8String:str];
-//}
-//
-//-(void)sqlBind:(id)data withStatement:(sqlite3_stmt *)statement queryPosition:(int)position
-//{
-//	sqlite3_bind_text(statement, position, [data UTF8String], -1, SQLITE_TRANSIENT);	
-//}
-
 
 @end

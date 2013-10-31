@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "SPBinaryTransportDelegate.h"
 
-// TODO: consider best way to move this to SPReferenceManager
 #define BIN_KEY @"SPPathKey"
 #define BIN_BUCKET @"SPPathBucket"
 #define BIN_ATTRIBUTE @"SPPathAttribute"
@@ -32,11 +31,11 @@
 @property (nonatomic, copy) NSString *binaryAuthURL;
 @property (nonatomic, copy) NSString *directory;
 @property (nonatomic, copy) NSString *keyPrefix;
-@property(nonatomic, retain, readonly) NSMutableDictionary *pendingBinaryDownloads;
-@property(nonatomic, retain, readonly) NSMutableDictionary *pendingBinaryUploads;
-@property(nonatomic, retain, readonly) NSMutableDictionary *transmissionProgress;
+@property(nonatomic, strong, readonly) NSMutableDictionary *pendingBinaryDownloads;
+@property(nonatomic, strong, readonly) NSMutableDictionary *pendingBinaryUploads;
+@property(nonatomic, strong, readonly) NSMutableDictionary *transmissionProgress;
 
-@property (nonatomic,assign, readonly) NSMutableSet *delegates;
+@property (nonatomic, readonly, strong) NSMutableSet *delegates;
 
 -(id)initWithSimperium:(Simperium *)aSimperium;
 -(void)setupAuth:(SPUser *)user;

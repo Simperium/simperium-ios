@@ -8,11 +8,6 @@
 
 #import "NSData+Simperium.h"
 
-@interface FIXCATEGORYBUGDATA;
-@end
-@implementation FIXCATEGORYBUGDATA;
-@end
-
 // From https://github.com/mikeho/QSUtilities
 static const short _base64DecodingTable[256] = {
     -2, -2, -2, -2, -2, -2, -2, -2, -2, -1, -1, -2, -1, -1, -2, -2,
@@ -37,12 +32,11 @@ static const short _base64DecodingTable[256] = {
 
 + (NSData *)decodeBase64WithString:(NSString *)strBase64 {
     const char * objPointer = [strBase64 cStringUsingEncoding:NSASCIIStringEncoding];
-    int intLength = strlen(objPointer);
+    int intLength = (int)strlen(objPointer);
     int intCurrent;
     int i = 0, j = 0, k;
     
-    unsigned char * objResult;
-    objResult = calloc(intLength, sizeof(char));
+    unsigned char * objResult = calloc(intLength, sizeof(unsigned char));
     
     // Run through the whole string, converting as we go
     while ( ((intCurrent = *objPointer++) != '\0') && (intLength-- > 0) ) {
@@ -105,8 +99,7 @@ static const short _base64DecodingTable[256] = {
     }
     
     // Cleanup and setup the return NSData
-    NSData * objData = [[[NSData alloc] initWithBytes:objResult length:j] autorelease];
-    free(objResult);
+	NSData* objData = [NSData dataWithBytesNoCopy:objResult length:j freeWhenDone:YES];
     return objData;
 }
 @end

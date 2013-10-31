@@ -18,10 +18,10 @@
     dispatch_queue_t storageQueue;
 }
 
-@property (nonatomic, retain) NSMutableDictionary *objects;
-@property (nonatomic, retain) NSMutableDictionary *ghosts;
-@property (nonatomic, retain) NSMutableArray *objectList;
-@property (nonatomic, retain) NSMutableDictionary *allObjects;
+@property (nonatomic, strong) NSMutableDictionary *objects;
+@property (nonatomic, strong) NSMutableDictionary *ghosts;
+@property (nonatomic, strong) NSMutableArray *objectList;
+@property (nonatomic, strong) NSMutableDictionary *allObjects;
 
 -(id)initWithDelegate:(id<SPStorageObserver>)aDelegate;
 

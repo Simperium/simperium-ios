@@ -13,10 +13,6 @@
 @implementation SPMemberBinary
 @synthesize binaryManager;
 
--(void)dealloc {
-    [super dealloc];
-    self.binaryManager = nil;
-}
 
 -(id)defaultValue {
 	return @"";
@@ -43,8 +39,6 @@
                                              fromKey:objectKey
                                           bucketName:bucketName
                                           attributeName:self.keyName];
-            [objectKey release];
-            [bucketName release];
         });
     }
     return value;    

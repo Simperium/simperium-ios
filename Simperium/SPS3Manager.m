@@ -2,7 +2,7 @@
 //  SPS3Manager.m
 //  Simperium
 //
-//  Created by Michael Johnston on 11-05-31.
+//  Created by John Carter on 11-05-31.
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
@@ -21,14 +21,14 @@
 #import <AWSiOSSDK/S3/AmazonS3Client.h>
 
 @interface SPS3Manager()
-@property (nonatomic, retain) AmazonCredentials *awsCredentials;
-@property (nonatomic, retain) AmazonS3Client *awsConnection;
-@property (nonatomic, retain) NSDate *binaryAuthTokenExpiry;
+@property (nonatomic, strong) AmazonCredentials *awsCredentials;
+@property (nonatomic, strong) AmazonS3Client *awsConnection;
+@property (nonatomic, strong) NSDate *binaryAuthTokenExpiry;
 @property (nonatomic, copy) NSString *binaryAuthID;
 @property (nonatomic, copy) NSString *binaryAuthSecret;
 @property (nonatomic, copy) NSString *binaryAuthSessionToken;
 @property (nonatomic, copy) NSString *remoteURL;
-@property (nonatomic, retain) NSMutableDictionary *remoteFilesizeCache;
+@property (nonatomic, strong) NSMutableDictionary *remoteFilesizeCache;
 
 -(BOOL)binaryTokenExpired;
 -(BOOL)checkOrGetBinaryAuthentication;
@@ -55,31 +55,15 @@
 {
     NSLog(@"Simperium initializing binary manager");
     if ((self = [super initWithSimperium:aSimperium])) {
-        downloadsInProgressData = [[NSMutableDictionary dictionaryWithCapacity: 3] retain];
-        downloadsInProgressRequests = [[NSMutableDictionary dictionaryWithCapacity: 3] retain];
-        uploadsInProgressRequests = [[NSMutableDictionary dictionaryWithCapacity: 3] retain];
-        remoteFilesizeCache = [[NSMutableDictionary dictionaryWithCapacity: 3] retain];
-        bgTasks = [[NSMutableDictionary dictionaryWithCapacity: 3] retain];
+        downloadsInProgressData = [NSMutableDictionary dictionaryWithCapacity: 3];
+        downloadsInProgressRequests = [NSMutableDictionary dictionaryWithCapacity: 3];
+        uploadsInProgressRequests = [NSMutableDictionary dictionaryWithCapacity: 3];
+        remoteFilesizeCache = [NSMutableDictionary dictionaryWithCapacity: 3];
+        bgTasks = [NSMutableDictionary dictionaryWithCapacity: 3];
         
         backgroundQueue = dispatch_queue_create("com.simperium.simperium.backgroundQueue", NULL);        
     }
     return self;
-}
-
--(void)dealloc
-{
-    self.awsConnection = nil;
-    self.awsCredentials = nil;
-    self.remoteURL = nil;
-    self.binaryAuthTokenExpiry = nil;
-    self.binaryAuthID = nil;
-    self.binaryAuthSecret = nil;
-    self.binaryAuthSessionToken = nil;
-    [downloadsInProgressData release];
-    [downloadsInProgressRequests release];
-    [uploadsInProgressRequests release];
-    [remoteFilesizeCache release];
-    [super dealloc];
 }
 
 -(BOOL)binaryTokenExpired
@@ -135,11 +119,9 @@
             [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'"];
                         
             self.binaryAuthTokenExpiry = [dateFormatter dateFromString:[NSString stringWithString:[userDict objectForKey:@"expiration"]]];
-            [dateFormatter release];
                         
             AmazonCredentials *credentials = [[AmazonCredentials alloc] initWithAccessKey: self.binaryAuthID withSecretKey: self.binaryAuthSecret withSecurityToken:self.binaryAuthSessionToken];
             self.awsCredentials = credentials;
-            [credentials release];
             
             [self createLocalDirectoryForPrefix:self.keyPrefix];
             
@@ -173,7 +155,6 @@
         //[AmazonLogger verboseLogging]; 
         AmazonS3Client *connection = [[AmazonS3Client alloc] initWithCredentials: self.awsCredentials];
         self.awsConnection = connection;
-        [connection release];
     }
         
     return YES;
@@ -226,10 +207,10 @@
     if (cached) {
         return [cached intValue];
     }
-    S3GetObjectRequest *headRequest = [[[S3GetObjectRequest alloc] initWithKey:filename withBucket: [self getS3BucketName]] autorelease];
+    S3GetObjectRequest *headRequest = [[S3GetObjectRequest alloc] initWithKey:filename withBucket: [self getS3BucketName]];
     headRequest.httpMethod = @"HEAD";
         
-    S3Response *headResponse = [[[S3Response alloc] init] autorelease];
+    S3Response *headResponse = [[S3Response alloc] init];
     headResponse = [self.awsConnection invoke:headRequest];
     
     if (headResponse.httpStatusCode == 200) {
@@ -247,7 +228,6 @@ NSString *hackFilename;
     [self checkOrGetBinaryAuthentication];
     [self connectToAWS];
     
-    [hackFilename release];
     hackFilename = [filename copy];
     
     UIApplication *app = [UIApplication sharedApplication];
@@ -273,14 +253,13 @@ NSString *hackFilename;
             // @TODO error handling ?
             [transmissionProgress setObject:[NSNumber numberWithInt:sizeOfRemoteFile] forKey:filename];
             
-            S3GetObjectRequest *downloadRequest = [[[S3GetObjectRequest alloc] initWithKey:filename withBucket: [self getS3BucketName]] autorelease];
+            S3GetObjectRequest *downloadRequest = [[S3GetObjectRequest alloc] initWithKey:filename withBucket: [self getS3BucketName]];
             
             [downloadRequest setDelegate:self];
             downloadResponse = [self.awsConnection getObject: downloadRequest];
             NSMutableData *fileData = [[NSMutableData alloc] initWithCapacity:1024];
             [downloadsInProgressData setObject: fileData forKey:filename];
             [downloadsInProgressRequests setObject: downloadRequest forKey:filename];
-            [fileData release];
             
             for (id<SPBinaryTransportDelegate>delegate in delegates) {
                 if ([delegate respondsToSelector:@selector(binaryDownloadStarted:)]) 
@@ -317,20 +296,20 @@ NSString *hackFilename;
         }
 
     @try {
-        //AmazonS3Client *s3 = [[[AmazonS3Client alloc] initWithAccessKey:ACCESS_KEY_ID withSecretKey:SECRET_KEY] autorelease];
-        //AmazonS3Client *s3 = [[[AmazonS3Client alloc] initWithAccessKey:self.binaryAuthID withSecretKey:self.binaryAuthSecret] autorelease];
+        //AmazonS3Client *s3 = [[AmazonS3Client alloc] initWithAccessKey:ACCESS_KEY_ID withSecretKey:SECRET_KEY];
+        //AmazonS3Client *s3 = [[AmazonS3Client alloc] initWithAccessKey:self.binaryAuthID withSecretKey:self.binaryAuthSecret];
 
-        //[self.awsConnection createBucket:[[[S3CreateBucketRequest alloc] initWithName:[self getS3BucketName]] autorelease]];
+        //[self.awsConnection createBucket:[[S3CreateBucketRequest alloc] initWithName:[self getS3BucketName]]];
 
         NSString *s3bucketName = [self getS3BucketName];
         NSString *s3filename = [self prefixFilename:filename];
-        S3PutObjectRequest *uploadRequest = [[[S3PutObjectRequest alloc] initWithKey:s3filename inBucket:s3bucketName] autorelease];
+        S3PutObjectRequest *uploadRequest = [[S3PutObjectRequest alloc] initWithKey:s3filename inBucket:s3bucketName];
         
         // Create the picture bucket.
-        //[s3 createBucket:[[[S3CreateBucketRequest alloc] initWithName:BUCKET] autorelease]];
+        //[s3 createBucket:[[S3CreateBucketRequest alloc] initWithName:BUCKET]];
         
         // Upload image data.  Remember to set the content type.
-        //S3PutObjectRequest *por = [[[S3PutObjectRequest alloc] initWithKey:@"NameOfThePicture" inBucket:BUCKET] autorelease];
+        //S3PutObjectRequest *por = [[S3PutObjectRequest alloc] initWithKey:@"NameOfThePicture" inBucket:BUCKET];
         //por.data = data;
         [uploadRequest setDelegate: self];
         //uploadRequest.contentType = @"image/jpeg";

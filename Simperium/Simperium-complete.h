@@ -336,7 +336,7 @@ extern NSString * const host;
  
  @see SPUser
  */
-@property (nonatomic,retain) SPUser *user;
+@property (nonatomic,strong) SPUser *user;
 
 ///---------------------------------------------------------------------------------------
 /// @name Getting the Simperium App Details
@@ -355,9 +355,9 @@ extern NSString * const host;
 @property (nonatomic, readonly) NSString *accessKey;
 
 #if TARGET_OS_IPHONE
-@property (nonatomic, assign) UIViewController *rootViewController;
+@property (nonatomic, weak) UIViewController *rootViewController;
 #else
-@property (nonatomic, assign) NSWindow *window;
+@property (nonatomic, weak) NSWindow *window;
 #endif
 
 @property (nonatomic, copy) NSString *iconFilename;
@@ -368,17 +368,17 @@ extern NSString * const host;
 ///---------------------------------------------------------------------------------------
 
 /// The NSManagedObjectContext used by Simperium.
-@property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, strong, readonly) NSManagedObjectContext *managedObjectContext;
 
 /// The NSManagedObjectModel used by Simperium.
-@property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, strong, readonly) NSManagedObjectModel *managedObjectModel;
 
 /// The NSPersistentStoreCoordinator used by Simperium.
-@property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+@property (nonatomic, strong, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
 // Not intended to be accessed directly
-@property (nonatomic, retain) SPBinaryManager *binaryManager;
-@property (nonatomic,assign,readonly) NSMutableSet *delegates;
+@property (nonatomic, strong) SPBinaryManager *binaryManager;
+@property (nonatomic,weak,readonly) NSMutableSet *delegates;
 
 
 @end

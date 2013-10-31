@@ -12,25 +12,26 @@
 #import "SPCoreDataExporter.h"
 #import "SPSchema.h"
 #import "DDLog.h"
-#import <objc/runtime.h>
 
+
+
+NSString* const SPCoreDataBucketListKey = @"SPCoreDataBucketListKey";
 static int ddLogLevel = LOG_LEVEL_INFO;
 
-static char const * const BucketListKey = "bucketList";
 
-@interface SPCoreDataStorage()
--(void)addObserversForContext:(NSManagedObjectContext *)context;
+@interface SPCoreDataStorage ()
+@property (nonatomic, strong, readwrite) NSManagedObjectContext *writerManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext	*mainManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+@property (nonatomic, strong, readwrite) NSMutableDictionary *classMappings;
+@property (nonatomic, weak, readwrite) SPCoreDataStorage *sibling;
+-(void)addObserversForMainContext:(NSManagedObjectContext *)context;
+-(void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
 
-@implementation SPCoreDataStorage
-@synthesize managedObjectContext=__managedObjectContext;
-@synthesize managedObjectModel=__managedObjectModel;
-@synthesize persistentStoreCoordinator=__persistentStoreCoordinator;
-@synthesize delegate;
 
-+(char const * const)bucketListKey {
-    return BucketListKey;
-}
+@implementation SPCoreDataStorage
 
 + (int)ddLogLevel {
     return ddLogLevel;
@@ -40,17 +41,24 @@ static char const * const BucketListKey = "bucketList";
     ddLogLevel = logLevel;
 }
 
--(id)initWithModel:(NSManagedObjectModel *)model context:(NSManagedObjectContext *)context coordinator:(NSPersistentStoreCoordinator *)coordinator
+-(id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator
 {
     if (self = [super init]) {
-        stashedObjects = [[NSMutableSet setWithCapacity:3] retain];
-        classMappings = [[NSMutableDictionary dictionary] retain];
+		// Create a writer MOC
+		self.writerManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+		
+        stashedObjects = [NSMutableSet setWithCapacity:3];
+        self.classMappings = [NSMutableDictionary dictionary];
 
-        __persistentStoreCoordinator = [coordinator retain];
-        __managedObjectModel = [model retain];
-        __managedObjectContext = [context retain];
-        
-        [self addObserversForContext:context];
+        self.persistentStoreCoordinator = coordinator;
+        self.managedObjectModel = model;
+        self.mainManagedObjectContext = mainContext;
+		
+		// The new writer MOC will be the only one with direct access to the persistentStoreCoordinator
+		self.writerManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
+		self.mainManagedObjectContext.parentContext = self.writerManagedObjectContext;
+
+        [self addObserversForMainContext:self.mainManagedObjectContext];
     }
     return self;
 }
@@ -58,30 +66,25 @@ static char const * const BucketListKey = "bucketList";
 -(id)initWithSibling:(SPCoreDataStorage *)aSibling
 {
     if (self = [super init]) {
-        // Create an ephemeral, thread-safe context that will merge back to the sibling automatically
-        sibling = aSibling;
-        NSManagedObjectContext *newContext = [[NSManagedObjectContext alloc] init];
-        __managedObjectContext = [newContext retain];
-        [__managedObjectContext release];
-        
-        [__managedObjectContext setPersistentStoreCoordinator:sibling.managedObjectContext.persistentStoreCoordinator];
-        
+        self.sibling = aSibling;
+		
+        // Create an ephemeral, thread-safe context that will push its changes directly to the writer MOC,
+		// and will also post the changes to the MainQueue
+        self.mainManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
+		self.writerManagedObjectContext = aSibling.writerManagedObjectContext;
+		
+		// Wire the Thread Confined Context, directly to the writer MOC
+		self.mainManagedObjectContext.parentContext = self.writerManagedObjectContext;
+		
         // Simperium's context always trumps the app's local context (potentially stomping in-memory changes)
-        [sibling.managedObjectContext setMergePolicy:NSMergeByPropertyStoreTrumpMergePolicy];
-        [__managedObjectContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
+        [self.sibling.mainManagedObjectContext setMergePolicy:NSMergeByPropertyStoreTrumpMergePolicy];
+        [self.mainManagedObjectContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
         
         // For efficiency
-        [__managedObjectContext setUndoManager:nil];
+        [self.mainManagedObjectContext setUndoManager:nil];
         
         // An observer is expected to handle merges for otherContext when the threaded context is saved
-        [[NSNotificationCenter defaultCenter] addObserver:sibling
-                                                 selector:@selector(mergeChanges:)
-                                                     name:NSManagedObjectContextDidSaveNotification
-                                                   object:__managedObjectContext];
-        
-        // Be sure to copy the bucket list
-        NSDictionary *dict = objc_getAssociatedObject(aSibling.managedObjectContext, BucketListKey);
-        objc_setAssociatedObject(__managedObjectContext, BucketListKey, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+		[aSibling addObserversForChildrenContext:self.mainManagedObjectContext];
     }
     
     return self;
@@ -89,44 +92,33 @@ static char const * const BucketListKey = "bucketList";
 
 -(void)dealloc
 {
-    objc_setAssociatedObject(__managedObjectContext, BucketListKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-
-    if (sibling) {
+    if (self.sibling) {
         // If a sibling was used, then this context was ephemeral and needs to be cleaned up
-        [[NSNotificationCenter defaultCenter] removeObserver:sibling name:NSManagedObjectContextDidSaveNotification object:__managedObjectContext];
-        [__managedObjectContext release];
-        __managedObjectContext = nil;
-    }
-    
-    [classMappings release];
-    [stashedObjects release];
-    [super dealloc];
-}
-
--(NSManagedObjectModel *)managedObjectModel {
-    return __managedObjectModel;
-}
-
--(NSPersistentStoreCoordinator *)persistentStoreCoordinator {
-    return __persistentStoreCoordinator;
-}
-
--(NSManagedObjectContext *)managedObjectContext {
-    return __managedObjectContext;
+        [[NSNotificationCenter defaultCenter] removeObserver:self.sibling name:NSManagedObjectContextWillSaveNotification object:self.mainManagedObjectContext];
+        [[NSNotificationCenter defaultCenter] removeObserver:self.sibling name:NSManagedObjectContextDidSaveNotification object:self.mainManagedObjectContext];
+    } else {
+		[[NSNotificationCenter defaultCenter] removeObserver:self];
+	}
 }
 
 -(void)setBucketList:(NSDictionary *)dict {
     // Set a custom field on the context so that objects can figure out their own buckets when they wake up
-    // (this could use userInfo on iOS5, but it doesn't exist on iOS4)
-    objc_setAssociatedObject(__managedObjectContext, BucketListKey, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+	NSMutableDictionary* bucketList = self.writerManagedObjectContext.userInfo[SPCoreDataBucketListKey];
+	
+	if(!bucketList)
+	{
+		bucketList = [NSMutableDictionary dictionary];
+		[self.writerManagedObjectContext.userInfo setObject:bucketList forKey:SPCoreDataBucketListKey];
+	}
+	
+	[bucketList addEntriesFromDictionary:dict];
 }
 
 -(NSArray *)exportSchemas {
     SPCoreDataExporter *exporter = [[SPCoreDataExporter alloc] init];
-    NSDictionary *definitionDict = [exporter exportModel:__managedObjectModel classMappings:classMappings];
-    [exporter release];
+    NSDictionary *definitionDict = [exporter exportModel:self.managedObjectModel classMappings:self.classMappings];
     
-    DDLogInfo(@"Simperium loaded %u entity definitions", [definitionDict count]);
+    DDLogInfo(@"Simperium loaded %lu entity definitions", (unsigned long)[definitionDict count]);
     
     NSUInteger numEntities = [[definitionDict allKeys] count];
     NSMutableArray *schemas = [NSMutableArray arrayWithCapacity:numEntities];
@@ -135,64 +127,107 @@ static char const * const BucketListKey = "bucketList";
         
         SPSchema *schema = [[SPSchema alloc] initWithBucketName:entityName data:entityDict];
         [schemas addObject:schema];
-        [schema release];
     }
     return schemas;
 }
 
 -(id<SPStorageProvider>)threadSafeStorage {
-    return [[[SPCoreDataStorage alloc] initWithSibling:self] autorelease];
+    return [[SPCoreDataStorage alloc] initWithSibling:self];
 }
 
 -(id<SPDiffable>)objectForKey: (NSString *)key bucketName:(NSString *)bucketName {
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:bucketName inManagedObjectContext:__managedObjectContext];
+    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     [fetchRequest setEntity:entityDescription];
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simperiumKey == %@", key];
     [fetchRequest setPredicate:predicate];
     
     NSError *error;
-    NSArray *items = [__managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
+    NSArray *items = [self.mainManagedObjectContext executeFetchRequest:fetchRequest error:&error];
     
-    if ([items count] == 0)
+    if ([items count] == 0) {
         return nil;
+	}
     
-    return [items objectAtIndex:0];
+    return items[0];
 }
-
 
 -(NSArray *)objectsForKeys:(NSSet *)keys bucketName:(NSString *)bucketName
 {
     return [[self faultObjectsForKeys:[keys allObjects] bucketName:bucketName] allValues];
 }
 
--(NSArray *)objectsForBucketName:(NSString *)bucketName
+-(NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
 {
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:__managedObjectContext];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     [fetchRequest setEntity:entity];
     [fetchRequest setReturnsObjectsAsFaults:YES];
     
+    if (predicate) {
+        [fetchRequest setPredicate:predicate];
+    }
+	
     NSError *error;
-    NSArray *items = [__managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
+    NSArray *items = [self.mainManagedObjectContext executeFetchRequest:fetchRequest error:&error];
     
     return items;
+}
+
+-(NSArray *)objectKeysAndIdsForBucketName:(NSString *)bucketName {
+    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
+    if (entity == nil) {
+        //DDLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
+        return nil;
+    }
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entity];
+    
+    // Execute a targeted fetch to preserve faults so that only simperiumKeys are loaded in to memory
+    // http://stackoverflow.com/questions/3956406/core-data-how-to-get-nsmanagedobjects-objectid-when-nsfetchrequest-returns-nsdi
+    NSExpressionDescription* objectIdDesc = [NSExpressionDescription new];
+    objectIdDesc.name = @"objectID";
+    objectIdDesc.expression = [NSExpression expressionForEvaluatedObject];
+    objectIdDesc.expressionResultType = NSObjectIDAttributeType;
+    NSDictionary *properties = [entity propertiesByName];
+    request.resultType = NSDictionaryResultType;
+    request.propertiesToFetch = [NSArray arrayWithObjects:[properties objectForKey:@"simperiumKey"], objectIdDesc, nil];
+    
+    NSError *error = nil;
+    NSArray *results = [self.mainManagedObjectContext executeFetchRequest:request error:&error];
+    if (results == nil) {
+        // Handle the error.
+        NSAssert1(0, @"Simperium error: couldn't load array of entities (%@)", bucketName);
+    }
+    
+    return results;
+    
+}
+
+-(NSArray *)objectKeysForBucketName:(NSString *)bucketName {
+    NSArray *results = [self objectKeysAndIdsForBucketName:bucketName];
+    
+    NSMutableArray *objectKeys = [NSMutableArray arrayWithCapacity:[results count]];
+    for (NSDictionary *result in results) {
+        NSString *key = [result objectForKey:@"simperiumKey"];
+        [objectKeys addObject:key];
+    }
+    
+    return objectKeys;
 }
 
 -(NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
 {
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:[NSEntityDescription entityForName:bucketName inManagedObjectContext:__managedObjectContext]];
+    [request setEntity:[NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext]];
     [request setIncludesSubentities:NO]; //Omit subentities. Default is YES (i.e. include subentities) 
-    if (predicate)
+    if (predicate) {
         [request setPredicate:predicate];
-    
+    }
+	
     NSError *err;
-    NSUInteger count = [__managedObjectContext countForFetchRequest:request error:&err];
-    [request release];
+    NSUInteger count = [self.mainManagedObjectContext countForFetchRequest:request error:&err];
     if(count == NSNotFound) {
         //Handle error
         return 0;
@@ -200,6 +235,7 @@ static char const * const BucketListKey = "bucketList";
     
     return count;
 }
+
 -(id)objectAtIndex:(NSUInteger)index bucketName:(NSString *)bucketName {
     // Not supported
     return nil;
@@ -209,20 +245,18 @@ static char const * const BucketListKey = "bucketList";
     // Not supported
 }
 
-
 -(NSDictionary *)faultObjectsForKeys:(NSArray *)keys bucketName:(NSString *)bucketName {
     // Batch fault a bunch of objects for efficiency
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simperiumKey IN %@", keys];
     
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:bucketName inManagedObjectContext:__managedObjectContext];
+    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     [fetchRequest setEntity:entityDescription];
     [fetchRequest setPredicate:predicate];
     [fetchRequest setReturnsObjectsAsFaults:NO];
     
     NSError *error;
-    NSArray *objectArray = [__managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
+    NSArray *objectArray = [self.mainManagedObjectContext executeFetchRequest:fetchRequest error:&error];
     
     NSMutableDictionary *objects = [NSMutableDictionary dictionaryWithCapacity:[keys count]];
     for (SPManagedObject *object in objectArray) {
@@ -233,7 +267,7 @@ static char const * const BucketListKey = "bucketList";
 
 -(void)refaultObjects:(NSArray *)objects {
     for (SPManagedObject *object in objects) {
-        [__managedObjectContext refreshObject:object mergeChanges:NO];
+        [self.mainManagedObjectContext refreshObject:object mergeChanges:NO];
     }
 }
 
@@ -241,7 +275,7 @@ static char const * const BucketListKey = "bucketList";
 {
 	// Every object has its persistent storage managed automatically
     SPManagedObject *object = [NSEntityDescription insertNewObjectForEntityForName:bucketName
-                                                     inManagedObjectContext:__managedObjectContext];
+															inManagedObjectContext:self.mainManagedObjectContext];
 	
     object.simperiumKey = key ? key : [NSString sp_makeUUID];
     
@@ -260,54 +294,31 @@ static char const * const BucketListKey = "bucketList";
 
 -(void)deleteAllObjectsForBucketName:(NSString *)bucketName {
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:__managedObjectContext];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     [fetchRequest setEntity:entity];
     
     // No need to fault everything
     [fetchRequest setIncludesPropertyValues:NO];
     
     NSError *error;
-    NSArray *items = [__managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
+    NSArray *items = [self.mainManagedObjectContext executeFetchRequest:fetchRequest error:&error];
     
     for (NSManagedObject *managedObject in items) {
-        [__managedObjectContext deleteObject:managedObject];
+        [self.mainManagedObjectContext deleteObject:managedObject];
     }
-    if (![__managedObjectContext save:&error]) {
+	
+    if (![self.mainManagedObjectContext save:&error]) {
         NSLog(@"Simperium error deleting %@ - error:%@",bucketName,error);
     }
 }
 
 -(void)validateObjectsForBucketName:(NSString *)bucketName
 {
-    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:__managedObjectContext];
-    if (entity == nil) {
-        //DDLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
-        return;
-    }
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    
-    // Execute a targeted fetch to preserve faults so that only simperiumKeys are loaded in to memory
-    // http://stackoverflow.com/questions/3956406/core-data-how-to-get-nsmanagedobjects-objectid-when-nsfetchrequest-returns-nsdi
-    NSExpressionDescription* objectIdDesc = [[NSExpressionDescription new] autorelease];
-    objectIdDesc.name = @"objectID";
-    objectIdDesc.expression = [NSExpression expressionForEvaluatedObject];
-    objectIdDesc.expressionResultType = NSObjectIDAttributeType;
-    NSDictionary *properties = [entity propertiesByName];
-    request.resultType = NSDictionaryResultType;
-    request.propertiesToFetch = [NSArray arrayWithObjects:[properties objectForKey:@"simperiumKey"], objectIdDesc, nil];
-    
-    NSError *error = nil;
-    NSArray *results = [__managedObjectContext executeFetchRequest:request error:&error];
-    if (results == nil) {
-        // Handle the error.
-        NSAssert1(0, @"Simperium error: couldn't load array of entities (%@)", bucketName);
-    }
+    NSArray *results = [self objectKeysAndIdsForBucketName:bucketName];
     
     // Check each entity instance
     for (NSDictionary *result in results) {
-        SPManagedObject *object = (SPManagedObject *)[__managedObjectContext objectWithID:[result objectForKey:@"objectID"]];
+        SPManagedObject *object = (SPManagedObject *)[self.mainManagedObjectContext objectWithID:result[@"objectID"]];
         NSString *key = [result objectForKey:@"simperiumKey"];
         // In apps like Simplenote where legacy data might exist on the device, the simperiumKey might need to
         // be set manually. Provide that opportunity here.
@@ -337,21 +348,19 @@ static char const * const BucketListKey = "bucketList";
         }
     }
     
-    NSLog(@"Simperium managing %u %@ object instances", [results count], bucketName);
-    
-    [request release];    
+    NSLog(@"Simperium managing %lu %@ object instances", (unsigned long)[results count], bucketName);
 }
 
 -(BOOL)save
 {
     // Standard way to save an NSManagedObjectContext
     NSError *error = nil;
-    if (__managedObjectContext != nil)
+    if (self.mainManagedObjectContext != nil)
     {
         @try
         {
-            BOOL bChanged = [__managedObjectContext hasChanges];
-            if (bChanged && ![__managedObjectContext save:&error])
+            BOOL bChanged = [self.mainManagedObjectContext hasChanges];
+            if (bChanged && ![self.mainManagedObjectContext save:&error])
             {
                 NSLog(@"Critical Simperium error while saving context: %@, %@", error, [error userInfo]);
                 return NO;
@@ -365,6 +374,17 @@ static char const * const BucketListKey = "bucketList";
     return YES;
 }
 
+-(void)setMetadata:(NSDictionary *)metadata {
+    NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores objectAtIndex:0];
+    [self.persistentStoreCoordinator setMetadata:metadata forPersistentStore:store];
+}
+
+-(NSDictionary *)metadata {
+    NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores objectAtIndex:0];
+    return [store metadata];
+}
+
+
 // CD specific
 # pragma mark Stashing and unstashing entities
 -(NSArray *)allUpdatedAndInsertedObjects
@@ -372,10 +392,10 @@ static char const * const BucketListKey = "bucketList";
     NSMutableSet *unsavedEntities = [NSMutableSet setWithCapacity:3];
     
     // Add updated objects
-    [unsavedEntities addObjectsFromArray:[[__managedObjectContext updatedObjects] allObjects]];
+    [unsavedEntities addObjectsFromArray:[[self.mainManagedObjectContext updatedObjects] allObjects]];
     
     // Also check for newly inserted objects
-    [unsavedEntities addObjectsFromArray:[[__managedObjectContext insertedObjects] allObjects]];
+    [unsavedEntities addObjectsFromArray:[[self.mainManagedObjectContext insertedObjects] allObjects]];
     
     return [unsavedEntities allObjects];
 }
@@ -385,33 +405,50 @@ static char const * const BucketListKey = "bucketList";
     NSArray *entitiesToStash = [self allUpdatedAndInsertedObjects];
     
     if ([entitiesToStash count] > 0) {
-        DDLogVerbose(@"Simperium stashing changes for %u entities", [entitiesToStash count]);
+        DDLogVerbose(@"Simperium stashing changes for %lu entities", (unsigned long)[entitiesToStash count]);
         [stashedObjects addObjectsFromArray: entitiesToStash];
     }
 }
 
--(void)contextDidSave:(NSNotification *)notification {
+
+# pragma mark Main MOC Notification Handlers
+
+-(void)mainContextWillSave:(NSNotification *)notification
+{
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"objectID.isTemporaryID == YES"];
+    NSArray *unpersistedObjects = [[self.mainManagedObjectContext.insertedObjects filteredSetUsingPredicate:predicate] allObjects];
+    if(unpersistedObjects.count == 0) {
+		return;
+	}
+	
+	// Obtain permanentID's for newly inserted objects
+    NSError *error = nil;
+    BOOL success = [(NSManagedObjectContext *)notification.object obtainPermanentIDsForObjects:unpersistedObjects error:&error];
+    if (!success) {
+        DDLogVerbose(@"Unable to obtain permanent IDs for objects newly inserted into the main context: %@", error);
+    }
+}
+
+-(void)mainContextDidSave:(NSNotification *)notification {
+	
+	// Now that the changes have been pushed to the writerMOC, persist to disk
+	[self saveWriterContext];
+	
     // This bypass allows saving to be performed without triggering a sync, as is needed
     // when storing changes that come off the wire
-    if (![delegate objectsShouldSync])
+    if (![self.delegate objectsShouldSync]) {
         return;
-    
-    NSSet *insertedObjects = [notification.userInfo objectForKey:NSInsertedObjectsKey];
-    NSSet *updatedObjects = [notification.userInfo objectForKey:NSUpdatedObjectsKey];
-    NSSet *deletedObjects = [notification.userInfo objectForKey:NSDeletedObjectsKey];
+	}
     
     // Sync all changes
-    [delegate storage:self updatedObjects:updatedObjects insertedObjects:insertedObjects deletedObjects:deletedObjects];
+	NSDictionary *userInfo = notification.userInfo;
+    [self.delegate storage:self updatedObjects:userInfo[NSUpdatedObjectsKey] insertedObjects:userInfo[NSInsertedObjectsKey] deletedObjects:userInfo[NSDeletedObjectsKey]];
 }
 
--(void)contextWillSave:(NSNotification *)notification {
-    // Not currently used
-}
-
--(void)contextObjectsDidChange:(NSNotification *)notification {
+-(void)mainContextObjectsDidChange:(NSNotification *)notification {
     // Check for inserted objects and init them
     NSSet *insertedObjects = [notification.userInfo objectForKey:NSInsertedObjectsKey];
-    
+
     for (NSManagedObject *insertedObject in insertedObjects) {
         if ([insertedObject isKindOfClass:[SPManagedObject class]]) {
             SPManagedObject *object = (SPManagedObject *)insertedObject;
@@ -420,43 +457,87 @@ static char const * const BucketListKey = "bucketList";
     }
 }
 
--(void)addObserversForContext:(NSManagedObjectContext *)moc {
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(contextDidSave:)
-                                                 name:NSManagedObjectContextDidSaveNotification
-                                               object:moc];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(contextObjectsDidChange:)
-                                                 name:NSManagedObjectContextObjectsDidChangeNotification
-                                               object:moc];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(contextWillSave:)
-                                                 name:NSManagedObjectContextWillSaveNotification
-                                               object:moc];
+-(void)addObserversForMainContext:(NSManagedObjectContext *)moc {
+	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+	[nc addObserver:self selector:@selector(mainContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:moc];
+    [nc addObserver:self selector:@selector(mainContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:moc];
+    [nc addObserver:self selector:@selector(mainContextObjectsDidChange:) name:NSManagedObjectContextObjectsDidChangeNotification object:moc];
 }
 
-// Called when threaded contexts need to merge back
-- (void)mergeChanges:(NSNotification*)notification 
+
+# pragma mark Children MOC Notification Handlers
+
+-(void)childrenContextDidSave:(NSNotification*)notification
 {
-    // Fault in all updated objects
-    // (fixes NSFetchedResultsControllers that have predicates, see http://www.mlsite.net/blog/?p=518)
-//	NSArray* updates = [[notification.userInfo objectForKey:@"updated"] allObjects];
-//	for (NSInteger i = [updates count]-1; i >= 0; i--)
-//	{
-//		[[__managedObjectContext objectWithID:[[updates objectAtIndex:i] objectID]] willAccessValueForKey:nil];
-//	}
-
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        [__managedObjectContext mergeChangesFromContextDidSaveNotification:notification];
-    });
-//    [__managedObjectContext performSelectorOnMainThread:@selector(mergeChangesFromContextDidSaveNotification:)
-//                                     withObject:notification
-//                                  waitUntilDone:YES];
+	// Persist to "disk"!
+	[self saveWriterContext];
+	
+	// Move the changes to the main MOC. This will NOT trigger main MOC's hasChanges flag.
+	// NOTE: setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
+	// Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
+	[self.mainManagedObjectContext performBlock:^{
+		
+		// Proceed with the regular merge. This should trigger a contextDidChange note
+		[self.mainManagedObjectContext mergeChangesFromContextDidSaveNotification:notification];
+		
+		// Force fault & refresh any updated objects.
+		// Ref.: http://lists.apple.com/archives/cocoa-dev/2008/Jun/msg00264.html
+		// Ref.: http://stackoverflow.com/questions/16296364/nsfetchedresultscontroller-is-not-showing-all-results-after-merging-an-nsmanage/16296538#16296538
+		NSDictionary *userInfo = notification.userInfo;
+		NSMutableSet *upsertedObjects = [NSMutableSet set];
+		
+		[upsertedObjects unionSet:userInfo[NSUpdatedObjectsKey]];
+		[upsertedObjects unionSet:userInfo[NSRefreshedObjectsKey]];
+		[upsertedObjects unionSet:userInfo[NSInsertedObjectsKey]];
+		
+		for(NSManagedObject* mo in upsertedObjects) {
+			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
+			if (localMO.isFault) {
+                [localMO willAccessValueForKey:nil];
+                [self.mainManagedObjectContext refreshObject:localMO mergeChanges:NO];
+            } else {
+                [self.mainManagedObjectContext refreshObject:localMO mergeChanges:YES];
+            }
+		}
+		
+		NSSet* deletedObjects = userInfo[NSDeletedObjectsKey];
+		for(NSManagedObject* mo in deletedObjects) {
+			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
+			if(localMO && !localMO.isDeleted) {
+				[self.mainManagedObjectContext deleteObject:localMO];
+			}
+		}
+	}];
 }
 
-// Standard stack
+-(void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
+	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:context];
+}
+
+
+# pragma mark Writer MOC Helpers
+
+-(void)saveWriterContext
+{
+	[self.writerManagedObjectContext performBlock:^{
+        @try
+        {
+			NSError *error = nil;
+            if ([self.writerManagedObjectContext hasChanges] && ![self.writerManagedObjectContext save:&error])
+            {
+                NSLog(@"Critical Simperium error while persisting writer context's changes: %@, %@", error, error.userInfo);
+            }
+        }
+        @catch (NSException *exception)
+        {
+            NSLog(@"Simperium exception while persisting writer context's changes: %@", exception.userInfo ? : exception.reason);
+        }
+	}];
+}
+
+
+#pragma mark - Standard stack
 
 +(BOOL)isMigrationNecessary:(NSURL *)storeURL managedObjectModel:(NSManagedObjectModel *)managedObjectModel
 {
@@ -472,10 +553,7 @@ static char const * const BucketListKey = "bucketList";
     return !pscCompatibile;
 }
 
-+(BOOL)newCoreDataStack:(NSString *)modelName
-   managedObjectContext:(NSManagedObjectContext **)managedObjectContext
-     managedObjectModel:(NSManagedObjectModel **)managedObjectModel
-persistentStoreCoordinator:(NSPersistentStoreCoordinator **)persistentStoreCoordinator
++(BOOL)newCoreDataStack:(NSString *)modelName mainContext:(NSManagedObjectContext **)mainContext model:(NSManagedObjectModel **)model coordinator:(NSPersistentStoreCoordinator **)coordinator
 {
     NSLog(@"Setting up Core Data: %@", modelName);
     //NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"Simplenote" withExtension:@"momd"];
@@ -483,7 +561,7 @@ persistentStoreCoordinator:(NSPersistentStoreCoordinator **)persistentStoreCoord
     NSURL *developerModelURL;
     @try {
         developerModelURL = [NSURL fileURLWithPath: [[NSBundle mainBundle]  pathForResource:modelName ofType:@"momd"]];
-        *managedObjectModel = [[[NSManagedObjectModel alloc] initWithContentsOfURL:developerModelURL] autorelease];
+        *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:developerModelURL];
     } @catch (NSException *e) {
         NSLog(@"Simperium error: could not find the specified model file (%@.xcdatamodeld)", modelName);
         @throw; // rethrow the exception
@@ -498,15 +576,18 @@ persistentStoreCoordinator:(NSPersistentStoreCoordinator **)persistentStoreCoord
     NSString *path = [documentsDirectory stringByAppendingPathComponent:databaseFilename];
     NSURL *storeURL = [NSURL fileURLWithPath:path];
     NSError *error = nil;
-    *persistentStoreCoordinator = [[[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:*managedObjectModel] autorelease];
+    *coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:*model];
     
     // Determine if lightweight migration is going to be necessary; this will be used to notify the app in case further action is needed
-    BOOL lightweightMigrationNeeded = [SPCoreDataStorage isMigrationNecessary:storeURL managedObjectModel:*managedObjectModel];
+    BOOL lightweightMigrationNeeded = [SPCoreDataStorage isMigrationNecessary:storeURL managedObjectModel:*model];
     
     // Perform automatic, lightweight migration
-    NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], NSMigratePersistentStoresAutomaticallyOption, [NSNumber numberWithBool:YES], NSInferMappingModelAutomaticallyOption, nil];
-    
-    if (![*persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error])
+    NSDictionary *options = @{
+		NSMigratePersistentStoresAutomaticallyOption : @(YES),
+		NSInferMappingModelAutomaticallyOption : @(YES)
+	};
+	
+    if (![*coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error])
     {
          //TODO: this can occur the first time you launch a Simperium app after adding Simperium to it. The existing data store lacks the dynamically added members, so it must be upgraded first, and then the opening of the persistent store must be attempted again.
          
@@ -514,18 +595,18 @@ persistentStoreCoordinator:(NSPersistentStoreCoordinator **)persistentStoreCoord
     }    
     
     // Setup the context
-    if (persistentStoreCoordinator != nil)
+    if (mainContext != nil)
     {
-        *managedObjectContext = [[[NSManagedObjectContext alloc] init] autorelease];
-        [*managedObjectContext setPersistentStoreCoordinator:*persistentStoreCoordinator];
-        [*managedObjectContext setUndoManager:nil];
+        *mainContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+        [*mainContext setUndoManager:nil];
     }
         
     return lightweightMigrationNeeded;
 }
 
 // Need to perform a manual migration in a particular case. Do this according to Apple's guidelines.
-- (BOOL)migrateStore:(NSURL *)storeURL sourceModel:(NSManagedObjectModel *)srcModel
+- (BOOL)migrateStore:(NSURL *)storeURL
+		 sourceModel:(NSManagedObjectModel *)srcModel
     destinationModel:(NSManagedObjectModel *)dstModel
 {
     NSError *error;
@@ -553,10 +634,8 @@ persistentStoreCoordinator:(NSPersistentStoreCoordinator **)persistentStoreCoord
         NSString *message = [NSString stringWithFormat:@"Migration failed %@ [%@]",
                              [error description], ([error userInfo] ? [[error userInfo] description] : @"no user info")];
         NSLog(@"Migration failure message: %@", message);
-        [manager release];
         return NO;
     }
-    [manager release];
     return YES;
 }
 
@@ -623,4 +702,3 @@ persistentStoreCoordinator:(NSPersistentStoreCoordinator **)persistentStoreCoord
 //        }
 //        [bucketObjects addObject:object];
 //    }
-

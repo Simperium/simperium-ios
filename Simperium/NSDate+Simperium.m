@@ -8,11 +8,6 @@
 
 #import "NSDate+Simperium.h"
 
-@interface FIXCATEGORYBUGDATE;
-@end
-@implementation FIXCATEGORYBUGDATE;
-@end
-
 @implementation NSDate(NSDate_Simperium)
 
 -(NSString *)sp_stringBeforeNow

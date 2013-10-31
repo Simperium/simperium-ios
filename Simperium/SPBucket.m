@@ -11,13 +11,13 @@
 #import "SPDiffer.h"
 #import "SPStorage.h"
 #import "SPSchema.h"
-#import "SPNetworkProvider.h"
+#import "SPNetworkInterface.h"
 #import "SPChangeProcessor.h"
 #import "SPIndexProcessor.h"
 #import "DDLog.h"
 #import "SPGhost.h"
 #import "JSONKit.h"
-#import "SPReferenceManager.h"
+#import "SPRelationshipResolver.h"
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
@@ -27,11 +27,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 @implementation SPBucket
 @synthesize delegate;
 @synthesize name;
+@synthesize notifyWhileIndexing;
 @synthesize instanceLabel;
 @synthesize storage;
 @synthesize differ;
 @synthesize network;
-@synthesize referenceManager;
+@synthesize relationshipResolver;
 @synthesize changeProcessor;
 @synthesize indexProcessor;
 @synthesize processorQueue;
@@ -45,34 +46,32 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
--(id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkProvider:(id<SPNetworkProvider>)netProvider referenceManager:(SPReferenceManager *)refManager label:(NSString *)label
+- (id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
+relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 {
     if ((self = [super init])) {
         name = [aSchema.bucketName copy];
         self.storage = aStorage;
-        self.network = netProvider;
-        self.referenceManager = refManager;
+        self.network = netInterface;
+        self.relationshipResolver = resolver;
 
         SPDiffer *aDiffer = [[SPDiffer alloc] initWithSchema:aSchema];
         self.differ = aDiffer;
-        [aDiffer release];
 
         // Label is used to support multiple simperium instances (e.g. unit testing)
         self.instanceLabel = [NSString stringWithFormat:@"%@%@", self.name, label];
 
         SPChangeProcessor *cp = [[SPChangeProcessor alloc] initWithLabel:self.instanceLabel];
         self.changeProcessor = cp;
-        [cp release];
 
         SPIndexProcessor *ip = [[SPIndexProcessor alloc] init];
         self.indexProcessor = ip;
-        [ip release];
 
         NSString *queueLabel = [@"com.simperium.processor." stringByAppendingString:self.name];
         processorQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
 
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsDidChange:)
-                                                     name:ProcessorDidChangeObjectsNotification object:self];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectDidChange:)
+                                                     name:ProcessorDidChangeObjectNotification object:self];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsAdded:)
                                                      name:ProcessorDidAddObjectsNotification object:self];
@@ -89,69 +88,66 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acknowledgedObjectDeletion:)
                                                      name:ProcessorDidAcknowledgeDeleteNotification object:self];        
 
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(getLatestVersions)
-                                                     name:@"simperiumIndexRefreshNeeded" object:self];
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsAdded:) 
-                                                     name:@"SimperiumObjectAdded" object:self];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(requestLatestVersions)
+                                                     name:ProcessorRequestsReindexing object:self];
     }
     return self;
 }
 
--(void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"simperiumIndexRefreshNeeded" object:self];
-    [name release];
-    name = nil;
-    self.storage = nil;
-    self.differ = nil;
-    self.network = nil;
-    self.changeProcessor = nil;
-    self.indexProcessor = nil;
-    [lastChangeSignature release];
-    [super dealloc];
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:ProcessorRequestsReindexing object:self];
 }
 
--(id)objectForKey:(NSString *)key
-{
+- (id)objectForKey:(NSString *)simperiumKey {
     // Typically used on startup to get a dictionary from storage; Simperium doesn't keep it in memory though
-    id<SPDiffable>diffable = [storage objectForKey:key bucketName:self.name];
+    id<SPDiffable>diffable = [storage objectForKey:simperiumKey bucketName:self.name];
     return [diffable object];
 }
 
--(id)objectAtIndex:(NSUInteger)index {
+- (id)objectAtIndex:(NSUInteger)index {
     id<SPDiffable>diffable = [storage objectAtIndex:index bucketName:self.name];
     return [diffable object];
 }
 
--(NSArray *)allObjects {
-    return [storage objectsForBucketName:self.name];
+- (void)requestVersions:(int)numVersions key:(NSString *)simperiumKey {
+    id<SPDiffable>diffable = [storage objectForKey:simperiumKey bucketName:self.name];
+    [network requestVersions:numVersions object:diffable];
 }
 
--(id)insertNewObject {
+
+- (NSArray *)allObjects {
+    return [storage objectsForBucketName:self.name predicate:nil];
+}
+
+- (NSArray *)allObjectKeys {
+    return [storage objectKeysForBucketName:self.name];
+}
+
+- (id)insertNewObject {
     id<SPDiffable>diffable = [storage insertNewObjectForBucketName:self.name simperiumKey:nil];
     diffable.bucket = self;
     return [diffable object];
 }
 
--(id)insertNewObjectForKey:(NSString *)simperiumKey {
+- (id)insertNewObjectForKey:(NSString *)simperiumKey {
     id<SPDiffable>diffable = [storage insertNewObjectForBucketName:self.name simperiumKey:simperiumKey];
     diffable.bucket = self;
     return [diffable object];
 }
 
--(void)insertObject:(id)object {
+- (void)insertObject:(id)object {
     //id<SPDiffable>diffable = [storage insertObject:object bucketName:self.name];
 }
 
--(void)deleteAllObjects {
+- (void)deleteAllObjects {
     [storage deleteAllObjectsForBucketName:self.name];
 }
 
--(void)deleteObject:(id)object {
+- (void)deleteObject:(id)object {
     [storage deleteObject:object];
 }
 
--(void)updateDictionaryForKey:(NSString *)key {
+- (void)updateDictionaryForKey:(NSString *)key {
 //    id<SPDiffable>object = [storage objectForKey:key entityName:self.name];
 //    if (!object) {
 //        object = [storage insertNewObjectForEntityForName:self.name simperiumKey:key];
@@ -159,36 +155,40 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 //    [object loadMemberData:data];
 }
 
--(void)validateObjects
-{
+- (void)validateObjects {
     // Allow the storage to determine the most efficient way to validate everything
     [storage validateObjectsForBucketName: name];
 
     [storage save];
 }
 
--(void)unloadAllObjects {
+- (void)unloadAllObjects {
     [storage unloadAllObjects];
-    [referenceManager reset];
+    [relationshipResolver reset:storage];
 }
 
--(void)insertObject:(NSDictionary *)object atIndex:(NSUInteger)index {
+- (void)insertObject:(NSDictionary *)object atIndex:(NSUInteger)index {
     
 }
 
--(NSArray *)objectsForKeys:(NSSet *)keys {
+- (NSArray *)objectsForKeys:(NSSet *)keys {
     return [storage objectsForKeys:keys bucketName:name];
 }
 
--(NSInteger)numObjects {
+- (NSArray *)objectsForPredicate:(NSPredicate *)predicate {
+    return [storage objectsForBucketName:name predicate:predicate];
+}
+
+
+- (NSInteger)numObjects {
     return [storage numObjectsForBucketName:name predicate:nil];
 }
 
--(NSInteger)numObjectsForPredicate:(NSPredicate *)predicate {
+- (NSInteger)numObjectsForPredicate:(NSPredicate *)predicate {
     return [storage numObjectsForBucketName:name predicate:predicate];
 }
 
--(NSString *)lastChangeSignature {
+- (NSString *)lastChangeSignature {
     if (!lastChangeSignature) {
         // Load it
         NSString *sigKey = [NSString stringWithFormat:@"lastChangeSignature-%@", self.instanceLabel];
@@ -198,8 +198,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	return lastChangeSignature;
 }
 
--(void)setLastChangeSignature:(NSString *)signature {
-	[lastChangeSignature release];
+- (void)setLastChangeSignature:(NSString *)signature {
 	lastChangeSignature = [signature copy];
     
 	// Persist it
@@ -210,84 +209,91 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 #pragma mark Notifications
 
--(void)objectsDidChange:(NSNotification *)notification {
-    if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:)]) {
+- (void)objectDidChange:(NSNotification *)notification {
+    if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:memberNames:)]) {
+        // Only one object changed; get it
         NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
+        NSString *key = [[set allObjects] objectAtIndex:0];
+        NSArray *changedMembers = (NSArray *)[notification.userInfo objectForKey:@"changedMembers"];
+        [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeUpdate memberNames:changedMembers];
+    }
+}
+
+- (void)objectsAdded:(NSNotification *)notification {
+    // When objects are added, resolve any references to them that hadn't yet been fulfilled
+    // Note: this notification isn't currently triggered from SPIndexProcessor when adding objects from the index. Instead,
+    // references are resolved from within SPIndexProcessor itself
+    NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
+    [self resolvePendingRelationshipsToKeys:set];
+
+    // Also notify the delegate since the referenced objects are now accessible
+    if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:memberNames:)]) {
         for (NSString *key in set) {
-            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeUpdate];
+            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeInsert memberNames:nil];
         }
     }
 }
 
--(void)objectsAdded:(NSNotification *)notification {
+- (void)objectKeysDeleted:(NSNotification *)notification  {
     NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
-    for (NSString *key in set) {
-        [self.referenceManager resolvePendingReferencesToKey:key bucketName:self.name storage:storage]; // references must be intra-storage only
-        [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeInsert];
-    }
-}
-
--(void)objectKeysDeleted:(NSNotification *)notification  {
-    NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
-    BOOL delegateRespondsToSelector = [delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:)];
+    BOOL delegateRespondsToSelector = [delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:memberNames:)];
 
     for (NSString *key in set) {
         [storage stopManagingObjectWithKey:key];
         if (delegateRespondsToSelector)
-            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeDelete];
+            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeDelete memberNames:nil];
     }
 }
 
--(void)objectsAcknowledged:(NSNotification *)notification  {
-    if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:)]) {
+- (void)objectsAcknowledged:(NSNotification *)notification  {
+    if ([delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:memberNames:)]) {
         NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
         for (NSString *key in set) {
-            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeAcknowledge];
+            [delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeAcknowledge memberNames:nil];
         }
     }
 }
 
--(void)objectsWillChange:(NSNotification *)notification  {
-    if ([delegate respondsToSelector:@selector(bucket:willChangeObjectsForKeys:forChangeType:)]) {
+- (void)objectsWillChange:(NSNotification *)notification  {
+    if ([delegate respondsToSelector:@selector(bucket:willChangeObjectsForKeys:)]) {
         NSSet *set = (NSSet *)[notification.userInfo objectForKey:@"keys"];
         [delegate bucket:self willChangeObjectsForKeys:set];
     }
 }
 
--(void)acknowledgedObjectDeletion:(NSNotification *)notification {
+- (void)acknowledgedObjectDeletion:(NSNotification *)notification {
     if ([delegate respondsToSelector:@selector(bucketDidAcknowledgeDelete:)]) {
         [delegate bucketDidAcknowledgeDelete:self];
     }    
 }
 
--(void)getLatestVersions {
-    [network getLatestVersionsForBucket:self];
+- (void)requestLatestVersions {
+    [network requestLatestVersionsForBucket:self];
 }
 
--(SPSchema *)schema {
+- (SPSchema *)schema {
     return differ.schema;
 }
 
--(void)setSchema:(SPSchema *)aSchema {
+- (void)setSchema:(SPSchema *)aSchema {
     differ.schema = aSchema;
 }
 
--(void)resolvePendingReferencesToKeys:(NSSet *)keys
-{
+- (void)resolvePendingRelationshipsToKeys:(NSSet *)keys {
     for (NSString *key in keys)
-        [self.referenceManager resolvePendingReferencesToKey:key bucketName:self.name storage:self.storage];
+        [self.relationshipResolver resolvePendingRelationshipsToKey:key bucketName:self.name storage:self.storage];
 }
 
+- (void)forceSyncWithCompletion:(SPBucketForceSyncCompletion)completion {
+	self.forceSyncCompletion = completion;
+	[self.network forceSyncBucket:self];
+}
 
-// Potential future support for multiple delegates
-//-(void)addDelegate:(id)delegate {
-//    if (![delegates containsObject:delegate])
-//        [delegates addObject: delegate];
-//}
-//
-//-(void)removeDelegate:(id)delegate {
-//    [delegates removeObject: delegate];
-//}
-
+- (void)bucketDidSync {
+	if(self.changeProcessor.numChangesPending == 0 && self.forceSyncCompletion) {
+		self.forceSyncCompletion();
+		self.forceSyncCompletion = nil;
+	}
+}
 
 @end

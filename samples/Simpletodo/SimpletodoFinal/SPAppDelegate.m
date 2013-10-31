@@ -45,7 +45,7 @@
     [self.simperium startWithAppID:@"SIMPERIUM_APP_ID"
                             APIKey:@"SIMPERIUM_API_KEY"  
                              model:[self managedObjectModel]
-                           context:[self managedObjectContext]
+						   context:[self managedObjectContext]
                        coordinator:[self persistentStoreCoordinator]];
     
     return YES;
@@ -118,13 +118,9 @@
     {
         return __managedObjectContext;
     }
-    
-    NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
-    if (coordinator != nil)
-    {
-        __managedObjectContext = [[NSManagedObjectContext alloc] init];
-        [__managedObjectContext setPersistentStoreCoordinator:coordinator];
-    }
+
+	__managedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+
     return __managedObjectContext;
 }
 

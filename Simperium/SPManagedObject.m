@@ -15,7 +15,8 @@
 #import "SPGhost.h"
 #import "JSONKit.h"
 #import "DDLog.h"
-#import <objc/runtime.h>
+
+
 
 @implementation SPManagedObject
 @synthesize ghost;
@@ -43,35 +44,40 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 
--(void)configureBucket
-{
-    char const * const bucketListKey = [SPCoreDataStorage bucketListKey];
-    NSDictionary *bucketList = objc_getAssociatedObject(self.managedObjectContext, bucketListKey);
-    
-    if (!bucketList)
+- (void)configureBucket {
+	
+    NSDictionary *bucketList = nil;
+    NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
+	
+    // Get the MOC's Grandpa (writerContext)
+    while (managedObjectContext.parentContext != nil) {
+        managedObjectContext = managedObjectContext.parentContext;
+    }
+
+	// Check
+	bucketList = managedObjectContext.userInfo[SPCoreDataBucketListKey];
+	
+    if (!bucketList) {
         NSLog(@"Simperium error: bucket list not loaded. Ensure Simperium is started before any objects are fetched.");
+	}
+	
     bucket = [bucketList objectForKey:[[self entity] name]];
 }
 
--(void)awakeFromFetch
-{
+- (void)awakeFromFetch {
     [super awakeFromFetch];
     SPGhost *newGhost = [[SPGhost alloc] initFromDictionary: [self.ghostData objectFromJSONString]];
     self.ghost = newGhost;
-    [newGhost release];
     [self.managedObjectContext userInfo];
     [self configureBucket];
 }
 
--(void)awakeFromInsert
-{
+- (void)awakeFromInsert {
     [super awakeFromInsert];
     [self configureBucket];   
 }
 
--(void)didTurnIntoFault
-{
-    [ghost release];
+- (void)didTurnIntoFault {
     ghost = nil;
     [super didTurnIntoFault];
 }
@@ -80,12 +86,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 //{
 //}
 
--(void)willSave
-{
+- (void)willSave {
     // When the entity is saved, check to see if its ghost has changed, in which case its data needs to be converted
     // to a string for storage
     if (ghost.needsSave) {
-        [ghostData release];
         // Careful not to use self.ghostData here, which would trigger KVC and cause strange things to happen (since willSave itself is related to Core Data's KVC triggerings). This manifested itself as an erroneous insertion notification being sent to fetchedResultsControllers after an object had been deleted. The underlying cause seemed to be that the deleted object sticks around as a fault, but probably shouldn't.
         ghostData = [[[ghost dictionary] JSONString] copy];
         ghost.needsSave = NO;
@@ -93,9 +97,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 //- (void)setGhost:(SPGhost *)aGhost {
-//    [ghost release];
-//    ghost = [aGhost retain];
-//    [ghostData release];
+//    ghost = aGhost;
 //    ghostData = [[[aGhost dictionary] JSONRepresentation] copy];    
 //}
 
@@ -105,7 +107,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // NSString implements NSCopying, so copy the attribute value
     NSString *newStr = [aString copy];
     [self setPrimitiveValue:newStr forKey:@"ghostData"]; // setPrimitiveContent will make it nil if the string is empty
-    [newStr release];
     [self didChangeValueForKey:@"ghostData"];
 }
 
@@ -116,44 +117,42 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // NSString implements NSCopying, so copy the attribute value
     NSString *newStr = [aString copy];
     [self setPrimitiveValue:newStr forKey:@"simperiumKey"]; // setPrimitiveContent will make it nil if the string is empty
-    [newStr release];
     [self didChangeValueForKey:@"simperiumKey"];
 }
 
-- (NSString *)localID
-{
+- (NSString *)localID {
     NSManagedObjectID *key = [self objectID];
     if ([key isTemporaryID])
         return nil;
     return [[key URIRepresentation] absoluteString];
 }
 
--(void)loadMemberData:(NSDictionary *)memberData
-{    
+- (void)loadMemberData:(NSDictionary *)memberData {    
 	// Copy data for each member from the dictionary
-	for (SPMember *member in bucket.differ.schema.members) {
-        NSString *memberKey = [member keyName];
-		id data = [member getValueFromDictionary:memberData key:memberKey object:self];
-		
-		// This sets the actual instance data
-		[self setValue: data forKey: [member keyName]];
-	}	
+    for (NSString *memberKey in [memberData allKeys]) {
+        SPMember *member = [bucket.differ.schema memberForKey:memberKey];
+        if (member) {
+            id data = [member getValueFromDictionary:memberData key:memberKey object:self];
+            
+            // This sets the actual instance data
+            [self setValue: data forKey: [member keyName]];
+        }
+	}
 }
 
--(void)willBeRead {
+- (void)willBeRead {
     // Bit of a hack to force fire the fault
     if ([self isFault])
         [self simperiumKey];
 }
 
--(NSDictionary *)dictionary
-{
+- (NSDictionary *)dictionary {
 	// Return a dictionary that contains member names as keys and actual member data as values
 	// This can be used for diffing, serialization, networking, etc.
 	
 	NSMutableDictionary *dict = [NSMutableDictionary dictionary];
 	
-	for (SPMember *member in bucket.differ.schema.members) {
+	for (SPMember *member in [bucket.differ.schema.members allValues]) {
 		id data = [self valueForKey:[member keyName]];
         
         // The setValue:forKey:inDictionary: method can perform conversions to JSON-compatible formats
@@ -164,11 +163,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	return dict;
 }
 
--(NSString *)version {
+- (NSString *)version {
     return ghost.version;
 }
 
--(id)object {
+- (id)object {
     return self;
 }
 

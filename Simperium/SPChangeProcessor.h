@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "SPProcessorNotificationNames.h"
 
 @class SPBucket;
 
@@ -28,22 +29,16 @@ extern NSString * const CH_START_VERSION;
 extern NSString * const CH_END_VERSION;
 extern NSString * const CH_LOCAL_ID;
 
-extern NSString * const ProcessorDidAddObjectsNotification;
-extern NSString * const ProcessorDidChangeObjectsNotification;
-extern NSString * const ProcessorDidDeleteObjectKeysNotification;
-extern NSString * const ProcessorDidAcknowledgeObjectsNotification;
-extern NSString * const ProcessorWillChangeObjectsNotification;
-extern NSString * const ProcessorDidAcknowledgeDeleteNotification;
 
--(id)initWithLabel:(NSString *)label;
--(void)reset;
--(BOOL)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
--(void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
--(void)processLocalChange:(NSDictionary *)change key:(NSString *)key;
--(NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later;
--(NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
--(int)numChangesPending;
--(int)numKeysForObjectsWithMoreChanges;
--(NSArray *)processPendingChanges:(SPBucket *)bucket;
--(NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket;
+- (id)initWithLabel:(NSString *)label;
+- (void)reset;
+- (BOOL)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
+- (void)processLocalChange:(NSDictionary *)change key:(NSString *)key;
+- (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later;
+- (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
+- (int)numChangesPending;
+- (int)numKeysForObjectsWithMoreChanges;
+- (NSArray *)processPendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges;
+- (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket;
 @end

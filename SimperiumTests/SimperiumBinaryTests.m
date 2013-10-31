@@ -12,15 +12,6 @@
 
 @implementation SimperiumBinaryTests
 
-- (NSDictionary *)bucketOverrides {
-    // Each farm for each test case should share bucket overrides
-    if (overrides == nil) {
-        self.overrides = [NSDictionary dictionaryWithObjectsAndKeys:
-                          [self uniqueBucketFor:@"Config"], @"Config", nil];
-    }
-    return overrides;
-}
-
 - (void)setUp {
     [super setUp];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -51,7 +42,7 @@
     [self waitFor:2];
     
     SPBucket *leaderBucket = [leader.simperium bucketForName:@"Config"];
-    leader.config = [leaderBucket insertNewObjectForKey:@"config"];
+    leader.config = [leaderBucket insertNewObject];
     NSData *data = [self randomDataWithBytes:8096];
     [leader.simperium addBinary:data toObject:leader.config bucketName:@"Config" attributeName:@"binaryFile"];
     [leader.simperium save];

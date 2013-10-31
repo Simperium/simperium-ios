@@ -190,7 +190,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 {
   Patch *newPatch = [[[self class] allocWithZone:zone] init];
 
-  newPatch.diffs = [[NSMutableArray alloc] initWithArray:self.diffs copyItems:YES];
+  newPatch.diffs = [[[NSMutableArray alloc] initWithArray:self.diffs copyItems:YES] autorelease];
   newPatch.start1 = self.start1;
   newPatch.start2 = self.start2;
   newPatch.length1 = self.length1;
@@ -494,27 +494,25 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
     return diffs;
   }
 
-  {
-    // New scope so as to garbage collect longtext and shorttext.
-    NSString *longtext = text1.length > text2.length ? text1 : text2;
-    NSString *shorttext = text1.length > text2.length ? text2 : text1;
-    NSUInteger i = [longtext rangeOfString:shorttext].location;
-    if (i != NSNotFound) {
-      // Shorter text is inside the longer text (speedup).
-      Operation op = (text1.length > text2.length) ? DIFF_DELETE : DIFF_INSERT;
-      [diffs addObject:[Diff diffWithOperation:op andText:[longtext substringWithRange:NSMakeRange(0, i)]]];
-      [diffs addObject:[Diff diffWithOperation:DIFF_EQUAL andText:shorttext]];
-      [diffs addObject:[Diff diffWithOperation:op andText:[longtext substringFromIndex:(i + shorttext.length)]]];
-      return diffs;
-    }
+    // MJ: remove scope
+  NSString *longtext = text1.length > text2.length ? text1 : text2;
+  NSString *shorttext = text1.length > text2.length ? text2 : text1;
+  NSUInteger i = [longtext rangeOfString:shorttext].location;
+  if (i != NSNotFound) {
+    // Shorter text is inside the longer text (speedup).
+    Operation op = (text1.length > text2.length) ? DIFF_DELETE : DIFF_INSERT;
+    [diffs addObject:[Diff diffWithOperation:op andText:[longtext substringWithRange:NSMakeRange(0, i)]]];
+    [diffs addObject:[Diff diffWithOperation:DIFF_EQUAL andText:shorttext]];
+    [diffs addObject:[Diff diffWithOperation:op andText:[longtext substringFromIndex:(i + shorttext.length)]]];
+    return diffs;
+  }
 
-    if (shorttext.length == 1) {
-      // Single character string.
-      // After the previous speedup, the character can't be an equality.
-      [diffs addObject:[Diff diffWithOperation:DIFF_DELETE andText:text1]];
-      [diffs addObject:[Diff diffWithOperation:DIFF_INSERT andText:text2]];
-      return diffs;
-    }
+  if (shorttext.length == 1) {
+    // Single character string.
+    // After the previous speedup, the character can't be an equality.
+    [diffs addObject:[Diff diffWithOperation:DIFF_DELETE andText:text1]];
+    [diffs addObject:[Diff diffWithOperation:DIFF_INSERT andText:text2]];
+    return diffs;
   }
 
   // Check to see if the problem can be split in two.
@@ -657,10 +655,13 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
                               andNewString:(NSString *)_text2
                                   deadline:(NSTimeInterval)deadline;
 {
+// MJ: free v1 and v2 for memory fix below.
 #define text1CharacterAtIndex(A)  text1_chars[(A)]
 #define text2CharacterAtIndex(A)  text2_chars[(A)]
 #define freeTextBuffers()  if (text1_buffer != NULL) free(text1_buffer);\
-                           if (text2_buffer != NULL) free(text2_buffer);
+                           if (text2_buffer != NULL) free(text2_buffer);\
+                           if (v1 != NULL) free(v1);\
+                           if (v2 != NULL) free(v2);
 
   CFStringRef text1 = (CFStringRef)_text1;
   CFStringRef text2 = (CFStringRef)_text2;
@@ -671,8 +672,10 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   CFIndex max_d = (text1_length + text2_length + 1) / 2;
   CFIndex v_offset = max_d;
   CFIndex v_length = 2 * max_d;
-  CFIndex v1[v_length];
-  CFIndex v2[v_length];
+
+  // MJ: Memory fix from http://code.google.com/p/google-diff-match-patch/issues/detail?id=81
+  CFIndex *v1 = malloc(sizeof(CFIndex) * v_length);
+  CFIndex *v2 = malloc(sizeof(CFIndex) * v_length);
   for (CFIndex x = 0; x < v_length; x++) {
     v1[x] = -1;
     v2[x] = -1;
@@ -2115,7 +2118,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
  */
 - (NSMutableArray *)patch_deepCopy:(NSArray *)patches;
 {
-  NSMutableArray *patchesCopy = [[NSMutableArray alloc] initWithArray:patches copyItems:YES];
+  NSMutableArray *patchesCopy = [[[NSMutableArray alloc] initWithArray:patches copyItems:YES] autorelease];
   return patchesCopy;
 }
 
@@ -2241,7 +2244,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   // Strip the padding off.
   text = [textMutable substringWithRange:NSMakeRange(nullPadding.length,
       textMutable.length - 2 * nullPadding.length)];
-  [patches release];
+
   return [NSArray arrayWithObjects:text, resultsArray, nil];
 }
 

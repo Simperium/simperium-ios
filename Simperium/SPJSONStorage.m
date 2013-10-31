@@ -45,14 +45,6 @@
     return self;
 }
 
--(void)dealloc
-{
-    [super dealloc];
-    self.objects = nil;
-    self.objectList = nil;
-    self.allObjects = nil;
-    self.ghosts = nil;
-}
 
 -(void)object:(id)object forKey:(NSString *)simperiumKey didChangeValue:(id)value forKey:(NSString *)key {
     // Update the schema if applicable
@@ -88,12 +80,14 @@
     __block NSArray *someObjects = nil;
     dispatch_sync(storageQueue, ^{
         NSDictionary *objectDict = [objects objectForKey:bucketName];
-        if (objectDict)
+        if (objectDict) {
             someObjects = [objectDict objectsForKeys:[keys allObjects] notFoundMarker:[NSNull null]];
+        }
     });
     
     if (!someObjects)
         someObjects = [NSArray array];
+    
     return someObjects;
 }
 
@@ -101,19 +95,35 @@
     return nil;
 }
 
--(NSArray *)objectsForBucketName:(NSString *)bucketName
-{
+-(NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
+{ 
     __block NSArray *bucketObjects = nil;
     dispatch_sync(storageQueue, ^{
         NSDictionary *objectDict = [objects objectForKey:bucketName];
-        if (objectDict)
+        if (objectDict) {
             bucketObjects = [objects allValues];
+            
+            if (predicate)
+                bucketObjects = [bucketObjects filteredArrayUsingPredicate:predicate];
+        }
     });
     
     if (!bucketObjects)
         bucketObjects = [NSArray array];
     return bucketObjects;
 }
+
+-(NSArray *)objectKeysForBucketName:(NSString *)bucketName {
+    __block NSArray *bucketObjects = [self objectsForBucketName:bucketName predicate:nil];
+    
+    NSMutableArray *keys = [NSMutableArray arrayWithCapacity:[bucketObjects count]];
+    for (id<SPDiffable>object in bucketObjects) {
+        [keys addObject:[object simperiumKey]];
+    }
+         
+    return keys;
+}
+
 
 -(NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
 {
@@ -180,6 +190,15 @@
     });
 }
 
+-(void)setMetadata:(NSDictionary *)metadata {
+    // TODO: support metadata for JSON store
+    // [[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
+    // [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+-(NSDictionary *)metadata {
+    return nil;
+}
 
 -(void)deleteObject:(id)dict
 {
@@ -198,7 +217,6 @@
 //    
 //    NSError *error;
 //    NSArray *items = [context executeFetchRequest:fetchRequest error:&error];
-//    [fetchRequest release];
 //    
 //    for (NSManagedObject *managedObject in items) {
 //        [context deleteObject:managedObject];
@@ -220,7 +238,7 @@
 //    
 //    // Execute a targeted fetch to preserve faults so that only simperiumKeys are loaded in to memory
 //    // http://stackoverflow.com/questions/3956406/core-data-how-to-get-nsmanagedobjects-objectid-when-nsfetchrequest-returns-nsdi
-//    NSExpressionDescription* objectIdDesc = [[NSExpressionDescription new] autorelease];
+//    NSExpressionDescription* objectIdDesc = [NSExpressionDescription new];
 //    objectIdDesc.name = @"objectID";
 //    objectIdDesc.expression = [NSExpression expressionForEvaluatedObject];
 //    objectIdDesc.expressionResultType = NSObjectIDAttributeType;
@@ -263,9 +281,7 @@
 //        }
 //    }
 //    
-//    NSLog(@"Simperium managing %u %@ object instances", [results count], entityName);
-//    
-//    [request release];    
+//    NSLog(@"Simperium managing %u %@ object instances", [results count], entityName); 
 }
 
 -(BOOL)save

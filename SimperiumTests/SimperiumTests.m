@@ -16,8 +16,8 @@
 #import "Config.h"
 #import "Farm.h"
 #import "SPBucket.h"
-#import "SPSimpleKeychain.h"
-#import "SPAuthenticationManager.h"
+#import "SFHFKeychainUtils.h"
+#import "SPAuthenticator.h"
 
 @implementation SimperiumTests
 @synthesize token;
@@ -92,25 +92,30 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 }
 
 - (NSDictionary *)bucketOverrides {
-    // Implemented by subclasses
-    return nil;
+    // Each farm for each test case should share bucket overrides
+    if (overrides == nil) {
+        self.overrides = [NSDictionary dictionaryWithObjectsAndKeys:
+                          [self uniqueBucketFor:@"Config"], @"Config", nil];
+    }
+    return overrides;
 }
 
 - (Farm *)createFarm:(NSString *)label {
-    Farm *farm = [[[Farm alloc] initWithToken: token bucketOverrides:[self bucketOverrides] label:label] autorelease];
+    if (!farms) {
+        farms = [NSMutableArray arrayWithCapacity:NUM_FARMS];
+    }
+    Farm *farm = [[Farm alloc] initWithToken: token bucketOverrides:[self bucketOverrides] label:label];
+    [farms addObject:farm];
     return farm;
 }
 
-- (void)createFarms {
-    farms = [[NSMutableArray arrayWithCapacity:NUM_FARMS] retain];
-    
+- (void)createFarms {    
     // Use a different bucket for each test so it's always starting fresh
     // (We should periodically Delete All Data in the test app to clean stuff up)
     
     for (int i=0; i<NUM_FARMS; i++) {
         NSString *label = [NSString stringWithFormat:@"client%d", i];
-        Farm *farm = [self createFarm: label];
-        [farms addObject:farm];
+        [self createFarm: label];
     }
 }
 
@@ -150,20 +155,15 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     self.token = [userDict objectForKey:@"access_token"];
     STAssertTrue(token.length > 0, @"invalid token from request: %@", tokenURL);
     
-    [[NSUserDefaults standardUserDefaults] setObject: token forKey:@"spAuthToken"];
-    NSMutableDictionary *credentials = [SPSimpleKeychain load:APP_ID];
-    if (!credentials)
-        credentials = [NSMutableDictionary dictionary];
-    [credentials setObject:token forKey:@"SPAuthToken"];
-    [SPSimpleKeychain save:APP_ID data: credentials];
+    [[NSUserDefaults standardUserDefaults] setObject:USERNAME forKey:@"SPUsername"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [SFHFKeychainUtils storeUsername:@"SPUsername" andPassword:token forServiceName:APP_ID updateExisting:YES error:nil];
 
     NSLog(@"auth token is %@", self.token);
 }
 
 - (void)tearDown
 {
-    [farms release];
-    [overrides release];
     [super tearDown];
 }
 
@@ -253,10 +253,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (void)resetExpectations:(NSArray *)farmArray
 {
     for (Farm *farm in farmArray) {
-        farm.expectedAcknowledgments = 0;
-        farm.expectedAdditions = 0;
-        farm.expectedChanges = 0;
-        farm.expectedDeletions = 0;
+        [farm resetExpectations];
     }
 }
 

@@ -10,24 +10,21 @@
 #import "SPStorageObserver.h"
 #import "SPStorageProvider.h"
 
-@interface SPCoreDataStorage : SPStorage<SPStorageProvider> {
-    id<SPStorageObserver> delegate;
-    SPCoreDataStorage *sibling;
-    NSMutableDictionary *classMappings;
-}
 
-@property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
-@property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
-@property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
-@property (nonatomic, assign) id<SPStorageObserver>delegate;
 
-+(char const * const)bucketListKey;
-+(BOOL)newCoreDataStack:(NSString *)modelName
-   managedObjectContext:(NSManagedObjectContext **)managedObjectContext
-     managedObjectModel:(NSManagedObjectModel **)managedObjectModel
-persistentStoreCoordinator:(NSPersistentStoreCoordinator **)persistentStoreCoordinator;
+@interface SPCoreDataStorage : SPStorage<SPStorageProvider>
 
--(id)initWithModel:(NSManagedObjectModel *)model context:(NSManagedObjectContext *)context coordinator:(NSPersistentStoreCoordinator *)coordinator;
+@property (nonatomic, strong,  readonly) NSManagedObjectContext *writerManagedObjectContext;
+@property (nonatomic, strong,  readonly) NSManagedObjectContext *mainManagedObjectContext;
+@property (nonatomic, strong,  readonly) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, strong,  readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+@property (nonatomic, weak,	  readwrite) id<SPStorageObserver> delegate;
+
+extern NSString* const SPCoreDataBucketListKey;
+
++(BOOL)newCoreDataStack:(NSString *)modelName mainContext:(NSManagedObjectContext **)mainContext model:(NSManagedObjectModel **)model coordinator:(NSPersistentStoreCoordinator **)coordinator;
+
+-(id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator;
 
 -(NSArray *)exportSchemas;
 -(void)setBucketList:(NSDictionary *)dict;

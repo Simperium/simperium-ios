@@ -7,13 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "SPProcessorNotificationNames.h"
 
 @class Simperium;
 @class SPDiffer;
 
-@interface SPIndexProcessor : NSObject {
-}
-
+@interface SPIndexProcessor : NSObject
 -(void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(void(^)(NSString *key, NSString *version))versionHandler;
 -(void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket firstSync:(BOOL)firstSync changeHandler:(void(^)(NSString *key))changeHandler;
 @end

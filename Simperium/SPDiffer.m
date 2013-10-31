@@ -31,7 +31,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 
--(id)initWithSchema:(SPSchema *)aSchema {
+- (id)initWithSchema:(SPSchema *)aSchema {
     if ((self = [super init])) {
         self.schema = aSchema;
     }
@@ -39,17 +39,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return self;
 }
 
--(void)dealloc {
-    [super dealloc];
-    self.schema = nil;
-}
 
 // Construct a diff for newly added entities
--(NSMutableDictionary *)diffForAddition:(id<SPDiffable>)object
-{
+- (NSMutableDictionary *)diffForAddition:(id<SPDiffable>)object {
     NSMutableDictionary *diff = [NSMutableDictionary dictionaryWithCapacity: [schema.members count]];
     
-    for (SPMember *member in schema.members) {
+    for (SPMember *member in [schema.members allValues]) {
         NSString *key = [member keyName];
 		id data = [object simperiumValueForKey: key];
         
@@ -62,8 +57,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 // Construct a diff against a particular dictionary of data, such as a ghost dictionary
--(NSDictionary *)diff:(id<SPDiffable>)object withDictionary:(NSDictionary *)dict
-{
+- (NSDictionary *)diff:(id<SPDiffable>)object withDictionary:(NSDictionary *)dict {
 	// changes contains the operations for every key that is different
 	NSMutableDictionary *changes = [NSMutableDictionary dictionaryWithCapacity:3];
 	
@@ -72,11 +66,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	// but not the other; ignore this functionality for now
 	
 	NSDictionary *currentDiff = nil;
-	for (SPMember *member in schema.members)
+	for (SPMember *member in [schema.members allValues])
     {
         NSString *key = [member keyName];
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *thisMember = [schema memberNamed: key];
+		SPMember *thisMember = [schema memberForKey: key];
 		if (!thisMember) {
 			DDLogWarn(@"Simperium warning: trying to diff a member that doesn't exist (%@) from ghost: %@", key, [dict description]);
 			continue;
@@ -115,15 +109,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 // Apply an incoming diff to this entity instance
--(void)applyDiff:(NSDictionary *)diff to:(id<SPDiffable>)object
-{
+- (void)applyDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
 	// Process each change in the diff
 	for (NSString *key in [diff allKeys]) {
 		NSDictionary *change = [diff objectForKey:key];
 		NSString *operation = [change objectForKey:OP_OP];
 		
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *member = [schema memberNamed: key];
+		SPMember *member = [schema memberForKey: key];
 		if (!member) {
 			DDLogWarn(@"Simperium warning: applyDiff for a member that doesn't exist (%@): %@", key, [change description]);
 			continue;
@@ -158,11 +151,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 // Same strategy as applyDiff, but do it to the ghost's memberData
 // Note that no conversions are necessary here since all data is in JSON-compatible format already
--(void)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object
-{
+- (void)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
 	// Create a copy of the ghost's data and update any members that have changed
 	NSMutableDictionary *ghostMemberData = [[object ghost] memberData];
-	NSMutableDictionary *newMemberData = ghostMemberData ? [[ghostMemberData mutableCopy] autorelease] : [NSMutableDictionary dictionaryWithCapacity: [diff count]];
+	NSMutableDictionary *newMemberData = ghostMemberData ? [ghostMemberData mutableCopy] : [NSMutableDictionary dictionaryWithCapacity: [diff count]];
 	for (NSString *key in [diff allKeys]) {
 		NSDictionary *change = [diff objectForKey:key];
         
@@ -171,7 +163,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             continue;
         
 		NSString *operation = [change objectForKey:OP_OP];
-        SPMember *member = [schema memberNamed: key];
+        SPMember *member = [schema memberForKey: key];
 
         // Make sure the member exists and is tracked by Simperium
         if (!member) {
@@ -209,8 +201,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[object ghost].memberData = newMemberData;
 }
 
--(NSDictionary *)transform:(id<SPDiffable>)object diff:(NSDictionary *)diff oldDiff:(NSDictionary *)oldDiff oldGhost:(SPGhost *)oldGhost
-{
+- (NSDictionary *)transform:(id<SPDiffable>)object diff:(NSDictionary *)diff oldDiff:(NSDictionary *)oldDiff oldGhost:(SPGhost *)oldGhost {
 	NSMutableDictionary *newDiff = [NSMutableDictionary dictionary];
 	// Transform diff first, and then apply it
 	for (NSString *key in [diff allKeys]) {
@@ -218,7 +209,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		NSDictionary *oldChange = [oldDiff objectForKey:key];
 		
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *member = [schema memberNamed: key];
+		SPMember *member = [schema memberForKey: key];
 		id ghostValue = [member getValueFromDictionary:oldGhost.memberData key:key object:object];
 		if (!member) {
 			DDLogError(@"Simperium error: transform diff for a member that doesn't exist (%@): %@", key, [change description]);
@@ -252,7 +243,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             NSDictionary *changeCopy = [change copy];
 			// If there was no transformation required, just use the original change
 			[newDiff setObject:changeCopy forKey:key];
-            [changeCopy release];
         }
 	}
 	

@@ -22,11 +22,6 @@
 
 #import "NSString+UnicharUtilities.h"
 
-@interface FIXCATEGORYBUGDMPUNI;
-@end
-@implementation FIXCATEGORYBUGDMPUNI;
-@end
-
 @implementation NSString (UnicharUtilities)
 
 + (NSString *)diff_stringFromUnichar:(unichar)ch;

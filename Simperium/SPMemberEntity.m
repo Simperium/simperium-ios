@@ -8,13 +8,11 @@
 
 #import "SPMemberEntity.h"
 #import "SPManagedObject.h"
-#import "SPStorage.h"
 #import "SPBucket.h"
-#import "SPReferenceManager.h"
+#import "SPRelationshipResolver.h"
 
 @implementation SPMemberEntity
 @synthesize entityName;
-@synthesize storage;
 
 -(id)initFromDictionary:(NSDictionary *)dict
 {
@@ -25,21 +23,12 @@
     return self;
 }
 
--(void)dealloc {
-    [super dealloc];
-    [entityName release];
-}
 
 -(id)defaultValue {
 	return nil;
 }
 
--(id)fromJSON:(id)value {
-    id<SPStorageProvider>threadSafeStorage = [storage threadSafeStorage];
-    return [threadSafeStorage objectForKey:value bucketName: entityName];
-}
-
--(id)toJSON:(id)value {
+-(id)simperiumKeyForObject:(id)value {
     NSString *simperiumKey = [value simperiumKey];
 	return simperiumKey == nil ? @"" : simperiumKey;
 }
@@ -55,7 +44,6 @@
     
     NSError *error;
     NSArray *items = [context executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
     
     if ([items count] == 0)
         return nil;
@@ -76,36 +64,30 @@
     
     if (value == nil) {
         // The object isn't here YET...but it will be LATER
-        NSString *fromKey = [object.simperiumKey copy];
+        // This is a convenient place to track references because it's guaranteed to be called from loadMemberData in
+        // SPManagedObject when it arrives off the wire.
+        NSString *fromKey = object.simperiumKey;
         dispatch_async(dispatch_get_main_queue(), ^{
             // Let Simperium store the reference so it can be properly resolved when the object gets synced
-            [bucket.referenceManager addPendingReferenceToKey:simperiumKey fromKey:fromKey bucketName:bucket.name attributeName:self.keyName];
-            [fromKey release];
+            [bucket.relationshipResolver addPendingRelationshipToKey:simperiumKey fromKey:fromKey bucketName:bucket.name
+                                                attributeName:self.keyName storage:bucket.storage];
         });
     }
     return value;
 }
 
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self toJSON: value];
+    id convertedValue = [self simperiumKeyForObject: value];
     [dict setValue:convertedValue forKey:key];
 }
 
--(NSString *)defaultValueAsStringForSQL {
-	return @"''";
-}
-
--(NSString *)typeAsStringForSQL {
-	return @"TEXT";
-}
-
 -(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
-    NSString *otherKey = [self toJSON:otherValue];
+    NSString *otherKey = [self simperiumKeyForObject:otherValue];
     
 	NSAssert([thisValue isKindOfClass:[SPManagedObject class]] && [otherValue isKindOfClass:[SPManagedObject class]],
 			 @"Simperium error: couldn't diff objects because their classes weren't SPManagedObject");
     
-    NSString *thisKey = [self toJSON:thisValue];
+    NSString *thisKey = [self simperiumKeyForObject:thisValue];
     
     // No change if the entity keys are equal
     if ([thisKey isEqualToString:otherKey])

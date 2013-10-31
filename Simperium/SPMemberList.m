@@ -8,80 +8,85 @@
 
 #import "SPMemberList.h"
 #import "JSONKit.h"
+#import "DiffMatchPatch.h"
+#import "NSArray+Simperium.h"
+
+@interface SPMemberList ()
+@property (nonatomic, strong, readonly) DiffMatchPatch *diffMatchPatch;
+@end
 
 @implementation SPMemberList
+@synthesize diffMatchPatch = _diffMatchPatch;
+
+- (DiffMatchPatch *)diffMatchPatch
+{
+	if (!_diffMatchPatch) {
+		_diffMatchPatch = [[DiffMatchPatch alloc] init];
+	}
+	return _diffMatchPatch;
+}
 
 -(id)defaultValue {
 	return @"[]";
 }
 
--(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
-    id value = [dict objectForKey: key];
-    value = [self fromJSON: value];
-    return value;
-}
-
--(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self toJSON: value];
-    [dict setValue:convertedValue forKey:key];
-}
-
--(id)toJSON:(id)value {
+-(id)arrayFromJSONString:(id)value {
     if ([value length] == 0)
         return [[self defaultValue] objectFromJSONString];
 	return [value objectFromJSONString];
 }
 
--(id)fromJSON:(id)value {
+-(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
+	return [self getValueFromJSON:dict key:key object:object];
+}
+
+- (id)getValueFromJSON:(NSDictionary *)json key:(NSString *)key object:(id<SPDiffable>)object
+{
+	id value = [json objectForKey:key];
 	return [value JSONString];
 }
 
-//-(id)defaultValueAsStringForSQL {
-//	return @"0";
-//}
-//
-//-(NSString *)typeAsStringForSQL {
-//	return @"REAL";
-//}
-
--(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
-	NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
-			 @"Simperium error: couldn't diff dates because their classes weren't NSString");
-    
-	// TODO: proper list diff; for now just replace
-    
-    if ([thisValue isEqualToString: otherValue])
-		return [NSDictionary dictionary];
-    
-	// Construct the diff in the expected format
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			OP_REPLACE, OP_OP,
-			[self toJSON: otherValue], OP_VALUE, nil];
+-(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
+    id convertedValue = [self arrayFromJSONString: value];
+    [dict setValue:convertedValue forKey:key];
 }
+
+-(NSDictionary *)diff:(NSArray *)a otherValue:(NSArray *)b {
+	NSAssert([a isKindOfClass:[NSArray class]] && [b isKindOfClass:[NSArray class]],
+			 @"Simperium error: couldn't diff list because their classes weren't NSArray");
+    
+    if ([a isEqualToArray:b])
+		return [NSDictionary dictionary];
+	
+	// For the moment we can only create OP_LIST_DMP
+	return @{ OP_OP: OP_LIST_DMP, OP_VALUE: [a sp_diffDeltaWithArray:b diffMatchPatch:self.diffMatchPatch] };
+}
+
+
 
 -(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
-    // TODO: proper list diff, including transform
-	// Expect dates in Number format
-	//NSAssert([thisValue isKindOfClass:[NSNumber class]] && [otherValue isKindOfClass:[NSNumber class]],
-	//		 @"Simperium error: couldn't diff dates because their classes weren't NSNumber (NSDate not supported directly)");
 	
-	// Date changes replaces the previous value by default (like ints)
 	
-	// TODO: Not sure if this should be a copy or not
-	return otherValue;
+	// Assuming OP_LIST_DMP. This code will have to change when OP_LIST is
+	// implemented and it will have to take the full change diff in order
+	// to apply the right diffing method.
+	NSString *delta = otherValue;
+	NSArray *source = thisValue;
+	
+	return [source sp_arrayByApplyingDiffDelta:delta diffMatchPatch:self.diffMatchPatch];
 }
 
-//-(id)sqlLoadWithStatement:(sqlite3_stmt *)statement queryPosition:(int)position
-//{
-//	return [NSNumber numberWithDouble: sqlite3_column_double(statement, position)];
-//    //	return [NSDate dateWithTimeIntervalSince1970:sqlite3_column_double(statement, position)];
-//}
-//
-//-(void)sqlBind:(id)data withStatement:(sqlite3_stmt *)statement queryPosition:(int)position
-//{
-//	sqlite3_bind_double(statement, position, [data doubleValue]);
-//    //	sqlite3_bind_double(statement, position, [data timeIntervalSince1970]);
-//}
+- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue
+{
+	NSArray *source = oldValue;
+	NSString *delta1 = thisValue;
+	NSString *delta2 = otherValue;
+	
+	return @{ OP_OP: OP_LIST_DMP, OP_VALUE: [source sp_transformDelta:delta1 onto:delta2 diffMatchPatch:self.diffMatchPatch] };
+}
 
 
 @end
+
+
+

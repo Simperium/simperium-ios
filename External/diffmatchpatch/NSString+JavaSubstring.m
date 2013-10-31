@@ -24,11 +24,6 @@
 
 #import "DiffMatchPatchCFUtilities.h"
 
-@interface FIXCATEGORYBUGDMPJSUB;
-@end
-@implementation FIXCATEGORYBUGDMPJSUB;
-@end
-
 @implementation NSString (JavaSubstring)
 
 - (NSString *)diff_javaSubstringFromStart:(NSUInteger)start toEnd:(NSUInteger)end;

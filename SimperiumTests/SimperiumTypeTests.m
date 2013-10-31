@@ -13,14 +13,7 @@
 
 @implementation SimperiumTypeTests
 
-- (NSDictionary *)bucketOverrides {
-    // Each farm for each test case should share bucket overrides
-    if (overrides == nil) {
-        self.overrides = [NSDictionary dictionaryWithObjectsAndKeys:
-                                         [self uniqueBucketFor:@"Config"], @"Config", nil];
-    }
-    return overrides;
-}
+
 - (void)testDate
 {
     NSLog(@"%@ start", self.name);
@@ -36,7 +29,6 @@
     [self waitFor:1.0];
     
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-    leader.config.simperiumKey = @"config";
     leader.config.captainsLog = @"1";
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;

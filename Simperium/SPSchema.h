@@ -15,18 +15,18 @@
 
 @interface SPSchema : NSObject {
     NSString *bucketName;
-    NSMutableArray *members; // ALL members
+    NSMutableDictionary *members; // ALL members
     NSMutableArray *binaryMembers; // JUST binary members (for optimization)
     BOOL dynamic;
 }
 
 @property (nonatomic, copy) NSString *bucketName;
-@property (nonatomic, retain) NSMutableArray *members;
-@property (nonatomic, retain) NSMutableArray *binaryMembers;
-@property (assign) BOOL dynamic;
+@property (nonatomic, strong) NSMutableDictionary *members;
+@property (nonatomic, strong) NSMutableArray *binaryMembers;
+@property BOOL dynamic;
 
 -(id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition;
--(SPMember *)memberNamed:(NSString *)memberName;
+-(SPMember *)memberForKey:(NSString *)memberName;
 -(void)setDefaults:(id<SPDiffable>)object;
 -(void)addMemberForObject:(id)object key:(NSString *)key;
 
