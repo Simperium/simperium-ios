@@ -17,6 +17,12 @@ OSX
 ---
 Everything works pretty much the same on OSX. Some changes are noted [in the online documentation](http://simperium.com/docs/ios/).
 
+Releases
+--------
+The master branch always has the latest stable release, and is tagged.Simperium is used by hundreds of thousands of people across many different apps and devices, and is considered production-ready.
+
+The develop branch has an ongoing development build (not intended for production use).
+
 Folder structure
 ----------------
 **Simperium**. Everything is accessed from a `Simperium` instance. This class can be safely instantiated more than once in the same app (e.g. for unit testing).
