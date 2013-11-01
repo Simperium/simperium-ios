@@ -158,6 +158,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     });
 }
 
+- (void)sendBucketStatus:(SPBucket *)bucket {
+
+	NSDictionary *response = [bucket exportStatus];
+	NSString *jsonStr = [response JSONString];
+	NSString *message = [NSString stringWithFormat:@"%d:index:%@", self.number, jsonStr];
+	
+	DDLogVerbose(@"Simperium sending Bucket Internal State (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
+	[self.webSocketManager send:message];
+}
+
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
     __block int numChangesPending;
     __block int numKeysForObjectsWithMoreChanges;

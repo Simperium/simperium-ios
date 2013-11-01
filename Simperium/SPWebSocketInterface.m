@@ -16,6 +16,8 @@
 #import "DDLogDebug.h"
 #import "SRWebSocket.h"
 #import "SPWebSocketChannel.h"
+#import "SPRemoteLogger.h"
+
 
 #define WEBSOCKET_URL @"wss://api.simperium.com/sock/1"
 #define INDEX_PAGE_SIZE 500
@@ -28,24 +30,31 @@
 #define LIBRARY_ID @"osx"
 #endif
 
-#define LIBRARY_VERSION @0
+#define LIBRARY_VERSION @(1)
 
-NSString * const COM_AUTH = @"auth";
-NSString * const COM_INDEX = @"i";
-NSString * const COM_CHANGE = @"c";
-NSString * const COM_ENTITY = @"e";
-NSString * const COM_ERROR = @"?";
+NSString * const COM_AUTH			= @"auth";
+NSString * const COM_INDEX			= @"i";
+NSString * const COM_CHANGE			= @"c";
+NSString * const COM_CHANGE_VERSION = @"cv";
+NSString * const COM_ENTITY			= @"e";
+NSString * const COM_ERROR			= @"?";
+NSString * const COM_LOG			= @"log";
+NSString * const COM_INDEX_STATE	= @"index";
+NSString * const COM_HEARTBEAT		= @"h";
+
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
 
-@interface SPWebSocketInterface() <SRWebSocketDelegate>
+@interface SPWebSocketInterface() <SRWebSocketDelegate, SPRemoteLoggerDelegate>
 @property (nonatomic, strong, readwrite) SRWebSocket *webSocket;
 @property (nonatomic, weak,   readwrite) Simperium *simperium;
+@property (nonatomic, strong, readwrite) SPRemoteLogger *remoteLogger;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *channels;
 @property (nonatomic, copy,   readwrite) NSString *clientID;
 @property (nonatomic, strong, readwrite) NSDictionary *bucketNameOverrides;
 @property (nonatomic, strong, readwrite) NSTimer *heartbeatTimer;
+@property (nonatomic, assign, readwrite) NSInteger remoteLogLevel;
 @property (nonatomic, assign, readwrite) BOOL open;
 @end
 
@@ -59,11 +68,19 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     ddLogLevel = logLevel;
 }
 
+- (void)dealloc {
+	[DDLog removeLogger:self.remoteLogger];
+}
+
 - (id)initWithSimperium:(Simperium *)s appURL:(NSString *)url clientID:(NSString *)cid {
 	if ((self = [super init])) {
         self.simperium = s;
         self.clientID = cid;
         self.channels = [NSMutableDictionary dictionaryWithCapacity:20];
+		
+		// Initialize RemoteLogger
+		self.remoteLogger = [[SPRemoteLogger alloc] initWithDelegate:self];
+		[DDLog addLogger:self.remoteLogger];
 	}
 	
 	return self;
@@ -208,6 +225,20 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     }
 }
 
+
+#pragma mark - SPRemoteLoggerDelegate Methods
+
+-(void)sendLogMessage:(NSString*)logMessage {
+	if(!self.open || self.remoteLogLevel == SPNetworkLogLevelsOff) {
+		return;
+	}
+	NSDictionary *payload = @{ @"log" : logMessage };
+	NSString *message = [NSString stringWithFormat:@"%@:%@", COM_LOG, [payload JSONString]];
+	[self send:message];
+}
+
+#pragma mark - SRWebSocketDelegate Methods
+
 - (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
 	// Reconnection failsafe
 	if(theWebSocket != self.webSocket) {
@@ -234,8 +265,8 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 	}
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {    
-    // Parse CHANNELNUM:COMMAND:DATA
+- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
+	
     NSRange range = [message rangeOfString:@":"];
     
     if (range.location == NSNotFound) {
@@ -243,28 +274,47 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         return;
     }
     
+	// Handle Messages:
+	//		- [CHANNEL:COMMAND]
     NSString *channelStr = [message substringToIndex:range.location];
-    
-    // Handle heartbeat
-    if ([channelStr isEqualToString:@"h"]) {
+    NSString *commandStr = [message substringFromIndex:range.location+range.length];
+	
+    // Message: Heartbeat
+    if ([channelStr isEqualToString:COM_HEARTBEAT]) {
         //DDLogVerbose(@"Simperium heartbeat acknowledged");
         return;
     }
     
+	// Message: LogLevel
+	if ([channelStr isEqualToString:COM_LOG]) {
+		DDLogVerbose(@"Simperium (%@) Received Remote LogLevel %@", self.simperium.label, commandStr);
+		self.remoteLogLevel = commandStr.intValue;
+		self.simperium.verboseLoggingEnabled = (commandStr.intValue == SPNetworkLogLevelsVerbose);
+		return;
+	}
+			
     DDLogVerbose(@"Simperium (%@) received \"%@\"", self.simperium.label, message);
     
-    // It's an actual message; parse/handle it
-    NSNumber *channelNumber = [NSNumber numberWithInt:[channelStr intValue]];
+    // Load the WebsocketChannel + Bucket
+    NSNumber *channelNumber		= @(channelStr.intValue);
     SPWebSocketChannel *channel = [self channelForNumber:channelNumber];
-    SPBucket *bucket = [self.simperium bucketForName:channel.name];
+    SPBucket *bucket			= [self.simperium bucketForName:channel.name];
     
-    NSString *commandStr = [message substringFromIndex:range.location+range.length];    
+	// Message: Remote Index Request
+	if ([commandStr isEqualToString:COM_INDEX_STATE]) {
+		[channel sendBucketStatus:bucket];
+		return;
+	}
+	
+	// Handle Messages:
+	//		- [CHANNEL:COMMAND:DATA]
     range = [commandStr rangeOfString:@":"];
     if (range.location == NSNotFound) {
         DDLogWarn(@"Simperium received unrecognized websocket message: %@", message);
     }
-    NSString *command = [commandStr substringToIndex:range.location];
-    NSString *data = [commandStr substringFromIndex:range.location+range.length];
+	
+    NSString *command	= [commandStr substringToIndex:range.location];
+    NSString *data		= [commandStr substringFromIndex:range.location+range.length];
     
     if ([command isEqualToString:COM_AUTH]) {
         if ([data isEqualToString:@"expired"]) {
@@ -274,8 +324,9 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
             BOOL bFirstStart = bucket.lastChangeSignature == nil;
             if (bFirstStart) {
                 [channel requestLatestVersionsForBucket:bucket];
-            } else
+            } else {
                 [channel startProcessingChangesForBucket:bucket];
+			}
         } else {
             DDLogWarn(@"Simperium received unexpected auth response: %@", data);
             NSDictionary *authPayload = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
@@ -287,7 +338,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         }
     } else if ([command isEqualToString:COM_INDEX]) {
         [channel handleIndexResponse:data bucket:bucket];
-    } else if ([command isEqualToString:COM_CHANGE]) {
+    } else if ([command isEqualToString:COM_CHANGE] || [command isEqualToString:COM_CHANGE_VERSION]) {
         if ([data isEqualToString:@"?"]) {
             // The requested change version didn't exist, so re-index
             DDLogVerbose(@"Simperium change version is out of date (%@), re-indexing", bucket.name);
@@ -318,6 +369,8 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     self.webSocket = nil;
     self.open = NO;
 }
+
+#pragma mark - Public Methods
 
 -(void)resetBucketAndWait:(SPBucket *)bucket {
     // Careful, this will block if the queue has work on it; however, enqueued tasks should empty quickly if the
