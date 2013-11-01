@@ -25,6 +25,7 @@
 #import "DDLog.h"
 #import "DDASLLogger.h"
 #import "DDTTYLogger.h"
+#import "DDFileLogger+Simperium.h"
 #import "SPCoreDataStorage.h"
 #import "SPAuthenticator.h"
 #import "SPBucket.h"
@@ -106,31 +107,39 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 static int ddLogLevel = LOG_LEVEL_INFO;
 #endif
 
-+ (int)ddLogLevel {
++(int)ddLogLevel
+{
     return ddLogLevel;
 }
 
-+ (void)ddSetLogLevel:(int)logLevel {
++(void)ddSetLogLevel:(int)logLevel
+{
     ddLogLevel = logLevel;
 }
+
++(void)setupLogging
+{
+	// Handle multiple Simperium instances by ensuring logging only gets started once
+    static dispatch_once_t _once;
+    dispatch_once(&_once, ^{
+		[DDLog addLogger:[DDASLLogger sharedInstance]];
+		[DDLog addLogger:[DDTTYLogger sharedInstance]];
+		[DDLog addLogger:[DDFileLogger sharedInstance]];
+	});
+}
+
 
 #pragma mark - Constructors
 -(id)init
 {
 	if ((self = [super init])) {
-        
-        // Handle multiple Simperium instances by ensuring logging only gets started once
-        static BOOL loggingStarted;
-        if (!loggingStarted) {
-            [DDLog addLogger:[DDASLLogger sharedInstance]];
-            [DDLog addLogger:[DDTTYLogger sharedInstance]];
-            loggingStarted = YES;
-        }
+
+        [[self class] setupLogging];
         
         self.label = @"";
         _networkEnabled = YES;
         _authenticationEnabled = YES;
-        _useWebSockets = NO;
+        _useWebSockets = YES;
         dynamicSchemaEnabled = YES;
 		[ASIHTTPRequest setShouldUpdateNetworkActivityIndicator:NO];
         self.buckets = [NSMutableDictionary dictionary];
@@ -278,11 +287,27 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [bucket.network shareObject: object withEmail:email];
 }
 
--(void)setVerboseLoggingEnabled:(BOOL)on {
+-(void)setVerboseLoggingEnabled:(BOOL)on
+{
     _verboseLoggingEnabled = on;
     for (Class cls in [DDLog registeredClasses]) {
         [DDLog setLogLevel:on ? LOG_LEVEL_VERBOSE : LOG_LEVEL_INFO forClass:cls];
     }
+}
+
+-(NSData*)exportLogfiles
+{
+	NSArray *logfiles = [[[DDFileLogger sharedInstance] logFileManager] sortedLogFilePaths];
+	NSMutableData *export = [NSMutableData data];
+	
+	for(NSString *path in logfiles) {
+		NSData *logfile = [NSData dataWithContentsOfFile:path];
+		if(logfile.length) {
+			[export appendData:logfile];
+		}
+	}
+	
+	return export;
 }
 
 -(void)startNetworkManagers

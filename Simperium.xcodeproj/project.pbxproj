@@ -200,7 +200,7 @@
 		26F4BBD013DCFDB000B8AC56 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBCF13DCFDB000B8AC56 /* libz.dylib */; };
 		26F4BBD413DCFDC100B8AC56 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */; };
 		460A505E17DE96350070F02B /* SPProcessorNotificationNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */; };
-		460A505F17DE96350070F02B /* SPProcessorNotificationsNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 460A505D17DE96350070F02B /* SPProcessorNotificationsNames.h */; };
+		460A505F17DE96350070F02B /* SPProcessorNotificationNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */; };
 		464DC336176946ED00E75D05 /* SFHFKeychainUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 464DC334176946ED00E75D05 /* SFHFKeychainUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		464DC337176946ED00E75D05 /* SFHFKeychainUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 464DC335176946ED00E75D05 /* SFHFKeychainUtils.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41017BC45F5005F7599 /* SPAuthenticationConfiguration.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -221,6 +221,9 @@
 		46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */; };
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
+		B5F5D39418219CCE0048754C /* DDFileLogger+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */; };
+		B5F5D39518219CCE0048754C /* DDFileLogger+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */; };
+		B5F5D39618219CCE0048754C /* DDFileLogger+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */; };
 		E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */; };
 		E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */; };
 /* End PBXBuildFile section */
@@ -428,7 +431,7 @@
 		26F4BBCF13DCFDB000B8AC56 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPProcessorNotificationNames.m; sourceTree = "<group>"; };
-		460A505D17DE96350070F02B /* SPProcessorNotificationsNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessorNotificationsNames.h; sourceTree = "<group>"; };
+		460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessorNotificationNames.h; sourceTree = "<group>"; };
 		464DC334176946ED00E75D05 /* SFHFKeychainUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SFHFKeychainUtils.h; sourceTree = "<group>"; };
 		464DC335176946ED00E75D05 /* SFHFKeychainUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SFHFKeychainUtils.m; sourceTree = "<group>"; };
 		466EB41017BC45F5005F7599 /* SPAuthenticationConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationConfiguration.h; sourceTree = "<group>"; };
@@ -455,6 +458,8 @@
 		46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumAuxiliaryTests.m; sourceTree = "<group>"; };
 		46EE3D55171D0C8E00E6F0A5 /* SimperiumErrorTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumErrorTests.h; sourceTree = "<group>"; };
 		46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumErrorTests.m; sourceTree = "<group>"; };
+		B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DDFileLogger+Simperium.h"; sourceTree = "<group>"; };
+		B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DDFileLogger+Simperium.m"; sourceTree = "<group>"; };
 		E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTOSViewController.h; sourceTree = "<group>"; };
 		E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTOSViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -583,8 +588,8 @@
 		2622FD01147F237800C8EEB4 /* System */ = {
 			isa = PBXGroup;
 			children = (
+				460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */,
 				460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */,
-				460A505D17DE96350070F02B /* SPProcessorNotificationsNames.h */,
 				267CE8EF156C0FD20028801C /* SPBucket.h */,
 				267CE8F0156C0FD20028801C /* SPBucket.m */,
 				24A73F5417E250E0000CA275 /* SPDictionaryStorage.h */,
@@ -836,6 +841,8 @@
 				26E83DA91399D05E00195758 /* NSDate+Simperium.m */,
 				26B16EFD13B1B78C00BEB3E5 /* NSData+Simperium.h */,
 				26B16EFE13B1B78F00BEB3E5 /* NSData+Simperium.m */,
+				B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */,
+				B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -1019,13 +1026,14 @@
 				E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */,
 				26653CFB15FE5DEA00461A28 /* SPReachability.h in Headers */,
 				46A16A8117289FE2003AED55 /* NSString+Simperium.h in Headers */,
+				B5F5D39418219CCE0048754C /* DDFileLogger+Simperium.h in Headers */,
 				464DC336176946ED00E75D05 /* SFHFKeychainUtils.h in Headers */,
 				1854D50F1799F6D2006C4211 /* NSArray+Simperium.h in Headers */,
 				46DD15CA179A6F4B0093678C /* SPMemberJSONList.h in Headers */,
 				466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */,
 				466EB41617BC45F5005F7599 /* SPAuthenticationValidator.h in Headers */,
 				466EB41A17BC4890005F7599 /* SPAuthenticationButton.h in Headers */,
-				460A505F17DE96350070F02B /* SPProcessorNotificationsNames.h in Headers */,
+				460A505F17DE96350070F02B /* SPProcessorNotificationNames.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1176,6 +1184,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				269CAC2C146DDA7C00584C56 /* Simperium.m in Sources */,
+				B5F5D39518219CCE0048754C /* DDFileLogger+Simperium.m in Sources */,
 				264CD93D135DFE6D00C51BAD /* SPManagedObject.m in Sources */,
 				264CD941135DFE6D00C51BAD /* SPEnvironment.m in Sources */,
 				264CD943135DFE6D00C51BAD /* SPGhost.m in Sources */,
@@ -1272,6 +1281,7 @@
 				46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */,
 				246F22C8179B3EDB009547B6 /* SimperiumCoreDataTests.m in Sources */,
 				1854D5111799F6D2006C4211 /* NSArray+Simperium.m in Sources */,
+				B5F5D39618219CCE0048754C /* DDFileLogger+Simperium.m in Sources */,
 				1854D514179A18B1006C4211 /* DiffMatchPatchArrayTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1352,7 +1362,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DSTROOT = /tmp/Simperium.dst;
@@ -1364,13 +1374,14 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Simperium/Simperium-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				INSTALL_PATH = "$(BUILT_PRODUCTS_DIR)";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PUBLIC_HEADERS_FOLDER_PATH = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386";
+				VALID_ARCHS = "armv7 armv7s i386 x86_64 arm64";
 			};
 			name = Debug;
 		};
@@ -1378,7 +1389,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Codality, Inc.";
 				DSTROOT = /tmp/Simperium.dst;
@@ -1390,13 +1401,14 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Simperium/Simperium-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				INSTALL_PATH = "$(BUILT_PRODUCTS_DIR)";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "CB4714D5-E48A-4B4A-95A4-9755CA700199";
 				PUBLIC_HEADERS_FOLDER_PATH = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386";
+				VALID_ARCHS = "armv7 armv7s i386 x86_64 arm64";
 			};
 			name = Release;
 		};

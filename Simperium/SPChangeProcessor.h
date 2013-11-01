@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SPProcessorNotificationsNames.h"
+#import "SPProcessorNotificationNames.h"
 
 @class SPBucket;
 

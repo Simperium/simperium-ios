@@ -74,8 +74,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     // Take this opportunity to check for any objects that exist locally but not remotely, and remove them
     // (this can happen after reindexing if the client missed some remote deletion changes)
-    NSSet *remoteKeySet = [NSSet setWithArray:[indexDict allKeys]];
-    [self reconcileLocalAndRemoteIndex:remoteKeySet bucket:bucket storage:threadSafeStorage];
+    
+    /* TODO: re-enable this after more thorough unit testing. Suspect it could be the cause of
+       data loss. Disabling this will mean that remotely deleted notes may linger if the
+       deletion didn't sync before a reindexing.
+       NSSet *remoteKeySet = [NSSet setWithArray:[indexDict allKeys]];
+       [self reconcileLocalAndRemoteIndex:remoteKeySet bucket:bucket storage:threadSafeStorage];
+     */
     
     // Process each batch while being efficient with memory and faulting
     for (NSMutableArray *batchList in batchLists) {
@@ -119,7 +124,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             NSString *key = [objectToDelete simperiumKey];
             
             // If the object has never synced, be careful not to delete it (it won't exist in the remote index yet)
-            if ([objectToDelete ghost] == nil) {
+            if ([[objectToDelete ghost] memberData] == nil) {
                 DDLogWarn(@"Simperium found local object that doesn't exist remotely yet: %@ (%@)", key, bucket.name);
                 continue;
             }
@@ -132,7 +137,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
                                   bucket.name, @"bucketName",
                                   keysForDeletedObjects, @"keys", nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidDeleteObjectKeysNotification" object:bucket userInfo:userInfo];
+        [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
     }
 }
 

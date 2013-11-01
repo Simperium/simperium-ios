@@ -20,7 +20,7 @@
 @property (nonatomic, copy) NSString *nextMark;
 @property (nonatomic, copy) NSString *pendingLastChangeSignature;
 @property (nonatomic, copy) NSString *name;
-@property (nonatomic, assign) NSInteger number;
+@property (nonatomic, assign) int number;
 @property (nonatomic, assign) BOOL started;
 
 + (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled;
