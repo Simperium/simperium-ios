@@ -22,7 +22,7 @@
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
-NSInteger const SPChangeEnumBinSize	= 100;
+NSInteger const SPPendingChangesBinSize	= 100;
 
 NSString * const CH_KEY				= @"id";
 NSString * const CH_ADD				= @"+";
@@ -568,7 +568,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 			[changesPartition addObject:object];
 		}
 		
-		if(changesPartition.count >= SPChangeEnumBinSize) {
+		if(changesPartition.count >= SPPendingChangesBinSize) {
 			// Multiple GCD queues, same container. We seriously need to send a copy, not our own instance
 			block([changesPartition copy]);
 			[changesPartition removeAllObjects];
