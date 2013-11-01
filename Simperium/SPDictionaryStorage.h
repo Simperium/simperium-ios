@@ -19,7 +19,7 @@
 - (BOOL)containsObjectForKey:(id)aKey;
 
 - (id)objectForKey:(NSString*)aKey;
-- (void)setObject:(id)anObject forKey:(NSString*)aKey;
+- (void)persistObject:(id)anObject forKey:(NSString*)aKey;
 
 - (NSArray*)allKeys;
 - (NSArray*)allValues;

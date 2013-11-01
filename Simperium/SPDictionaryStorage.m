@@ -126,7 +126,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return value;
 }
 
-- (void)setObject:(id)anObject forKey:(id)aKey
+- (void)persistObject:(id)anObject forKey:(id)aKey
 {
 	// Failsafe
 	if(anObject == nil) {

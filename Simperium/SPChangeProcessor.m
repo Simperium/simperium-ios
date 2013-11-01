@@ -100,7 +100,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	for(NSString *key in pendingDict.allKeys) {
 		id change = pendingDict[key];
 		if(change) {
-			[self.changesPending setObject:key forKey:change];
+			[self.changesPending persistObject:key forKey:change];
 		}
 	}
 	
@@ -168,7 +168,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
                 [object simperiumKey]; // fire fault
                 [newChange setObject:[object dictionary] forKey:CH_DATA];
-                [self.changesPending setObject:newChange forKey:key];
+                [self.changesPending persistObject:newChange forKey:key];
                 repostNeeded = YES;
             } else {
                 // Catch all, don't resubmit
@@ -444,7 +444,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 }
 
 - (void)processLocalChange:(NSDictionary *)change key:(NSString *)key {
-    [self.changesPending setObject:change forKey: key];
+    [self.changesPending persistObject:change forKey: key];
     
     // Support delayed app termination to ensure local changes have a chance to fully save
 #if TARGET_OS_IPHONE
@@ -547,7 +547,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
 		
 		if (change) {
-			[self.changesPending setObject:change forKey:key];
+			[self.changesPending persistObject:change forKey:key];
 			[pendingKeys addObject:key];
 		} else {
 			[self.keysForObjectsWithMoreChanges removeObject:key];
@@ -602,7 +602,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
             NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
             
             if (change) {
-                [self.changesPending setObject:change forKey: key];
+                [self.changesPending persistObject:change forKey: key];
                 [newChangesPending addObject:change];
             }
             [keysProcessed addObject:key];
