@@ -152,6 +152,8 @@
 		466EB40D17BC194D005F7599 /* SPAuthenticationValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB40B17BC194D005F7599 /* SPAuthenticationValidator.h */; };
 		466EB40E17BC194D005F7599 /* SPAuthenticationValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 466EB40C17BC194D005F7599 /* SPAuthenticationValidator.m */; };
 		466FFEA217CBEE7A00399652 /* SPNetworkInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 466FFEA117CBEE7A00399652 /* SPNetworkInterface.m */; };
+		4678FC3E182369E500B6D413 /* DDFileLogger+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 4678FC3C182369E500B6D413 /* DDFileLogger+Simperium.h */; };
+		4678FC3F182369E500B6D413 /* DDFileLogger+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 4678FC3D182369E500B6D413 /* DDFileLogger+Simperium.m */; };
 		46A691FF17387ABF0080399F /* SFHFKeychainUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 46A691FD17387ABE0080399F /* SFHFKeychainUtils.h */; };
 		46A6920017387ABF0080399F /* SFHFKeychainUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 46A691FE17387ABE0080399F /* SFHFKeychainUtils.m */; };
 		46D5BC41174C2A9B0027DBAF /* SPRelationshipResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 46D5BC3F174C2A9B0027DBAF /* SPRelationshipResolver.h */; };
@@ -328,6 +330,8 @@
 		466EB40B17BC194D005F7599 /* SPAuthenticationValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPAuthenticationValidator.h; path = ../../Simperium/SPAuthenticationValidator.h; sourceTree = "<group>"; };
 		466EB40C17BC194D005F7599 /* SPAuthenticationValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPAuthenticationValidator.m; path = ../../Simperium/SPAuthenticationValidator.m; sourceTree = "<group>"; };
 		466FFEA117CBEE7A00399652 /* SPNetworkInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPNetworkInterface.m; path = ../../Simperium/SPNetworkInterface.m; sourceTree = "<group>"; };
+		4678FC3C182369E500B6D413 /* DDFileLogger+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "DDFileLogger+Simperium.h"; path = "../../Simperium/DDFileLogger+Simperium.h"; sourceTree = "<group>"; };
+		4678FC3D182369E500B6D413 /* DDFileLogger+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "DDFileLogger+Simperium.m"; path = "../../Simperium/DDFileLogger+Simperium.m"; sourceTree = "<group>"; };
 		46A691FD17387ABE0080399F /* SFHFKeychainUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SFHFKeychainUtils.h; path = ../External/SFHFKeychainUtils/SFHFKeychainUtils.h; sourceTree = "<group>"; };
 		46A691FE17387ABE0080399F /* SFHFKeychainUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SFHFKeychainUtils.m; path = ../External/SFHFKeychainUtils/SFHFKeychainUtils.m; sourceTree = "<group>"; };
 		46D5BC3F174C2A9B0027DBAF /* SPRelationshipResolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPRelationshipResolver.h; path = ../../Simperium/SPRelationshipResolver.h; sourceTree = "<group>"; };
@@ -417,6 +421,8 @@
 			isa = PBXGroup;
 			children = (
 				26F1C7001562E76B002172D5 /* Auth */,
+				4678FC3C182369E500B6D413 /* DDFileLogger+Simperium.h */,
+				4678FC3D182369E500B6D413 /* DDFileLogger+Simperium.m */,
 				46EA1AF017569EC7009AC5AA /* SPHttpInterface.h */,
 				46EA1AF117569EC7009AC5AA /* SPHttpInterface.m */,
 				46EA1AEC17569EB4009AC5AA /* SPWebSocketInterface.h */,
@@ -753,6 +759,7 @@
 				4617AEBB179A1A3400545BD9 /* SPReachability.h in Headers */,
 				46DD15C6179A6DAC0093678C /* SPMemberJSONList.h in Headers */,
 				46DD161F17A1B8490093678C /* SPAuthenticationButton.h in Headers */,
+				4678FC3E182369E500B6D413 /* DDFileLogger+Simperium.h in Headers */,
 				46DD162117A1B8490093678C /* SPAuthenticationButtonCell.h in Headers */,
 				46DD162317A1B8490093678C /* SPAuthenticationTextField.h in Headers */,
 				46DD162517A1B8490093678C /* SPAuthenticationView.h in Headers */,
@@ -894,6 +901,7 @@
 				46DD162217A1B8490093678C /* SPAuthenticationButtonCell.m in Sources */,
 				46DD162417A1B8490093678C /* SPAuthenticationTextField.m in Sources */,
 				46DD162617A1B8490093678C /* SPAuthenticationView.m in Sources */,
+				4678FC3F182369E500B6D413 /* DDFileLogger+Simperium.m in Sources */,
 				46DD162817A1B8490093678C /* SPAuthenticationWindow.m in Sources */,
 				46DD162A17A1B8490093678C /* SPAuthenticationWindowController.m in Sources */,
 				46263BB217A7778E00131791 /* SPAuthenticationConfiguration.m in Sources */,
