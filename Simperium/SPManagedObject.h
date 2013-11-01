@@ -19,7 +19,6 @@
 	// The entity's member data as last seen by the server, stored in dictionary form for diffing
 	// has key, data, and signature
 	SPGhost *ghost;
-    SPBucket *__weak bucket;
     	
 	// Flagged if changed while waiting for server ack (could be tracked externally instead)
 	BOOL updateWaiting;

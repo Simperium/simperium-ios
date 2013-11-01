@@ -21,7 +21,7 @@
 @implementation SPManagedObject
 @synthesize ghost;
 @synthesize updateWaiting;
-@synthesize bucket;
+@synthesize bucket = _bucket;
 @dynamic simperiumKey;
 @dynamic ghostData;
 
@@ -61,7 +61,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSLog(@"Simperium error: bucket list not loaded. Ensure Simperium is started before any objects are fetched.");
 	}
 	
-    bucket = [bucketList objectForKey:[[self entity] name]];
+    _bucket = [bucketList objectForKey:[[self entity] name]];
+}
+
+- (SPBucket *)bucket
+{
+    if (!_bucket) {
+        [self configureBucket];
+    }
+    return _bucket;
 }
 
 - (void)awakeFromFetch {
@@ -122,7 +130,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)loadMemberData:(NSDictionary *)memberData {    
 	// Copy data for each member from the dictionary
     for (NSString *memberKey in [memberData allKeys]) {
-        SPMember *member = [bucket.differ.schema memberForKey:memberKey];
+        SPMember *member = [self.bucket.differ.schema memberForKey:memberKey];
         if (member) {
             id JSONValue = memberData[memberKey];
             [member setMemberValueFromJSONValue:JSONValue onParentObject:self];
@@ -142,7 +150,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	
 	NSMutableDictionary *dict = [NSMutableDictionary dictionary];
 	
-	for (SPMember *member in [bucket.differ.schema.members allValues]) {
+	for (SPMember *member in [self.bucket.differ.schema.members allValues]) {
 		id data = [member JSONValueForMemberOnParentObject:self];
         if (data) dict[member.keyName] = data;
 	}
