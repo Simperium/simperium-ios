@@ -298,7 +298,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 			[channel handleRemoteChanges: changes bucket:bucket];
         }
     } else if ([command isEqualToString:COM_ENTITY]) {
-        // todo: handle ? if entity doesn't exist or it has been deleted
         [channel handleVersionResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_ERROR]) {
         DDLogVerbose(@"Simperium returned a command error (?) for bucket %@", bucket.name);

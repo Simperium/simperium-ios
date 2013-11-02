@@ -375,23 +375,35 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
     if ([responseString isEqualToString:@"?"]) {
-        DDLogError(@"Simperium error: version not found during version retrieval (%@)", bucket.name);
+        DDLogError(@"Simperium error: '?' response during version retrieval (%@)", bucket.name);
         _objectVersionsPending--;
         return;
     }
 
-    NSRange range = [responseString rangeOfString:@"."];
-    NSString *key = [responseString substringToIndex:range.location];
-    NSString *versionString = [responseString substringFromIndex:range.location+range.length];
-    range = [versionString rangeOfString:@"\n"];
-    NSString *version = [versionString substringToIndex:range.location];
-    versionString = [versionString substringFromIndex:range.location + range.length];
+    // Expected format is: key_here.maybe.with.periods.VERSIONSTRING\n{payload}
+    NSRange headerRange = [responseString rangeOfString:@"\n"];
+    if (headerRange.location == NSNotFound) {
+        DDLogError(@"Simperium error: version header not found during version retrieval (%@)", bucket.name);
+        _objectVersionsPending--;
+        return;
+    }
+    
+    NSRange keyRange = [responseString rangeOfString:@"." options:NSBackwardsSearch range:NSMakeRange(0, headerRange.location)];
+    if (keyRange.location == NSNotFound) {
+        DDLogError(@"Simperium error: version key not found during version retrieval (%@)", bucket.name);
+        _objectVersionsPending--;
+        return;
+    }
+    
+    NSString *key = [responseString substringToIndex:keyRange.location];
+    NSString *version = [responseString substringFromIndex:keyRange.location+keyRange.length];
+    NSString *payload = [responseString substringFromIndex:headerRange.location + headerRange.length];
     DDLogDebug(@"Simperium received version (%@): %@", self.name, responseString);
     
-    // With websockets, the data is wrapped in a dictionary, so unwrap it
-    // This processing should be moved off the main thread (or fixed at the protocol level)
-    NSDictionary *versionDict = [versionString objectFromJSONString];
-    NSDictionary *dataDict = [versionDict objectForKey:@"data"];
+    // With websockets, the data is wrapped up (somewhat annoyingly) in a dictionary, so unwrap it
+    // This processing should probably be moved off the main thread (or improved at the protocol level)
+    NSDictionary *payloadDict = [payload objectFromJSONString];
+    NSDictionary *dataDict = [payloadDict objectForKey:@"data"];
     
     if ([dataDict class] == [NSNull class] || dataDict == nil) {
         // No data
@@ -400,7 +412,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         return;
     }
     
-    versionString = [dataDict JSONString];
+    // All unwrapped, now get it in the format we need for marshaling
+    NSString *payloadString = [dataDict JSONString];
     
     // If there was an error previously, unflag it
     [self.versionsWithErrors removeObjectForKey:key];
@@ -415,8 +428,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		}
     } else {
         // Otherwise, process the result for indexing
-        // Marshal stuff into an array for later processing
-        NSArray *responseData = [NSArray arrayWithObjects: key, versionString, version, nil];
+        // Marshal everything into an array for later processing
+        NSArray *responseData = [NSArray arrayWithObjects: key, payloadString, version, nil];
         [self.responseBatch addObject:responseData];
 
         // Batch responses for more efficient processing
