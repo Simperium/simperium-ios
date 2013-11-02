@@ -165,6 +165,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (void)tearDown
 {
     [super tearDown];
+    
+    for (Farm *farm in farms) {
+        [farm stop];
+    }
 }
 
 //- (void)ensureConfigsAreEqualTo:(Farm *)leader
