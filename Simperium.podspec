@@ -48,7 +48,6 @@ Pod::Spec.new do |s|
 
   # Finally, specify any Pods that this Pod depends on.
   #
-  s.dependency 'ASIHTTPRequest', '~> 1.8.1'
   s.dependency 'CocoaLumberjack'
   s.dependency 'Google-Diff-Match-Patch'
   s.dependency 'JRSwizzle'
