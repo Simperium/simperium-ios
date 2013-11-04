@@ -196,6 +196,11 @@
 		46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */; };
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
+		B5C91A071827E8600002D306 /* SPHttpRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = B5C91A021827E8600002D306 /* SPHttpRequest.h */; };
+		B5C91A081827E8600002D306 /* SPHttpRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C91A031827E8600002D306 /* SPHttpRequest.m */; };
+		B5C91A091827E8600002D306 /* SPHttpRequest+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5C91A041827E8600002D306 /* SPHttpRequest+Internals.h */; };
+		B5C91A0A1827E8600002D306 /* SPHttpRequestQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = B5C91A051827E8600002D306 /* SPHttpRequestQueue.h */; };
+		B5C91A0B1827E8600002D306 /* SPHttpRequestQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C91A061827E8600002D306 /* SPHttpRequestQueue.m */; };
 		B5EB869A1822E34F007450FF /* SPRemoteLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = B5EB86981822E34F007450FF /* SPRemoteLogger.h */; };
 		B5EB869B1822E34F007450FF /* SPRemoteLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B5EB86991822E34F007450FF /* SPRemoteLogger.m */; };
 		B5F5D39418219CCE0048754C /* DDFileLogger+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */; };
@@ -409,6 +414,11 @@
 		46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumAuxiliaryTests.m; sourceTree = "<group>"; };
 		46EE3D55171D0C8E00E6F0A5 /* SimperiumErrorTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimperiumErrorTests.h; sourceTree = "<group>"; };
 		46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumErrorTests.m; sourceTree = "<group>"; };
+		B5C91A021827E8600002D306 /* SPHttpRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHttpRequest.h; sourceTree = "<group>"; };
+		B5C91A031827E8600002D306 /* SPHttpRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHttpRequest.m; sourceTree = "<group>"; };
+		B5C91A041827E8600002D306 /* SPHttpRequest+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPHttpRequest+Internals.h"; sourceTree = "<group>"; };
+		B5C91A051827E8600002D306 /* SPHttpRequestQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHttpRequestQueue.h; sourceTree = "<group>"; };
+		B5C91A061827E8600002D306 /* SPHttpRequestQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHttpRequestQueue.m; sourceTree = "<group>"; };
 		B5EB86981822E34F007450FF /* SPRemoteLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPRemoteLogger.h; sourceTree = "<group>"; };
 		B5EB86991822E34F007450FF /* SPRemoteLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPRemoteLogger.m; sourceTree = "<group>"; };
 		B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DDFileLogger+Simperium.h"; sourceTree = "<group>"; };
@@ -857,6 +867,11 @@
 				2618988415D2EC130013CBC9 /* SPWebSocketInterface.m */,
 				264AE51815D45E2A00E5E04E /* SPWebSocketChannel.h */,
 				264AE51915D45E2A00E5E04E /* SPWebSocketChannel.m */,
+				B5C91A021827E8600002D306 /* SPHttpRequest.h */,
+				B5C91A031827E8600002D306 /* SPHttpRequest.m */,
+				B5C91A041827E8600002D306 /* SPHttpRequest+Internals.h */,
+				B5C91A051827E8600002D306 /* SPHttpRequestQueue.h */,
+				B5C91A061827E8600002D306 /* SPHttpRequestQueue.m */,
 			);
 			name = Networking;
 			sourceTree = "<group>";
@@ -868,6 +883,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5C91A071827E8600002D306 /* SPHttpRequest.h in Headers */,
 				264CD93A135DFE6D00C51BAD /* Simperium.h in Headers */,
 				264CD93C135DFE6D00C51BAD /* SPManagedObject.h in Headers */,
 				264CD940135DFE6D00C51BAD /* SPEnvironment.h in Headers */,
@@ -889,6 +905,7 @@
 				26905D9C142CF97D001ACF20 /* DDAbstractDatabaseLogger.h in Headers */,
 				26905D9E142CF97D001ACF20 /* DDASLLogger.h in Headers */,
 				26905DA0142CF97D001ACF20 /* DDFileLogger.h in Headers */,
+				B5C91A091827E8600002D306 /* SPHttpRequest+Internals.h in Headers */,
 				26905DA2142CF97D001ACF20 /* DDLog.h in Headers */,
 				26905DA4142CF97D001ACF20 /* DDTTYLogger.h in Headers */,
 				26905DA8142D344C001ACF20 /* DDLogDebug.h in Headers */,
@@ -903,6 +920,7 @@
 				2622FD08147F249400C8EEB4 /* SPMemberText.h in Headers */,
 				2622FD0C147F24A700C8EEB4 /* SPMemberDate.h in Headers */,
 				2622FD10147F24CC00C8EEB4 /* SPMemberInt.h in Headers */,
+				B5C91A0A1827E8600002D306 /* SPHttpRequestQueue.h in Headers */,
 				2622FD14147F24D700C8EEB4 /* SPMemberDouble.h in Headers */,
 				2622FD18147F24E000C8EEB4 /* SPMemberFloat.h in Headers */,
 				2622FD1C147F24F700C8EEB4 /* SPMemberEntity.h in Headers */,
@@ -1116,6 +1134,7 @@
 				265D800A1475C2F500002A19 /* SPStorage.m in Sources */,
 				265D800E1476188200002A19 /* SPCoreDataStorage.m in Sources */,
 				26EF3BA6147C6AB500E62AD6 /* SPChangeProcessor.m in Sources */,
+				B5C91A081827E8600002D306 /* SPHttpRequest.m in Sources */,
 				26EF3BAA147C6BB200E62AD6 /* SPBinaryManager.m in Sources */,
 				2622FD09147F249400C8EEB4 /* SPMemberText.m in Sources */,
 				2622FD0D147F24A700C8EEB4 /* SPMemberDate.m in Sources */,
@@ -1126,6 +1145,7 @@
 				2622FD21147F250400C8EEB4 /* SPMemberBinary.m in Sources */,
 				2622FD25147F251200C8EEB4 /* SPMemberList.m in Sources */,
 				2622FD29147F251D00C8EEB4 /* SPMemberBase64.m in Sources */,
+				B5C91A0B1827E8600002D306 /* SPHttpRequestQueue.m in Sources */,
 				2611E806149FB91100121D6E /* JSONKit.m in Sources */,
 				26C93A6E14F850EA00BE99F5 /* SPAuthenticationViewController.m in Sources */,
 				26563AE514FC3BDE0081C8C1 /* SPAuthenticator.m in Sources */,

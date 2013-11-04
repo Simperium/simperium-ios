@@ -9,8 +9,6 @@
 #import "SimperiumTests.h"
 #import "SPGhost.h"
 #import "DDLog.h"
-#import "ASIHTTPRequest.h"
-#import "ASIFormDataRequest.h"
 #import "JSONKit.h"
 #import "NSString+Simperium.h"
 #import "Config.h"
