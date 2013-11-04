@@ -74,5 +74,3 @@ typedef NS_ENUM(NSInteger, SPMemberType)
 - (void)setMemberValueFromJSONValue:(id)JSONValue onParentObject:(id)parentObject;
 
 @end
-
-

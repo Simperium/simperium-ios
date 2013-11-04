@@ -158,6 +158,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     });
 }
 
+- (void)sendBucketStatus:(SPBucket *)bucket {
+
+	NSDictionary *response = [bucket exportStatus];
+	NSString *jsonStr = [response sp_JSONString];
+	NSString *message = [NSString stringWithFormat:@"%d:index:%@", self.number, jsonStr];
+	
+	DDLogVerbose(@"Simperium sending Bucket Internal State (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
+	[self.webSocketManager send:message];
+}
+
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
     __block int numChangesPending;
     __block int numKeysForObjectsWithMoreChanges;
@@ -202,7 +212,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 	// Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
 	if (changes.count == 0) {
-
 		[bucket bucketDidSync];
 		return;
 	}
@@ -214,14 +223,21 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[bucket.storage stashUnsavedObjects];
 	
 	dispatch_async(bucket.processorQueue, ^{
-		if (self.started) {
-			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID];
-			dispatch_async(dispatch_get_main_queue(), ^{
-				// After remote changes have been processed, check to see if any local changes were attempted (and
-				// queued) in the meantime, and send them
-				[self sendChangesForBucket:bucket onlyQueuedChanges:YES completionBlock:nil];
-			});
+		if (!self.started) {
+			return;
 		}
+		
+		BOOL needsRepost = [bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket];
+		[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID];
+		
+		dispatch_async(dispatch_get_main_queue(), ^{
+			
+			// Note #1: After remote changes have been processed, check to see if any local changes were attempted (and
+			//			queued) in the meantime, and send them.
+			
+			// Note #2: If we need to repost, we'll need to re-send everything. Not just the queued changes.
+			[self sendChangesForBucket:bucket onlyQueuedChanges:!needsRepost completionBlock:nil];
+		});
 	});
 }
 
@@ -369,33 +385,46 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
     if ([responseString isEqualToString:@"?"]) {
-        DDLogError(@"Simperium error: version not found during version retrieval (%@)", bucket.name);
+        DDLogError(@"Simperium error: '?' response during version retrieval (%@)", bucket.name);
         _objectVersionsPending--;
         return;
     }
 
-    NSRange range = [responseString rangeOfString:@"."];
-    NSString *key = [responseString substringToIndex:range.location];
-    NSString *versionString = [responseString substringFromIndex:range.location+range.length];
-    range = [versionString rangeOfString:@"\n"];
-    NSString *version = [versionString substringToIndex:range.location];
-    versionString = [versionString substringFromIndex:range.location + range.length];
+    // Expected format is: key_here.maybe.with.periods.VERSIONSTRING\n{payload}
+    NSRange headerRange = [responseString rangeOfString:@"\n"];
+    if (headerRange.location == NSNotFound) {
+        DDLogError(@"Simperium error: version header not found during version retrieval (%@)", bucket.name);
+        _objectVersionsPending--;
+        return;
+    }
+    
+    NSRange keyRange = [responseString rangeOfString:@"." options:NSBackwardsSearch range:NSMakeRange(0, headerRange.location)];
+    if (keyRange.location == NSNotFound) {
+        DDLogError(@"Simperium error: version key not found during version retrieval (%@)", bucket.name);
+        _objectVersionsPending--;
+        return;
+    }
+    
+    NSString *key = [responseString substringToIndex:keyRange.location];
+    NSString *version = [responseString substringFromIndex:keyRange.location+keyRange.length];
+    NSString *payload = [responseString substringFromIndex:headerRange.location + headerRange.length];
     DDLogDebug(@"Simperium received version (%@): %@", self.name, responseString);
     
-    // With websockets, the data is wrapped in a dictionary, so unwrap it
-    // This processing should be moved off the main thread (or fixed at the protocol level)
-    NSDictionary *versionDict = [versionString sp_objectFromJSONString];
-    NSDictionary *dataDict = [versionDict objectForKey:@"data"];
-    
+    // With websockets, the data is wrapped up (somewhat annoyingly) in a dictionary, so unwrap it
+    // This processing should probably be moved off the main thread (or improved at the protocol level)
+    NSDictionary *payloadDict = [payload sp_objectFromJSONString];
+    NSDictionary *dataDict = [payloadDict objectForKey:@"data"];
+
     if ([dataDict class] == [NSNull class] || dataDict == nil) {
         // No data
         DDLogError(@"Simperium error: version had no data (%@): %@", bucket.name, key);
         _objectVersionsPending--;
         return;
     }
-    
-    versionString = [dataDict sp_JSONString];
-    
+
+    // All unwrapped, now get it in the format we need for marshaling
+    NSString *payloadString = [dataDict sp_JSONString];
+
     // If there was an error previously, unflag it
     [self.versionsWithErrors removeObjectForKey:key];
 
@@ -409,8 +438,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		}
     } else {
         // Otherwise, process the result for indexing
-        // Marshal stuff into an array for later processing
-        NSArray *responseData = [NSArray arrayWithObjects: key, versionString, version, nil];
+        // Marshal everything into an array for later processing
+        NSArray *responseData = [NSArray arrayWithObjects: key, payloadString, version, nil];
         [self.responseBatch addObject:responseData];
 
         // Batch responses for more efficient processing
@@ -443,8 +472,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 										   @"id" : key};
             [errorArray addObject:versionDict];
         }
-        [self performSelector:@selector(requestVersionsForKeys:) withObject: errorArray afterDelay:1];
-        //[self performSelector:@selector(requestLatestVersions) withObject:nil afterDelay:10];
+		
+		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1.0f * NSEC_PER_SEC);
+		dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
+			[self performSelector:@selector(requestVersionsForKeys:bucket:) withObject: errorArray withObject:bucket];
+		});
+
         return;
     }
 

@@ -6,7 +6,7 @@
 //  Copyright (c) 2011 Simperium. All rights reserved.
 //
 
-#define NUM_FARMS 1
+#define NUM_FARMS 2
 #define NUM_MULTIPLE_CONFIGS 2
 
 // TODO: move these to a local-only plist

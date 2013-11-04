@@ -109,6 +109,9 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 // Saves without syncing (typically not used).
 - (BOOL)saveWithoutSyncing;
 
+// Exports Simperium Internal logfiles. Note: you should enable verboseLogging before!
+- (NSData*)exportLogfiles;
+
 
 // Set this to true if you need to be able to cancel the authentication dialog.
 @property (nonatomic) BOOL authenticationOptional;
@@ -124,9 +127,6 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 
 // Overrides the built-in authentication flow so you can customize the behavior.
 @property (nonatomic) BOOL authenticationEnabled;
-
-// Toggle websockets (should only be done before starting Simperium).
-@property (nonatomic) BOOL useWebSockets;
 
 // Returns the currently authenticated Simperium user.
 @property (nonatomic,strong) SPUser *user;

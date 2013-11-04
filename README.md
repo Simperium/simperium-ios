@@ -7,11 +7,21 @@ You can [sign up](http://simperium.com) for a hosted version of Simperium. There
 
 Adding Simperium to your project
 --------------------------------
-The easiest way to add Simperium is to [download the binary framework](https://docs.google.com/uc?export=download&id=0B_WOy42eJTXtMl90cHN1YVUzRlk) and [follow these instructions](http://simperium.com/docs/ios/).
+The easiest way to add Simperium is to [download the latest release](https://github.com/Simperium/simperium-ios/releases/latest). Unzip the source code somewhere convenient.
 
-To use the source code instead, drag and drop Simperium.xcodeproj into your application's project, then add libSimperium.a in your target's Build Phase tab (under Link Binary with Libraries). You'll still need to [add some dependencies](http://simperium.com/docs/ios/#add). Note that you shouldn't have Simperium.xcodeproj open in another window at the same time. Xcode doesn't like this.
+Then, drag and drop Simperium.xcodeproj into your application's project, then add libSimperium.a in your target's Build Phase tab (under Link Binary with Libraries). You'll still need to [add some dependencies](http://simperium.com/docs/ios/#add). Note that you shouldn't have Simperium.xcodeproj open in another window at the same time. Xcode doesn't like this.
 
-If for some reason you want to build the binary framework yourself, open Simperium.xcodeproj, then select and build the Framework target for iOS Device. You can build a release version of the Framework target by choosing Product -> Build for Archiving.
+If for some reason you want to build a binary framework, open Simperium.xcodeproj, then select and build the Framework target for iOS Device. You can build a release version of the Framework target by choosing Product -> Build for Archiving.
+
+OSX
+---
+Everything works pretty much the same on OSX. Some changes are noted [in the online documentation](http://simperium.com/docs/ios/).
+
+Releases
+--------
+The master branch always has the latest stable release, and is tagged.Simperium is used by hundreds of thousands of people across many different apps and devices, and is considered production-ready.
+
+The develop branch has an ongoing development build (not intended for production use).
 
 Folder structure
 ----------------

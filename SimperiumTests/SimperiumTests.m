@@ -9,15 +9,15 @@
 #import "SimperiumTests.h"
 #import "SPGhost.h"
 #import "DDLog.h"
-#import "ASIHTTPRequest.h"
-#import "ASIFormDataRequest.h"
-#import "JSONKit+Simperium.h"
+#import "../Simperium/JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "Config.h"
 #import "Farm.h"
 #import "SPBucket.h"
 #import "SFHFKeychainUtils.h"
 #import "SPAuthenticator.h"
+#import "SPHttpRequest.h"
+#import "SPHttpRequestQueue.h"
 
 @implementation SimperiumTests
 @synthesize token;
@@ -134,25 +134,40 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (void)setUp
 {
     [super setUp];
-    // Set the token
-    //NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@/app/%@/token/?grant_type=password&api_key=%@&username=%@&password=%@", SERVER, APP_NAME, ACCESS_KEY, USERNAME, PASSWORD]];
+	// prepare the URL Request
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@/1/%@/authorize/", SERVER, APP_ID]];
-    
-    ASIFormDataRequest *tokenRequest = [[ASIFormDataRequest alloc] initWithURL:tokenURL];
-    [tokenRequest setPostValue:USERNAME forKey:@"username"];
-    [tokenRequest setPostValue:PASSWORD forKey:@"password"];
-    [tokenRequest setPostValue:API_KEY forKey:@"api_key"];
-    //[tokenRequest setRequestMethod:@"POST"];
-    [tokenRequest startSynchronous];
-    NSString *tokenResponse = [tokenRequest responseString];
-    int code = [tokenRequest responseStatusCode];
-    STAssertTrue(code == 200, @"bad response code %d for request %@, response: %@", code, tokenURL, tokenResponse);
-    if (code != 200)
+	NSMutableURLRequest* request = [[NSMutableURLRequest alloc] initWithURL:tokenURL];
+	request.HTTPMethod = @"POST";
+	
+    NSDictionary *authDict = @{
+		@"username" : USERNAME,
+		@"password" : PASSWORD,
+		@"api_key"	: API_KEY
+	};
+		
+	request.HTTPBody = [[authDict sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
+	
+	// Send the request: let's use SYNC API
+	NSError* error = nil;
+	NSURLResponse* response = nil;
+	NSData* responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+	
+	// Parse the response
+	NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
+	STAssertTrue([httpResponse isKindOfClass:[NSHTTPURLResponse class]], @"Please check NSURLConnection's API");
+	
+	NSString* responseString = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+	
+    int code = httpResponse.statusCode;
+    STAssertTrue(code == 200, @"bad response code %d for request %@, response: %@", code, tokenURL, responseString);
+    if (code != 200) {
         return;
-        
-    NSDictionary *userDict = [tokenResponse sp_objectFromJSONString];
+	}
     
-    self.token = [userDict objectForKey:@"access_token"];
+	// Initialize!
+    NSDictionary *userDict = [responseString sp_objectFromJSONString];
+
+    self.token = userDict[@"access_token"];
     STAssertTrue(token.length > 0, @"invalid token from request: %@", tokenURL);
     
     [[NSUserDefaults standardUserDefaults] setObject:USERNAME forKey:@"SPUsername"];
@@ -165,6 +180,10 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 - (void)tearDown
 {
     [super tearDown];
+    
+    for (Farm *farm in farms) {
+        [farm stop];
+    }
 }
 
 //- (void)ensureConfigsAreEqualTo:(Farm *)leader

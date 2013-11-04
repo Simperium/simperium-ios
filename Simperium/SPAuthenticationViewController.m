@@ -8,13 +8,14 @@
 
 #import "SPAuthenticationViewController.h"
 #import "SPAuthenticator.h"
+#import "SPHttpRequest.h"
 #import <Simperium/Simperium.h>
-#import "ASIFormDataRequest.h"
 #import "JSONKit+Simperium.h"
 #import "SPAuthenticationButton.h"
 #import "SPAuthenticationConfiguration.h"
 #import "SPAuthenticationValidator.h"
 #import "SPTOSViewController.h"
+
 
 @interface SPAuthenticationViewController()
 
@@ -390,25 +391,24 @@
                     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                 }
                 failure:^(int responseCode, NSString *responseString){
-                    [self restoreCreationSettings];                    
-                    [actionButton showErrorMessage:NSLocalizedString(@"Could not create an account with the provided email address and password.", @"An error message")];
+                    [self restoreCreationSettings];
+					
+					NSString *message = nil;
+					if(responseCode == SPHttpRequestErrorsTimeout) {
+						message = NSLocalizedString(@"There's a problem with the connection.  Please try again later.",
+													@"Details for a dialog that is displayed when there's a connection problem");
+					} else {
+						message = NSLocalizedString(@"Could not create an account with the provided email address and password.",
+													@"An error message");
+					}
                     
+					[actionButton showErrorMessage:message];
+					
                     [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
                     [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
                     [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:2 inSection:0]]];
                 }
      ];
-}
-
-- (void)failedDueToNetwork:(ASIHTTPRequest *)request {
-	[self restoreCreationSettings];
-	NSString *message = NSLocalizedString(@"There's a problem with the connection.  Please try again later.",
-										  @"Details for a dialog that is displayed when there's a connection problem");
-    
-    [actionButton showErrorMessage:message];
-    
-    [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
-    [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
 }
 
 

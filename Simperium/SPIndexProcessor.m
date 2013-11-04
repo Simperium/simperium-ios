@@ -137,7 +137,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
                                   bucket.name, @"bucketName",
                                   keysForDeletedObjects, @"keys", nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ProcessorDidDeleteObjectKeysNotification" object:bucket userInfo:userInfo];
+        [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
     }
 }
 
@@ -257,6 +257,22 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             }
         });    
     }
+}
+
+- (NSArray*)exportIndexStatus:(SPBucket *)bucket {
+
+	// This routine shall be used for debugging purposes!
+	id<SPStorageProvider> storage	= [bucket.storage threadSafeStorage];
+	NSSet *localKeys				= [NSSet setWithArray:[storage objectKeysForBucketName:bucket.name]];
+	NSArray *objects				= [storage objectsForKeys:localKeys bucketName:bucket.name];
+	NSMutableArray* index			= [NSMutableArray array];
+	
+	for(id<SPDiffable>object in objects)
+	{
+		[index addObject:@{ [object.simperiumKey copy] : [object.ghost.version copy] }];
+	}
+	
+	return index;
 }
 
 @end

@@ -17,14 +17,13 @@
 #import "SPDiffer.h"
 #import "SPGhost.h"
 #import "SPEnvironment.h"
-#import "SPHttpInterface.h"
 #import "SPWebSocketInterface.h"
-#import "ASIHTTPRequest.h"
 #import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "DDLog.h"
 #import "DDASLLogger.h"
 #import "DDTTYLogger.h"
+#import "DDFileLogger+Simperium.h"
 #import "SPCoreDataStorage.h"
 #import "SPAuthenticator.h"
 #import "SPBucket.h"
@@ -74,7 +73,6 @@
 @synthesize verboseLoggingEnabled = _verboseLoggingEnabled;
 @synthesize networkEnabled = _networkEnabled;
 @synthesize authenticationEnabled = _authenticationEnabled;
-@synthesize useWebSockets = _useWebSockets;
 @synthesize authenticator;
 @synthesize network;
 @synthesize relationshipResolver;
@@ -106,33 +104,39 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 static int ddLogLevel = LOG_LEVEL_INFO;
 #endif
 
-+ (int)ddLogLevel {
++(int)ddLogLevel
+{
     return ddLogLevel;
 }
 
-+ (void)ddSetLogLevel:(int)logLevel {
++(void)ddSetLogLevel:(int)logLevel
+{
     ddLogLevel = logLevel;
 }
+
++(void)setupLogging
+{
+	// Handle multiple Simperium instances by ensuring logging only gets started once
+    static dispatch_once_t _once;
+    dispatch_once(&_once, ^{
+		[DDLog addLogger:[DDASLLogger sharedInstance]];
+		[DDLog addLogger:[DDTTYLogger sharedInstance]];
+		[DDLog addLogger:[DDFileLogger sharedInstance]];
+	});
+}
+
 
 #pragma mark - Constructors
 -(id)init
 {
 	if ((self = [super init])) {
-        
-        // Handle multiple Simperium instances by ensuring logging only gets started once
-        static BOOL loggingStarted;
-        if (!loggingStarted) {
-            [DDLog addLogger:[DDASLLogger sharedInstance]];
-            [DDLog addLogger:[DDTTYLogger sharedInstance]];
-            loggingStarted = YES;
-        }
+
+        [[self class] setupLogging];
         
         self.label = @"";
         _networkEnabled = YES;
         _authenticationEnabled = YES;
-        _useWebSockets = NO;
         dynamicSchemaEnabled = YES;
-		[ASIHTTPRequest setShouldUpdateNetworkActivityIndicator:NO];
         self.buckets = [NSMutableDictionary dictionary];
         
         SPAuthenticator *auth = [[SPAuthenticator alloc] initWithDelegate:self simperium:self];
@@ -246,8 +250,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         // First check for an override
         for (NSString *testName in [bucketOverrides allKeys]) {
             NSString *testOverride = [bucketOverrides objectForKey:testName];
-            if ([testOverride isEqualToString:name])
+            if ([testOverride isEqualToString:name]) {
                 return [buckets objectForKey:testName];
+			}
         }
         
         // Lazily start buckets
@@ -255,18 +260,20 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             // Create and start a network manager for it
             SPSchema *schema = [[SPSchema alloc] initWithBucketName:name data:nil];
             schema.dynamic = YES;
-            SPHttpInterface *netManager = [[SPHttpInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
-            
-            // New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkInterface:network
-                                 relationshipResolver:self.relationshipResolver label:self.label];
-            [netManager setBucket:bucket overrides:self.bucketOverrides];
-            [buckets setObject:bucket forKey:name];
-            [netManager start:bucket name:bucket.name];
-            
+			
+			// For websockets, one network manager for all buckets
+			if (!self.network) {
+				SPWebSocketInterface *webSocketManager = [[SPWebSocketInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
+				self.network = webSocketManager;
+			}
+						
+			// New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
+			bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkInterface:self.network
+								 relationshipResolver:self.relationshipResolver label:self.label];
 
-        } else
-            return nil;
+			[self.buckets setObject:bucket forKey:name];
+            [self.network start:bucket name:bucket.name];
+        }
     }
     
     return bucket;
@@ -278,11 +285,27 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [bucket.network shareObject: object withEmail:email];
 }
 
--(void)setVerboseLoggingEnabled:(BOOL)on {
+-(void)setVerboseLoggingEnabled:(BOOL)on
+{
     _verboseLoggingEnabled = on;
     for (Class cls in [DDLog registeredClasses]) {
         [DDLog setLogLevel:on ? LOG_LEVEL_VERBOSE : LOG_LEVEL_INFO forClass:cls];
     }
+}
+
+-(NSData*)exportLogfiles
+{
+	NSArray *logfiles = [[[DDFileLogger sharedInstance] logFileManager] sortedLogFilePaths];
+	NSMutableData *export = [NSMutableData data];
+	
+	for(NSString *path in logfiles) {
+		NSData *logfile = [NSData dataWithContentsOfFile:path];
+		if(logfile.length) {
+			[export appendData:logfile];
+		}
+	}
+	
+	return export;
 }
 
 -(void)startNetworkManagers
@@ -356,31 +379,22 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         
         // If bucket overrides exist, but this entityClassName isn't included in them, then don't start a network
         // manager for that bucket. This provides simple bucket exclusion for unit tests.
-        if (self.bucketOverrides != nil && [self.bucketOverrides objectForKey:schema.bucketName] == nil)
+        if (self.bucketOverrides != nil && [self.bucketOverrides objectForKey:schema.bucketName] == nil) {
             continue;
+		}
         
-        if (self.useWebSockets) {
-            // For websockets, one network manager for all buckets
-            if (!self.network) {
-                SPWebSocketInterface *webSocketManager = [[SPWebSocketInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
-                self.network = webSocketManager;
-            }
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
-                                 relationshipResolver:self.relationshipResolver label:self.label];
-        } else {
-            // For http, each bucket has its own network manager
-            SPHttpInterface *netInterface = [[SPHttpInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
-            bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:netInterface
-                                 relationshipResolver:self.relationshipResolver label:self.label];
-            [(SPHttpInterface *)netInterface setBucket:bucket overrides:self.bucketOverrides]; // tightly coupled for now; will fix in websockets netmanager
-        }
+		// For websockets, one network manager for all buckets
+		if (!self.network) {
+			SPWebSocketInterface *webSocketManager = [[SPWebSocketInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
+			self.network = webSocketManager;
+		}
+		bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
+							 relationshipResolver:self.relationshipResolver label:self.label];
         
         [bucketList setObject:bucket forKey:schema.bucketName];
     }
     
-    if (self.useWebSockets) {
-        [(SPWebSocketInterface *)self.network loadChannelsForBuckets:bucketList overrides:self.bucketOverrides];
-    }
+	[(SPWebSocketInterface *)self.network loadChannelsForBuckets:bucketList overrides:self.bucketOverrides];
     
     return bucketList;
 }
