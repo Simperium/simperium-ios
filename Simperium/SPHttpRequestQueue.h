@@ -22,6 +22,8 @@
 @property (nonatomic, assign, readonly)  NSSet *requests;
 @property (nonatomic, assign, readwrite) BOOL enabled;
 
++(instancetype)sharedInstance;
+
 -(void)enqueueHttpRequest:(SPHttpRequest*)httpRequest;
 -(void)dequeueHttpRequest:(SPHttpRequest*)httpRequest;
 
