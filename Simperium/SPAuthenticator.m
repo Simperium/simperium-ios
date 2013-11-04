@@ -11,8 +11,6 @@
 #import "SPUser.h"
 #import "SPAuthenticator.h"
 #import "SPBinaryManager.h"
-#import "ASIFormDataRequest.h"
-#import "ASIHTTPRequest.h"
 #import "DDLog.h"
 #import "JSONKit.h"
 #import "SFHFKeychainUtils.h"
@@ -31,8 +29,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 @interface SPAuthenticator() {
     SPReachability *reachability;
 }
-
--(void)authDidFail:(ASIHTTPRequest *)request;
 @end
 
 @implementation SPAuthenticator
