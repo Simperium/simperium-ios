@@ -39,7 +39,6 @@
         [simperium setAuthenticationEnabled:NO];
         [simperium setBucketOverrides:bucketOverrides];
         [simperium setVerboseLoggingEnabled:YES];
-        simperium.useWebSockets = YES;
         self.token = aToken;
     }
     return self;
