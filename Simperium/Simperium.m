@@ -36,6 +36,7 @@
 #import "SPAuthenticationWindowController.h"
 #endif
 
+NSString * const UUID_KEY = @"SPUUIDKey";
 
 @interface Simperium() <SPStorageObserver>
 
@@ -200,8 +201,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #else
         agentPrefix = @"osx";
 #endif
-        // Unique client ID per session is sufficient
-        NSString *uuid = [NSString sp_makeUUID];
+        // Unique client ID; persist it so changes sent between sessions come from the same client ID
+        NSString *uuid = [[NSUserDefaults standardUserDefaults] objectForKey:UUID_KEY];
+        if (!uuid) {
+            uuid = [NSString sp_makeUUID];
+            [[NSUserDefaults standardUserDefaults] setObject:uuid forKey:UUID_KEY];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+        }
         clientID = [[NSString stringWithFormat:@"%@-%@", agentPrefix, uuid] copy];
     }
     return clientID;
