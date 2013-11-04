@@ -592,4 +592,19 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     return (int)[keysForObjectsWithMoreChanges count];
 }
 
+- (NSArray*)exportPendingChanges {
+	
+	// This routine shall be used for debugging purposes!
+	NSMutableArray* pendings = [NSMutableArray array];
+	for(NSDictionary* change in changesPending.allValues) {
+		[pendings addObject:@{
+		  CH_KEY			: [change[CH_KEY] copy],				// Entity Id
+		  CH_LOCAL_ID		: [change[CH_LOCAL_ID] copy],			// Change Id: ccid
+		  CH_START_VERSION	: [change[CH_START_VERSION] copy],		// Source Version
+		}];
+	}
+	
+	return pendings;
+}
+
 @end

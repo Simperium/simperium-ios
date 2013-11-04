@@ -128,9 +128,6 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 // Overrides the built-in authentication flow so you can customize the behavior.
 @property (nonatomic) BOOL authenticationEnabled;
 
-// Toggle websockets (should only be done before starting Simperium).
-@property (nonatomic) BOOL useWebSockets;
-
 // Returns the currently authenticated Simperium user.
 @property (nonatomic,strong) SPUser *user;
 

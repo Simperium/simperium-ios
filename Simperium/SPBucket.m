@@ -296,4 +296,14 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 	}
 }
 
+- (NSDictionary*)exportStatus {
+	
+	// This routine shall be used for debugging purposes!
+	return @{
+		@"current"	: self.lastChangeSignature,
+		@"index"	: [self.indexProcessor exportIndexStatus:self],
+		@"pendings"	: [self.changeProcessor exportPendingChanges]
+	};
+}
+
 @end

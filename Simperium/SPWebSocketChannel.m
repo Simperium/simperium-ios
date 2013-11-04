@@ -158,6 +158,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     });
 }
 
+- (void)sendBucketStatus:(SPBucket *)bucket {
+
+	NSDictionary *response = [bucket exportStatus];
+	NSString *jsonStr = [response JSONString];
+	NSString *message = [NSString stringWithFormat:@"%d:index:%@", self.number, jsonStr];
+	
+	DDLogVerbose(@"Simperium sending Bucket Internal State (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
+	[self.webSocketManager send:message];
+}
+
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
     __block int numChangesPending;
     __block int numKeysForObjectsWithMoreChanges;
@@ -395,8 +405,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         return;
     }
     
+    NSRange versionRange = NSMakeRange(keyRange.location + keyRange.length,
+                                       headerRange.location - headerRange.length - keyRange.location);
+    
     NSString *key = [responseString substringToIndex:keyRange.location];
-    NSString *version = [responseString substringFromIndex:keyRange.location+keyRange.length];
+    NSString *version = [responseString substringWithRange:versionRange];
     NSString *payload = [responseString substringFromIndex:headerRange.location + headerRange.length];
     DDLogDebug(@"Simperium received version (%@): %@", self.name, responseString);
     
