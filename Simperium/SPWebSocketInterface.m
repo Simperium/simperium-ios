@@ -28,7 +28,8 @@
 #define LIBRARY_ID @"osx"
 #endif
 
-#define LIBRARY_VERSION @0
+// TODO: Update this automatically via a script that looks at current git tag
+#define LIBRARY_VERSION @"0.6.1"
 
 NSString * const COM_AUTH = @"auth";
 NSString * const COM_INDEX = @"i";
