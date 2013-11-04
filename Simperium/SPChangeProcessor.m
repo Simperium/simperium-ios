@@ -100,10 +100,11 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	for(NSString *key in pendingDict.allKeys) {
 		id change = pendingDict[key];
 		if(change) {
-			[self.changesPending persistObject:key forKey:change];
+			[self.changesPending setObject:change forKey:key];
 		}
 	}
 	
+	[self.changesPending save];
 	[[NSUserDefaults standardUserDefaults] removeObjectForKey:pendingKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
@@ -168,7 +169,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
                 [object simperiumKey]; // fire fault
                 [newChange setObject:[object dictionary] forKey:CH_DATA];
-                [self.changesPending persistObject:newChange forKey:key];
+                [self.changesPending setObject:newChange forKey:key];
                 repostNeeded = YES;
             } else {
                 // Catch all, don't resubmit
@@ -176,6 +177,8 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
             }
         }
     }
+	
+	[self.changesPending save];
     
     return repostNeeded;
 }
@@ -444,7 +447,8 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 }
 
 - (void)processLocalChange:(NSDictionary *)change key:(NSString *)key {
-    [self.changesPending persistObject:change forKey: key];
+    [self.changesPending setObject:change forKey:key];
+	[self.changesPending save];
     
     // Support delayed app termination to ensure local changes have a chance to fully save
 #if TARGET_OS_IPHONE
@@ -547,12 +551,14 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
 		
 		if (change) {
-			[self.changesPending persistObject:change forKey:key];
+			[self.changesPending setObject:change forKey:key];
 			[pendingKeys addObject:key];
 		} else {
 			[self.keysForObjectsWithMoreChanges removeObject:key];
 		}
 	}];
+	
+	[self.changesPending save];
 	
 	// Note:
 	//	pendingKeys: Queued + previously pending
@@ -569,15 +575,19 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		}
 		
 		if(changesPartition.count >= SPPendingChangesBinSize) {
-			// Multiple GCD queues, same container. We seriously need to send a copy, not our own instance
-			block([changesPartition copy]);
-			[changesPartition removeAllObjects];
+			NSArray* dispatchedPartition = changesPartition;
+			changesPartition = [NSMutableArray array];
+			
+            dispatch_async(dispatch_get_main_queue(), ^{
+				block(dispatchedPartition);
+            });
 		}
 	}
-	
+
 	if(changesPartition.count) {
-		block([changesPartition copy]);
-		[changesPartition removeAllObjects];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			block(changesPartition);
+		});
 	}
 
 	// Clear any keys that were processed into pending changes & Persist
@@ -602,13 +612,17 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
             NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
             
             if (change) {
-                [self.changesPending persistObject:change forKey: key];
+                [self.changesPending setObject:change forKey:key];
                 [newChangesPending addObject:change];
             }
             [keysProcessed addObject:key];
         }
+		
         // Clear any keys that were processed into pending changes
         [self.keysForObjectsWithMoreChanges minusSet:keysProcessed];
+
+		// Persist pending changes
+		[self.changesPending save];
     }
     
     [self serializeKeysForObjectsWithMoreChanges];

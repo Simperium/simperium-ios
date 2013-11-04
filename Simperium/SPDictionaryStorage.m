@@ -126,7 +126,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return value;
 }
 
-- (void)persistObject:(id)anObject forKey:(id)aKey
+- (void)setObject:(id)anObject forKey:(NSString*)aKey
 {
 	// Failsafe
 	if(anObject == nil) {
@@ -157,13 +157,19 @@ static NSString *SPDictionaryEntityKey		= @"key";
 			[change setValue:aKey forKey:SPDictionaryEntityKey];
 			[change setValue:archivedValue forKey:SPDictionaryEntityValue];
 		}
-		
-		// Save
-		[self.managedObjectContext save:&error];
 	}];
 	
 	// Persist & Update the cache
 	[self.cache setObject:anObject forKey:aKey];
+}
+
+- (void)save
+{
+	[self.managedObjectContext performBlock:^{
+		
+		NSError *error = nil;
+		[self.managedObjectContext save:&error];
+	}];
 }
 
 - (NSArray*)allKeys

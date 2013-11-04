@@ -231,35 +231,32 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     dispatch_async(bucket.processorQueue, ^{
 		[bucket.changeProcessor enumeratePendingChanges:bucket onlyQueuedChanges:NO block:^(NSArray *changes) {
-			
-			dispatch_async(dispatch_get_main_queue(), ^{
 				
-				NSMutableString *sendURL = [simperium.appURL mutableCopy];
-				[sendURL appendFormat:@"%@/changes?clientid=%@&wait=1",remoteBucketName, self.clientID];
-				DDLogVerbose(@"Simperium posting changes: %@", sendURL);
+			NSMutableString *sendURL = [simperium.appURL mutableCopy];
+			[sendURL appendFormat:@"%@/changes?clientid=%@&wait=1",remoteBucketName, self.clientID];
+			DDLogVerbose(@"Simperium posting changes: %@", sendURL);
 
-				// Update activity indicator
-				numTransfers++;
-				[[self class] updateNetworkActivityIndictator];
-				
-				// PERFORM GET
-				NSURL *url = [NSURL URLWithString:sendURL];
-				
-				NSString *jsonStr = [changes JSONString];
-				DDLogVerbose(@"  post data = %@", jsonStr);
-				
-				postRequest = [ASIHTTPRequest requestWithURL:url];
-				[postRequest appendPostData:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
-				//[sendRequest addRequestHeader:@"Content-Type" value:@"application/json"];
-				[postRequest addRequestHeader:@"X-Simperium-Token" value:[simperium.user authToken]];
-				[postRequest setDelegate:self];
-				[postRequest setDidFinishSelector:@selector(postChangesFinished:)];
-				[postRequest setDidFailSelector:@selector(postChangesFailed:)];
+			// Update activity indicator
+			numTransfers++;
+			[[self class] updateNetworkActivityIndictator];
+			
+			// PERFORM GET
+			NSURL *url = [NSURL URLWithString:sendURL];
+			
+			NSString *jsonStr = [changes JSONString];
+			DDLogVerbose(@"  post data = %@", jsonStr);
+			
+			postRequest = [ASIHTTPRequest requestWithURL:url];
+			[postRequest appendPostData:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
+			//[sendRequest addRequestHeader:@"Content-Type" value:@"application/json"];
+			[postRequest addRequestHeader:@"X-Simperium-Token" value:[simperium.user authToken]];
+			[postRequest setDelegate:self];
+			[postRequest setDidFinishSelector:@selector(postChangesFinished:)];
+			[postRequest setDidFailSelector:@selector(postChangesFailed:)];
 #if TARGET_OS_IPHONE
-				postRequest.shouldContinueWhenAppEntersBackground = YES;
+			postRequest.shouldContinueWhenAppEntersBackground = YES;
 #endif
-				[postRequest startAsynchronous];
-			});
+			[postRequest startAsynchronous];
 		}];
 		
 		// Once all changes are sent
