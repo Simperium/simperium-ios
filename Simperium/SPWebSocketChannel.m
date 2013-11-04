@@ -405,8 +405,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         return;
     }
     
+    NSRange versionRange = NSMakeRange(keyRange.location + keyRange.length,
+                                       headerRange.location - headerRange.length - keyRange.location);
+    
     NSString *key = [responseString substringToIndex:keyRange.location];
-    NSString *version = [responseString substringFromIndex:keyRange.location+keyRange.length];
+    NSString *version = [responseString substringWithRange:versionRange];
     NSString *payload = [responseString substringFromIndex:headerRange.location + headerRange.length];
     DDLogDebug(@"Simperium received version (%@): %@", self.name, responseString);
     
