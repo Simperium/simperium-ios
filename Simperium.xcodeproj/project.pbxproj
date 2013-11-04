@@ -730,17 +730,9 @@
 				26D4D3B0156C3DA300E822E9 /* jrswizzle */,
 				2611E802149FB91100121D6E /* JSONKit */,
 				26905D91142CF97D001ACF20 /* Lumberjack */,
-				264CD94C135DFE7E00C51BAD /* asi-http-request */,
 				264CD964135DFE7E00C51BAD /* diffmatchpatch */,
 			);
 			path = External;
-			sourceTree = "<group>";
-		};
-		264CD94C135DFE7E00C51BAD /* asi-http-request */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "asi-http-request";
 			sourceTree = "<group>";
 		};
 		264CD964135DFE7E00C51BAD /* diffmatchpatch */ = {
