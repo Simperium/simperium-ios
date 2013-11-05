@@ -25,12 +25,15 @@
 #define HEARTBEAT 30
 
 #if TARGET_OS_IPHONE
-#define LIBRARY_ID @"ios"
+NSString * const LIBRARY_ID = @"ios";
 #else
-#define LIBRARY_ID @"osx"
+NSString * const LIBRARY_ID = @"osx";
 #endif
 
-#define LIBRARY_VERSION @(1)
+#define API_VERSION @1
+
+// TODO: Update this automatically via a script that looks at current git tag
+NSString * const LIBRARY_VERSION	= @"0.6.1";
 
 NSString * const COM_AUTH			= @"auth";
 NSString * const COM_INDEX			= @"i";
@@ -147,7 +150,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         remoteBucketName = channel.name;
     
     NSDictionary *jsonData = @{
-                               @"api"		: @1,
+                               @"api"		: API_VERSION,
                                @"clientid"	: self.simperium.clientID,
                                @"app_id"	: self.simperium.appID,
                                @"token"		: self.simperium.user.authToken,
