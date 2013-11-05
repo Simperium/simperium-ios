@@ -338,7 +338,8 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         }
     } else if ([command isEqualToString:COM_INDEX]) {
         [channel handleIndexResponse:data bucket:bucket];
-    } else if ([command isEqualToString:COM_CHANGE] || [command isEqualToString:COM_CHANGE_VERSION]) {
+//    } else if ([command isEqualToString:COM_CHANGE] || [command isEqualToString:COM_CHANGE_VERSION]) {
+    } else if ([command isEqualToString:COM_CHANGE]) {
         if ([data isEqualToString:@"?"]) {
             // The requested change version didn't exist, so re-index
             DDLogVerbose(@"Simperium change version is out of date (%@), re-indexing", bucket.name);
