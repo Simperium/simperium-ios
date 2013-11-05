@@ -82,8 +82,6 @@
 		264CD943135DFE6D00C51BAD /* SPGhost.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD933135DFE6D00C51BAD /* SPGhost.m */; };
 		264CD944135DFE6D00C51BAD /* SPMember.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD934135DFE6D00C51BAD /* SPMember.h */; };
 		264CD945135DFE6D00C51BAD /* SPMember.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD935135DFE6D00C51BAD /* SPMember.m */; };
-		264CD946135DFE6D00C51BAD /* SPHttpInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD936135DFE6D00C51BAD /* SPHttpInterface.h */; };
-		264CD947135DFE6D00C51BAD /* SPHttpInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD937135DFE6D00C51BAD /* SPHttpInterface.m */; };
 		264CD996135DFE7E00C51BAD /* DiffMatchPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD965135DFE7E00C51BAD /* DiffMatchPatch.h */; };
 		264CD997135DFE7E00C51BAD /* DiffMatchPatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD966135DFE7E00C51BAD /* DiffMatchPatch.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		264CD998135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.c in Sources */ = {isa = PBXBuildFile; fileRef = 264CD967135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -291,8 +289,6 @@
 		264CD933135DFE6D00C51BAD /* SPGhost.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGhost.m; sourceTree = "<group>"; };
 		264CD934135DFE6D00C51BAD /* SPMember.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMember.h; sourceTree = "<group>"; };
 		264CD935135DFE6D00C51BAD /* SPMember.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMember.m; sourceTree = "<group>"; };
-		264CD936135DFE6D00C51BAD /* SPHttpInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHttpInterface.h; sourceTree = "<group>"; };
-		264CD937135DFE6D00C51BAD /* SPHttpInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHttpInterface.m; sourceTree = "<group>"; };
 		264CD965135DFE7E00C51BAD /* DiffMatchPatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DiffMatchPatch.h; sourceTree = "<group>"; };
 		264CD966135DFE7E00C51BAD /* DiffMatchPatch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DiffMatchPatch.m; sourceTree = "<group>"; };
 		264CD967135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = DiffMatchPatchCFUtilities.c; sourceTree = "<group>"; };
@@ -859,8 +855,6 @@
 			children = (
 				466FFEA317CBF53200399652 /* SPNetworkInterface.m */,
 				2622FD2B147F32A500C8EEB4 /* SPNetworkInterface.h */,
-				264CD936135DFE6D00C51BAD /* SPHttpInterface.h */,
-				264CD937135DFE6D00C51BAD /* SPHttpInterface.m */,
 				2618988315D2EC130013CBC9 /* SPWebSocketInterface.h */,
 				2618988415D2EC130013CBC9 /* SPWebSocketInterface.m */,
 				264AE51815D45E2A00E5E04E /* SPWebSocketChannel.h */,
@@ -887,7 +881,6 @@
 				264CD940135DFE6D00C51BAD /* SPEnvironment.h in Headers */,
 				264CD942135DFE6D00C51BAD /* SPGhost.h in Headers */,
 				264CD944135DFE6D00C51BAD /* SPMember.h in Headers */,
-				264CD946135DFE6D00C51BAD /* SPHttpInterface.h in Headers */,
 				264CD996135DFE7E00C51BAD /* DiffMatchPatch.h in Headers */,
 				264CD999135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.h in Headers */,
 				264CD99A135DFE7E00C51BAD /* MinMaxMacros.h in Headers */,
@@ -1115,7 +1108,6 @@
 				264CD941135DFE6D00C51BAD /* SPEnvironment.m in Sources */,
 				264CD943135DFE6D00C51BAD /* SPGhost.m in Sources */,
 				264CD945135DFE6D00C51BAD /* SPMember.m in Sources */,
-				264CD947135DFE6D00C51BAD /* SPHttpInterface.m in Sources */,
 				E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */,
 				264CD997135DFE7E00C51BAD /* DiffMatchPatch.m in Sources */,
 				264CD998135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.c in Sources */,
