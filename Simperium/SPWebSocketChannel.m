@@ -261,9 +261,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Multiple errors could try to trigger multiple index refreshes
     if (self.indexing) {
         return;
-	} else {
-		self.indexing = YES;
 	}
+	
+	self.indexing = YES;
     
     // Send any pending changes first
     // This could potentially lead to some duplicate changes being sent if there are some that are awaiting
