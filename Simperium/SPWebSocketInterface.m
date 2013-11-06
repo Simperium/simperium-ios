@@ -341,16 +341,14 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         }
     } else if ([command isEqualToString:COM_INDEX]) {
         [channel handleIndexResponse:data bucket:bucket];
-    } else if ([command isEqualToString:COM_CHANGE] || [command isEqualToString:COM_CHANGE_VERSION]) {
-        if ([data isEqualToString:@"?"]) {
-            // The requested change version didn't exist, so re-index
-            DDLogVerbose(@"Simperium change version is out of date (%@), re-indexing", bucket.name);
-            [channel requestLatestVersionsForBucket:bucket];
-        } else {
-            // Incoming changes, handle them
-            NSArray *changes = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
-			[channel handleRemoteChanges: changes bucket:bucket];
-        }
+    } else if ([command isEqualToString:COM_CHANGE_VERSION]) {
+		// Handle cv:? message: the requested change version didn't exist, so re-index
+		DDLogVerbose(@"Simperium change version is out of date (%@), re-indexing", bucket.name);
+		[channel requestLatestVersionsForBucket:bucket];
+	} else if ([command isEqualToString:COM_CHANGE]) {
+		// Incoming changes, handle them
+		NSArray *changes = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+		[channel handleRemoteChanges: changes bucket:bucket];
     } else if ([command isEqualToString:COM_ENTITY]) {
         [channel handleVersionResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_ERROR]) {
