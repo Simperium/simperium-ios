@@ -248,14 +248,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         DDLogError(@"Simperium critical error: tried to retrieve index with no user set");
         return;
     }
-    //
-    //    // Don't get changes while processing an index
-    //    if ([getRequest isExecuting]) {
-    //        DDLogVerbose(@"Simperium cancelling get request to retrieve index");
-    //        [getRequest clearDelegatesAndCancel];
-    //    }
-    //
-    //    // Get an index of all objects and fetch their latest versions
+
+	// Get an index of all objects and fetch their latest versions
     self.indexing = YES;
     
     NSString *message = [NSString stringWithFormat:@"%d:i::%@::%d", self.number, mark ? mark : @"", INDEX_PAGE_SIZE];
@@ -267,6 +261,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Multiple errors could try to trigger multiple index refreshes
     if (self.indexing) {
         return;
+	} else {
+		self.indexing = YES;
 	}
     
     // Send any pending changes first
@@ -328,14 +324,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
-    DDLogVerbose(@"Simperium received index (%@): %@", self.name, responseString);
+	
+	NSString* expected = (self.indexing) ? @"" : @"ERROR: This change was NOT expected!!";
+    DDLogVerbose(@"Simperium received index (%@): %@. %@", self.name, responseString, expected);
+		
     NSDictionary *responseDict = [responseString objectFromJSONString];
     NSArray *currentIndexArray = [responseDict objectForKey:@"index"];
     id current = [responseDict objectForKey:@"current"];
 
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
-    if ([current isKindOfClass:[NSNumber class]])
+    if ([current isKindOfClass:[NSNumber class]]) {
         current = [NSString stringWithFormat:@"%ld", (long)[current integerValue]];
+	}
     self.pendingLastChangeSignature = [current length] > 0 ? [NSString stringWithFormat:@"%@", current] : nil;
     self.nextMark = [responseDict objectForKey:@"mark"];
     
