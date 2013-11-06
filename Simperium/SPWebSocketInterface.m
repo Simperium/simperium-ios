@@ -30,7 +30,7 @@ NSString * const LIBRARY_ID = @"ios";
 NSString * const LIBRARY_ID = @"osx";
 #endif
 
-#define API_VERSION @1
+#define API_VERSION @(1.1)
 
 // TODO: Update this automatically via a script that looks at current git tag
 NSString * const LIBRARY_VERSION	= @"0.6.1";
