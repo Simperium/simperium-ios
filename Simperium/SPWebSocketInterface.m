@@ -320,9 +320,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     NSString *data		= [commandStr substringFromIndex:range.location+range.length];
     
     if ([command isEqualToString:COM_AUTH]) {
-        if ([data isEqualToString:@"expired"]) {
-            // Ignore this; legacy
-        } else if ([data isEqualToString:[self.simperium.user.email lowercaseString]]) {
+        if ([data isEqualToString:[self.simperium.user.email lowercaseString]]) {
             channel.started = YES;
             BOOL bFirstStart = bucket.lastChangeSignature == nil;
             if (bFirstStart) {
