@@ -325,8 +325,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
 	
-	NSString* expected = (self.indexing) ? @"" : @"ERROR: This change was NOT expected!!";
-    DDLogVerbose(@"Simperium received index (%@): %@. %@", self.name, responseString, expected);
+    DDLogVerbose(@"Simperium received index (%@): %@", self.name, responseString);
+	
+	if(self.indexing == false) {
+		DDLogError(@"ERROR: Index response was NOT expected!");
+	}
 		
     NSDictionary *responseDict = [responseString objectFromJSONString];
     NSArray *currentIndexArray = [responseDict objectForKey:@"index"];
