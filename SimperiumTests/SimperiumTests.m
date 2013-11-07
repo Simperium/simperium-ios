@@ -145,7 +145,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 		@"api_key"	: API_KEY
 	};
 		
-	request.HTTPBody = [[authDict JSONString] dataUsingEncoding:NSUTF8StringEncoding];
+	request.HTTPBody = [[authDict sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
 	
 	// Send the request: let's use SYNC API
 	NSError* error = nil;

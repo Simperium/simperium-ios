@@ -52,7 +52,7 @@ static NSJSONWritingOptions const SPJSONWritingOptions = 0;
 
 @implementation NSArray (SPJSONKitAdapterCategories)
 
-- (NSString *)JSONString
+- (NSString *)sp_JSONString
 {
     return [NSJSONSerialization sp_JSONStringFromObject:self];
 }
@@ -61,7 +61,7 @@ static NSJSONWritingOptions const SPJSONWritingOptions = 0;
 
 @implementation NSDictionary (SPJSONKitAdapterCategories)
 
-- (NSString *)JSONString
+- (NSString *)sp_JSONString
 {
     return [NSJSONSerialization sp_JSONStringFromObject:self];
 }
@@ -72,7 +72,7 @@ static NSJSONWritingOptions const SPJSONWritingOptions = 0;
 
 @implementation NSString (SPJSONKitAdapterCategories)
 
-- (id)objectFromJSONString
+- (id)sp_objectFromJSONString
 {
     NSData *data = [self dataUsingEncoding:NSUTF8StringEncoding];
     return [NSJSONSerialization sp_JSONObjectWithData:data];
@@ -82,7 +82,7 @@ static NSJSONWritingOptions const SPJSONWritingOptions = 0;
 
 @implementation NSData (SPJSONKitAdapterCategories)
 
-- (id)objectFromJSONString
+- (id)sp_objectFromJSONString
 {
     return [NSJSONSerialization sp_JSONObjectWithData:self];
 }

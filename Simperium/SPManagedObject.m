@@ -66,7 +66,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)awakeFromFetch {
     [super awakeFromFetch];
-    SPGhost *newGhost = [[SPGhost alloc] initFromDictionary: [self.ghostData objectFromJSONString]];
+    SPGhost *newGhost = [[SPGhost alloc] initFromDictionary: [self.ghostData sp_objectFromJSONString]];
     self.ghost = newGhost;
     [self.managedObjectContext userInfo];
     [self configureBucket];
@@ -91,7 +91,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // to a string for storage
     if (ghost.needsSave) {
         // Careful not to use self.ghostData here, which would trigger KVC and cause strange things to happen (since willSave itself is related to Core Data's KVC triggerings). This manifested itself as an erroneous insertion notification being sent to fetchedResultsControllers after an object had been deleted. The underlying cause seemed to be that the deleted object sticks around as a fault, but probably shouldn't.
-        ghostData = [[[ghost dictionary] JSONString] copy];
+        ghostData = [[[ghost dictionary] sp_JSONString] copy];
         ghost.needsSave = NO;
     }
 }

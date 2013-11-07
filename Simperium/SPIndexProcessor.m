@@ -163,7 +163,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             NSString *key = [versionData objectAtIndex:0];
             NSString *responseString = [versionData objectAtIndex:1];
             NSString *version = [versionData objectAtIndex:2];
-            NSMutableDictionary *data = [responseString objectFromJSONString];
+            NSMutableDictionary *data = [responseString sp_objectFromJSONString];
                               
             id<SPDiffable> object = [objects objectForKey:key];
             SPGhost *ghost = nil;

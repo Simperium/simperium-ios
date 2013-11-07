@@ -155,7 +155,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
                                };
     
     DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
-    NSString *message = [NSString stringWithFormat:@"%d:init:%@", channel.number, [jsonData JSONString]];
+    NSString *message = [NSString stringWithFormat:@"%d:init:%@", channel.number, [jsonData sp_JSONString]];
     [self.webSocket send:message];
 }
 
@@ -233,7 +233,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 		return;
 	}
 	NSDictionary *payload = @{ @"log" : logMessage };
-	NSString *message = [NSString stringWithFormat:@"%@:%@", COM_LOG, [payload JSONString]];
+	NSString *message = [NSString stringWithFormat:@"%@:%@", COM_LOG, [payload sp_JSONString]];
 	[self send:message];
 }
 
@@ -329,7 +329,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 			}
         } else {
             DDLogWarn(@"Simperium received unexpected auth response: %@", data);
-            NSDictionary *authPayload = [data objectFromJSONString];
+            NSDictionary *authPayload = [data sp_objectFromJSONString];
             NSNumber *code = authPayload[@"code"];
             if ([code isEqualToNumber:@401]) {
                 // Let Simperium proper deal with it
@@ -346,7 +346,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
             [channel requestLatestVersionsForBucket:bucket];
         } else {
             // Incoming changes, handle them
-            NSArray *changes = [data objectFromJSONString];
+            NSArray *changes = [data sp_objectFromJSONString];
 			[channel handleRemoteChanges: changes bucket:bucket];
         }
     } else if ([command isEqualToString:COM_ENTITY]) {

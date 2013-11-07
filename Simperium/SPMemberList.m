@@ -32,8 +32,8 @@
 
 -(id)arrayFromJSONString:(id)value {
     if ([value length] == 0)
-        return [[self defaultValue] objectFromJSONString];
-	return [value objectFromJSONString];
+        return [[self defaultValue] sp_objectFromJSONString];
+	return [value sp_objectFromJSONString];
 }
 
 -(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
@@ -43,7 +43,7 @@
 - (id)getValueFromJSON:(NSDictionary *)json key:(NSString *)key object:(id<SPDiffable>)object
 {
 	id value = [json objectForKey:key];
-	return [value JSONString];
+	return [value sp_JSONString];
 }
 
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {

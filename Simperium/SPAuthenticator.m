@@ -122,7 +122,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	};
 
 	request.method = SPHttpRequestMethodsPost;
-	request.postData = [[authDict JSONString] dataUsingEncoding:NSUTF8StringEncoding];
+	request.postData = [[authDict sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
 	request.delegate = self;
 	request.selectorSuccess	= @selector(authDidSucceed:);
 	request.selectorFailed = @selector(authDidFail:);
@@ -158,7 +158,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         return;
     }
     
-    NSDictionary *userDict = [tokenResponse objectFromJSONString];
+    NSDictionary *userDict = [tokenResponse sp_objectFromJSONString];
     NSString *username = [userDict objectForKey:@"username"];
     NSString *token = [userDict objectForKey:@"access_token"];
     
@@ -204,7 +204,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	}
     
 	request.method = SPHttpRequestMethodsPost;
-	request.postData = [[authData JSONString] dataUsingEncoding:NSUTF8StringEncoding];
+	request.postData = [[authData sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
 	request.headers = @{
 		@"Content-Type"			: @"application/json",
 		@"X-Simperium-API-Key"	: simperium.APIKey

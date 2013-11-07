@@ -9,17 +9,17 @@
 
 // Adapters to NSJSONSerializer using the JSONKit interface
 @interface NSArray (SPJSONKitAdapterCategories)
-- (NSString *)JSONString;
+- (NSString *)sp_JSONString;
 @end
 
 @interface NSDictionary (SPJSONKitAdapterCategories)
-- (NSString *)JSONString;
+- (NSString *)sp_JSONString;
 @end
 
 @interface NSString (SPJSONKitAdapterCategories)
-- (id)objectFromJSONString;
+- (id)sp_objectFromJSONString;
 @end
 
 @interface NSData (SPJSONKitAdapterCategories)
-- (id)objectFromJSONString;
+- (id)sp_objectFromJSONString;
 @end

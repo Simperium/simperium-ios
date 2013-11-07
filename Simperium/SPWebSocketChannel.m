@@ -97,7 +97,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             if (self.started) {
                 DDLogVerbose(@"Simperium sending all changes (%lu) for bucket %@", (unsigned long)[changes count], bucket.name);
                 for (NSDictionary *change in changes) {
-                    NSString *jsonStr = [change JSONString];
+                    NSString *jsonStr = [change sp_JSONString];
                     NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
                     DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
                     [self.webSocketManager send:message];
@@ -117,7 +117,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     [bucket.changeProcessor processLocalChange:change key:key];
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSString *jsonStr = [change JSONString];
+        NSString *jsonStr = [change sp_JSONString];
         NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
         DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
         [self.webSocketManager send:message];
@@ -161,7 +161,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)sendBucketStatus:(SPBucket *)bucket {
 
 	NSDictionary *response = [bucket exportStatus];
-	NSString *jsonStr = [response JSONString];
+	NSString *jsonStr = [response sp_JSONString];
 	NSString *message = [NSString stringWithFormat:@"%d:index:%@", self.number, jsonStr];
 	
 	DDLogVerbose(@"Simperium sending Bucket Internal State (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
@@ -329,7 +329,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
     DDLogVerbose(@"Simperium received index (%@): %@", self.name, responseString);
-    NSDictionary *responseDict = [responseString objectFromJSONString];
+    NSDictionary *responseDict = [responseString sp_objectFromJSONString];
     NSArray *currentIndexArray = [responseDict objectForKey:@"index"];
     id current = [responseDict objectForKey:@"current"];
 
@@ -415,7 +415,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     // With websockets, the data is wrapped up (somewhat annoyingly) in a dictionary, so unwrap it
     // This processing should probably be moved off the main thread (or improved at the protocol level)
-    NSDictionary *payloadDict = [payload objectFromJSONString];
+    NSDictionary *payloadDict = [payload sp_objectFromJSONString];
     NSDictionary *dataDict = [payloadDict objectForKey:@"data"];
     
     if ([dataDict class] == [NSNull class] || dataDict == nil) {
@@ -426,7 +426,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     // All unwrapped, now get it in the format we need for marshaling
-    NSString *payloadString = [dataDict JSONString];
+    NSString *payloadString = [dataDict sp_JSONString];
     
     // If there was an error previously, unflag it
     [self.versionsWithErrors removeObjectForKey:key];
