@@ -139,7 +139,7 @@ NSString * const OP_STRING			= @"d";
 		[changes setObject:currentDiff forKey:[thisMember keyName]];
 	}
 	
-	return changes;	
+	return changes;
 }
 */
 

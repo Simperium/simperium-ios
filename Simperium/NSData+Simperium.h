@@ -11,6 +11,6 @@
 
 @interface NSData(NSData_Simperium)
 
-+ (NSData *)decodeBase64WithString:(NSString *)strBase64;
++ (NSData *)sp_decodeBase64WithString:(NSString *)strBase64;
 
 @end
