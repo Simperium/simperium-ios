@@ -165,7 +165,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 	}
     
 	// Initialize!
-    NSDictionary *userDict = [responseString objectFromJSONString];
+    NSDictionary *userDict = [responseString sp_objectFromJSONString];
     
     self.token = userDict[@"access_token"];
     STAssertTrue(token.length > 0, @"invalid token from request: %@", tokenURL);
