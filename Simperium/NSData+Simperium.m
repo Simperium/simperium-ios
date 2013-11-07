@@ -30,7 +30,7 @@ static const short _base64DecodingTable[256] = {
 
 @implementation NSData(NSData_Simperium)
 
-+ (NSData *)decodeBase64WithString:(NSString *)strBase64 {
++ (NSData *)sp_decodeBase64WithString:(NSString *)strBase64 {
     const char * objPointer = [strBase64 cStringUsingEncoding:NSASCIIStringEncoding];
     int intLength = (int)strlen(objPointer);
     int intCurrent;

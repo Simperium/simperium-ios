@@ -402,7 +402,7 @@ static NSString * const SPOperationTypeKey = @"otype";
 - (id)reverseTransformedValue:(id)value
 {
     if (![value isKindOfClass:[NSString class]]) return nil;
-    NSData *data = [NSData decodeBase64WithString:value];
+    NSData *data = [NSData sp_decodeBase64WithString:value];
     if (!data) return nil;
     return [[UIImage alloc] initWithData:data];
 }
