@@ -8,7 +8,7 @@
 
 #import "Simperium.h"
 #import "SPMember.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 
 @implementation SPMember
 @synthesize keyName;

@@ -21,7 +21,7 @@
 #import "SPGhost.h"
 #import "SPWebSocketChannel.h"
 #import "SPWebSocketInterface.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "DDLog.h"
 #import "DDLogDebug.h"
@@ -96,7 +96,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         dispatch_async(dispatch_get_main_queue(), ^{
             if (self.started) {
                 DDLogVerbose(@"Simperium sending all changes (%lu) for bucket %@", (unsigned long)[changes count], bucket.name);
-                for (NSString *change in changes) {
+                for (NSDictionary *change in changes) {
                     NSString *jsonStr = [change JSONString];
                     NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
                     DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);

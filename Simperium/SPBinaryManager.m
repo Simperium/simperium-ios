@@ -14,7 +14,7 @@
 #import "SPManagedObject.h"
 #import "SPGhost.h"
 #import "NSString+Simperium.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 
 @interface SPBinaryManager()
 -(void)loadPendingBinaryDownloads;

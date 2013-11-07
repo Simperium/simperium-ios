@@ -7,7 +7,7 @@
 //
 
 #import "SPMemberList.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "DiffMatchPatch.h"
 #import "NSArray+Simperium.h"
 

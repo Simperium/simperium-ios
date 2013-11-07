@@ -9,7 +9,7 @@
 #import "NSArray+Simperium.h"
 #import "SPMember.h"
 #import "DiffMatchPatch.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "DDLog.h"
 
 

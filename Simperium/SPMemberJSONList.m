@@ -7,7 +7,7 @@
 //
 
 #import "SPMemberJSONList.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 
 @implementation SPMemberJSONList
 

@@ -10,7 +10,7 @@
 #import "SPDiffable.h"
 #import "SPStorage.h"
 #import "SPStorageProvider.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "SPGhost.h"
 #import "DDLog.h"
 

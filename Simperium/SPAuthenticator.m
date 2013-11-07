@@ -12,7 +12,7 @@
 #import "SPAuthenticator.h"
 #import "SPBinaryManager.h"
 #import "DDLog.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "SFHFKeychainUtils.h"
 #import "SPReachability.h"
 #import "SPHttpRequest.h"

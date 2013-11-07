@@ -13,7 +13,7 @@
 #import "SPBinaryManager.h"
 #import "SPStorage.h"
 #import "SPMember.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "SPGhost.h"
 #import "DDLog.h"
 #import "SPBucket.h"

@@ -16,7 +16,7 @@
 #import "SPEnvironment.h"
 #import "ASIHTTPRequest.h"
 #import "NSString+Simperium.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 
 #import <AWSiOSSDK/S3/AmazonS3Client.h>
 
@@ -104,7 +104,7 @@
         if ([binaryTokenRequest responseStatusCode] == 200) {
             NSString *response = [binaryTokenRequest responseString];
             NSLog(@"Binary auth response: %@", response);
-            NSDictionary *userDict =  [[binaryTokenRequest responseString] objectFromJSONString];
+            NSDictionary *userDict =  [[binaryTokenRequest responseString] sp_objectFromJSONString];
             
             self.binaryAuthID = [userDict objectForKey:@"access_id"];
             self.binaryAuthSecret = [userDict objectForKey:@"secret"];

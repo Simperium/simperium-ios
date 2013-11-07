@@ -13,7 +13,7 @@
 #import "SPMember.h"
 #import "Simperium.h"
 #import "SPGhost.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "DDLog.h"
 
 

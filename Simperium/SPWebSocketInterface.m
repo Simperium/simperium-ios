@@ -10,7 +10,7 @@
 #import "SPChangeProcessor.h"
 #import "SPUser.h"
 #import "SPBucket.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "DDLog.h"
 #import "DDLogDebug.h"
@@ -329,7 +329,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 			}
         } else {
             DDLogWarn(@"Simperium received unexpected auth response: %@", data);
-            NSDictionary *authPayload = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+            NSDictionary *authPayload = [data objectFromJSONString];
             NSNumber *code = authPayload[@"code"];
             if ([code isEqualToNumber:@401]) {
                 // Let Simperium proper deal with it
@@ -346,7 +346,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
             [channel requestLatestVersionsForBucket:bucket];
         } else {
             // Incoming changes, handle them
-            NSArray *changes = [data objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+            NSArray *changes = [data objectFromJSONString];
 			[channel handleRemoteChanges: changes bucket:bucket];
         }
     } else if ([command isEqualToString:COM_ENTITY]) {
