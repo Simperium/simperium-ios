@@ -161,8 +161,8 @@
 		B504EF50182818BE002FA5A1 /* SPHttpRequest+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B504EF49182818BE002FA5A1 /* SPHttpRequest+Internals.h */; };
 		B504EF51182818BE002FA5A1 /* SPHttpRequestQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = B504EF4A182818BE002FA5A1 /* SPHttpRequestQueue.h */; };
 		B504EF52182818BE002FA5A1 /* SPHttpRequestQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = B504EF4B182818BE002FA5A1 /* SPHttpRequestQueue.m */; };
-		B504EF55182818D6002FA5A1 /* SPRemoteLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = B504EF53182818D6002FA5A1 /* SPRemoteLogger.h */; };
-		B504EF56182818D6002FA5A1 /* SPRemoteLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B504EF54182818D6002FA5A1 /* SPRemoteLogger.m */; };
+		B518F653182D62FD00AD5B1D /* SPSimperiumLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = B518F651182D62FD00AD5B1D /* SPSimperiumLogger.h */; };
+		B518F654182D62FD00AD5B1D /* SPSimperiumLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B518F652182D62FD00AD5B1D /* SPSimperiumLogger.m */; };
 		B53E4888182AAC58000AA4C8 /* NSURLResponse+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */; };
 		B53E4889182AAC58000AA4C8 /* NSURLResponse+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B53E4887182AAC58000AA4C8 /* NSURLResponse+Simperium.m */; };
 		B5E03DA5182C236200412572 /* JSONKit+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5E03DA3182C236200412572 /* JSONKit+Simperium.h */; };
@@ -329,8 +329,8 @@
 		B504EF49182818BE002FA5A1 /* SPHttpRequest+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SPHttpRequest+Internals.h"; path = "../../Simperium/SPHttpRequest+Internals.h"; sourceTree = "<group>"; };
 		B504EF4A182818BE002FA5A1 /* SPHttpRequestQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPHttpRequestQueue.h; path = ../../Simperium/SPHttpRequestQueue.h; sourceTree = "<group>"; };
 		B504EF4B182818BE002FA5A1 /* SPHttpRequestQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPHttpRequestQueue.m; path = ../../Simperium/SPHttpRequestQueue.m; sourceTree = "<group>"; };
-		B504EF53182818D6002FA5A1 /* SPRemoteLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPRemoteLogger.h; path = ../../Simperium/SPRemoteLogger.h; sourceTree = "<group>"; };
-		B504EF54182818D6002FA5A1 /* SPRemoteLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPRemoteLogger.m; path = ../../Simperium/SPRemoteLogger.m; sourceTree = "<group>"; };
+		B518F651182D62FD00AD5B1D /* SPSimperiumLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPSimperiumLogger.h; path = ../../Simperium/SPSimperiumLogger.h; sourceTree = "<group>"; };
+		B518F652182D62FD00AD5B1D /* SPSimperiumLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPSimperiumLogger.m; path = ../../Simperium/SPSimperiumLogger.m; sourceTree = "<group>"; };
 		B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSURLResponse+Simperium.h"; path = "../../Simperium/NSURLResponse+Simperium.h"; sourceTree = "<group>"; };
 		B53E4887182AAC58000AA4C8 /* NSURLResponse+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSURLResponse+Simperium.m"; path = "../../Simperium/NSURLResponse+Simperium.m"; sourceTree = "<group>"; };
 		B5E03DA3182C236200412572 /* JSONKit+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "JSONKit+Simperium.h"; path = "../../Simperium/JSONKit+Simperium.h"; sourceTree = "<group>"; };
@@ -475,8 +475,8 @@
 				B504EF49182818BE002FA5A1 /* SPHttpRequest+Internals.h */,
 				B504EF4A182818BE002FA5A1 /* SPHttpRequestQueue.h */,
 				B504EF4B182818BE002FA5A1 /* SPHttpRequestQueue.m */,
-				B504EF53182818D6002FA5A1 /* SPRemoteLogger.h */,
-				B504EF54182818D6002FA5A1 /* SPRemoteLogger.m */,
+				B518F651182D62FD00AD5B1D /* SPSimperiumLogger.h */,
+				B518F652182D62FD00AD5B1D /* SPSimperiumLogger.m */,
 				268EDED3155F06D5006B566F /* Supporting Files */,
 			);
 			path = "Simperium-OSX";
@@ -661,7 +661,6 @@
 				268EDF52155F08A2006B566F /* SPMember.h in Headers */,
 				268EDF54155F08A2006B566F /* SPMemberBase64.h in Headers */,
 				268EDF56155F08A2006B566F /* SPMemberBinary.h in Headers */,
-				B504EF55182818D6002FA5A1 /* SPRemoteLogger.h in Headers */,
 				268EDF58155F08A2006B566F /* SPMemberDate.h in Headers */,
 				268EDF5A155F08A2006B566F /* SPMemberDouble.h in Headers */,
 				268EDF5C155F08A2006B566F /* SPMemberEntity.h in Headers */,
@@ -679,6 +678,7 @@
 				268EDFE2155F36B7006B566F /* NSMutableDictionary+DMPExtensions.h in Headers */,
 				268EDFE4155F36B7006B566F /* NSString+JavaSubstring.h in Headers */,
 				268EDFE6155F36B7006B566F /* NSString+UnicharUtilities.h in Headers */,
+				B518F653182D62FD00AD5B1D /* SPSimperiumLogger.h in Headers */,
 				268EDFE8155F36B7006B566F /* NSString+UriCompatibility.h in Headers */,
 				268EDFEC155F36B7006B566F /* DDAbstractDatabaseLogger.h in Headers */,
 				268EDFEE155F36B7006B566F /* DDASLLogger.h in Headers */,
@@ -808,6 +808,7 @@
 				268EDF5B155F08A2006B566F /* SPMemberDouble.m in Sources */,
 				268EDF5D155F08A2006B566F /* SPMemberEntity.m in Sources */,
 				268EDF5F155F08A2006B566F /* SPMemberFloat.m in Sources */,
+				B518F654182D62FD00AD5B1D /* SPSimperiumLogger.m in Sources */,
 				268EDF61155F08A2006B566F /* SPMemberInt.m in Sources */,
 				268EDF63155F08A2006B566F /* SPMemberList.m in Sources */,
 				268EDF65155F08A2006B566F /* SPMemberText.m in Sources */,
@@ -843,7 +844,6 @@
 				46EA1AEF17569EB4009AC5AA /* SPWebSocketInterface.m in Sources */,
 				4617AEBC179A1A3400545BD9 /* SPReachability.m in Sources */,
 				46DD15C7179A6DAC0093678C /* SPMemberJSONList.m in Sources */,
-				B504EF56182818D6002FA5A1 /* SPRemoteLogger.m in Sources */,
 				46DD162017A1B8490093678C /* SPAuthenticationButton.m in Sources */,
 				46DD162217A1B8490093678C /* SPAuthenticationButtonCell.m in Sources */,
 				46DD162417A1B8490093678C /* SPAuthenticationTextField.m in Sources */,
