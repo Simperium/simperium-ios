@@ -201,8 +201,9 @@
 		B5C91A0B1827E8600002D306 /* SPHttpRequestQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C91A061827E8600002D306 /* SPHttpRequestQueue.m */; };
 		B5C91A0E1827E9CB0002D306 /* NSURLResponse+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5C91A0C1827E9CB0002D306 /* NSURLResponse+Simperium.h */; };
 		B5C91A0F1827E9CB0002D306 /* NSURLResponse+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C91A0D1827E9CB0002D306 /* NSURLResponse+Simperium.m */; };
-		B5EB869A1822E34F007450FF /* SPRemoteLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = B5EB86981822E34F007450FF /* SPRemoteLogger.h */; };
-		B5EB869B1822E34F007450FF /* SPRemoteLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B5EB86991822E34F007450FF /* SPRemoteLogger.m */; };
+		B5E03D99182C115100412572 /* JSONKit+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5E03D97182C115100412572 /* JSONKit+Simperium.m */; };
+		B5EB869A1822E34F007450FF /* SPSimperiumLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = B5EB86981822E34F007450FF /* SPSimperiumLogger.h */; };
+		B5EB869B1822E34F007450FF /* SPSimperiumLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B5EB86991822E34F007450FF /* SPSimperiumLogger.m */; };
 		B5F5D39418219CCE0048754C /* DDFileLogger+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */; };
 		B5F5D39518219CCE0048754C /* DDFileLogger+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */; };
 		B5F5D39618219CCE0048754C /* DDFileLogger+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */; };
@@ -419,8 +420,8 @@
 		B5C91A061827E8600002D306 /* SPHttpRequestQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHttpRequestQueue.m; sourceTree = "<group>"; };
 		B5C91A0C1827E9CB0002D306 /* NSURLResponse+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURLResponse+Simperium.h"; sourceTree = "<group>"; };
 		B5C91A0D1827E9CB0002D306 /* NSURLResponse+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURLResponse+Simperium.m"; sourceTree = "<group>"; };
-		B5EB86981822E34F007450FF /* SPRemoteLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPRemoteLogger.h; sourceTree = "<group>"; };
-		B5EB86991822E34F007450FF /* SPRemoteLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPRemoteLogger.m; sourceTree = "<group>"; };
+		B5EB86981822E34F007450FF /* SPSimperiumLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSimperiumLogger.h; sourceTree = "<group>"; };
+		B5EB86991822E34F007450FF /* SPSimperiumLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSimperiumLogger.m; sourceTree = "<group>"; };
 		B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DDFileLogger+Simperium.h"; sourceTree = "<group>"; };
 		B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DDFileLogger+Simperium.m"; sourceTree = "<group>"; };
 		E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTOSViewController.h; sourceTree = "<group>"; };
@@ -593,8 +594,8 @@
 		2622FD05147F241500C8EEB4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				B5EB86981822E34F007450FF /* SPRemoteLogger.h */,
-				B5EB86991822E34F007450FF /* SPRemoteLogger.m */,
+				B5EB86981822E34F007450FF /* SPSimperiumLogger.h */,
+				B5EB86991822E34F007450FF /* SPSimperiumLogger.m */,
 				26E83C2413985DBB00195758 /* SPCoreDataExporter.h */,
 				26E83C2513985DBC00195758 /* SPCoreDataExporter.m */,
 				26905DA7142D344C001ACF20 /* DDLogDebug.h */,
@@ -943,7 +944,7 @@
 				E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */,
 				26653CFB15FE5DEA00461A28 /* SPReachability.h in Headers */,
 				46A16A8117289FE2003AED55 /* NSString+Simperium.h in Headers */,
-				B5EB869A1822E34F007450FF /* SPRemoteLogger.h in Headers */,
+				B5EB869A1822E34F007450FF /* SPSimperiumLogger.h in Headers */,
 				B5F5D39418219CCE0048754C /* DDFileLogger+Simperium.h in Headers */,
 				464DC336176946ED00E75D05 /* SFHFKeychainUtils.h in Headers */,
 				1854D50F1799F6D2006C4211 /* NSArray+Simperium.h in Headers */,
@@ -1102,7 +1103,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				269CAC2C146DDA7C00584C56 /* Simperium.m in Sources */,
-				B5EB869B1822E34F007450FF /* SPRemoteLogger.m in Sources */,
+				B5EB869B1822E34F007450FF /* SPSimperiumLogger.m in Sources */,
 				B5F5D39518219CCE0048754C /* DDFileLogger+Simperium.m in Sources */,
 				264CD93D135DFE6D00C51BAD /* SPManagedObject.m in Sources */,
 				264CD941135DFE6D00C51BAD /* SPEnvironment.m in Sources */,

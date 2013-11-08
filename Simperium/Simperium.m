@@ -24,6 +24,7 @@
 #import "DDASLLogger.h"
 #import "DDTTYLogger.h"
 #import "DDFileLogger+Simperium.h"
+#import "SPSimperiumLogger.h"
 #import "SPCoreDataStorage.h"
 #import "SPAuthenticator.h"
 #import "SPBucket.h"
@@ -38,7 +39,7 @@
 
 NSString * const UUID_KEY = @"SPUUIDKey";
 
-@interface Simperium() <SPStorageObserver>
+@interface Simperium() <SPStorageObserver, SPSimperiumLoggerDelegate>
 
 @property (nonatomic, strong) SPCoreDataStorage *coreDataStorage;
 @property (nonatomic, strong) SPJSONStorage *JSONStorage;
@@ -123,6 +124,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		[DDLog addLogger:[DDASLLogger sharedInstance]];
 		[DDLog addLogger:[DDTTYLogger sharedInstance]];
 		[DDLog addLogger:[DDFileLogger sharedInstance]];
+		[DDLog addLogger:[SPSimperiumLogger sharedInstance]];
 	});
 }
 
@@ -146,6 +148,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         SPRelationshipResolver *resolver = [[SPRelationshipResolver alloc] init];
         self.relationshipResolver = resolver;
 
+		SPSimperiumLogger *logger = [SPSimperiumLogger sharedInstance];
+		logger.delegate = self;
+		
 #if TARGET_OS_IPHONE
         authenticationViewControllerClass = [SPAuthenticationViewController class];
 #else
@@ -745,5 +750,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	
 }
 
+
+#pragma mark SPSimperiumLoggerDelegate
+
+-(void)handleLogMessage:(NSString*)logMessage
+{
+	if(self.remoteLoggingEnabled) {
+		[self.network sendLogMessage:logMessage];
+	}
+}
 
 @end
