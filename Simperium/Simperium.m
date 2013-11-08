@@ -169,12 +169,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(NSString *)clientID {
     if (!_clientID || _clientID.length == 0) {
-        NSString *agentPrefix;
-#if TARGET_OS_IPHONE
-        agentPrefix = @"ios";
-#else
-        agentPrefix = @"osx";
-#endif
         // Unique client ID; persist it so changes sent between sessions come from the same client ID
         NSString *uuid = [[NSUserDefaults standardUserDefaults] objectForKey:UUID_KEY];
         if (!uuid) {
@@ -182,7 +176,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             [[NSUserDefaults standardUserDefaults] setObject:uuid forKey:UUID_KEY];
             [[NSUserDefaults standardUserDefaults] synchronize];
         }
-        _clientID = [[NSString stringWithFormat:@"%@-%@", agentPrefix, uuid] copy];
+        _clientID = [[NSString stringWithFormat:@"%@-%@", SPLibraryID, uuid] copy];
     }
     return _clientID;
 }

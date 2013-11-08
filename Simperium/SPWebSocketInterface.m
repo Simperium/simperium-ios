@@ -17,6 +17,7 @@
 #import "SRWebSocket.h"
 #import "SPWebSocketChannel.h"
 #import "SPRemoteLogger.h"
+#import "SPEnvironment.h"
 
 
 #define WEBSOCKET_URL @"wss://api.simperium.com/sock/1"
@@ -24,12 +25,8 @@
 #define INDEX_BATCH_SIZE 10
 #define HEARTBEAT 30
 
-#if TARGET_OS_IPHONE
-#define LIBRARY_ID @"ios"
-#else
-#define LIBRARY_ID @"osx"
-#endif
 
+// TODO: Move this to SPEnvironment, after protocol-tweaks branch is merged
 #define LIBRARY_VERSION @(1)
 
 NSString * const COM_AUTH			= @"auth";
@@ -150,7 +147,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
                                @"app_id"	: self.simperium.appID,
                                @"token"		: self.simperium.user.authToken,
                                @"name"		: remoteBucketName,
-                               @"library"	: LIBRARY_ID,
+                               @"library"	: SPLibraryID,
                                @"version"	: LIBRARY_VERSION
                                };
     
