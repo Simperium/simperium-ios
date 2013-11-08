@@ -122,6 +122,9 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 // Toggle verbose logging.
 @property (nonatomic) BOOL verboseLoggingEnabled;
 
+// Toggle remote logging.
+@property (nonatomic) BOOL remoteLoggingEnabled;
+
 // Enables or disables the network.
 @property (nonatomic) BOOL networkEnabled;
 

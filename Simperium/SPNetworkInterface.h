@@ -19,6 +19,7 @@
 -(void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
 -(void)sendObjectDeletion:(id<SPDiffable>)object;
 -(void)sendObjectChanges:(id<SPDiffable>)object;
+-(void)sendLogMessage:(NSString*)logMessage;
 -(void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
 -(void)forceSyncBucket:(SPBucket *)bucket;
 @end

@@ -16,7 +16,7 @@
 #import "DDLogDebug.h"
 #import "SRWebSocket.h"
 #import "SPWebSocketChannel.h"
-#import "SPRemoteLogger.h"
+#import "SPSimperiumLogger.h"
 
 
 #define WEBSOCKET_URL @"wss://api.simperium.com/sock/1"
@@ -46,15 +46,13 @@ NSString * const COM_HEARTBEAT		= @"h";
 static int ddLogLevel = LOG_LEVEL_INFO;
 NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
 
-@interface SPWebSocketInterface() <SRWebSocketDelegate, SPRemoteLoggerDelegate>
+@interface SPWebSocketInterface() <SRWebSocketDelegate>
 @property (nonatomic, strong, readwrite) SRWebSocket *webSocket;
 @property (nonatomic, weak,   readwrite) Simperium *simperium;
-@property (nonatomic, strong, readwrite) SPRemoteLogger *remoteLogger;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *channels;
 @property (nonatomic, copy,   readwrite) NSString *clientID;
 @property (nonatomic, strong, readwrite) NSDictionary *bucketNameOverrides;
 @property (nonatomic, strong, readwrite) NSTimer *heartbeatTimer;
-@property (nonatomic, assign, readwrite) NSInteger remoteLogLevel;
 @property (nonatomic, assign, readwrite) BOOL open;
 @end
 
@@ -68,19 +66,11 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     ddLogLevel = logLevel;
 }
 
-- (void)dealloc {
-	[DDLog removeLogger:self.remoteLogger];
-}
-
 - (id)initWithSimperium:(Simperium *)s appURL:(NSString *)url clientID:(NSString *)cid {
 	if ((self = [super init])) {
         self.simperium = s;
         self.clientID = cid;
         self.channels = [NSMutableDictionary dictionaryWithCapacity:20];
-		
-		// Initialize RemoteLogger
-		self.remoteLogger = [[SPRemoteLogger alloc] initWithDelegate:self];
-		[DDLog addLogger:self.remoteLogger];
 	}
 	
 	return self;
@@ -136,6 +126,15 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 - (void)sendObjectChanges:(id<SPDiffable>)object {
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
     [channel sendObjectChanges:object];
+}
+
+-(void)sendLogMessage:(NSString*)logMessage {
+	if(!self.open) {
+		return;
+	}
+	NSDictionary *payload = @{ @"log" : logMessage };
+	NSString *message = [NSString stringWithFormat:@"%@:%@", COM_LOG, [payload sp_JSONString]];
+	[self send:message];
 }
 
 - (void)authenticateChannel:(SPWebSocketChannel *)channel {
@@ -226,17 +225,6 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 
-#pragma mark - SPRemoteLoggerDelegate Methods
-
--(void)sendLogMessage:(NSString*)logMessage {
-	if(!self.open || self.remoteLogLevel == SPNetworkLogLevelsOff) {
-		return;
-	}
-	NSDictionary *payload = @{ @"log" : logMessage };
-	NSString *message = [NSString stringWithFormat:@"%@:%@", COM_LOG, [payload sp_JSONString]];
-	[self send:message];
-}
-
 #pragma mark - SRWebSocketDelegate Methods
 
 - (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
@@ -288,8 +276,9 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 	// Message: LogLevel
 	if ([channelStr isEqualToString:COM_LOG]) {
 		DDLogVerbose(@"Simperium (%@) Received Remote LogLevel %@", self.simperium.label, commandStr);
-		self.remoteLogLevel = commandStr.intValue;
-		self.simperium.verboseLoggingEnabled = (commandStr.intValue == SPNetworkLogLevelsVerbose);
+		NSInteger logLevel = commandStr.intValue;
+		self.simperium.remoteLoggingEnabled	 = (logLevel != SPRemoteLogLevelsOff);
+		self.simperium.verboseLoggingEnabled = (logLevel == SPRemoteLogLevelsVerbose);
 		return;
 	}
 			
