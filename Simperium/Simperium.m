@@ -30,6 +30,7 @@
 #import "SPRelationshipResolver.h"
 #import "SPReachability.h"
 
+
 #if TARGET_OS_IPHONE
 #import "SPAuthenticationViewController.h"
 #else
@@ -38,18 +39,27 @@
 
 NSString * const UUID_KEY = @"SPUUIDKey";
 
-@interface Simperium() <SPStorageObserver>
+
+
+#pragma mark ====================================================================================
+#pragma mark Simperium: Private Methods
+#pragma mark ====================================================================================
+
+@interface Simperium() <SPStorageObserver, SPAuthenticatorDelegate>
 
 @property (nonatomic, strong) SPCoreDataStorage *coreDataStorage;
 @property (nonatomic, strong) SPJSONStorage *JSONStorage;
 @property (nonatomic, strong) NSMutableDictionary *buckets;
 @property (nonatomic, strong) id<SPNetworkInterface> network;
 @property (nonatomic, strong) SPRelationshipResolver *relationshipResolver;
-@property (nonatomic) BOOL skipContextProcessing;
-@property (nonatomic) BOOL networkManagersStarted;
-@property (nonatomic) BOOL dynamicSchemaEnabled;
+@property (nonatomic, assign) BOOL skipContextProcessing;
+@property (nonatomic, assign) BOOL networkManagersStarted;
+@property (nonatomic, assign) BOOL dynamicSchemaEnabled;
 @property (nonatomic, strong) SPReachability *reachability;
-
+@property (nonatomic,	copy) NSString *clientID;
+@property (nonatomic,	copy) NSString *appID;
+@property (nonatomic,	copy) NSString *APIKey;
+@property (nonatomic,	copy) NSString *appURL;
 
 #if TARGET_OS_IPHONE
 @property (nonatomic, strong) SPAuthenticationViewController *authenticationViewController;
@@ -61,43 +71,11 @@ NSString * const UUID_KEY = @"SPUUIDKey";
 @end
 
 
+#pragma mark ====================================================================================
+#pragma mark Simperium
+#pragma mark ====================================================================================
+
 @implementation Simperium
-
-#pragma mark - Properties
-@synthesize user;
-@synthesize label;
-@synthesize JSONStorage;
-@synthesize coreDataStorage;
-@synthesize skipContextProcessing;
-@synthesize networkManagersStarted;
-@synthesize dynamicSchemaEnabled;
-@synthesize verboseLoggingEnabled = _verboseLoggingEnabled;
-@synthesize networkEnabled = _networkEnabled;
-@synthesize authenticationEnabled = _authenticationEnabled;
-@synthesize authenticator;
-@synthesize network;
-@synthesize relationshipResolver;
-@synthesize binaryManager;
-@synthesize buckets;
-@synthesize appID;
-@synthesize APIKey;
-@synthesize appURL;
-@synthesize delegate;
-@synthesize bucketOverrides;
-@synthesize authenticationOptional;
-@synthesize rootURL = _rootURL;
-@synthesize reachability;
-
-#if TARGET_OS_IPHONE
-@synthesize rootViewController;
-@synthesize authenticationViewController;
-@synthesize authenticationViewControllerClass;
-#else
-@synthesize window;
-@synthesize authenticationWindowController;
-@synthesize authenticationWindowControllerClass;
-#endif
-
 
 #ifdef DEBUG
 static int ddLogLevel = LOG_LEVEL_VERBOSE;
@@ -135,9 +113,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [[self class] setupLogging];
         
         self.label = @"";
-        _networkEnabled = YES;
-        _authenticationEnabled = YES;
-        dynamicSchemaEnabled = YES;
+        self.networkEnabled = YES;
+        self.authenticationEnabled = YES;
+        self.dynamicSchemaEnabled = YES;
         self.buckets = [NSMutableDictionary dictionary];
         
         SPAuthenticator *auth = [[SPAuthenticator alloc] initWithDelegate:self simperium:self];
@@ -147,9 +125,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         self.relationshipResolver = resolver;
 
 #if TARGET_OS_IPHONE
-        authenticationViewControllerClass = [SPAuthenticationViewController class];
+        self.authenticationViewControllerClass = [SPAuthenticationViewController class];
 #else
-        authenticationWindowControllerClass = [SPAuthenticationWindowController class];
+        self.authenticationWindowControllerClass = [SPAuthenticationWindowController class];
 #endif
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(authenticationDidFail)
                                                      name:SPAuthenticationDidFail object:nil];
@@ -162,7 +140,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(id)initWithRootViewController:(UIViewController *)controller
 {
     if ((self = [self init])) {
-        rootViewController = controller;
+        self.rootViewController = controller;
     }
     
     return self;
@@ -171,10 +149,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(id)initWithWindow:(NSWindow *)aWindow
 {
     if ((self = [self init])) {
-        window = aWindow;
+        self.window = aWindow;
         
         // Hide window by default - authenticating will make it visible
-        [window orderOut:nil];
+        [self.window orderOut:nil];
     }
     
     return self;
@@ -189,12 +167,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
--(void)setClientID:(NSString *)cid {
-    clientID = [cid copy];
-}
-
 -(NSString *)clientID {
-    if (!clientID || clientID.length == 0) {
+    if (!_clientID || _clientID.length == 0) {
         NSString *agentPrefix;
 #if TARGET_OS_IPHONE
         agentPrefix = @"ios";
@@ -208,27 +182,23 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             [[NSUserDefaults standardUserDefaults] setObject:uuid forKey:UUID_KEY];
             [[NSUserDefaults standardUserDefaults] synchronize];
         }
-        clientID = [[NSString stringWithFormat:@"%@-%@", agentPrefix, uuid] copy];
+        _clientID = [[NSString stringWithFormat:@"%@-%@", agentPrefix, uuid] copy];
     }
-    return clientID;
+    return _clientID;
 }
 
 
 -(void)setLabel:(NSString *)aLabel {
-    label = [aLabel copy];
+    _label = [aLabel copy];
     
     // Set the clientID as well, otherwise certain change operations won't work (since they'll appear to come from
     // the same Simperium instance)
-    clientID = [label copy];
-}
-
--(NSString *)label {
-    return label;
+    self.clientID = _label;
 }
 
 -(void)configureBinaryManager:(SPBinaryManager *)manager {    
     // Binary members need to know about the manager (ugly but avoids singleton/global)
-    for (SPBucket *bucket in [buckets allValues]) {
+    for (SPBucket *bucket in [self.buckets allValues]) {
         for (SPMemberBinary *binaryMember in bucket.differ.schema.binaryMembers) {
             binaryMember.binaryManager = manager;
         }
@@ -236,33 +206,33 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 -(NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName {
-    return [binaryManager addBinary:binaryData toObject:object bucketName:bucketName attributeName:attributeName];
+    return [self.binaryManager addBinary:binaryData toObject:object bucketName:bucketName attributeName:attributeName];
 }
 
 -(void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName {
     // Make sure the object has a simperiumKey (it might not if it was just created)
     if (!object.simperiumKey)
         object.simperiumKey = [NSString sp_makeUUID];
-    return [binaryManager addBinaryWithFilename:filename toObject:object bucketName:bucketName attributeName:attributeName];
+    return [self.binaryManager addBinaryWithFilename:filename toObject:object bucketName:bucketName attributeName:attributeName];
 }
 
 -(NSData *)dataForFilename:(NSString *)filename {
-    return [binaryManager dataForFilename:filename];
+    return [self.binaryManager dataForFilename:filename];
 }
 
 -(SPBucket *)bucketForName:(NSString *)name { 
-    SPBucket *bucket = [buckets objectForKey:name];
+    SPBucket *bucket = [self.buckets objectForKey:name];
     if (!bucket) {
         // First check for an override
-        for (NSString *testName in [bucketOverrides allKeys]) {
-            NSString *testOverride = [bucketOverrides objectForKey:testName];
+        for (NSString *testName in [self.bucketOverrides allKeys]) {
+            NSString *testOverride = [self.bucketOverrides objectForKey:testName];
             if ([testOverride isEqualToString:name]) {
-                return [buckets objectForKey:testName];
+                return [self.buckets objectForKey:testName];
 			}
         }
         
         // Lazily start buckets
-        if (dynamicSchemaEnabled) {
+        if (self.dynamicSchemaEnabled) {
             // Create and start a network manager for it
             SPSchema *schema = [[SPSchema alloc] initWithBucketName:name data:nil];
             schema.dynamic = YES;
@@ -287,7 +257,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)shareObject:(SPManagedObject *)object withEmail:(NSString *)email
 {
-    SPBucket *bucket = [buckets objectForKey:object.bucket.name];
+    SPBucket *bucket = [self.buckets objectForKey:object.bucket.name];
     [bucket.network shareObject: object withEmail:email];
 }
 
@@ -316,28 +286,28 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)startNetworkManagers
 {    
-    if (!self.networkEnabled || networkManagersStarted)
+    if (!self.networkEnabled || self.networkManagersStarted)
         return;
     
     DDLogInfo(@"Simperium starting network managers...");
     // Finally, start the network managers to start syncing data
-    for (SPBucket *bucket in [buckets allValues]) {
+    for (SPBucket *bucket in [self.buckets allValues]) {
         // TODO: move nameOverride into the buckets themselves
-        NSString *nameOverride = [bucketOverrides objectForKey:bucket.name];
+        NSString *nameOverride = [self.bucketOverrides objectForKey:bucket.name];
         [bucket.network start:bucket name:nameOverride && nameOverride.length > 0 ? nameOverride : bucket.name];
 	}
-    networkManagersStarted = YES;
+    self.networkManagersStarted = YES;
 }
 
 -(void)stopNetworkManagers
 {
-    if (!networkManagersStarted)
+    if (!self.networkManagersStarted)
         return;
     
-    for (SPBucket *bucket in [buckets allValues]) {
+    for (SPBucket *bucket in [self.buckets allValues]) {
         [bucket.network stop:bucket];
     }
-    networkManagersStarted = NO;
+    self.networkManagersStarted = NO;
 }
 
 -(void)startNetworking
@@ -364,14 +334,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)setNetworkEnabled:(BOOL)enabled
 {
-    if (_networkEnabled == enabled)
+    if (self.networkEnabled == enabled)
         return;
     
     _networkEnabled = enabled;
     if (enabled) {
         [self authenticateIfNecessary];
-    } else
+    } else {
         [self stopNetworking];
+	}
 }
 
 -(NSMutableDictionary *)loadBuckets:(NSArray *)schemas
@@ -414,31 +385,27 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 -(void)setAllBucketDelegates:(id)aDelegate {
-    for (SPBucket *bucket in [buckets allValues]) {
+    for (SPBucket *bucket in [self.buckets allValues]) {
         bucket.delegate = aDelegate;
     }
-}
-
--(NSString *)rootURL {
-    return _rootURL;
 }
 
 -(void)setRootURL:(NSString *)url {
     _rootURL = [url copy];
     
-    appURL = [[_rootURL stringByAppendingFormat:@"%@/", appID] copy];
+    self.appURL = [_rootURL stringByAppendingFormat:@"%@/", self.appID];
 }
 
 -(void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key {
-    DDLogInfo(@"Simperium starting... %@", label);
+    DDLogInfo(@"Simperium starting... %@", self.label);
 	
 	// Enforce required parameters
 	NSParameterAssert(identifier);
 	NSParameterAssert(key);
 	
 	// Keep the keys!
-    appID = [identifier copy];
-    APIKey = [key copy];
+    self.appID = identifier;
+    self.APIKey = key;
     self.rootURL = SPBaseURL;
     
     // Setup JSON storage
@@ -458,7 +425,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key model:(NSManagedObjectModel *)model context:(NSManagedObjectContext *)context coordinator:(NSPersistentStoreCoordinator *)coordinator
 {
-	DDLogInfo(@"Simperium starting... %@", label);
+	DDLogInfo(@"Simperium starting... %@", self.label);
 	
 	// Enforce required parameters
 	NSParameterAssert(identifier);
@@ -471,8 +438,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	NSAssert((context.persistentStoreCoordinator == nil), NSLocalizedString(@"Error: NSManagedObjectContext's persistentStoreCoordinator must be nil. Simperium will handle CoreData connections for you.", nil));
 	
 	// Keep the keys!
-    appID = [identifier copy];
-    APIKey = [key copy];
+    self.appID = identifier;
+    self.APIKey = key;
     self.rootURL = SPBaseURL;
     
     // Setup Core Data storage
@@ -509,7 +476,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(BOOL)objectsShouldSync {
     // TODO: rename or possibly (re)move this
-    return !skipContextProcessing;
+    return !self.skipContextProcessing;
 }
 
 -(void)storage:(id<SPStorageProvider>)storage updatedObjects:(NSSet *)updatedObjects insertedObjects:(NSSet *)insertedObjects deletedObjects:(NSSet *)deletedObjects
@@ -588,9 +555,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 -(BOOL)saveWithoutSyncing {
-    skipContextProcessing = YES;
+    self.skipContextProcessing = YES;
     BOOL result = [self save];
-    skipContextProcessing = NO;
+    self.skipContextProcessing = NO;
     return result;
 }
 
@@ -602,7 +569,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self stopNetworking];
     
     // Reset the network manager and processors; any enqueued tasks will get skipped
-    for (SPBucket *bucket in [buckets allValues]) {
+    for (SPBucket *bucket in [self.buckets allValues]) {
         [bucket unloadAllObjects];
         
         // This will block until everything is all clear
@@ -611,40 +578,40 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     // Now delete all local content; no more changes will be coming in at this point
     if (remove) {
-        skipContextProcessing = YES;
-        for (SPBucket *bucket in [buckets allValues]) {
+        self.skipContextProcessing = YES;
+        for (SPBucket *bucket in [self.buckets allValues]) {
             [bucket deleteAllObjects];
         }
-        skipContextProcessing = NO;
+        self.skipContextProcessing = NO;
     }
     
     // Clear the token and user
-    [authenticator reset];
+    [self.authenticator reset];
     self.user = nil;
 
     // Don't start network managers again; expect app to handle that
 }
 
 -(NSManagedObjectContext *)managedObjectContext {
-    return coreDataStorage.mainManagedObjectContext;
+    return self.coreDataStorage.mainManagedObjectContext;
 }
 
 -(NSManagedObjectContext *)writerManagedObjectContext {
-    return coreDataStorage.writerManagedObjectContext;
+    return self.coreDataStorage.writerManagedObjectContext;
 }
 
 -(NSManagedObjectModel *)managedObjectModel {
-    return coreDataStorage.managedObjectModel;
+    return self.coreDataStorage.managedObjectModel;
 }
 
 -(NSPersistentStoreCoordinator *)persistentStoreCoordinator {
-    return coreDataStorage.persistentStoreCoordinator;
+    return self.coreDataStorage.persistentStoreCoordinator;
 }
 
 
 -(void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token
 {
-    [binaryManager setupAuth:user];
+    [self.binaryManager setupAuth:self.user];
     
     // It's now safe to start the network managers
     [self startNetworking];
@@ -655,18 +622,19 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)authenticationDidCancel {
     [self stopNetworking];
     [self.authenticator reset];
-    user.authToken = nil;
+    self.user.authToken = nil;
     [self closeAuthViewControllerAnimated:YES];
 }
 
 -(void)authenticationDidFail {
     [self stopNetworking];
     [self.authenticator reset];
-    user.authToken = nil;
+    self.user.authToken = nil;
     
-    if (self.authenticationEnabled)
+    if (self.authenticationEnabled) {
         // Delay it a touch to avoid issues with storyboard-driven UIs
         [self performSelector:@selector(delayedOpenAuthViewController) withObject:nil afterDelay:0.1];
+	}
 }
 
 -(BOOL)authenticateIfNecessary
@@ -696,7 +664,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (!self.rootViewController) {
         UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
         self.rootViewController = [window rootViewController];
-        NSAssert(self.rootViewController, @"Simperium error: to use built-in authentication, you must configure a rootViewController when you initialize Simperium, or call setParentViewControllerForAuthentication:. This is how Simperium knows where to present a modal view. See enableManualAuthentication in the documentation if you want to use your own authentication interface.");
+        NSAssert(self.rootViewController, @"Simperium error: to use built-in authentication, you must configure a rootViewController when you "
+										   "initialize Simperium, or call setParentViewControllerForAuthentication:. "
+										   "This is how Simperium knows where to present a modal view. See enableManualAuthentication in the "
+										   "documentation if you want to use your own authentication interface.");
     }
     
     UIViewController *controller = self.authenticationViewController;
@@ -708,16 +679,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
 	[self.rootViewController presentViewController:controller animated:animated completion:nil];
 #else
-    if (!authenticationWindowController) {
-        authenticationWindowController = [[self.authenticationWindowControllerClass alloc] init];
-        authenticationWindowController.authenticator = self.authenticator;
-        authenticationWindowController.optional = authenticationOptional;
+    if (!self.authenticationWindowController) {
+        self.authenticationWindowController = [[self.authenticationWindowControllerClass alloc] init];
+        self.authenticationWindowController.authenticator = self.authenticator;
+        self.authenticationWindowController.optional = self.authenticationOptional;
     }
     
     // Hide the main window and show the auth window instead
     [self.window setIsVisible:NO];    
-    [[authenticationWindowController window] center];
-    [[authenticationWindowController window] makeKeyAndOrderFront:self];
+    [[self.authenticationWindowController window] center];
+    [[self.authenticationWindowController window] makeKeyAndOrderFront:self];
 #endif
 }
 
@@ -734,8 +705,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     self.authenticationViewController = nil;
 #else
     [self.window setIsVisible:YES];
-    [[authenticationWindowController window] close];
-    authenticationWindowController = nil;
+    [[self.authenticationWindowController window] close];
+    self.authenticationWindowController = nil;
 #endif
 }
 
