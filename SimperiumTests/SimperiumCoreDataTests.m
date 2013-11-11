@@ -122,6 +122,8 @@ static NSString* const kDeletedKey = @"deleted";
 {
     NSLog(@"%@ start", self.name);
 	
+	[super waitFor:kLocalTestTimeout];
+	
 	NSManagedObjectContext* workerContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
 	NSManagedObjectContext* deepContext	= [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
 	
@@ -139,6 +141,8 @@ static NSString* const kDeletedKey = @"deleted";
 	
 	config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:deepContext];
 	XCTAssertTrue( (config.bucket != nil), @"The DeepContext newObject's bucket should not be nil");
+	
+	[super waitFor:kLocalTestTimeout];
 	
     NSLog(@"%@ end", self.name);
 }
@@ -183,6 +187,9 @@ static NSString* const kDeletedKey = @"deleted";
 				NSError* error = nil;
 				[self.mainContext save:&error];
 				XCTAssertNil(error, @"Error saving Main context");
+				NSLog(@"%@ BLOCK end", self.name);
+				
+				[super waitFor:kLocalTestTimeout];
 			}];
 		}];
 	}];
