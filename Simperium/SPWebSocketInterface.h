@@ -16,8 +16,9 @@
 
 @property (nonatomic, strong, readonly) SRWebSocket *webSocket;
 
-- (id)initWithSimperium:(Simperium *)s appURL:(NSString *)url clientID:(NSString *)cid;
 - (void)loadChannelsForBuckets:(NSDictionary *)bucketList overrides:(NSDictionary *)overrides;
 - (void)send:(NSString *)message;
+
++ (instancetype)interfaceWithSimperium:(Simperium *)s appURL:(NSString *)appURL clientID:(NSString *)clientID;
 
 @end

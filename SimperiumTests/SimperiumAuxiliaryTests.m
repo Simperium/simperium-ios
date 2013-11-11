@@ -6,11 +6,16 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
-#import "SimperiumAuxiliaryTests.h"
+#import "SimperiumTests.h"
 #import "Config.h"
 #import "Farm.h"
 #import "SPBucket.h"
 #import "DiffMatchPatch.h"
+
+
+@interface SimperiumAuxiliaryTests : SimperiumTests
+
+@end
 
 @implementation SimperiumAuxiliaryTests
 
@@ -51,7 +56,7 @@
     NSLog(@"final: %@", final_text);    
 }
 
-- (void)testKeyWithPeriods
+-(void)testKeyWithPeriods
 {
     NSLog(@"%@ start", self.name);
     
@@ -61,38 +66,38 @@
     [leader start];
     [leader connect];
     leader.expectedIndexCompletions = 1;
-    STAssertTrue([self waitForCompletion], @"timed out");
+    XCTAssertTrue([self waitForCompletion], @"timed out");
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObjectForKey:@"key.with.periods"];
     leader.config.warpSpeed = refWarpSpeed;
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
-    STAssertTrue([self waitForCompletion], @"timed out");
+    XCTAssertTrue([self waitForCompletion], @"timed out");
     
     // Make a change to ensure version numbers increase
     refWarpSpeed = [NSNumber numberWithInt:4];
     leader.config.warpSpeed = refWarpSpeed;
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
-    STAssertTrue([self waitForCompletion], @"timed out (changing)");
+    XCTAssertTrue([self waitForCompletion], @"timed out (changing)");
     
     // The object was synced, now connect with the follower
     [follower start];
     
-    [self resetExpectations: farms];
+    [self resetExpectations: self.farms];
     follower.expectedIndexCompletions = 1;
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:NO];
     [follower connect];
     
-    STAssertTrue([self waitForCompletion], @"timed out");
+    XCTAssertTrue([self waitForCompletion], @"timed out");
     
-    [self ensureFarmsEqual:farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
     NSLog(@"%@ end", self.name);
 }
 
 
-//- (void)testSeededData
+//-(void)testSeededData
 //{
 //    NSLog(@"%@ start", self.name);
 //    [self createFarms];

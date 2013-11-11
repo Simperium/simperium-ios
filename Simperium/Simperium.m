@@ -46,21 +46,21 @@ NSString * const UUID_KEY = @"SPUUIDKey";
 #pragma mark Simperium: Private Methods
 #pragma mark ====================================================================================
 
-@interface Simperium() <SPStorageObserver, SPSimperiumLoggerDelegate>
+@interface Simperium() <SPStorageObserver, SPAuthenticatorDelegate, SPSimperiumLoggerDelegate>
 
-@property (nonatomic, strong) SPCoreDataStorage *coreDataStorage;
-@property (nonatomic, strong) SPJSONStorage *JSONStorage;
-@property (nonatomic, strong) NSMutableDictionary *buckets;
-@property (nonatomic, strong) id<SPNetworkInterface> network;
-@property (nonatomic, strong) SPRelationshipResolver *relationshipResolver;
-@property (nonatomic, assign) BOOL skipContextProcessing;
-@property (nonatomic, assign) BOOL networkManagersStarted;
-@property (nonatomic, assign) BOOL dynamicSchemaEnabled;
-@property (nonatomic, strong) SPReachability *reachability;
-@property (nonatomic,	copy) NSString *clientID;
-@property (nonatomic,	copy) NSString *appID;
-@property (nonatomic,	copy) NSString *APIKey;
-@property (nonatomic,	copy) NSString *appURL;
+@property (nonatomic, strong) SPCoreDataStorage			*coreDataStorage;
+@property (nonatomic, strong) SPJSONStorage				*JSONStorage;
+@property (nonatomic, strong) NSMutableDictionary		*buckets;
+@property (nonatomic, strong) id<SPNetworkInterface>	network;
+@property (nonatomic, strong) SPRelationshipResolver	*relationshipResolver;
+@property (nonatomic, strong) SPReachability			*reachability;
+@property (nonatomic,	copy) NSString					*clientID;
+@property (nonatomic,	copy) NSString					*appID;
+@property (nonatomic,	copy) NSString					*APIKey;
+@property (nonatomic,	copy) NSString					*appURL;
+@property (nonatomic, assign) BOOL						skipContextProcessing;
+@property (nonatomic, assign) BOOL						networkManagersStarted;
+@property (nonatomic, assign) BOOL						dynamicSchemaEnabled;
 
 #if TARGET_OS_IPHONE
 @property (nonatomic, strong) SPAuthenticationViewController *authenticationViewController;
@@ -238,8 +238,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			
 			// For websockets, one network manager for all buckets
 			if (!self.network) {
-				SPWebSocketInterface *webSocketManager = [[SPWebSocketInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
-				self.network = webSocketManager;
+				self.network = [SPWebSocketInterface interfaceWithSimperium:self appURL:self.appURL clientID:self.clientID];
 			}
 						
 			// New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
@@ -361,8 +360,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         
 		// For websockets, one network manager for all buckets
 		if (!self.network) {
-			SPWebSocketInterface *webSocketManager = [[SPWebSocketInterface alloc] initWithSimperium:self appURL:self.appURL clientID:self.clientID];
-			self.network = webSocketManager;
+			self.network = [SPWebSocketInterface interfaceWithSimperium:self appURL:self.appURL clientID:self.clientID];
 		}
 		bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
 							 relationshipResolver:self.relationshipResolver label:self.label];

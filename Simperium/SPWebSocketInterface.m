@@ -88,7 +88,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 - (SPWebSocketChannel *)loadChannelForBucket:(SPBucket *)bucket {
     int channelNumber = (int)[self.channels count];
-    SPWebSocketChannel *channel = [[SPWebSocketChannel alloc] initWithSimperium:self.simperium clientID:self.clientID];
+    SPWebSocketChannel *channel = [SPWebSocketChannel channelWithSimperium:self.simperium clientID:self.clientID];
     channel.number = channelNumber;
     channel.name = bucket.name;
     [self.channels setObject:channel forKey:bucket.name];
@@ -388,6 +388,26 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 	// Let's reuse the start mechanism. This will post the latest CV + publish pending changes
 	SPWebSocketChannel *channel = [self channelForName:bucket.name];
 	[channel startProcessingChangesForBucket:bucket];
+}
+
+
+#pragma mark Static Helpers
+
+static Class _class;
+
++(void)initialize
+{
+	_class = [SPWebSocketInterface class];
+}
+
++(void)registerClass:(Class)c
+{
+	_class = c;
+}
+
++(instancetype)interfaceWithSimperium:(Simperium *)s appURL:(NSString *)appURL clientID:(NSString *)clientID
+{
+	return [[_class alloc] initWithSimperium:s appURL:clientID clientID:clientID];
 }
 
 @end

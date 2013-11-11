@@ -19,13 +19,10 @@
 #import "SPHttpRequest.h"
 #import "SPHttpRequestQueue.h"
 
+
 @implementation SimperiumTests
-@synthesize token;
-@synthesize overrides;
 
-static const int ddLogLevel = LOG_LEVEL_VERBOSE;
-
-- (void)waitFor:(NSTimeInterval)seconds
+-(void)waitFor:(NSTimeInterval)seconds
 {
     NSDate	*timeoutDate = [NSDate dateWithTimeIntervalSinceNow:seconds];
     NSLog(@"Waiting for %f seconds...", seconds);
@@ -39,7 +36,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 	return;
 }
 
-- (BOOL)farmsDone:(NSArray *)farmArray
+-(BOOL)farmsDone:(NSArray *)farmArray
 {
     for (Farm *farm in farmArray) {
         if (![farm isDone]) {
@@ -49,14 +46,14 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     return YES;
 }
 
-- (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs farmArray:(NSArray *)farmArray
+-(BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs farmArray:(NSArray *)farmArray
 {
     // Don't wait if everything is done already
     if ([self farmsDone:farmArray])
         return YES;
     
 	NSDate *timeoutDate = [NSDate dateWithTimeIntervalSinceNow:timeoutSecs];
-    done = NO;
+    self.done = NO;
     
 	do {
 		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:timeoutDate];
@@ -64,9 +61,9 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 			break;
         
         // We're done when all the farms are done
-        done = [self farmsDone: farmArray];
+        self.done = [self farmsDone: farmArray];
 
-	} while (!done);
+	} while (!self.done);
     
     // If it timed out, try to log why
     if([timeoutDate timeIntervalSinceNow] < 0.0) {
@@ -78,60 +75,69 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     // Wait an extra little tick so things like GET long polling have a chance to reestablish
     [self waitFor:0.1];
     
-	return done;
+	return self.done;
 }
 
-- (BOOL)waitForCompletion {
-    return [self waitForCompletion:3.0+NUM_FARMS*3 farmArray:farms];
+-(BOOL)waitForCompletion
+{
+    return [self waitForCompletion:3.0+NUM_FARMS*3 farmArray:self.farms];
 }
 
-- (NSString *)uniqueBucketFor:(NSString *)entityName {
+-(NSString *)uniqueBucketFor:(NSString *)entityName
+{
     NSString *bucketSuffix = [[NSString sp_makeUUID] substringToIndex:8];
     NSString *bucket = [NSString stringWithFormat:@"%@-%@", entityName, bucketSuffix];
     return bucket;
 }
 
-- (NSDictionary *)bucketOverrides {
+-(NSDictionary *)bucketOverrides
+{
     // Each farm for each test case should share bucket overrides
-    if (overrides == nil) {
+    if (self.overrides == nil) {
         self.overrides = [NSDictionary dictionaryWithObjectsAndKeys:
                           [self uniqueBucketFor:@"Config"], @"Config", nil];
     }
-    return overrides;
+    return self.overrides;
 }
 
-- (Farm *)createFarm:(NSString *)label {
-    if (!farms) {
-        farms = [NSMutableArray arrayWithCapacity:NUM_FARMS];
+-(Farm *)createFarm:(NSString *)label
+{
+    if (!self.farms) {
+        self.farms = [NSMutableArray arrayWithCapacity:NUM_FARMS];
     }
-    Farm *farm = [[Farm alloc] initWithToken: token bucketOverrides:[self bucketOverrides] label:label];
-    [farms addObject:farm];
+    Farm *farm = [[Farm alloc] initWithToken:self.token bucketOverrides:[self bucketOverrides] label:label];
+    [self.farms addObject:farm];
     return farm;
 }
 
-- (void)createFarms {    
+-(void)createFarms
+{
     // Use a different bucket for each test so it's always starting fresh
     // (We should periodically Delete All Data in the test app to clean stuff up)
     
-    for (int i=0; i<NUM_FARMS; i++) {
+    for (int i=0; i<NUM_FARMS; i++)
+	{
         NSString *label = [NSString stringWithFormat:@"client%d", i];
         [self createFarm: label];
     }
 }
 
-- (void)startFarms {    
-    for (int i=0; i<NUM_FARMS; i++) {
-        Farm *farm = [farms objectAtIndex:i];
+-(void)startFarms
+{
+    for (int i=0; i<NUM_FARMS; i++)
+	{
+        Farm *farm = self.farms[i];
         [farm start];
     }
 }
 
-- (void)createAndStartFarms {
+-(void)createAndStartFarms
+{
     [self createFarms];
     [self startFarms];
 }
 
-- (void)setUp
+-(void)setUp
 {
     [super setUp];
 	// prepare the URL Request
@@ -154,13 +160,14 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 	
 	// Parse the response
 	NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
-	STAssertTrue([httpResponse isKindOfClass:[NSHTTPURLResponse class]], @"Please check NSURLConnection's API");
+	XCTAssertTrue([httpResponse isKindOfClass:[NSHTTPURLResponse class]], @"Please check NSURLConnection's API");
 	
 	NSString* responseString = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
 	
     int code = httpResponse.statusCode;
-    STAssertTrue(code == 200, @"bad response code %d for request %@, response: %@", code, tokenURL, responseString);
+    XCTAssertTrue(code == 200, @"bad response code %d for request %@, response: %@", code, tokenURL, responseString);
     if (code != 200) {
+		NSLog(@"Auth Response: %@", responseString);
         return;
 	}
     
@@ -168,25 +175,25 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     NSDictionary *userDict = [responseString sp_objectFromJSONString];
     
     self.token = userDict[@"access_token"];
-    STAssertTrue(token.length > 0, @"invalid token from request: %@", tokenURL);
+    XCTAssertTrue(self.token.length > 0, @"invalid token from request: %@", tokenURL);
     
     [[NSUserDefaults standardUserDefaults] setObject:USERNAME forKey:@"SPUsername"];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    [SFHFKeychainUtils storeUsername:@"SPUsername" andPassword:token forServiceName:APP_ID updateExisting:YES error:nil];
+    [SFHFKeychainUtils storeUsername:@"SPUsername" andPassword:self.token forServiceName:APP_ID updateExisting:YES error:nil];
 
     NSLog(@"auth token is %@", self.token);
 }
 
-- (void)tearDown
+-(void)tearDown
 {
     [super tearDown];
     
-    for (Farm *farm in farms) {
+    for (Farm *farm in self.farms) {
         [farm stop];
     }
 }
 
-//- (void)ensureConfigsAreEqualTo:(Farm *)leader
+//-(void)ensureConfigsAreEqualTo:(Farm *)leader
 //{
 //    for (Farm *farm in farms) {
 //        if (farm == leader)
@@ -197,12 +204,12 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
 //}
 
 
-- (void)ensureFarmsEqual: (NSArray *)farmArray entityName:(NSString *)entityName
+-(void)ensureFarmsEqual: (NSArray *)farmArray entityName:(NSString *)entityName
 {
     // Assume all leader configs are the same since they're set manually
     Farm *leader = [farmArray objectAtIndex:0];
     NSArray *leaderObjects = [[leader.simperium bucketForName:entityName] allObjects] ;
-    STAssertTrue([leaderObjects count] > 0, @"");
+    XCTAssertTrue([leaderObjects count] > 0, @"");
     
     //Config *leaderConfig = [leaderConfigs objectAtIndex:0];
     if ([leaderObjects count] == 0)
@@ -213,7 +220,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
             continue;
         
         NSArray *objects = [[farm.simperium bucketForName:entityName] allObjects];
-        STAssertEquals([leaderObjects count], [objects count], @"");
+        XCTAssertEqual([leaderObjects count], [objects count], @"");
 
         // Make sure each key was synced
         NSMutableDictionary *objectDict = [NSMutableDictionary dictionaryWithCapacity:[leaderObjects count]];
@@ -226,7 +233,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
             TestObject *object = [objectDict objectForKey:leaderObject.simperiumKey];
             //STAssertTrue([object.ghost.version isEqualToString: leaderObject.ghost.version],
             //             @"version %@ != leader version %@", object.ghost.version, leaderObject.ghost.version );
-            STAssertTrue([object isEqualToObject:leaderObject], @"follower %@ != leader %@", object, leaderObject);
+            XCTAssertTrue([object isEqualToObject:leaderObject], @"follower %@ != leader %@", object, leaderObject);
             
             // Removed ghostData check since JSONKit doesn't necessarily parse in the same order, so strings will differ
             //STAssertTrue([[object.ghostData isEqualToString:leaderObject.ghostData],
@@ -235,31 +242,34 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     }
 }
 
-- (void)connectFarms
+-(void)connectFarms
 {
-    for (Farm *farm in farms)
+    for (Farm *farm in self.farms) {
         [farm connect];
+	}
     // Wait a jiffy (there are no callbacks for the first GET because there don't need to be)
     // Could skip this to test offline changes
     [self waitFor:1.0];
 }
 
-- (void)disconnectFarms
+-(void)disconnectFarms
 {
-    for (Farm *farm in farms)
+    for (Farm *farm in self.farms) {
         [farm disconnect];
+	}
 }
 
 // Tell farms what to expect so it's possible to wait for async networking to complete
-- (void)expectAdditions:(int)additions deletions:(int)deletions changes:(int)changes fromLeader:(Farm *)leader expectAcks:(BOOL)expectAcks
+-(void)expectAdditions:(int)additions deletions:(int)deletions changes:(int)changes fromLeader:(Farm *)leader expectAcks:(BOOL)expectAcks
 {
     if (expectAcks) {
         int acknowledgements = additions + deletions + changes;
         leader.expectedAcknowledgments += acknowledgements;
-    } else
+    } else {
         leader.expectedAcknowledgments = 0;
-        
-    for (Farm *farm in farms) {
+	}
+    
+    for (Farm *farm in self.farms) {
         if (farm == leader)
             continue;
         farm.expectedAcknowledgments = 0;
@@ -269,7 +279,7 @@ static const int ddLogLevel = LOG_LEVEL_VERBOSE;
     }
 }
 
-- (void)resetExpectations:(NSArray *)farmArray
+-(void)resetExpectations:(NSArray *)farmArray
 {
     for (Farm *farm in farmArray) {
         [farm resetExpectations];

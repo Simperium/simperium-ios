@@ -543,6 +543,24 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Not yet implemented with WebSockets
 }
 
+
+#pragma mark Static Helpers
+
+static Class _class;
+
++(void)initialize
+{
+	_class = [SPWebSocketChannel class];
+}
+
++(void)registerClass:(Class)c
+{
+	_class = c;
+}
+
++(instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID
+{
+	return [[_class alloc] initWithSimperium:s clientID:clientID];
+}
+
 @end
-
-
