@@ -7,7 +7,16 @@
 //
 
 #import "SPWebSocketInterface.h"
+#import "MockWebSocketChannel.h"
+#import "SPBucket.h"
+
+
 
 @interface MockWebSocketInterface : SPWebSocketInterface
+
+-(MockWebSocketChannel*)mockChannelForBucket:(SPBucket*)bucket;
+
+-(NSSet*)mockSentMessages;
+-(void)mockReceiveMessage:(NSString*)message;
 
 @end

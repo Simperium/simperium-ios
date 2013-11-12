@@ -548,7 +548,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 static Class _class;
 
-+(void)initialize
++(void)load
 {
 	_class = [SPWebSocketChannel class];
 }

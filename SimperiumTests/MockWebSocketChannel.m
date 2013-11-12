@@ -8,9 +8,15 @@
 
 #import "MockWebSocketChannel.h"
 
+
+
+#pragma mark ====================================================================================
+#pragma mark MockWebSocketChannel
+#pragma mark ====================================================================================
+
 @implementation MockWebSocketChannel
 
-+(void)initialize
++(void)load
 {
 	NSAssert([SPWebSocketChannel respondsToSelector:@selector(registerClass:)], nil);
 	[SPWebSocketChannel performSelector:@selector(registerClass:) withObject:[self class]];

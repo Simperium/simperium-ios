@@ -395,7 +395,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 static Class _class;
 
-+(void)initialize
++(void)load
 {
 	_class = [SPWebSocketInterface class];
 }
