@@ -6,3 +6,9 @@
 // Production
 NSString* const SPBaseURL	= @"https://api.simperium.com/1/";
 NSString* const SPAuthURL	= @"https://auth.simperium.com/1/";
+
+#if TARGET_OS_IPHONE
+NSString* const SPLibraryID	= @"ios";
+#else
+NSString* const SPLibraryID	= @"osx";
+#endif

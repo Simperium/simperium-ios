@@ -45,7 +45,7 @@
     [self.simperium startWithAppID:@"SIMPERIUM_APP_ID"
                             APIKey:@"SIMPERIUM_API_KEY"  
                              model:[self managedObjectModel]
-					   mainContext:[self managedObjectContext]
+						   context:[self managedObjectContext]
                        coordinator:[self persistentStoreCoordinator]];
     
     return YES;

@@ -11,16 +11,19 @@
 #import "SPUser.h"
 
 @implementation Farm
-@synthesize managedObjectContext = __managedObjectContext;
-@synthesize managedObjectModel = __managedObjectModel;
-@synthesize persistentStoreCoordinator = __persistentStoreCoordinator;
+
+@synthesize managedObjectContext		= __managedObjectContext;
+@synthesize managedObjectModel			= __managedObjectModel;
+@synthesize persistentStoreCoordinator	= __persistentStoreCoordinator;
 
 
-- (id)initWithToken:(NSString *)aToken bucketOverrides:(NSDictionary *)bucketOverrides label:(NSString *)label {
+-(id)initWithToken:(NSString *)aToken bucketOverrides:(NSDictionary *)bucketOverrides label:(NSString *)label
+{
     if (self = [super init]) {
         self.done = NO;
         
         self.simperium = [[Simperium alloc] initWithRootViewController:nil];
+
         // Some stuff is stored in user prefs / keychain, so be sure to remove it
         [self.simperium signOutAndRemoveLocalData:YES];
         
@@ -31,13 +34,14 @@
         [self.simperium setAuthenticationEnabled:NO];
         [self.simperium setBucketOverrides:bucketOverrides];
         [self.simperium setVerboseLoggingEnabled:YES];
-        self.simperium.useWebSockets = YES;
+
         self.token = aToken;
     }
     return self;
 }
 
-- (void)start {
+-(void)start
+{
     // JSON testing
     //[simperium startWithAppName:APP_ID APIKey:API_KEY];
     
@@ -58,28 +62,33 @@
     }
 }
 
-- (void)dealloc {
+-(void)stop
+{
     [self.simperium signOutAndRemoveLocalData:YES];
 }
 
-- (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs {
-	NSDate	*timeoutDate = [NSDate dateWithTimeIntervalSinceNow:timeoutSecs];
+-(BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs
+{
+	NSDate *timeoutDate = [NSDate dateWithTimeIntervalSinceNow:timeoutSecs];
     
 	do {
 		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:timeoutDate];
-		if([timeoutDate timeIntervalSinceNow] < 0.0)
+		if([timeoutDate timeIntervalSinceNow] < 0.0) {
 			break;
+		}
 	} while (!self.done);
     
 	return self.done;
 }
 
-- (BOOL)isDone {
+-(BOOL)isDone
+{
     return self.expectedAcknowledgments == 0 && self.expectedChanges == 0 && self.expectedAdditions == 0 && self.expectedDeletions == 0
         && self.expectedVersions == 0 && self.expectedIndexCompletions == 0 && self.expectedBinaryUploads == 0 && self.expectedBinaryDownloads == 0;
 }
 
-- (void)resetExpectations {
+-(void)resetExpectations
+{
     self.expectedAcknowledgments = 0;
     self.expectedAdditions = 0;
     self.expectedChanges = 0;
@@ -90,7 +99,8 @@
 	self.expectedBinaryUploads = 0;
 }
 
-- (void)logUnfulfilledExpectations {
+-(void)logUnfulfilledExpectations
+{
     if (![self isDone]) {
         NSLog(@"(%@) acks: %d changes: %d adds: %d dels: %d idxs: %d uploads: %d downloads: %d",
 			  self.simperium.label, self.expectedAcknowledgments, self.expectedChanges, self.expectedAdditions,
@@ -98,11 +108,13 @@
 	}
 }
 
-- (void)connect {
+-(void)connect
+{
     [self.simperium performSelector:@selector(startNetworkManagers)];
 }
 
-- (void)disconnect {
+-(void)disconnect
+{
     [self.simperium performSelector:@selector(stopNetworkManagers)];
 }
 
@@ -121,7 +133,8 @@
 
 #pragma mark - SPBucket Delegate Methods
 
--(void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)change memberNames:(NSArray *)memberNames {
+-(void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)change memberNames:(NSArray *)memberNames
+{
     switch(change) {
         case SPBucketChangeAcknowledge:
             self.expectedAcknowledgments -= 1;
@@ -139,27 +152,34 @@
     }
 }
 
-- (void)bucket:(SPBucket *)bucket willChangeObjectsForKeys:(NSSet *)keys {
+-(void)bucket:(SPBucket *)bucket willChangeObjectsForKeys:(NSSet *)keys
+{
     
 }
 
-- (void)bucketWillStartIndexing:(SPBucket *)bucket {
+-(void)bucketWillStartIndexing:(SPBucket *)bucket
+{
+
 }
 
-- (void)bucketDidFinishIndexing:(SPBucket *)bucket {
+-(void)bucketDidFinishIndexing:(SPBucket *)bucket
+{
     NSLog(@"Simperium bucketDidFinishIndexing: %@", bucket.name);
     
     // These aren't always used in the tests, so only decrease it if it's been set
-    if (self.expectedIndexCompletions > 0)
+    if (self.expectedIndexCompletions > 0) {
         self.expectedIndexCompletions -= 1;
+	}
 }
 
-- (void)bucketDidAcknowledgeDelete:(SPBucket *)bucket {
+-(void)bucketDidAcknowledgeDelete:(SPBucket *)bucket
+{
     self.expectedAcknowledgments -= 1;
 //    NSLog(@"%@ acknowledged deletion (%d)", simperium.label, expectedAcknowledgments);
 }
 
-- (void)bucket:(SPBucket *)bucket didReceiveObjectForKey:(NSString *)key version:(NSString *)version data:(NSDictionary *)data {
+-(void)bucket:(SPBucket *)bucket didReceiveObjectForKey:(NSString *)key version:(NSString *)version data:(NSDictionary *)data
+{
     self.expectedVersions -= 1;
 }
 
@@ -168,7 +188,7 @@
 
 // This code for setting up a Core Data stack is taken directly from Apple's Core Data project template.
 
-- (void)saveContext
+-(void)saveContext
 {
     NSError *error = nil;
     NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
@@ -187,7 +207,7 @@
  Returns the managed object context for the application.
  If the context doesn't already exist, it is created and bound to the persistent store coordinator for the application.
  */
-- (NSManagedObjectContext *)managedObjectContext
+-(NSManagedObjectContext *)managedObjectContext
 {
     if (__managedObjectContext != nil)
     {
@@ -201,7 +221,7 @@
  Returns the managed object model for the application.
  If the model doesn't already exist, it is created from the application's model.
  */
-- (NSManagedObjectModel *)managedObjectModel
+-(NSManagedObjectModel *)managedObjectModel
 {
     if (__managedObjectModel != nil)
     {
@@ -215,7 +235,7 @@
  Returns the persistent store coordinator for the application.
  If the coordinator doesn't already exist, it is created and the application's store added to it.
  */
-- (NSPersistentStoreCoordinator *)persistentStoreCoordinator
+-(NSPersistentStoreCoordinator *)persistentStoreCoordinator
 {
     // Use an in-memory store for testing
     if (!__persistentStoreCoordinator) {

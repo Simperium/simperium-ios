@@ -9,7 +9,7 @@
 #import "SPMemberBinaryInfo.h"
 #import "Simperium.h"
 #import "SPBinaryManager+Internals.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "NSArray+Simperium.h"
 
 
@@ -20,14 +20,14 @@ NSString* const SPMemberBinaryInfoSuffix = @"Info";
 
 -(id)defaultValue
 {
-	return [@{} JSONString];
+	return [@{} sp_JSONString];
 }
 
 -(id)stringValueFromDict:(id)value {
     if ([value length] == 0) {
-        return [[self defaultValue] objectFromJSONString];
+        return [[self defaultValue] sp_objectFromJSONString];
 	} else {
-		return [value objectFromJSONString];
+		return [value sp_objectFromJSONString];
 	}
 }
 
@@ -44,7 +44,7 @@ NSString* const SPMemberBinaryInfoSuffix = @"Info";
 
 	[object.bucket.binaryManager downloadIfNeeded:bucketName simperiumKey:simperiumKey dataKey:self.dataKey infoKey:self.infoKey binaryInfo:binaryInfo];
 	
-    return [binaryInfo JSONString];
+    return [binaryInfo sp_JSONString];
 }
 
 -(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {

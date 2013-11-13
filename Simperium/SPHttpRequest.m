@@ -89,6 +89,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 		self.url = url;
 		self.method = SPHttpRequestMethodsGet;
 		self.status	= SPHttpRequestStatusWorking;
+		self.timeout = SPHttpRequestQueueTimeout;
 		
 #if TARGET_OS_IPHONE
 		self.shouldContinueWhenAppEntersBackground = YES;
@@ -226,13 +227,20 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 
 -(NSURLRequest*)request
 {
-    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:self.url	cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData timeoutInterval:SPHttpRequestQueueTimeout];
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:self.url	cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData timeoutInterval:self.timeout];
     
     for(NSString* headerField in [self.headers allKeys]) {
         [request setValue:self.headers[headerField] forHTTPHeaderField:headerField];
     }
     
-    request.HTTPMethod = (self.method == SPHttpRequestMethodsPut) ? @"PUT" : @"GET";
+	if(self.method == SPHttpRequestMethodsPost) {
+		request.HTTPMethod = @"POST";
+	} else if (self.method == SPHttpRequestMethodsPut) {
+		request.HTTPMethod = @"PUT";
+	} else {
+		request.HTTPMethod = @"GET";
+	}
+	
 	request.HTTPBody = self.postData;
 	
     return request;
@@ -242,7 +250,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 {
     NSTimeInterval secondsSinceLastActivity = [[NSDate date] timeIntervalSinceDate:self.lastActivityDate];
     
-    if ((secondsSinceLastActivity < SPHttpRequestQueueTimeout))
+    if ((secondsSinceLastActivity < self.timeout))
     {
 		[self performSelector:@selector(checkActivityTimeout) withObject:nil afterDelay:0.1f inModes:@[ NSRunLoopCommonModes ]];
         return;

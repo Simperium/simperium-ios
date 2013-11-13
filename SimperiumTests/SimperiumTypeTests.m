@@ -6,15 +6,19 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
-#import "SimperiumTypeTests.h"
+#import "SimperiumTests.h"
 #import "Config.h"
 #import "Farm.h"
 #import "SPBucket.h"
 
+
+@interface SimperiumTypeTests : SimperiumTests
+
+@end
+
 @implementation SimperiumTypeTests
 
-
-- (void)testDate
+-(void)testDate
 {
     NSLog(@"%@ start", self.name);
 
@@ -33,7 +37,7 @@
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
     follower.expectedAdditions = 1;
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
+    XCTAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
     [self resetExpectations: farmArray];
     [self ensureFarmsEqual:farmArray entityName:@"Config"];
     NSLog(@"****************************DISCONNECT*************************");
@@ -44,7 +48,7 @@
     [self waitFor:1.0];
     
     NSString *refString = @"12";
-    STAssertTrue([refString isEqualToString: leader.config.captainsLog],
+    XCTAssertTrue([refString isEqualToString: leader.config.captainsLog],
                  @"leader %@ != ref %@", leader.config.captainsLog, refString);
     [self ensureFarmsEqual:farmArray entityName:@"Config"];
     NSLog(@"%@ end", self.name); 

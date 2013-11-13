@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 
+
 #pragma mark ====================================================================================
 #pragma mark SPHttpRequestDelegate
 #pragma mark ====================================================================================
@@ -18,7 +19,8 @@
 
 typedef NS_ENUM(NSUInteger, SPHttpRequestMethods) {
 	SPHttpRequestMethodsPut,
-    SPHttpRequestMethodsGet
+    SPHttpRequestMethodsGet,
+    SPHttpRequestMethodsPost
 };
 
 typedef NS_ENUM(NSUInteger, SPHttpRequestErrors) {
@@ -49,6 +51,7 @@ typedef NS_ENUM(NSUInteger, SPHttpRequestStatus) {
 @property (nonatomic, strong, readwrite) NSDictionary			*headers;
 @property (nonatomic, strong, readwrite) NSDictionary			*userInfo;
 @property (nonatomic, strong, readwrite) NSData					*postData;
+@property (nonatomic, assign, readwrite) NSTimeInterval			timeout;
 
 @property (nonatomic, weak,   readwrite) id						delegate;
 @property (nonatomic, assign, readwrite) SEL					selectorStarted;

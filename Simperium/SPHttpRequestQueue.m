@@ -51,6 +51,18 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
     return self;
 }
 
++(instancetype)sharedInstance
+{
+	static dispatch_once_t pred;
+	static SPHttpRequestQueue* queue = nil;
+	
+	dispatch_once(&pred, ^{
+		queue = [[SPHttpRequestQueue alloc] init];
+	});
+	return queue;
+}
+
+
 #pragma mark ====================================================================================
 #pragma mark Public Methods
 #pragma mark ====================================================================================

@@ -6,10 +6,10 @@
 //  Copyright (c) 2012 Simperium. All rights reserved.
 //
 
-#import "SimperiumBinaryTests.h"
+#import "SimperiumTests.h"
 #import "Farm.h"
 #import "Post.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "SPEnvironment.h"
 #import "NSString+Simperium.h"
 
@@ -28,20 +28,16 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 
 
 #pragma mark ====================================================================================
-#pragma mark Private
+#pragma mark SimperiumBinaryTests
 #pragma mark ====================================================================================
 
-@interface SimperiumBinaryTests ()
+
+@interface SimperiumBinaryTests : SimperiumTests
 @property (nonatomic, strong, readwrite) Farm *leader;
 @property (nonatomic, strong, readwrite) Farm *follower;
 @property (nonatomic, strong, readwrite) SPBucket *leaderBucket;
 @property (nonatomic, strong, readwrite) SPBucket *followerBucket;
 @end
-
-
-#pragma mark ====================================================================================
-#pragma mark SimperiumBinaryTests
-#pragma mark ====================================================================================
 
 @implementation SimperiumBinaryTests
 
@@ -64,7 +60,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	NSString *rawUrl = [SPBaseURL stringByAppendingFormat:@"%@/__options__/i/%@", APP_ID, bucket];
 	
 	NSURL *url = [NSURL URLWithString:rawUrl];
-	NSData *payload = [rawPayload JSONData];
+	NSData *payload = [[rawPayload sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
 	
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData timeoutInterval:20.0];
 	
@@ -194,11 +190,11 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	self.follower.expectedBinaryDownloads = 1;
 	self.follower.expectedChanges = 1;
 	
-    STAssertTrue([self waitForCompletion:SPTestBigFileTimeout farmArray:farms], @"BinarySync Upload/Download timeout");
+    XCTAssertTrue([self waitForCompletion:SPTestBigFileTimeout farmArray:self.farms], @"BinarySync Upload/Download timeout");
 	
 	// Verify data integrity
 	Post *followPost = [self.followerBucket objectForKey:leadPost.simperiumKey];
-	STAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
+	XCTAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
 }
 
 -(void)testNetworking
@@ -216,7 +212,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	self.leader.expectedBinaryUploads = 1;
 	self.leader.expectedChanges = 1;
 	
-    STAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.leader] ], @"BinarySync Upload timeout");
+    XCTAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.leader] ], @"BinarySync Upload timeout");
 	
 	// Follower: Enable / disable networking
     [self.follower connect];
@@ -230,12 +226,12 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	self.follower.expectedBinaryDownloads = 1;
 	
     [self.follower connect];
-    STAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.follower] ], @"BinarySync Download timeout");
+    XCTAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.follower] ], @"BinarySync Download timeout");
 	
 	// Verify data integrity	
 	Post *followPost = [self.followerBucket objectForKey:leadPost.simperiumKey];
-	STAssertNotNil(followPost, @"Post did not sync");
-	STAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
+	XCTAssertNotNil(followPost, @"Post did not sync");
+	XCTAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
 }
 
 -(void)testUploads
@@ -252,7 +248,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	self.follower.expectedBinaryDownloads = 1;
 	self.follower.expectedChanges = 1;
 	
-    STAssertTrue([self waitForCompletion], @"BinarySync Upload/Download timeout");
+    XCTAssertTrue([self waitForCompletion], @"BinarySync Upload/Download timeout");
 	
 	// Change the picture... several times. Only the latest version should get sync'ed
 	for(NSInteger i = 0; ++i < 10; ) {
@@ -265,12 +261,12 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	
 	self.follower.expectedBinaryDownloads = 1;
 	self.follower.expectedChanges = 1;
-	
-    STAssertTrue([self waitForCompletion], @"BinarySync Upload/Download timeout");
+
+    XCTAssertTrue([self waitForCompletion], @"BinarySync Upload/Download timeout");
 	
 	// Verify data integrity
 	Post *followPost = [self.followerBucket objectForKey:leadPost.simperiumKey];
-	STAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
+	XCTAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
 }
 
 -(void)testDownloads
@@ -288,7 +284,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	self.leader.expectedBinaryUploads = 1;
 	self.leader.expectedChanges = 1;
 	
-    STAssertTrue([self waitForCompletion:SPTestBigFileTimeout farmArray:@[self.leader] ], @"BinarySync Upload timeout");
+    XCTAssertTrue([self waitForCompletion:SPTestBigFileTimeout farmArray:@[self.leader] ], @"BinarySync Upload timeout");
 	
 	// Follower: Begin downloading the huge picture
     [self.follower connect];
@@ -303,18 +299,18 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	self.leader.expectedBinaryUploads = 1;
 	self.leader.expectedChanges = 1;
 	
-    STAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.leader] ], @"BinarySync Upload timeout");
+    XCTAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.leader] ], @"BinarySync Upload timeout");
 	
 	// Follower: Should only sync the small file
     self.follower.expectedAdditions += 1;
     self.follower.expectedChanges += 1;
 	self.follower.expectedBinaryDownloads += 1;
 
-    STAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.follower] ], @"BinarySync Download timeout");
+    XCTAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.follower] ], @"BinarySync Download timeout");
 
 	// Verify data integrity
 	Post *followPost = [self.followerBucket objectForKey:leadPost.simperiumKey];
-	STAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
+	XCTAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
 }
 
 @end

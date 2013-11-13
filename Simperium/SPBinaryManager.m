@@ -11,7 +11,7 @@
 #import "SPUser.h"
 #import "SPEnvironment.h"
 #import "SPManagedObject.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "DDLog.h"
 #import "NSFileManager+Simperium.h"
 #import "NSString+Simperium.h"
@@ -495,7 +495,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 	DDLogWarn(@"Simperium successfully uploaded binary to URL: %@", request.url);
 			
 	// Unwrap Parameters
-	NSDictionary *metadata	= [request.responseString objectFromJSONString];
+	NSDictionary *metadata	= [request.responseString sp_objectFromJSONString];
 	NSString *simperiumKey	= request.userInfo[SPBinaryManagerSimperiumKey];
 
 	// Update: Metadata

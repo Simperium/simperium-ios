@@ -135,5 +135,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver
 - (void)resolvePendingRelationshipsToKeys:(NSSet *)keys;
 - (void)forceSyncWithCompletion:(SPBucketForceSyncCompletion)completion;
 - (void)bucketDidSync;
+- (NSDictionary*)exportStatus;
 
 @end
