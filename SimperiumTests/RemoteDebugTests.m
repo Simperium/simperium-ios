@@ -36,7 +36,7 @@
 	//	log:<log level>
 	//		log level = int, 0 = OFF, 1 = regular, 2 = verbose?
 	
-	MockSimperium* s = [MockSimperium newMockSimperium];
+	MockSimperium* s = [MockSimperium mockSimperium];
 	
 	[s.mockWebSocketInterface mockReceiveMessage:@"log:0"];
 	XCTAssertFalse(s.verboseLoggingEnabled, @"Error disabling verbose mode");
@@ -66,7 +66,7 @@
 -(void)testRemoteIndex
 {
 	// Add a new object
-	MockSimperium* s		= [MockSimperium newMockSimperium];
+	MockSimperium* s		= [MockSimperium mockSimperium];
 
 	SPBucket* bucket		= [s bucketForName:NSStringFromClass([Config class])];
 	Config* config			= [bucket insertNewObject];

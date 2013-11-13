@@ -26,7 +26,7 @@
 
 @implementation MockSimperium
 
-+(MockSimperium*)newMockSimperium
++(MockSimperium*)mockSimperium
 {
     // Use an in-memory store for testing
 	NSError *error = nil;
