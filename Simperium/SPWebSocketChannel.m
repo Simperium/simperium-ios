@@ -172,25 +172,27 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     __block int numChangesPending;
     __block int numKeysForObjectsWithMoreChanges;
     dispatch_async(bucket.processorQueue, ^{
-        if (self.started) {
-            numChangesPending = [bucket.changeProcessor numChangesPending];
-            numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
+		numChangesPending = [bucket.changeProcessor numChangesPending];
+		numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
 
-            dispatch_async(dispatch_get_main_queue(), ^{
-                // Start getting changes from the last cv
-                NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", self.number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
-                DDLogVerbose(@"Simperium client %@ sending cv %@", self.simperium.clientID, getMessage);
-                [self.webSocketManager send:getMessage];
-                
-                if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
-                    // There are also offline changes; send them right away
-                    // This needs to happen after the above cv is sent, otherwise acks will arrive prematurely if there
-                    // have been remote changes that need to be processed first
-                    DDLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
-                    [self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:nil];
-                }
-            });
-        }
+		dispatch_async(dispatch_get_main_queue(), ^{
+			if (!self.started) {
+				return;
+			}
+			
+			// Start getting changes from the last cv
+			NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", self.number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
+			DDLogVerbose(@"Simperium client %@ sending cv %@", self.simperium.clientID, getMessage);
+			[self.webSocketManager send:getMessage];
+			
+			if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
+				// There are also offline changes; send them right away
+				// This needs to happen after the above cv is sent, otherwise acks will arrive prematurely if there
+				// have been remote changes that need to be processed first
+				DDLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
+				[self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:nil];
+			}
+		});
     });
 }
 
