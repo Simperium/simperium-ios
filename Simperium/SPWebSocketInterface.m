@@ -391,7 +391,8 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 
-#pragma mark Static Helpers
+#pragma mark Static Helpers:
+#pragma mark MockWebSocketInterface relies on this mechanism to register itself, while running the Unit Testing target
 
 static Class _class;
 

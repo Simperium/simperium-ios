@@ -544,7 +544,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 
-#pragma mark Static Helpers
+#pragma mark Static Helpers: 
+#pragma mark MockWebSocketChannel relies on this mechanism to register itself, while running the Unit Testing target
 
 static Class _class;
 
