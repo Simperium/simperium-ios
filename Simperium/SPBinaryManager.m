@@ -14,7 +14,7 @@
 #import "SPManagedObject.h"
 #import "SPGhost.h"
 #import "NSString+Simperium.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 
 @interface SPBinaryManager()
 -(void)loadPendingBinaryDownloads;
@@ -53,7 +53,7 @@
 -(void)loadPendingBinaryDownloads {
     NSString *pendingKey = [NSString stringWithFormat:@"SPPendingBinaryDownloads"];
 	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
-    NSDictionary *pendingDict = [pendingJSON objectFromJSONString];
+    NSDictionary *pendingDict = [pendingJSON sp_objectFromJSONString];
     if (pendingDict && [pendingDict count] > 0)
         [pendingBinaryDownloads setValuesForKeysWithDictionary:pendingDict];    
 }
@@ -62,21 +62,21 @@
 -(void)loadPendingBinaryUploads {
     NSString *pendingKey = [NSString stringWithFormat:@"SPPendingBinaryUploads"];
 	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
-    NSDictionary *pendingDict = [pendingJSON objectFromJSONString];
+    NSDictionary *pendingDict = [pendingJSON sp_objectFromJSONString];
     if (pendingDict && [pendingDict count] > 0)
         [pendingBinaryUploads setValuesForKeysWithDictionary:pendingDict];
 
 }
 
 -(void)savePendingBinaryDownloads {
-    NSString *json = [pendingBinaryDownloads JSONString];
+    NSString *json = [pendingBinaryDownloads sp_JSONString];
     NSString *key = [NSString stringWithFormat:@"SPPendingBinaryDownloads"];
 	[[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 -(void)savePendingBinaryUploads {
-    NSString *json = [pendingBinaryUploads JSONString];
+    NSString *json = [pendingBinaryUploads sp_JSONString];
     NSString *key = [NSString stringWithFormat:@"SPPendingBinaryUploads"];
 	[[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];

@@ -13,7 +13,7 @@
 #import "SPBinaryManager.h"
 #import "SPStorage.h"
 #import "SPMember.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "SPGhost.h"
 #import "DDLog.h"
 #import "SPBucket.h"
@@ -78,14 +78,14 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 }
 
 - (void)serializeChangesPending {
-    NSString *pendingJSON = [changesPending JSONString];
+    NSString *pendingJSON = [changesPending sp_JSONString];
     NSString *key = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
 	[[NSUserDefaults standardUserDefaults] setObject:pendingJSON forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void)serializeKeysForObjectsWithMoreChanges {
-    NSString *json = [[keysForObjectsWithMoreChanges allObjects] JSONString];
+    NSString *json = [[keysForObjectsWithMoreChanges allObjects] sp_JSONString];
     NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", instanceLabel];
 	[[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -95,7 +95,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     // Load changes that didn't get a chance to send
     NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", instanceLabel];
 	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
-    NSDictionary *pendingDict = [pendingJSON objectFromJSONString];
+    NSDictionary *pendingDict = [pendingJSON sp_objectFromJSONString];
     if (pendingDict && [pendingDict count] > 0)
         [changesPending setValuesForKeysWithDictionary:pendingDict];
 }
@@ -104,7 +104,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     // Load keys for entities that have more changes to send
     NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", instanceLabel];
 	NSString *json = [[NSUserDefaults standardUserDefaults] objectForKey:key];
-    NSArray *list = [json objectFromJSONString];
+    NSArray *list = [json sp_objectFromJSONString];
     if (list && [list count] > 0)
         [keysForObjectsWithMoreChanges addObjectsFromArray:list];
 }
@@ -252,7 +252,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
         object.ghost.version = endVersion;
         
         // Slight hack to ensure Core Data realizes the object has changed and needs a save
-        NSString *ghostDataCopy = [[[object.ghost dictionary] JSONString] copy];
+        NSString *ghostDataCopy = [[[object.ghost dictionary] sp_JSONString] copy];
         object.ghostData = ghostDataCopy;
         
         DDLogVerbose(@"Simperium MODIFIED ghost version %@ (%@-%@)", endVersion, bucket.name, instanceLabel);
@@ -597,11 +597,19 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	// This routine shall be used for debugging purposes!
 	NSMutableArray* pendings = [NSMutableArray array];
 	for(NSDictionary* change in changesPending.allValues) {
-		[pendings addObject:@{
-		  CH_KEY			: [change[CH_KEY] copy],				// Entity Id
-		  CH_LOCAL_ID		: [change[CH_LOCAL_ID] copy],			// Change Id: ccid
-		  CH_START_VERSION	: [change[CH_START_VERSION] copy],		// Source Version
-		}];
+				
+		NSMutableDictionary* export = [NSMutableDictionary dictionary];
+		
+		[export setObject:[change[CH_KEY] copy] forKey:CH_KEY];				// Entity Id
+		[export setObject:[change[CH_LOCAL_ID] copy] forKey:CH_LOCAL_ID];	// Change Id: ccid
+		
+		// Start Version is not available for newly inserted objects
+		NSString* startVersion = change[CH_START_VERSION];
+		if(startVersion) {
+			[export setObject:[startVersion copy] forKey:CH_START_VERSION];
+		}
+		
+		[pendings addObject:export];
 	}
 	
 	return pendings;
