@@ -108,6 +108,8 @@
 		XCTAssertNotNil(current,		@"Missing current field");
 		XCTAssertNotNil(pendings,		@"Missing current field");
 		XCTAssertTrue(index.count == 1,	@"Index Inconsistency");
+		
+		break;
 	}
 	
 	XCTAssertTrue(responseSent, @"Index Request-Response wasn't sent!!");
