@@ -688,12 +688,28 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self openAuthViewControllerAnimated:YES];
 }
 
+-(BOOL)isAuthVisible
+{
+#if TARGET_OS_IPHONE
+    // Login can either be its own root, or the first child of a nav controller if auth is optional
+    NSArray *childViewControllers = self.rootViewController.presentedViewController.childViewControllers;
+	BOOL isNotNil = (self.authenticationViewController != nil);
+	BOOL isRoot = (self.rootViewController.presentedViewController == self.authenticationViewController);
+    BOOL isChild = (childViewControllers.count > 0 && childViewControllers[0] == self.authenticationViewController);
+
+    return (isNotNil && (isRoot || isChild));
+#else
+	return (self.authenticationWindowController != nil && self.authenticationWindowController.window.isVisible);
+#endif
+}
+
 -(void)openAuthViewControllerAnimated:(BOOL)animated
 {
 #if TARGET_OS_IPHONE
-    if (self.authenticationViewController && self.rootViewController.presentedViewController == self.authenticationViewController)
+    if ([self isAuthVisible]) {
         return;
-    
+	}
+	
     SPAuthenticationViewController *loginController =  [[self.authenticationViewControllerClass alloc] init];
     self.authenticationViewController = loginController;
     self.authenticationViewController.authenticator = self.authenticator;
@@ -729,11 +745,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 -(void)closeAuthViewControllerAnimated:(BOOL)animated
 {   
 #if TARGET_OS_IPHONE
-    NSArray *childViewControllers = self.rootViewController.presentedViewController.childViewControllers;
-    
     // Login can either be its own root, or the first child of a nav controller if auth is optional
-    BOOL navLogin = [childViewControllers count] > 0 && [childViewControllers objectAtIndex:0] == self.authenticationViewController;
-    if ((self.rootViewController.presentedViewController == self.authenticationViewController && self.authenticationViewController) || navLogin) {
+    if ([self isAuthVisible]) {
         [self.rootViewController dismissViewControllerAnimated:animated completion:nil];
 	}
     self.authenticationViewController = nil;
