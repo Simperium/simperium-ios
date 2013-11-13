@@ -6,15 +6,20 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
-#import "SimperiumComplexTests.h"
+#import "SimperiumTests.h"
 #import "Config.h"
 #import "Farm.h"
 #import "SPBucket.h"
 #import "DiffMatchPatch.h"
 
+
+@interface SimperiumComplexTests : SimperiumTests
+
+@end
+
 @implementation SimperiumComplexTests
 
-- (void)testChangesToMultipleObjects
+-(void)testChangesToMultipleObjects
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
@@ -22,7 +27,7 @@
     NSUInteger numConfigs = NUM_MULTIPLE_CONFIGS;
     
     // Leader sends an object to followers, then changes multiple fields
-    Farm *leader = [farms objectAtIndex:0];
+    Farm *leader = self.farms[0];
     [self connectFarms];
     
     
@@ -35,12 +40,12 @@
     }    
     [leader.simperium save];
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
-    STAssertTrue([self waitForCompletion: numConfigs*8 farmArray:farms], @"timed out (adding)");
-    [self ensureFarmsEqual:farms entityName:@"Config"];
+    XCTAssertTrue([self waitForCompletion: numConfigs*8 farmArray:self.farms], @"timed out (adding)");
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
     
     NSLog(@"****************************CHANGE*************************");
     NSArray *leaderConfigs = [[leader.simperium bucketForName:@"Config"] allObjects];
-    STAssertEquals(numConfigs, [leaderConfigs count], @"");
+    XCTAssertEqual(numConfigs, [leaderConfigs count], @"");
     for (int i=0; i<numConfigs; i++) {
         Config *config = [leaderConfigs objectAtIndex:i];
         config.warpSpeed = [NSNumber numberWithInt:4];
@@ -49,25 +54,25 @@
     }
     [leader.simperium save];
     [self expectAdditions:0 deletions:0 changes:numConfigs fromLeader:leader expectAcks:YES];
-    STAssertTrue([self waitForCompletion: numConfigs*NUM_FARMS*8 farmArray:farms], @"timed out (changing)");
+    XCTAssertTrue([self waitForCompletion: numConfigs*NUM_FARMS*8 farmArray:self.farms], @"timed out (changing)");
     
     // Make sure the change worked
     Config *leaderConfig = [leaderConfigs objectAtIndex:0];
-    STAssertTrue([leaderConfig.captainsLog isEqualToString: @"Hi!!!"], @"");
+    XCTAssertTrue([leaderConfig.captainsLog isEqualToString: @"Hi!!!"], @"");
     
-    [self ensureFarmsEqual:farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
     
     NSLog(@"%@ end", self.name); 
 }
 
 
-- (void)testMultiplePendingChanges
+-(void)testMultiplePendingChanges
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
     
     // Leader sends objects to followers, then changes multiple fields
-    Farm *leader = [farms objectAtIndex:0];
+    Farm *leader = self.farms[0];
     [self connectFarms];
     
     [self waitFor:1];
@@ -104,23 +109,23 @@
     [leader.simperium save];
     
     [self expectAdditions:2 deletions:0 changes:2 fromLeader:leader expectAcks:YES];
-    STAssertTrue([self waitForCompletion], @"timed out (changing)");
+    XCTAssertTrue([self waitForCompletion], @"timed out (changing)");
     
-    STAssertTrue([refWarpSpeed isEqualToNumber: leader.config.warpSpeed], @"");
-    STAssertTrue([refCaptainsLog isEqualToString: leader.config.captainsLog], @"");
-    STAssertTrue([refShieldPercent isEqualToNumber: leader.config.shieldPercent], @"");
-    [self ensureFarmsEqual:farms entityName:@"Config"];
+    XCTAssertTrue([refWarpSpeed isEqualToNumber: leader.config.warpSpeed], @"");
+    XCTAssertTrue([refCaptainsLog isEqualToString: leader.config.captainsLog], @"");
+    XCTAssertTrue([refShieldPercent isEqualToNumber: leader.config.shieldPercent], @"");
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
     NSLog(@"%@ end", self.name);
 }
 
 
-- (void)testRepeatedStringChanges
+-(void)testRepeatedStringChanges
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
 
     // Leader sends an object to followers, then changes a string repeatedly
-    Farm *leader = [farms objectAtIndex:0];
+    Farm *leader = self.farms[0];
     [self connectFarms];
     
     int changeNumber = 0;
@@ -129,7 +134,7 @@
     leader.config.captainsLog = refString;
     [leader.simperium save];
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
-    STAssertTrue([self waitForCompletion], @"timed out (adding)");
+    XCTAssertTrue([self waitForCompletion], @"timed out (adding)");
     
     for (changeNumber=1; changeNumber<20; changeNumber++) {
         refString = [NSString stringWithFormat:@"%@.%d", refString, changeNumber];
@@ -142,9 +147,9 @@
     //[self expectAdditions:0 deletions:0 changes:changeNumber-1 fromLeader:leader expectAcks:YES];
     //STAssertTrue([self waitForCompletion], @"timed out (changing)");
     
-    STAssertTrue([refString isEqualToString: leader.config.captainsLog],
+    XCTAssertTrue([refString isEqualToString: leader.config.captainsLog],
                  @"leader %@ != ref %@", leader.config.captainsLog, refString);
-    [self ensureFarmsEqual:farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
     NSLog(@"%@ end", self.name); 
 }
 

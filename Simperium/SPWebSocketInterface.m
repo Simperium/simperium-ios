@@ -17,6 +17,8 @@
 #import "SRWebSocket.h"
 #import "SPWebSocketChannel.h"
 #import "SPSimperiumLogger.h"
+#import "SPEnvironment.h"
+
 
 
 #define WEBSOCKET_URL @"wss://api.simperium.com/sock/1"
@@ -24,12 +26,8 @@
 #define INDEX_BATCH_SIZE 10
 #define HEARTBEAT 30
 
-#if TARGET_OS_IPHONE
-#define LIBRARY_ID @"ios"
-#else
-#define LIBRARY_ID @"osx"
-#endif
 
+// TODO: Move this to SPEnvironment, after protocol-tweaks branch is merged
 #define LIBRARY_VERSION @(1)
 
 NSString * const COM_AUTH			= @"auth";
@@ -90,7 +88,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 - (SPWebSocketChannel *)loadChannelForBucket:(SPBucket *)bucket {
     int channelNumber = (int)[self.channels count];
-    SPWebSocketChannel *channel = [[SPWebSocketChannel alloc] initWithSimperium:self.simperium clientID:self.clientID];
+    SPWebSocketChannel *channel = [SPWebSocketChannel channelWithSimperium:self.simperium clientID:self.clientID];
     channel.number = channelNumber;
     channel.name = bucket.name;
     [self.channels setObject:channel forKey:bucket.name];
@@ -149,7 +147,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
                                @"app_id"	: self.simperium.appID,
                                @"token"		: self.simperium.user.authToken,
                                @"name"		: remoteBucketName,
-                               @"library"	: LIBRARY_ID,
+                               @"library"	: SPLibraryID,
                                @"version"	: LIBRARY_VERSION
                                };
     
@@ -390,6 +388,27 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 	// Let's reuse the start mechanism. This will post the latest CV + publish pending changes
 	SPWebSocketChannel *channel = [self channelForName:bucket.name];
 	[channel startProcessingChangesForBucket:bucket];
+}
+
+
+#pragma mark Static Helpers:
+#pragma mark MockWebSocketInterface relies on this mechanism to register itself, while running the Unit Testing target
+
+static Class _class;
+
++(void)load
+{
+	_class = [SPWebSocketInterface class];
+}
+
++(void)registerClass:(Class)c
+{
+	_class = c;
+}
+
++(instancetype)interfaceWithSimperium:(Simperium *)s appURL:(NSString *)appURL clientID:(NSString *)clientID
+{
+	return [[_class alloc] initWithSimperium:s appURL:clientID clientID:clientID];
 }
 
 @end

@@ -6,15 +6,20 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
-#import "SimperiumOfflineTests.h"
+#import "SimperiumTests.h"
 #import "Config.h"
 #import "Farm.h"
 #import "SPBucket.h"
 #import "DiffMatchPatch.h"
 
+
+@interface SimperiumOfflineTests : SimperiumTests
+
+@end
+
 @implementation SimperiumOfflineTests
 
-- (void)testSingleOfflineStringChange
+-(void)testSingleOfflineStringChange
 {
     NSLog(@"%@ start", self.name);
 
@@ -35,7 +40,7 @@
     NSString *configKey = leader.config.simperiumKey;
     leader.expectedAcknowledgments = 1;
     follower.expectedAdditions = 1;
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
+    XCTAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
     [self resetExpectations: farmArray];
     [self ensureFarmsEqual:farmArray entityName:@"Config"];
     NSLog(@"****************************DISCONNECT*************************");
@@ -50,20 +55,20 @@
     [self waitFor:1.0];
     NSLog(@"****************************RECONNECT*************************");
     [follower connect];
-    STAssertTrue([self waitForCompletion:4.0 farmArray:farmArray], @"timed out (changing)");
+    XCTAssertTrue([self waitForCompletion:4.0 farmArray:farmArray], @"timed out (changing)");
     
     // Make sure there's no residual weirdness
     [self waitFor:1.0];
     
     NSString *refString = @"12";
-    STAssertTrue([refString isEqualToString: leader.config.captainsLog],
+    XCTAssertTrue([refString isEqualToString: leader.config.captainsLog],
                  @"leader %@ != ref %@", leader.config.captainsLog, refString);
     [self ensureFarmsEqual:farmArray entityName:@"Config"];
     NSLog(@"%@ end", self.name); 
 }
 
 
-- (void)testSimultaneousOfflineStringChange
+-(void)testSimultaneousOfflineStringChange
 {
     NSLog(@"%@ start", self.name);
     
@@ -82,17 +87,17 @@
     follower.expectedAdditions = 1;
     [leader.simperium save];
     NSString *configKey = leader.config.simperiumKey;
-    STAssertTrue([self waitForCompletion: 6.0 farmArray:farms], @"timed out (adding)");
-    [self resetExpectations:farms];
-    [self ensureFarmsEqual:farms entityName:@"Config"];
+    XCTAssertTrue([self waitForCompletion: 6.0 farmArray:self.farms], @"timed out (adding)");
+    [self resetExpectations:self.farms];
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
     [follower disconnect];
     [self waitFor:1.0];
 
     leader.config.captainsLog = @"ab";
     leader.expectedAcknowledgments = 1;
     [leader.simperium save];
-    STAssertTrue([self waitForCompletion:6.0 farmArray:farms], @"timed out (changing)");
-    [self resetExpectations:farms];
+    XCTAssertTrue([self waitForCompletion:6.0 farmArray:self.farms], @"timed out (changing)");
+    [self resetExpectations:self.farms];
     
     follower.config = (Config *)[[follower.simperium bucketForName:@"Config"] objectForKey:configKey];
     follower.config.captainsLog = @"ac";
@@ -102,19 +107,19 @@
     [follower.simperium save];
     [self waitFor:0.5];
     [follower connect];
-    STAssertTrue([self waitForCompletion:6.0 farmArray:farms], @"timed out (changing)");
+    XCTAssertTrue([self waitForCompletion:6.0 farmArray:self.farms], @"timed out (changing)");
     
     // Make sure there's no residual weirdness
     [self waitFor:1.0];
 
     NSString *refString = @"abc";
-    STAssertTrue([refString isEqualToString: leader.config.captainsLog],
+    XCTAssertTrue([refString isEqualToString: leader.config.captainsLog],
                  @"leader %@ != ref %@", leader.config.captainsLog, refString);
-    [self ensureFarmsEqual:farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
     NSLog(@"%@ end", self.name); 
 }
 
-- (void)testOfflineCreationAndEditing
+-(void)testOfflineCreationAndEditing
 {
     NSLog(@"%@ start", self.name);
         
@@ -185,11 +190,11 @@
     
     
     NSString *refString = @"123456 09876";
-    STAssertTrue([refString isEqualToString: leader.config.captainsLog],
+    XCTAssertTrue([refString isEqualToString: leader.config.captainsLog],
                  @"leader %@ != ref %@", leader.config.captainsLog, refString);
     
     NSString *refString2 = @"abcdef";
-    STAssertTrue([refString2 isEqualToString: config2.captainsLog],
+    XCTAssertTrue([refString2 isEqualToString: config2.captainsLog],
                  @"leader %@ != ref %@", config2.captainsLog, refString2);
     
     [self ensureFarmsEqual:farmArray entityName:@"Config"];

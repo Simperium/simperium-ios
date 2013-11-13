@@ -10,18 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "TestObject.h"
 
-@interface Config : TestObject {
-	NSNumber *warpSpeed;
-    NSString *binaryFile;
-    NSString *captainsLog;
-    NSNumber *shieldsUp;
-    UIColor *shieldColor;
-    NSNumber *syncingEnabled;
-    NSNumber *shieldPercent;
-    NSDecimalNumber *cost;
-    UIImage *smallImageTest;
-    NSDate *date;
-}
+@interface Config : TestObject
 
 @property (nonatomic, strong) NSNumber *warpSpeed;
 @property (nonatomic, strong) NSString *binaryFile;

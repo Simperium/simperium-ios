@@ -545,6 +545,25 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Not yet implemented with WebSockets
 }
 
+
+#pragma mark Static Helpers: 
+#pragma mark MockWebSocketChannel relies on this mechanism to register itself, while running the Unit Testing target
+
+static Class _class;
+
++(void)load
+{
+	_class = [SPWebSocketChannel class];
+}
+
++(void)registerClass:(Class)c
+{
+	_class = c;
+}
+
++(instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID
+{
+	return [[_class alloc] initWithSimperium:s clientID:clientID];
+}
+
 @end
-
-

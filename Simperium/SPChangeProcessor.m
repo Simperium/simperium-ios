@@ -597,11 +597,19 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	// This routine shall be used for debugging purposes!
 	NSMutableArray* pendings = [NSMutableArray array];
 	for(NSDictionary* change in changesPending.allValues) {
-		[pendings addObject:@{
-		  CH_KEY			: [change[CH_KEY] copy],				// Entity Id
-		  CH_LOCAL_ID		: [change[CH_LOCAL_ID] copy],			// Change Id: ccid
-		  CH_START_VERSION	: [change[CH_START_VERSION] copy],		// Source Version
-		}];
+				
+		NSMutableDictionary* export = [NSMutableDictionary dictionary];
+		
+		[export setObject:[change[CH_KEY] copy] forKey:CH_KEY];				// Entity Id
+		[export setObject:[change[CH_LOCAL_ID] copy] forKey:CH_LOCAL_ID];	// Change Id: ccid
+		
+		// Start Version is not available for newly inserted objects
+		NSString* startVersion = change[CH_START_VERSION];
+		if(startVersion) {
+			[export setObject:[startVersion copy] forKey:CH_START_VERSION];
+		}
+		
+		[pendings addObject:export];
 	}
 	
 	return pendings;

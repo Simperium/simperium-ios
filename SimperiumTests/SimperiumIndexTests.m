@@ -6,15 +6,20 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
-#import "SimperiumIndexTests.h"
+#import "SimperiumTests.h"
 #import "Config.h"
 #import "Farm.h"
 #import "SPBucket.h"
 #import "DiffMatchPatch.h"
 
+
+@interface SimperiumIndexTests : SimperiumTests
+
+@end
+
 @implementation SimperiumIndexTests
 
-- (void)testIndex
+-(void)testIndex
 {
     NSLog(@"%@ start", self.name);
 
@@ -24,14 +29,14 @@
     [leader start];
     [leader connect];
     leader.expectedIndexCompletions = 1;
-    STAssertTrue([self waitForCompletion], @"timed out");
+    XCTAssertTrue([self waitForCompletion], @"timed out");
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
     leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
     leader.config.warpSpeed = refWarpSpeed;
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
-    STAssertTrue([self waitForCompletion], @"timed out");
+    XCTAssertTrue([self waitForCompletion], @"timed out");
     
     // Make a change to ensure version numbers increase
     refWarpSpeed = [NSNumber numberWithInt:4];
@@ -42,29 +47,29 @@
     leader.config.shieldPercent = refShieldPercent;
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
-    STAssertTrue([self waitForCompletion], @"timed out (changing)");
+    XCTAssertTrue([self waitForCompletion], @"timed out (changing)");
 
     // The object was synced, now connect with the follower
     [follower start];
     
-    [self resetExpectations: farms];
+    [self resetExpectations:self.farms];
     follower.expectedIndexCompletions = 1;
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:NO];
     [follower connect];
     
-    STAssertTrue([self waitForCompletion], @"timed out");
+    XCTAssertTrue([self waitForCompletion], @"timed out");
     
-    [self ensureFarmsEqual:farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
     NSLog(@"%@ end", self.name);     
 }
 
-- (void)testLargerIndex
+-(void)testLargerIndex
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
 
     // Leader sends an object to followers, but make followers get it from the index
-    Farm *leader = [farms objectAtIndex:0];
+    Farm *leader = self.farms[0];
     [leader connect];
     [self waitFor:5.0];
     
@@ -76,20 +81,21 @@
     }
     [leader.simperium save];
     leader.expectedAcknowledgments = numObjects;
-    STAssertTrue([self waitForCompletion], @"timed out");
+    XCTAssertTrue([self waitForCompletion], @"timed out");
     
     // The object was synced, now connect with the followers
-    for (Farm *farm in farms) {
-        if (farm == leader)
+    for (Farm *farm in self.farms) {
+        if (farm == leader) {
             continue;
+		}
         [farm connect];
     }
-    [self resetExpectations: farms];
+    [self resetExpectations:self.farms];
     [self expectAdditions:numObjects deletions:0 changes:0 fromLeader:leader expectAcks:NO];
     
-    STAssertTrue([self waitForCompletion], @"timed out");
+    XCTAssertTrue([self waitForCompletion], @"timed out");
     
-    [self ensureFarmsEqual:farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
     NSLog(@"%@ end", self.name);    
 }
 
@@ -97,7 +103,7 @@
 // directly for acknowledgments. Instead, the response from a subsequent GET is used for acks. The problem
 // is this subsequent GET uses the last known cv, which this test purposely breaks by exceeding the 50 change
 // limit. The GET will 404, triggering a re-index before changes have even been acknowledged.
-- (void)testReindex
+-(void)testReindex
 {
     NSLog(@"%@ start", self.name);
     // Leader sends an object to a follower, follower goes offline, both make changes, follower reconnects
@@ -109,8 +115,8 @@
     follower.expectedIndexCompletions = 1;    
     [leader connect];
     [follower connect];
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farms], @"timed out (initial index)");
-    [self resetExpectations:farms];
+    XCTAssertTrue([self waitForCompletion: 4.0 farmArray:self.farms], @"timed out (initial index)");
+    [self resetExpectations:self.farms];
     
     NSLog(@"****************************ADD ONE*************************");
     // Add one object
@@ -119,9 +125,9 @@
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
     follower.expectedAdditions = 1;
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farms], @"timed out (adding one)");
-    [self resetExpectations: farms];
-    [self ensureFarmsEqual:farms entityName:@"Config"];
+    XCTAssertTrue([self waitForCompletion: 4.0 farmArray:self.farms], @"timed out (adding one)");
+    [self resetExpectations:self.farms];
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
     NSLog(@"*********************FOLLOWER DISCONNECT*********************");
     [follower disconnect];
 
@@ -136,16 +142,16 @@
     }
     [leader.simperium save];
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
-    STAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:[NSArray arrayWithObject:leader]], @"timed out (adding many)");
+    XCTAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:[NSArray arrayWithObject:leader]], @"timed out (adding many)");
     
     NSLog(@"**********************FOLLOWER RECONNECT********************");
-    [self resetExpectations:farms];
+    [self resetExpectations:self.farms];
     [follower connect];
 
     // Expect 404 and reindex?
     follower.expectedAdditions = numConfigs;
-    STAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:farms], @"timed out (receiving many)");
-    [self ensureFarmsEqual:farms entityName:@"Config"];
+    XCTAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:self.farms], @"timed out (receiving many)");
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
     
     NSLog(@"%@ end", self.name);
 }
@@ -154,7 +160,7 @@
 // (max 50 versions in Simperium). A reindex should be triggered, and that reindex should cross-check with
 // local objects, and delete any that exist locally but not remotely. Any objects created locally but
 // not yet synced should be preserved.
-- (void)testDeletionReindex
+-(void)testDeletionReindex
 {
     NSLog(@"%@ start", self.name);
     // Leader sends an object to a follower, follower goes offline, both make changes, follower reconnects
@@ -166,8 +172,8 @@
     follower.expectedIndexCompletions = 1;
     [leader connect];
     [follower connect];
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farms], @"timed out (initial index)");
-    [self resetExpectations:farms];
+    XCTAssertTrue([self waitForCompletion: 4.0 farmArray:self.farms], @"timed out (initial index)");
+    [self resetExpectations:self.farms];
     
     SPBucket *leaderBucket = [leader.simperium bucketForName:@"Config"];
     SPBucket *followerBucket = [follower.simperium bucketForName:@"Config"];
@@ -184,11 +190,11 @@
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
     [leader.simperium save];
     
-    STAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:farms], @"timed out (adding many)");
-    STAssertTrue([[leaderBucket allObjects] count] == numConfigs, @"didn't add correct number (leader)");
-    STAssertTrue([[followerBucket allObjects] count] == numConfigs, @"didn't add correct number (follower)");
-    [self ensureFarmsEqual:farms entityName:@"Config"];
-    [self resetExpectations:farms];
+    XCTAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:self.farms], @"timed out (adding many)");
+    XCTAssertTrue([[leaderBucket allObjects] count] == numConfigs, @"didn't add correct number (leader)");
+    XCTAssertTrue([[followerBucket allObjects] count] == numConfigs, @"didn't add correct number (follower)");
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self resetExpectations:self.farms];
     
     // Add 20 more
     numConfigs = 20;
@@ -202,9 +208,9 @@
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
     [leader.simperium save];
     
-    STAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:farms], @"timed out (receiving many)");
-    [self ensureFarmsEqual:farms entityName:@"Config"];
-    [self resetExpectations:farms];
+    XCTAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:self.farms], @"timed out (receiving many)");
+    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self resetExpectations:self.farms];
     
     [self waitFor:2.0];
     [follower disconnect];
@@ -221,8 +227,8 @@
     // Expect all objects to get deleted
     [self expectAdditions:0 deletions:numConfigs changes:0 fromLeader:leader expectAcks:YES];
     [leader.simperium save];
-    STAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:[NSArray arrayWithObject:leader]], @"timed out (deleting many)");
-    [self resetExpectations:farms];
+    XCTAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:[NSArray arrayWithObject:leader]], @"timed out (deleting many)");
+    [self resetExpectations:self.farms];
     
     NSLog(@"*************************FOLLOWER RECONNECT*******************");
     // Create an offline object that isn't synced yet to make sure it doesn't get clobbered by reindexing
@@ -231,16 +237,16 @@
     [self expectAdditions:0 deletions:numConfigs changes:0 fromLeader:leader expectAcks:NO];
     [follower connect];
 
-    STAssertTrue([self waitForCompletion: numConfigs/6 farmArray:[NSArray arrayWithObject:follower]], @"timed out (deleting many)");
+    XCTAssertTrue([self waitForCompletion: numConfigs/6 farmArray:[NSArray arrayWithObject:follower]], @"timed out (deleting many)");
     int numLeft = [[followerBucket allObjects] count];
     
     [self waitFor:1.0];
     
     // Expect 10 objects left (70-60) plus the one that was created offline
-    STAssertTrue(numLeft == 10 + 1, @"didn't delete %d configs", numLeft);
+    XCTAssertTrue(numLeft == 10 + 1, @"didn't delete %d configs", numLeft);
     
     offlineConfig = [followerBucket objectForKey:@"offlineConfig"];
-    STAssertTrue(offlineConfig != nil, @"offline object was clobbered after re-index");
+    XCTAssertTrue(offlineConfig != nil, @"offline object was clobbered after re-index");
     
     NSLog(@"%@ end", self.name);
 }

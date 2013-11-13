@@ -6,38 +6,35 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <UIKit/UIKit.h>
 #import "Simperium.h"
 #import "TestParams.h"
 
+
 @class Farm;
 
-@interface SimperiumTests : SenTestCase<SimperiumDelegate> {
-    NSArray *tests;
-    NSMutableArray *farms;
-    NSString *token;
-    BOOL done;
-    NSDictionary *overrides;
-}
+@interface SimperiumTests : XCTestCase <SimperiumDelegate>
 
-@property (copy) NSString *token;
-@property (strong) NSDictionary *overrides;
+@property (nonatomic, strong) NSDictionary		*overrides;
+@property (nonatomic, strong) NSMutableArray	*farms;
+@property (nonatomic, copy)   NSString			*token;
+@property (nonatomic, assign) BOOL				done;
 
-- (NSDictionary *)bucketOverrides;
-- (NSString *)uniqueBucketFor:(NSString *)entityName;
-- (void)waitFor:(NSTimeInterval)seconds;
-- (BOOL)farmsDone:(NSArray *)farmArray;
-- (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs farmArray:(NSArray *)farmArray;
-- (BOOL)waitForCompletion;
-- (Farm *)createFarm:(NSString *)label;
-- (void)ensureFarmsEqual: (NSArray *)farmArray entityName:(NSString *)entityName;
-- (void)createFarms;
-- (void)startFarms;
-- (void)createAndStartFarms;
-- (void)connectFarms;
-- (void)disconnectFarms;
-- (void)expectAdditions:(int)additions deletions:(int)deletions changes:(int)changes fromLeader:(Farm *)leader expectAcks:(BOOL)expectAcks;
-- (void)resetExpectations:(NSArray *)farmArray;
+-(NSDictionary *)bucketOverrides;
+-(NSString *)uniqueBucketFor:(NSString *)entityName;
+-(void)waitFor:(NSTimeInterval)seconds;
+-(BOOL)farmsDone:(NSArray *)farmArray;
+-(BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs farmArray:(NSArray *)farmArray;
+-(BOOL)waitForCompletion;
+-(Farm *)createFarm:(NSString *)label;
+-(void)ensureFarmsEqual: (NSArray *)farmArray entityName:(NSString *)entityName;
+-(void)createFarms;
+-(void)startFarms;
+-(void)createAndStartFarms;
+-(void)connectFarms;
+-(void)disconnectFarms;
+-(void)expectAdditions:(int)additions deletions:(int)deletions changes:(int)changes fromLeader:(Farm *)leader expectAcks:(BOOL)expectAcks;
+-(void)resetExpectations:(NSArray *)farmArray;
 
 @end

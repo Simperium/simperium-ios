@@ -14,6 +14,8 @@
 #import "SPUser.h"
 #import "SPAuthenticationConfiguration.h"
 
+
+
 @class Simperium;
 @class SPBinaryManager;
 
@@ -23,35 +25,26 @@
 @class NSWindow;
 #endif
 
-/** Delegate protocol for Simperium system notifications.
- 
- You can use this delegate to respond to general events and errors.
- 
- If you want explicit callbacks when objects are changed/added/deleted, you can also use SPBucketDelegate in SPBucket.h. Standard Core Data notifications are also generated, allowing you to update a `UITableView` (for example) in your `NSFetchedResultsControllerDelegate`. 
+#pragma mark ====================================================================================
+#pragma mark SimperiumDelegate
+#pragma mark ====================================================================================
+
+/**	You can use this delegate to respond to general events and errors.
+	If you want explicit callbacks when objects are changed/added/deleted, you can also use SPBucketDelegate in SPBucket.h. 
+	Standard Core Data notifications are also generated, allowing you to update a `UITableView` (for example) in your `NSFetchedResultsControllerDelegate`.
  */
 @protocol SimperiumDelegate <NSObject>
 @optional
 - (void)simperium:(Simperium *)simperium didFailWithError:(NSError *)error;
 @end
 
-// The main class through which you access Simperium.
-@interface Simperium : NSObject<SPAuthenticatorDelegate> {
-    SPUser *user;
-    NSString *label;
-    NSString *appID;
-    NSString *APIKey;
-    NSString *appURL;
-    NSString *clientID;   
-    id<SimperiumDelegate> __weak delegate;
-    SPBinaryManager *binaryManager;
-    SPAuthenticator *authenticator;
-    
-#if TARGET_OS_IPHONE
-    Class __weak authenticationViewControllerClass;
-#else
-    Class __weak authWindowControllerClass;
-#endif
-}
+
+
+#pragma mark ====================================================================================
+#pragma mark Simperium: The main class through which you access Simperium.
+#pragma mark ====================================================================================
+
+@interface Simperium : NSObject
 
 // Initializes Simperium.
 #if TARGET_OS_IPHONE
@@ -132,25 +125,25 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 @property (nonatomic) BOOL authenticationEnabled;
 
 // Returns the currently authenticated Simperium user.
-@property (nonatomic,strong) SPUser *user;
+@property (nonatomic, strong) SPUser *user;
 
 // The full URL used to communicate with Simperium.
-@property (nonatomic,readonly) NSString *appURL;
+@property (nonatomic, readonly, copy) NSString *appURL;
 
 // URL to a Simperium server (can be changed to point to a custom installation).
-@property (nonatomic,copy) NSString *rootURL;
+@property (nonatomic, copy) NSString *rootURL;
 
 // A unique ID for this app (configured at simperium.com).
-@property (nonatomic,readonly) NSString *appID;
+@property (nonatomic, readonly, copy) NSString *appID;
 
 // An access token for this app (generated at simperium.com).
-@property (nonatomic, readonly) NSString *APIKey;
+@property (nonatomic, readonly, copy) NSString *APIKey;
 
 // A hashed, unique ID for this client.
 @property (nonatomic, readonly, copy) NSString *clientID;
 
 // Set this if for some reason you want to use multiple Simperium instances (e.g. unit testing).
-@property (copy) NSString *label;
+@property (nonatomic, copy) NSString *label;
 
 // You can implement your own subclass of SPAuthenticationViewController (iOS) or
 // SPAuthenticationWindowController (OSX) to customize authentication.
