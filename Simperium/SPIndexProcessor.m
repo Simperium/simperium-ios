@@ -13,7 +13,7 @@
 #import "SPManagedObject.h"
 #import "SPGhost.h"
 #import "SPStorage.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "DDLog.h"
 #import "SPBucket.h"
 #import "SPDiffable.h"
@@ -163,7 +163,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             NSString *key = [versionData objectAtIndex:0];
             NSString *responseString = [versionData objectAtIndex:1];
             NSString *version = [versionData objectAtIndex:2];
-            NSMutableDictionary *data = [responseString objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode];
+            NSMutableDictionary *data = [responseString sp_objectFromJSONString];
                               
             id<SPDiffable> object = [objects objectForKey:key];
             SPGhost *ghost = nil;
@@ -257,6 +257,22 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             }
         });    
     }
+}
+
+- (NSArray*)exportIndexStatus:(SPBucket *)bucket {
+
+	// This routine shall be used for debugging purposes!
+	id<SPStorageProvider> storage	= [bucket.storage threadSafeStorage];
+	NSSet *localKeys				= [NSSet setWithArray:[storage objectKeysForBucketName:bucket.name]];
+	NSArray *objects				= [storage objectsForKeys:localKeys bucketName:bucket.name];
+	NSMutableArray* index			= [NSMutableArray array];
+	
+	for(id<SPDiffable>object in objects)
+	{
+		[index addObject:@{ [object.simperiumKey copy] : [object.ghost.version copy] }];
+	}
+	
+	return index;
 }
 
 @end

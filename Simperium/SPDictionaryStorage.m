@@ -163,13 +163,17 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	[self.cache setObject:anObject forKey:aKey];
 }
 
-- (void)save
+- (BOOL)save
 {
+	__block BOOL success = NO;
+	
 	[self.managedObjectContext performBlock:^{
 		
 		NSError *error = nil;
-		[self.managedObjectContext save:&error];
+		success = [self.managedObjectContext save:&error];
 	}];
+	
+	return success;
 }
 
 - (NSArray*)allKeys

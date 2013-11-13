@@ -24,15 +24,18 @@
 @property (nonatomic, assign) BOOL started;
 
 + (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled;
-- (id)initWithSimperium:(Simperium *)s clientID:(NSString *)cid;
+
 - (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
 - (void)requestLatestVersionsForBucket:(SPBucket *)bucket;
 - (void)sendObjectDeletion:(id<SPDiffable>)object;
 - (void)sendObjectChanges:(id<SPDiffable>)object;
+- (void)sendBucketStatus:(SPBucket *)bucket;
 - (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket;
+
++(instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID;
 
 @end

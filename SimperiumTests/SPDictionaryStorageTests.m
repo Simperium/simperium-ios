@@ -1,12 +1,12 @@
 //
-//  SimperiumDictionaryStorageTests.m
+//  SPDictionaryStorageTests.m
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 9/12/13.
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
-#import "SimperiumDictionaryStorageTests.h"
+#import <XCTest/XCTest.h>
 #import "SPDictionaryStorage.h"
 #import "NSString+Simperium.h"
 
@@ -20,10 +20,14 @@ static NSUInteger const SPMetadataIterations = 100;
 
 
 #pragma mark ====================================================================================
-#pragma mark SimperiumMetadataStorageTests
+#pragma mark SPDictionaryStorageTests
 #pragma mark ====================================================================================
 
-@implementation SimperiumDictionaryStorageTests
+@interface SPDictionaryStorageTests : XCTestCase
+
+@end
+
+@implementation SPDictionaryStorageTests
 
 - (void)testInserts
 {
@@ -39,8 +43,10 @@ static NSUInteger const SPMetadataIterations = 100;
 		[storage setObject:random forKey:key];
 		[integrity setObject:random forKey:key];
 	}
+
+	[storage save];
 	
-	STAssertTrue( (storage.count == SPMetadataIterations), @"setObject Failed");
+	XCTAssertTrue( (storage.count == SPMetadataIterations), @"setObject Failed");
 	
 	// Test Hitting NSCache
 	for(NSInteger i = 0; ++i <= SPMetadataIterations; )
@@ -48,9 +54,9 @@ static NSUInteger const SPMetadataIterations = 100;
 		NSString* key = [NSString stringWithFormat:@"%d", i];
 		NSDictionary *retrieved = [storage objectForKey:key];
 		NSDictionary *verify = [integrity objectForKey:key];
-		
-		STAssertEquals(retrieved, verify, @"Error retrieving object from NSCache");
-		STAssertTrue([storage containsObjectForKey:key], @"Error in containsObjectForKey");
+
+		XCTAssertEqualObjects(retrieved, verify, @"Error retrieving object from NSCache");
+		XCTAssertTrue([storage containsObjectForKey:key], @"Error in containsObjectForKey");
 	}
 
 	// Test Hitting CoreData: Re-instantiate, so NSCache is empty
@@ -63,14 +69,14 @@ static NSUInteger const SPMetadataIterations = 100;
 		NSDictionary *retrieved = [storage objectForKey:key];
 		NSDictionary *verify = [integrity objectForKey:key];
 		
-		STAssertTrue([retrieved isEqual:verify], @"Error retrieving object From CoreData");
-		STAssertTrue([storage containsObjectForKey:key], @"Error in containsObjectForKey");
+		XCTAssertTrue([retrieved isEqual:verify], @"Error retrieving object From CoreData");
+		XCTAssertTrue([storage containsObjectForKey:key], @"Error in containsObjectForKey");
 	}
 	
 	// Cleanup
 	[storage removeAllObjects];
 	[integrity removeAllObjects];
-	STAssertTrue( (storage.count == 0), @"RemoveAllObjects Failed");
+	XCTAssertTrue( (storage.count == 0), @"RemoveAllObjects Failed");
 }
 
 - (void)testRemoval
@@ -93,12 +99,12 @@ static NSUInteger const SPMetadataIterations = 100;
 	for(NSString *key in allKeys)
 	{
 		id object = [storage objectForKey:key];
-		STAssertNotNil(object, @"Error retrieving object");
+		XCTAssertNotNil(object, @"Error retrieving object");
 		
 		[storage removeObjectForKey:key];
 		object = [storage objectForKey:key];
-		STAssertNil(object, @"Error removing object");
-		STAssertFalse([storage containsObjectForKey:key], @"Error in containsObjectForKey");
+		XCTAssertNil(object, @"Error removing object");
+		XCTAssertFalse([storage containsObjectForKey:key], @"Error in containsObjectForKey");
 	}
 	
 	// Make sure next time they'll ""stay removed""
@@ -107,8 +113,8 @@ static NSUInteger const SPMetadataIterations = 100;
 	for(NSString *key in allKeys)
 	{
 		id object = [storage objectForKey:key];
-		STAssertNil(object, @"Zombie Objects Found!");
-		STAssertFalse([storage containsObjectForKey:key], @"Error in containsObjectForKey");
+		XCTAssertNil(object, @"Zombie Objects Found!");
+		XCTAssertFalse([storage containsObjectForKey:key], @"Error in containsObjectForKey");
 	}
 	
 	// Cleanup
@@ -136,7 +142,7 @@ static NSUInteger const SPMetadataIterations = 100;
 	// Verify that the second storage doesn't return anything for those keys
 	for (NSString *key in allKeys) {
 		id object = [secondStorage objectForKey:key];
-		STAssertNil(object, @"Namespace Integrity Breach");
+		XCTAssertNil(object, @"Namespace Integrity Breach");
 	}
 	
 	// Cleanup

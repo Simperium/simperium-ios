@@ -8,7 +8,7 @@
 
 #import "Simperium.h"
 #import "SPMember.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 
 @implementation SPMember
 @synthesize keyName;
@@ -139,7 +139,7 @@ NSString * const OP_STRING			= @"d";
 		[changes setObject:currentDiff forKey:[thisMember keyName]];
 	}
 	
-	return changes;	
+	return changes;
 }
 */
 

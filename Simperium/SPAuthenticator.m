@@ -11,12 +11,12 @@
 #import "SPUser.h"
 #import "SPAuthenticator.h"
 #import "SPBinaryManager.h"
-#import "ASIFormDataRequest.h"
-#import "ASIHTTPRequest.h"
 #import "DDLog.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "SFHFKeychainUtils.h"
 #import "SPReachability.h"
+#import "SPHttpRequest.h"
+#import "SPHttpRequestQueue.h"
 
 #define USERNAME_KEY @"SPUsername"
 
@@ -28,11 +28,8 @@
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
-@interface SPAuthenticator() {
-    SPReachability *reachability;
-}
-
--(void)authDidFail:(ASIHTTPRequest *)request;
+@interface SPAuthenticator()
+@property (nonatomic, strong, readwrite) SPReachability	*reachability;
 @end
 
 @implementation SPAuthenticator
@@ -55,10 +52,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         delegate = authDelegate;
         simperium = s;
         
-        reachability = [SPReachability reachabilityForInternetConnection];
+        self.reachability = [SPReachability reachabilityForInternetConnection];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kReachabilityChangedNotification object:nil];
-        connected = [reachability currentReachabilityStatus] != NotReachable;
-        [reachability startNotifier];
+        self.connected = [self.reachability currentReachabilityStatus] != NotReachable;
+        [self.reachability startNotifier];
 
     }
     return self;
@@ -69,10 +66,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)handleNetworkChange:(NSNotification *)notification {
-    if ([reachability currentReachabilityStatus] == NotReachable) {
-        connected = NO;
+    if ([self.reachability currentReachabilityStatus] == NotReachable) {
+        self.connected = NO;
     } else {
-        connected = YES;
+        self.connected = YES;
     }
 }
 
@@ -112,26 +109,31 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, simperium.appID]];
     DDLogInfo(@"Simperium authenticating: %@", [NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, simperium.appID]);
     DDLogVerbose(@"Simperium username is %@", username);
-    
-    ASIFormDataRequest *tokenRequest = [[ASIFormDataRequest alloc] initWithURL:tokenURL];
-    NSDictionary *authData = [NSDictionary dictionaryWithObjectsAndKeys:
-                              username, @"username",
-                              password, @"password", nil];
-    NSString *jsonData = [authData JSONString];
-    [tokenRequest appendPostData:[jsonData dataUsingEncoding:NSUTF8StringEncoding]];
-    [tokenRequest addRequestHeader:@"Content-Type" value:@"application/json"];
-    [tokenRequest addRequestHeader:@"X-Simperium-API-Key" value:simperium.APIKey];
-    [tokenRequest setTimeOutSeconds:8];
-    [tokenRequest setDelegate:self];
+	
+	SPHttpRequest *request = [SPHttpRequest requestWithURL:tokenURL];
+	request.headers = @{
+		@"X-Simperium-API-Key"	: simperium.APIKey,
+		@"Content-Type"			: @"application/json"
+	};
+	
+    NSDictionary *authDict = @{
+		@"username" : username,
+		@"password" : password
+	};
+
+	request.method = SPHttpRequestMethodsPost;
+	request.postData = [[authDict sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
+	request.delegate = self;
+	request.selectorSuccess	= @selector(authDidSucceed:);
+	request.selectorFailed = @selector(authDidFail:);
+	request.timeout = 8;
     
     // Blocks are used here for UI tasks on iOS/OSX
     self.succeededBlock = successBlock;
     self.failedBlock = failureBlock;
     
     // Selectors are for auth-related handling
-    [tokenRequest setDidFinishSelector:@selector(authDidSucceed:)];
-    [tokenRequest setDidFailSelector:@selector(authDidFail:)];
-    [tokenRequest startAsynchronous];
+	[[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
 }
 
 - (void)delayedAuthenticationDidFinish {
@@ -149,15 +151,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [delegate authenticationDidSucceedForUsername:simperium.user.email token:simperium.user.authToken];
 }
 
-- (void)authDidSucceed:(ASIHTTPRequest *)request {
-    NSString *tokenResponse = [request responseString];
-    int code = [request responseStatusCode];
-    if (code != 200) {
+- (void)authDidSucceed:(SPHttpRequest *)request {
+    NSString *tokenResponse = request.responseString;
+    if (request.responseCode != 200) {
         [self authDidFail:request];
         return;
     }
     
-    NSDictionary *userDict = [tokenResponse objectFromJSONString];
+    NSDictionary *userDict = [tokenResponse sp_objectFromJSONString];
     NSString *username = [userDict objectForKey:@"username"];
     NSString *token = [userDict objectForKey:@"access_token"];
     
@@ -173,16 +174,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self performSelector:@selector(delayedAuthenticationDidFinish) withObject:nil afterDelay:0.1];
 }
 
-- (void)authDidFail:(ASIHTTPRequest *)request {
+- (void)authDidFail:(SPHttpRequest *)request {
     if (self.failedBlock) {
-        self.failedBlock([request responseStatusCode], [request responseString]);
+        self.failedBlock(request.responseCode, request.responseString);
 		
 		// Cleanup!
 		self.failedBlock = nil;
 		self.succeededBlock = nil;
 	}
     
-    DDLogError(@"Simperium authentication error (%d): %@",[request responseStatusCode], [request responseString]);
+    DDLogError(@"Simperium authentication error (%d): %@", request.responseCode, request.responseError);
     
     if ([delegate respondsToSelector:@selector(authenticationDidFail)])
         [delegate authenticationDidFail];
@@ -191,30 +192,34 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)createWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock {
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/create/", SPAuthURL, simperium.appID]];
     
-    ASIFormDataRequest *tokenRequest = [[ASIFormDataRequest alloc] initWithURL:tokenURL];
-    NSMutableDictionary *authData = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                              username, @"username",
-                              password, @"password",
-                              nil];
+    SPHttpRequest *request = [SPHttpRequest requestWithURL:tokenURL];
+    NSMutableDictionary *authData = [@{
+		@"username" : username,
+		@"password" : password,
+	} mutableCopy];
     
     // Backend authentication may need extra data
-    if ([providerString length] > 0)
+    if ([providerString length] > 0) {
         [authData setObject:providerString forKey:@"provider"];
+	}
     
-    NSString *jsonData = [authData JSONString];
-    [tokenRequest appendPostData:[jsonData dataUsingEncoding:NSUTF8StringEncoding]];
-    [tokenRequest addRequestHeader:@"Content-Type" value:@"application/json"];
-    [tokenRequest addRequestHeader:@"X-Simperium-API-Key" value:simperium.APIKey];
-    [tokenRequest setDelegate:self];
+	request.method = SPHttpRequestMethodsPost;
+	request.postData = [[authData sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
+	request.headers = @{
+		@"Content-Type"			: @"application/json",
+		@"X-Simperium-API-Key"	: simperium.APIKey
+	};
     
     // Blocks are used here for UI tasks on iOS/OSX
     self.succeededBlock = successBlock;
     self.failedBlock = failureBlock;
     
     // Selectors are for auth-related handling
-    [tokenRequest setDidFinishSelector:@selector(authDidSucceed:)];
-    [tokenRequest setDidFailSelector:@selector(authDidFail:)];
-    [tokenRequest startAsynchronous];
+    request.delegate = self;
+	request.selectorSuccess = @selector(authDidSucceed:);
+	request.selectorFailed = @selector(authDidFail:);
+
+	[[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
 }
 
 - (void)reset {

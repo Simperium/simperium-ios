@@ -14,7 +14,7 @@
 #import "SPBinaryManager.h"
 #import "SPStorage.h"
 #import "SPMember.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "SPGhost.h"
 #import "DDLog.h"
 #import "SPBucket.h"
@@ -95,7 +95,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	// Proceed migrating!
     DDLogInfo(@"Migrating changesPending collection to SPDictionaryStorage");
     
-    NSDictionary *pendingDict = [pendingJSON objectFromJSONString];
+    NSDictionary *pendingDict = [pendingJSON sp_objectFromJSONString];
 
 	for(NSString *key in pendingDict.allKeys) {
 		id change = pendingDict[key];
@@ -110,7 +110,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 }
 
 - (void)serializeKeysForObjectsWithMoreChanges {
-    NSString *json = [[self.keysForObjectsWithMoreChanges allObjects] JSONString];
+    NSString *json = [[self.keysForObjectsWithMoreChanges allObjects] sp_JSONString];
     NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", self.instanceLabel];
 	[[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -120,7 +120,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     // Load keys for entities that have more changes to send
     NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", self.instanceLabel];
 	NSString *json = [[NSUserDefaults standardUserDefaults] objectForKey:key];
-    NSArray *list = [json objectFromJSONString];
+    NSArray *list = [json sp_objectFromJSONString];
     if (list && [list count] > 0) {
         [self.keysForObjectsWithMoreChanges addObjectsFromArray:list];
 	}
@@ -270,7 +270,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
         object.ghost.version = endVersion;
         
         // Slight hack to ensure Core Data realizes the object has changed and needs a save
-        NSString *ghostDataCopy = [[[object.ghost dictionary] JSONString] copy];
+        NSString *ghostDataCopy = [[[object.ghost dictionary] sp_JSONString] copy];
         object.ghostData = ghostDataCopy;
         
         DDLogVerbose(@"Simperium MODIFIED ghost version %@ (%@-%@)", endVersion, bucket.name, self.instanceLabel);
@@ -638,6 +638,29 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
 - (int)numKeysForObjectsWithMoreChanges {
     return (int)[self.keysForObjectsWithMoreChanges count];
+}
+
+- (NSArray*)exportPendingChanges {
+	
+	// This routine shall be used for debugging purposes!
+	NSMutableArray* pendings = [NSMutableArray array];
+	for(NSDictionary* change in self.changesPending.allValues) {
+				
+		NSMutableDictionary* export = [NSMutableDictionary dictionary];
+		
+		[export setObject:[change[CH_KEY] copy] forKey:CH_KEY];				// Entity Id
+		[export setObject:[change[CH_LOCAL_ID] copy] forKey:CH_LOCAL_ID];	// Change Id: ccid
+		
+		// Start Version is not available for newly inserted objects
+		NSString* startVersion = change[CH_START_VERSION];
+		if(startVersion) {
+			[export setObject:[startVersion copy] forKey:CH_START_VERSION];
+		}
+		
+		[pendings addObject:export];
+	}
+	
+	return pendings;
 }
 
 @end

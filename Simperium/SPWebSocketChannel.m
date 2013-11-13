@@ -21,7 +21,7 @@
 #import "SPGhost.h"
 #import "SPWebSocketChannel.h"
 #import "SPWebSocketInterface.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "DDLog.h"
 #import "DDLogDebug.h"
@@ -85,8 +85,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		[bucket.changeProcessor enumeratePendingChanges:bucket onlyQueuedChanges:onlyQueuedChanges block:^(NSArray *changes) {
 			if (self.started) {
 				DDLogVerbose(@"Simperium sending all changes (%lu) for bucket %@", (unsigned long)[changes count], bucket.name);
-				for (NSString *change in changes) {
-					NSString *jsonStr = [change JSONString];
+				for (NSDictionary *change in changes) {
+					NSString *jsonStr = [change sp_JSONString];
 					NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
 					DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
 					[self.webSocketManager send:message];
@@ -108,7 +108,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     [bucket.changeProcessor processLocalChange:change key:key];
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSString *jsonStr = [change JSONString];
+        NSString *jsonStr = [change sp_JSONString];
         NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
         DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
         [self.webSocketManager send:message];
@@ -151,29 +151,41 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     });
 }
 
+- (void)sendBucketStatus:(SPBucket *)bucket {
+
+	NSDictionary *response = [bucket exportStatus];
+	NSString *jsonStr = [response sp_JSONString];
+	NSString *message = [NSString stringWithFormat:@"%d:index:%@", self.number, jsonStr];
+	
+	DDLogVerbose(@"Simperium sending Bucket Internal State (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
+	[self.webSocketManager send:message];
+}
+
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
     __block int numChangesPending;
     __block int numKeysForObjectsWithMoreChanges;
     dispatch_async(bucket.processorQueue, ^{
-        if (self.started) {
-            numChangesPending = [bucket.changeProcessor numChangesPending];
-            numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
+		numChangesPending = [bucket.changeProcessor numChangesPending];
+		numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
 
-            dispatch_async(dispatch_get_main_queue(), ^{
-                // Start getting changes from the last cv
-                NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", self.number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
-                DDLogVerbose(@"Simperium client %@ sending cv %@", self.simperium.clientID, getMessage);
-                [self.webSocketManager send:getMessage];
-                
-                if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
-                    // There are also offline changes; send them right away
-                    // This needs to happen after the above cv is sent, otherwise acks will arrive prematurely if there
-                    // have been remote changes that need to be processed first
-                    DDLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
-                    [self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:nil];
-                }
-            });
-        }
+		dispatch_async(dispatch_get_main_queue(), ^{
+			if (!self.started) {
+				return;
+			}
+			
+			// Start getting changes from the last cv
+			NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", self.number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
+			DDLogVerbose(@"Simperium client %@ sending cv %@", self.simperium.clientID, getMessage);
+			[self.webSocketManager send:getMessage];
+			
+			if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
+				// There are also offline changes; send them right away
+				// This needs to happen after the above cv is sent, otherwise acks will arrive prematurely if there
+				// have been remote changes that need to be processed first
+				DDLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
+				[self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:nil];
+			}
+		});
     });
 }
 
@@ -312,7 +324,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
     DDLogVerbose(@"Simperium received index (%@): %@", self.name, responseString);
-    NSDictionary *responseDict = [responseString objectFromJSONString];
+    NSDictionary *responseDict = [responseString sp_objectFromJSONString];
     NSArray *currentIndexArray = [responseDict objectForKey:@"index"];
     id current = [responseDict objectForKey:@"current"];
 
@@ -368,23 +380,38 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
     if ([responseString isEqualToString:@"?"]) {
-        DDLogError(@"Simperium error: version not found during version retrieval (%@)", bucket.name);
+        DDLogError(@"Simperium error: '?' response during version retrieval (%@)", bucket.name);
         _objectVersionsPending--;
         return;
     }
 
-    NSRange range = [responseString rangeOfString:@"."];
-    NSString *key = [responseString substringToIndex:range.location];
-    NSString *versionString = [responseString substringFromIndex:range.location+range.length];
-    range = [versionString rangeOfString:@"\n"];
-    NSString *version = [versionString substringToIndex:range.location];
-    versionString = [versionString substringFromIndex:range.location + range.length];
+    // Expected format is: key_here.maybe.with.periods.VERSIONSTRING\n{payload}
+    NSRange headerRange = [responseString rangeOfString:@"\n"];
+    if (headerRange.location == NSNotFound) {
+        DDLogError(@"Simperium error: version header not found during version retrieval (%@)", bucket.name);
+        _objectVersionsPending--;
+        return;
+    }
+    
+    NSRange keyRange = [responseString rangeOfString:@"." options:NSBackwardsSearch range:NSMakeRange(0, headerRange.location)];
+    if (keyRange.location == NSNotFound) {
+        DDLogError(@"Simperium error: version key not found during version retrieval (%@)", bucket.name);
+        _objectVersionsPending--;
+        return;
+    }
+    
+    NSRange versionRange = NSMakeRange(keyRange.location + keyRange.length,
+                                       headerRange.location - headerRange.length - keyRange.location);
+    
+    NSString *key = [responseString substringToIndex:keyRange.location];
+    NSString *version = [responseString substringWithRange:versionRange];
+    NSString *payload = [responseString substringFromIndex:headerRange.location + headerRange.length];
     DDLogDebug(@"Simperium received version (%@): %@", self.name, responseString);
     
-    // With websockets, the data is wrapped in a dictionary, so unwrap it
-    // This processing should be moved off the main thread (or fixed at the protocol level)
-    NSDictionary *versionDict = [versionString objectFromJSONString];
-    NSDictionary *dataDict = [versionDict objectForKey:@"data"];
+    // With websockets, the data is wrapped up (somewhat annoyingly) in a dictionary, so unwrap it
+    // This processing should probably be moved off the main thread (or improved at the protocol level)
+    NSDictionary *payloadDict = [payload sp_objectFromJSONString];
+    NSDictionary *dataDict = [payloadDict objectForKey:@"data"];
     
     if ([dataDict class] == [NSNull class] || dataDict == nil) {
         // No data
@@ -393,7 +420,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         return;
     }
     
-    versionString = [dataDict JSONString];
+    // All unwrapped, now get it in the format we need for marshaling
+    NSString *payloadString = [dataDict sp_JSONString];
     
     // If there was an error previously, unflag it
     [self.versionsWithErrors removeObjectForKey:key];
@@ -408,8 +436,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		}
     } else {
         // Otherwise, process the result for indexing
-        // Marshal stuff into an array for later processing
-        NSArray *responseData = [NSArray arrayWithObjects: key, versionString, version, nil];
+        // Marshal everything into an array for later processing
+        NSArray *responseData = [NSArray arrayWithObjects: key, payloadString, version, nil];
         [self.responseBatch addObject:responseData];
 
         // Batch responses for more efficient processing
@@ -510,6 +538,25 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Not yet implemented with WebSockets
 }
 
+
+#pragma mark Static Helpers: 
+#pragma mark MockWebSocketChannel relies on this mechanism to register itself, while running the Unit Testing target
+
+static Class _class;
+
++(void)load
+{
+	_class = [SPWebSocketChannel class];
+}
+
++(void)registerClass:(Class)c
+{
+	_class = c;
+}
+
++(instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID
+{
+	return [[_class alloc] initWithSimperium:s clientID:clientID];
+}
+
 @end
-
-
