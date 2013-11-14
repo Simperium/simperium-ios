@@ -22,8 +22,6 @@
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
-NSInteger const SPPendingChangesBinSize	= 100;
-
 NSString * const CH_KEY				= @"id";
 NSString * const CH_ADD				= @"+";
 NSString * const CH_REMOVE			= @"-";
@@ -43,9 +41,9 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
 
 @interface SPChangeProcessor()
-@property (nonatomic, strong, readwrite) NSString *instanceLabel;
-@property (nonatomic, strong, readwrite) SPDictionaryStorage *changesPending;
-@property (nonatomic, strong, readwrite) NSMutableSet *keysForObjectsWithMoreChanges;
+@property (nonatomic, strong, readwrite) NSString				*instanceLabel;
+@property (nonatomic, strong, readwrite) SPDictionaryStorage	*changesPending;
+@property (nonatomic, strong, readwrite) NSMutableSet			*keysForObjectsWithMoreChanges;
 
 -(void)loadKeysForObjectsWithMoreChanges;
 @end
@@ -82,8 +80,9 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     return awaitingAcknowledgement;
 }
 
+// Note: We've moved changesPending collection to SPDictionaryStorage class, which will help to lower memory requirements.
+// This method will migrate any pending changes, from UserDefaults over to SPDictionaryStorage
 - (void)migratePendingChangesIfNeeded {
-    // Note: We've moved changesPending collection to SPDictionaryStorage class, which will help to lower memory requirements.
     NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", self.instanceLabel];
 	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
 	
@@ -136,7 +135,6 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 // For debugging
 - (void)softReset {
     [self.changesPending removeAllObjects];
-	[self.changesPending save];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
     [self loadKeysForObjectsWithMoreChanges];
 }
@@ -345,7 +343,6 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     if ([change objectForKey:CH_ERROR]) {
         DDLogVerbose(@"Simperium error received (%@) for %@, should reload the object here to be safe", bucket.name, key);
         [self.changesPending removeObjectForKey:key];
-		[self.changesPending save];
         return NO;
     }
 	
@@ -362,7 +359,6 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
             DDLogVerbose(@"Simperium acknowledged change for %@, cv=%@", changeClientID, changeVersion);
 		}
         [self.changesPending removeObjectForKey:key];
-		[self.changesPending save];
     }
 
     DDLogVerbose(@"Simperium performing change operation: %@", operation);
@@ -417,6 +413,8 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
                     [bucket setLastChangeSignature: changeVersion];
                 });        
             }
+			
+			[self.changesPending save];
 			
 			if(self.changesPending.count == 0) {
 				[bucket bucketDidSync];
@@ -476,8 +474,8 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     if (!object) {
         //DDLogWarn(@"Simperium warning: couldn't processLocalObjectWithKey %@ because the object no longer exists", key);
         [self.changesPending removeObjectForKey:key];
-		[self.changesPending save];
         [self.keysForObjectsWithMoreChanges removeObject:key];
+		[self.changesPending save];
         [self serializeKeysForObjectsWithMoreChanges];
         return nil;
     }
@@ -531,7 +529,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     return change;
 }
 
-- (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(void (^)(NSArray *changes))block {
+- (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(void (^)(NSDictionary *change))block {
 
     if (self.keysForObjectsWithMoreChanges.count == 0 && (onlyQueuedChanges || self.changesPending.count == 0)) {
 		return;
@@ -552,7 +550,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	}
 	
 	// Create changes for any objects that have more changes
-	[queuedKeys enumerateObjectsUsingBlock:^(NSString *key, BOOL *stop) {
+	for(NSString* key in queuedKeys) {
 		NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
 		
 		if (change) {
@@ -561,41 +559,24 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		} else {
 			[self.keysForObjectsWithMoreChanges removeObject:key];
 		}
-	}];
+	}
 	
-	[self.changesPending save];
-	
-	// Note:
+	// Enumerate:
 	//	pendingKeys: Queued + previously pending
 	//	queuedKeys: Only queued objects
-		
-	// Hit enumerate in partitions of up to kEnumerationBinSize
-	NSMutableArray *changesPartition = [NSMutableArray array];
 	NSSet *changesPendingKeys = (onlyQueuedChanges ? queuedKeys : pendingKeys);
 		
 	for(NSString *key in changesPendingKeys) {
-		id object = [self.changesPending objectForKey:key];
-		if(object) {
-			[changesPartition addObject:object];
+		NSDictionary* change = [self.changesPending objectForKey:key];
+		if(change) {
+			dispatch_async(dispatch_get_main_queue(), ^{
+				block(change);
+			});
 		}
-		
-		if(changesPartition.count >= SPPendingChangesBinSize) {
-			NSArray* dispatchedPartition = changesPartition;
-			changesPartition = [NSMutableArray array];
-			
-            dispatch_async(dispatch_get_main_queue(), ^{
-				block(dispatchedPartition);
-            });
-		}
-	}
-
-	if(changesPartition.count) {
-		dispatch_async(dispatch_get_main_queue(), ^{
-			block(changesPartition);
-		});
 	}
 
 	// Clear any keys that were processed into pending changes & Persist
+	[self.changesPending save];
 	[self.keysForObjectsWithMoreChanges minusSet:queuedKeys];
     [self serializeKeysForObjectsWithMoreChanges];
 }

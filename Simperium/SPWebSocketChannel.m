@@ -82,16 +82,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(void(^)())completionBlock {
     // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
     dispatch_async(bucket.processorQueue, ^{
-		[bucket.changeProcessor enumeratePendingChanges:bucket onlyQueuedChanges:onlyQueuedChanges block:^(NSArray *changes) {
-			if (self.started) {
-				DDLogVerbose(@"Simperium sending all changes (%lu) for bucket %@", (unsigned long)[changes count], bucket.name);
-				for (NSDictionary *change in changes) {
-					NSString *jsonStr = [change sp_JSONString];
-					NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
-					DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
-					[self.webSocketManager send:message];
-				}
+		[bucket.changeProcessor enumeratePendingChanges:bucket onlyQueuedChanges:onlyQueuedChanges block:^(NSDictionary *change) {
+			if (!self.started) {
+				return;
 			}
+			
+			NSString *jsonStr = [change sp_JSONString];
+			NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
+			DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
+			[self.webSocketManager send:message];
 		}];
 		
 		// All done!

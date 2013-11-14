@@ -35,7 +35,7 @@ extern NSString * const CH_LOCAL_ID;
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
 - (int)numChangesPending;
 - (int)numKeysForObjectsWithMoreChanges;
-- (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(void (^)(NSArray *changes))block;
+- (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(void (^)(NSDictionary *change))block;
 - (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket;
 - (NSArray*)exportPendingChanges;
 @end
