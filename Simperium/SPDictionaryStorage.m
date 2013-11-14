@@ -9,6 +9,7 @@
 #import "SPDictionaryStorage.h"
 #import <CoreData/CoreData.h>
 #import "DDLog.h"
+#import "DDLogDebug.h"
 
 
 
@@ -19,6 +20,8 @@
 static NSString *SPDictionaryEntityName		= @"SPDictionaryEntityName";
 static NSString *SPDictionaryEntityValue	= @"value";
 static NSString *SPDictionaryEntityKey		= @"key";
+
+static int ddLogLevel						= LOG_LEVEL_INFO;
 
 
 #pragma mark ====================================================================================
@@ -41,6 +44,14 @@ static NSString *SPDictionaryEntityKey		= @"key";
 
 @implementation SPDictionaryStorage
 
++ (int)ddLogLevel {
+    return ddLogLevel;
+}
+
++ (void)ddSetLogLevel:(int)logLevel {
+    ddLogLevel = logLevel;
+}
+
 - (id)initWithLabel:(NSString *)label {
 	if ((self = [super init])) {
 		self.label = label;
@@ -56,6 +67,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	[self.managedObjectContext performBlockAndWait:^() {
 		NSError *error;
 		count = [self.managedObjectContext countForFetchRequest:[self requestForEntity] error:&error];
+		DDLogOnError(error);
 	}];
 	
 	return count;
@@ -77,6 +89,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	[self.managedObjectContext performBlockAndWait:^{
 		NSError *error = nil;
 		exists = ([self.managedObjectContext countForFetchRequest:[self requestForEntityWithKey:aKey] error:&error] > 0);
+		DDLogOnError(error);
 	}];
 	
 	// Done
@@ -99,16 +112,17 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	[self.managedObjectContext performBlockAndWait:^{
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:[self requestForEntityWithKey:aKey] error:&error];
-		NSManagedObject *object = nil;
+		DDLogOnError(error);
+
 		if (results.count)
 		{
-			object = (NSManagedObject*)[results firstObject];
-		}
-
-		// Unarchive
-		id archivedValue = [object valueForKey:SPDictionaryEntityValue];
-		if (archivedValue) {
-			value = [NSKeyedUnarchiver unarchiveObjectWithData:archivedValue];
+			NSManagedObject *object = (NSManagedObject*)[results firstObject];
+			
+			// Unarchive
+			id archivedValue = [object valueForKey:SPDictionaryEntityValue];
+			if (archivedValue) {
+				value = [NSKeyedUnarchiver unarchiveObjectWithData:archivedValue];
+			}
 		}
 	}];
 	
@@ -133,20 +147,20 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:[self requestForEntityWithKey:aKey] error:&error];
 		NSAssert(results.count <= 1, @"ERROR: SPMetadataStorage has multiple entities with the same key");
-		
-		// Wrap up the value
-		id archivedValue = [NSKeyedArchiver archivedDataWithRootObject:anObject];
-		
+		DDLogOnError(error);
+				
 		// Upsert
-		NSManagedObject *change = nil;
+		NSManagedObject *change;
 		if (results.count) {
 			change = (NSManagedObject*)results[0];
-			[change setValue:archivedValue forKey:SPDictionaryEntityValue];
 		} else {
 			change = [NSEntityDescription insertNewObjectForEntityForName:SPDictionaryEntityName inManagedObjectContext:self.managedObjectContext];
 			[change setValue:aKey forKey:SPDictionaryEntityKey];
-			[change setValue:archivedValue forKey:SPDictionaryEntityValue];
 		}
+		
+		// Wrap up the value
+		id archivedValue = [NSKeyedArchiver archivedDataWithRootObject:anObject];
+		[change setValue:archivedValue forKey:SPDictionaryEntityValue];
 	}];
 	
 	// Update the cache
@@ -160,6 +174,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		
 		NSError *error = nil;
 		success = [self.managedObjectContext save:&error];
+		DDLogOnError(error);
 	}];
 	
 	return success;
@@ -186,11 +201,11 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:request error:&error];
+		DDLogOnError(error);
 		
 		// Once there, delete
-		NSManagedObject *object = nil;
 		if (results.count) {
-			object = (NSManagedObject*)[results firstObject];
+			NSManagedObject *object = (NSManagedObject*)[results firstObject];
 			[self.managedObjectContext deleteObject:object];
 		}
 	}];
@@ -209,6 +224,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 
 		NSError *error = nil;
 		NSArray *allObjects = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+		DDLogOnError(error);
 		
 		// Delete Everything
 		for(NSManagedObject *object in allObjects) {
@@ -321,6 +337,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		
 		NSError *error = nil;
 		NSArray *allObjects = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+		DDLogOnError(error);
 		
 		// Load properties
 		for(NSManagedObject *change in allObjects) {
