@@ -181,11 +181,11 @@ static int ddLogLevel						= LOG_LEVEL_INFO;
 }
 
 - (NSArray*)allKeys {
-	return [self loadObjectsProperty:SPDictionaryEntityKey];
+	return [self loadObjectsProperty:SPDictionaryEntityKey unarchive:NO];
 }
 
 - (NSArray*)allValues {
-	return [self loadObjectsProperty:SPDictionaryEntityValue];
+	return [self loadObjectsProperty:SPDictionaryEntityValue unarchive:YES];
 }
 
 - (void)removeObjectForKey:(id)aKey {
@@ -257,7 +257,6 @@ static int ddLogLevel						= LOG_LEVEL_INFO;
 	[valueAttribute setName:@"value"];
 	[valueAttribute setAttributeType:NSBinaryDataAttributeType];
 	[valueAttribute setOptional:NO];
-	[valueAttribute setAllowsExternalBinaryDataStorage:YES];
 	
 	// SPMetadata Entity
 	NSEntityDescription *entity = [[NSEntityDescription alloc] init];
@@ -326,23 +325,26 @@ static int ddLogLevel						= LOG_LEVEL_INFO;
 	return request;
 }
 
-- (NSArray*)loadObjectsProperty:(NSString*)property {
+- (NSArray*)loadObjectsProperty:(NSString*)property unarchive:(BOOL)unarchive {
 	NSMutableArray *keys = [NSMutableArray array];
 	
 	[self.managedObjectContext performBlockAndWait:^{
 		
-		// Fetch the objectID's
-		NSFetchRequest *fetchRequest = [self requestForEntity];
-		[fetchRequest setIncludesPropertyValues:NO];
-		
+		// Fetch the objects
 		NSError *error = nil;
-		NSArray *allObjects = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+		NSArray *allObjects = [self.managedObjectContext executeFetchRequest:[self requestForEntity] error:&error];
 		DDLogOnError(error);
 		
 		// Load properties
 		for(NSManagedObject *change in allObjects) {
 			id value = [change valueForKey:property];
-			if (value) {
+			if (!value) {
+				continue;
+			}
+			
+			if(unarchive) {
+				[keys addObject:[NSKeyedUnarchiver unarchiveObjectWithData:value]];
+			} else {
 				[keys addObject:value];
 			}
 		}
