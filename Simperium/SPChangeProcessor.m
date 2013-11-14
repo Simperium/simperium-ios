@@ -569,9 +569,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	for(NSString *key in changesPendingKeys) {
 		NSDictionary* change = [self.changesPending objectForKey:key];
 		if(change) {
-			dispatch_async(dispatch_get_main_queue(), ^{
-				block(change);
-			});
+			block(change);
 		}
 	}
 
