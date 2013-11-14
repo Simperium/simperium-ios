@@ -8,6 +8,7 @@
 
 #import "SPDictionaryStorage.h"
 #import <CoreData/CoreData.h>
+#import "DDLog.h"
 
 
 
@@ -30,7 +31,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 @property (nonatomic, strong, readwrite) NSManagedObjectContext* managedObjectContext;
 @property (nonatomic, strong, readwrite) NSManagedObjectModel* managedObjectModel;
 @property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator* persistentStoreCoordinator;
--(NSURL*)storeURL;
+- (NSURL*)storeURL;
 @end
 
 
@@ -40,10 +41,8 @@ static NSString *SPDictionaryEntityKey		= @"key";
 
 @implementation SPDictionaryStorage
 
--(id)initWithLabel:(NSString *)label
-{
-	if((self = [super init]))
-	{
+- (id)initWithLabel:(NSString *)label {
+	if ((self = [super init])) {
 		self.label = label;
 		self.cache = [[NSCache alloc] init];
 	}
@@ -51,8 +50,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return self;
 }
 
--(NSInteger)count
-{
+- (NSInteger)count {
 	__block NSUInteger count = 0;
 	
 	[self.managedObjectContext performBlockAndWait:^() {
@@ -63,16 +61,15 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return count;
 }
 
--(BOOL)containsObjectForKey:(id)aKey
-{
+- (BOOL)containsObjectForKey:(id)aKey {
 	// Failsafe
-	if(aKey == nil) {
+	if (aKey == nil) {
 		return false;
 	}
 	
 	// Do we have a cache hit?
 	__block BOOL exists = [self.cache objectForKey:aKey];
-	if(exists) {
+	if (exists) {
 		return exists;
 	}
 	
@@ -86,16 +83,15 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return exists;
 }
 
--(id)objectForKey:(id)aKey
-{
+- (id)objectForKey:(id)aKey {
 	// Failsafe
-	if(aKey == nil) {
+	if (aKey == nil) {
 		return nil;
 	}
 
 	// Do we have a cache hit?
 	__block id value = [self.cache objectForKey:aKey];
-	if(value) {
+	if (value) {
 		return value;
 	}
 	
@@ -104,20 +100,20 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:[self requestForEntityWithKey:aKey] error:&error];
 		NSManagedObject *object = nil;
-		if(results.count)
+		if (results.count)
 		{
 			object = (NSManagedObject*)[results firstObject];
 		}
 
 		// Unarchive
 		id archivedValue = [object valueForKey:SPDictionaryEntityValue];
-		if(archivedValue) {
+		if (archivedValue) {
 			value = [NSKeyedUnarchiver unarchiveObjectWithData:archivedValue];
 		}
 	}];
 	
 	// Cache
-	if(value) {
+	if (value) {
 		[self.cache setObject:value forKey:aKey];
 	}
 	
@@ -125,10 +121,9 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return value;
 }
 
--(void)setObject:(id)anObject forKey:(NSString*)aKey
-{
+- (void)setObject:(id)anObject forKey:(NSString*)aKey {
 	// Failsafe
-	if(anObject == nil) {
+	if (anObject == nil) {
 		[self removeObjectForKey:aKey];
 		return;
 	}
@@ -144,7 +139,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		
 		// Upsert
 		NSManagedObject *change = nil;
-		if(results.count) {
+		if (results.count) {
 			change = (NSManagedObject*)results[0];
 			[change setValue:archivedValue forKey:SPDictionaryEntityValue];
 		} else {
@@ -158,8 +153,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	[self.cache setObject:anObject forKey:aKey];
 }
 
--(BOOL)save
-{
+- (BOOL)save {
 	__block BOOL success = NO;
 	
 	[self.managedObjectContext performBlockAndWait:^{
@@ -171,19 +165,16 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return success;
 }
 
--(NSArray*)allKeys
-{
+- (NSArray*)allKeys {
 	return [self loadObjectsProperty:SPDictionaryEntityKey];
 }
 
--(NSArray*)allValues
-{
+- (NSArray*)allValues {
 	return [self loadObjectsProperty:SPDictionaryEntityValue];
 }
 
--(void)removeObjectForKey:(id)aKey
-{
-	if(aKey == nil) {
+- (void)removeObjectForKey:(id)aKey {
+	if (aKey == nil) {
 		return;
 	}
 	
@@ -197,14 +188,10 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		NSArray *results = [self.managedObjectContext executeFetchRequest:request error:&error];
 		
 		// Once there, delete
-		NSManagedObject *change = nil;
-		if(results.count)
-		{
-			change = (NSManagedObject*)results[0];
-		}
-
-		if(change) {
-			[self.managedObjectContext deleteObject:change];
+		NSManagedObject *object = nil;
+		if (results.count) {
+			object = (NSManagedObject*)[results firstObject];
+			[self.managedObjectContext deleteObject:object];
 		}
 	}];
 	
@@ -212,8 +199,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	[self.cache removeObjectForKey:aKey];
 }
 
--(void)removeAllObjects
-{
+- (void)removeAllObjects {
 	// Remove from CoreData
 	[self.managedObjectContext performBlock:^{
 		
@@ -239,10 +225,8 @@ static NSString *SPDictionaryEntityKey		= @"key";
 #pragma mark Core Data Stack
 #pragma mark ====================================================================================
 
--(NSManagedObjectModel *)managedObjectModel
-{
-    if (_managedObjectModel != nil)
-	{
+- (NSManagedObjectModel *)managedObjectModel {
+    if (_managedObjectModel != nil) {
         return _managedObjectModel;
     }
 	
@@ -274,10 +258,8 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return _managedObjectModel;
 }
 
--(NSManagedObjectContext*)managedObjectContext
-{
-    if (_managedObjectContext != nil)
-	{
+- (NSManagedObjectContext*)managedObjectContext {
+    if (_managedObjectContext != nil) {
         return _managedObjectContext;
     }
 	
@@ -287,10 +269,8 @@ static NSString *SPDictionaryEntityKey		= @"key";
 }
 
 
--(NSPersistentStoreCoordinator*)persistentStoreCoordinator
-{
-    if (_persistentStoreCoordinator != nil)
-	{
+- (NSPersistentStoreCoordinator*)persistentStoreCoordinator {
+    if (_persistentStoreCoordinator != nil) {
         return _persistentStoreCoordinator;
     }
     
@@ -312,20 +292,17 @@ static NSString *SPDictionaryEntityKey		= @"key";
 #pragma mark Helpers
 #pragma mark ====================================================================================
 
--(NSURL*)storeURL
-{
+- (NSURL*)storeURL {
 	NSURL* documentsPath = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 	NSString* filename = [NSString stringWithFormat:@"SPChanges-%@.sqlite", self.label];
 	return [documentsPath URLByAppendingPathComponent:filename];
 }
 
--(NSFetchRequest*)requestForEntity
-{
+- (NSFetchRequest*)requestForEntity {
 	return [NSFetchRequest fetchRequestWithEntityName:SPDictionaryEntityName];
 }
 
--(NSFetchRequest*)requestForEntityWithKey:(id)aKey
-{
+- (NSFetchRequest*)requestForEntityWithKey:(id)aKey {
 	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:SPDictionaryEntityName];
 	request.predicate = [NSPredicate predicateWithFormat:@"key == %@", aKey];
 	request.fetchLimit = 1;
@@ -333,8 +310,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return request;
 }
 
--(NSArray*)loadObjectsProperty:(NSString*)property
-{
+- (NSArray*)loadObjectsProperty:(NSString*)property {
 	NSMutableArray *keys = [NSMutableArray array];
 	
 	[self.managedObjectContext performBlockAndWait:^{
@@ -349,7 +325,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		// Load properties
 		for(NSManagedObject *change in allObjects) {
 			id value = [change valueForKey:property];
-			if(value) {
+			if (value) {
 				[keys addObject:value];
 			}
 		}
