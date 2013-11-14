@@ -269,17 +269,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(NSData*)exportLogfiles
 {
-	NSArray *logfiles = [[[DDFileLogger sharedInstance] logFileManager] sortedLogFilePaths];
-	NSMutableData *export = [NSMutableData data];
-	
-	for(NSString *path in logfiles) {
-		NSData *logfile = [NSData dataWithContentsOfFile:path];
-		if(logfile.length) {
-			[export appendData:logfile];
-		}
-	}
-	
-	return export;
+	return [[DDFileLogger sharedInstance] exportLogfiles];
 }
 
 -(void)startNetworkManagers
