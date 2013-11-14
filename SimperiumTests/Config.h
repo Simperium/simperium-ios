@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 #import "TestObject.h"
 
 @interface Config : TestObject
@@ -16,10 +15,8 @@
 @property (nonatomic, strong) NSString *binaryFile;
 @property (nonatomic, strong) NSString *captainsLog;
 @property (nonatomic, strong) NSNumber *shieldsUp;
-@property (nonatomic, strong) UIColor *shieldColor;
 @property (nonatomic, strong) NSNumber *shieldPercent;
 @property (nonatomic, strong) NSDecimalNumber *cost;
-@property (nonatomic, strong) UIImage *smallImageTest;
 @property (nonatomic, strong) NSDate *date;
 
 @end

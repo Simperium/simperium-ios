@@ -7,7 +7,7 @@
 //
 
 #import "Post.h"
-#import "Comment.h"
+#import "PostComment.h"
 
 
 @implementation Post

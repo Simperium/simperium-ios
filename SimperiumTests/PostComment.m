@@ -6,11 +6,11 @@
 //  Copyright (c) 2011 Simperium. All rights reserved.
 //
 
-#import "Comment.h"
+#import "PostComment.h"
 #import "Post.h"
 
 
-@implementation Comment
+@implementation PostComment
 
 @dynamic content;
 @dynamic post;
@@ -20,7 +20,7 @@
 }
 
 -(BOOL)isEqualToObject:(TestObject *)otherObj {
-    Comment *other = (Comment *)otherObj;
+    PostComment *other = (PostComment *)otherObj;
     BOOL contentEqual = [self.content isEqualToString:other.content];
     // Break these out for ease of debugging
     NSString *thisKey = self.post.simperiumKey;

@@ -104,7 +104,7 @@
 		2669E6E1144D5CA100C33988 /* UIImage+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 2669E6DF144D5CA000C33988 /* UIImage+Simperium.h */; };
 		2673D71B1479F4C000B7B6B3 /* SimperiumRelationshipTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D7181479F42000B7B6B3 /* SimperiumRelationshipTests.m */; };
 		2673D722147A018000B7B6B3 /* Post.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D721147A018000B7B6B3 /* Post.m */; };
-		2673D725147A018000B7B6B3 /* Comment.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D724147A018000B7B6B3 /* Comment.m */; };
+		2673D725147A018000B7B6B3 /* PostComment.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D724147A018000B7B6B3 /* PostComment.m */; };
 		2673D728147A3BEB00B7B6B3 /* TestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D727147A3BEB00B7B6B3 /* TestObject.m */; };
 		2678E4C31656D5A10018EE35 /* SimperiumTypeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2678E4C21656D5A10018EE35 /* SimperiumTypeTests.m */; };
 		267CE8FA156C0FD20028801C /* NSMutableDictionary+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 267CE8EB156C0FD20028801C /* NSMutableDictionary+Simperium.h */; };
@@ -191,7 +191,7 @@
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
 		B565ECA2183261A600D162FF /* Test1.xcdatamodeld in Resources */ = {isa = PBXBuildFile; fileRef = 26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */; };
 		B565ECA31832643000D162FF /* TestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D727147A3BEB00B7B6B3 /* TestObject.m */; };
-		B565ECA41832643000D162FF /* Comment.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D724147A018000B7B6B3 /* Comment.m */; };
+		B565ECA41832643000D162FF /* PostComment.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D724147A018000B7B6B3 /* PostComment.m */; };
 		B565ECA51832643000D162FF /* Post.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D721147A018000B7B6B3 /* Post.m */; };
 		B565ECA61832643000D162FF /* Config.m in Sources */ = {isa = PBXBuildFile; fileRef = 26ED43EA146CE1FD00C3D7D6 /* Config.m */; };
 		B565ECA91832940B00D162FF /* XCTestCase+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B565ECA81832940B00D162FF /* XCTestCase+Simperium.m */; };
@@ -342,8 +342,8 @@
 		2673D7181479F42000B7B6B3 /* SimperiumRelationshipTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumRelationshipTests.m; sourceTree = "<group>"; };
 		2673D720147A018000B7B6B3 /* Post.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Post.h; sourceTree = "<group>"; };
 		2673D721147A018000B7B6B3 /* Post.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Post.m; sourceTree = "<group>"; };
-		2673D723147A018000B7B6B3 /* Comment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Comment.h; sourceTree = "<group>"; };
-		2673D724147A018000B7B6B3 /* Comment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Comment.m; sourceTree = "<group>"; };
+		2673D723147A018000B7B6B3 /* PostComment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostComment.h; sourceTree = "<group>"; };
+		2673D724147A018000B7B6B3 /* PostComment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostComment.m; sourceTree = "<group>"; };
 		2673D726147A3BEB00B7B6B3 /* TestObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestObject.h; sourceTree = "<group>"; };
 		2673D727147A3BEB00B7B6B3 /* TestObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestObject.m; sourceTree = "<group>"; };
 		2678E4C21656D5A10018EE35 /* SimperiumTypeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumTypeTests.m; sourceTree = "<group>"; };
@@ -811,8 +811,8 @@
 				26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */,
 				2673D726147A3BEB00B7B6B3 /* TestObject.h */,
 				2673D727147A3BEB00B7B6B3 /* TestObject.m */,
-				2673D723147A018000B7B6B3 /* Comment.h */,
-				2673D724147A018000B7B6B3 /* Comment.m */,
+				2673D723147A018000B7B6B3 /* PostComment.h */,
+				2673D724147A018000B7B6B3 /* PostComment.m */,
 				2673D720147A018000B7B6B3 /* Post.h */,
 				2673D721147A018000B7B6B3 /* Post.m */,
 				26ED43E9146CE1FD00C3D7D6 /* Config.h */,
@@ -1297,7 +1297,7 @@
 				269CAC2E146DF84C00584C56 /* Test1.xcdatamodeld in Sources */,
 				2673D71B1479F4C000B7B6B3 /* SimperiumRelationshipTests.m in Sources */,
 				2673D722147A018000B7B6B3 /* Post.m in Sources */,
-				2673D725147A018000B7B6B3 /* Comment.m in Sources */,
+				2673D725147A018000B7B6B3 /* PostComment.m in Sources */,
 				2673D728147A3BEB00B7B6B3 /* TestObject.m in Sources */,
 				2678E4C31656D5A10018EE35 /* SimperiumTypeTests.m in Sources */,
 				B565ECA91832940B00D162FF /* XCTestCase+Simperium.m in Sources */,
@@ -1316,7 +1316,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B565ECA31832643000D162FF /* TestObject.m in Sources */,
-				B565ECA41832643000D162FF /* Comment.m in Sources */,
+				B565ECA41832643000D162FF /* PostComment.m in Sources */,
 				B565ECA51832643000D162FF /* Post.m in Sources */,
 				B565ECA61832643000D162FF /* Config.m in Sources */,
 				B597DD59183128FE005E95D7 /* RemoteDebugTests.m in Sources */,

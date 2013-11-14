@@ -14,10 +14,8 @@
 @dynamic binaryFile;
 @dynamic captainsLog;
 @dynamic shieldsUp;
-@dynamic shieldColor;
 @dynamic shieldPercent;
 @dynamic cost;
-@dynamic smallImageTest;
 @dynamic date;
 
 -(void)awakeFromInsert {
