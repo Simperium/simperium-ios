@@ -30,8 +30,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 @property (nonatomic, strong, readwrite) NSManagedObjectContext* managedObjectContext;
 @property (nonatomic, strong, readwrite) NSManagedObjectModel* managedObjectModel;
 @property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator* persistentStoreCoordinator;
-- (NSURL*)storeURL;
-- (void)saveContext;
+-(NSURL*)storeURL;
 @end
 
 
@@ -41,7 +40,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 
 @implementation SPDictionaryStorage
 
-- (id)initWithLabel:(NSString *)label
+-(id)initWithLabel:(NSString *)label
 {
 	if((self = [super init]))
 	{
@@ -52,7 +51,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return self;
 }
 
-- (NSInteger)count
+-(NSInteger)count
 {
 	__block NSUInteger count = 0;
 	
@@ -64,7 +63,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return count;
 }
 
-- (BOOL)containsObjectForKey:(id)aKey
+-(BOOL)containsObjectForKey:(id)aKey
 {
 	// Failsafe
 	if(aKey == nil) {
@@ -87,7 +86,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return exists;
 }
 
-- (id)objectForKey:(id)aKey
+-(id)objectForKey:(id)aKey
 {
 	// Failsafe
 	if(aKey == nil) {
@@ -107,7 +106,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		NSManagedObject *object = nil;
 		if(results.count)
 		{
-			object = (NSManagedObject*)results[0];
+			object = (NSManagedObject*)[results firstObject];
 		}
 
 		// Unarchive
@@ -126,7 +125,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return value;
 }
 
-- (void)setObject:(id)anObject forKey:(NSString*)aKey
+-(void)setObject:(id)anObject forKey:(NSString*)aKey
 {
 	// Failsafe
 	if(anObject == nil) {
@@ -145,12 +144,8 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		
 		// Upsert
 		NSManagedObject *change = nil;
-		if(results.count)
-		{
+		if(results.count) {
 			change = (NSManagedObject*)results[0];
-		}
-				
-		if(change) {
 			[change setValue:archivedValue forKey:SPDictionaryEntityValue];
 		} else {
 			change = [NSEntityDescription insertNewObjectForEntityForName:SPDictionaryEntityName inManagedObjectContext:self.managedObjectContext];
@@ -159,15 +154,15 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		}
 	}];
 	
-	// Persist & Update the cache
+	// Update the cache
 	[self.cache setObject:anObject forKey:aKey];
 }
 
-- (BOOL)save
+-(BOOL)save
 {
 	__block BOOL success = NO;
 	
-	[self.managedObjectContext performBlock:^{
+	[self.managedObjectContext performBlockAndWait:^{
 		
 		NSError *error = nil;
 		success = [self.managedObjectContext save:&error];
@@ -176,17 +171,17 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return success;
 }
 
-- (NSArray*)allKeys
+-(NSArray*)allKeys
 {
 	return [self loadObjectsProperty:SPDictionaryEntityKey];
 }
 
-- (NSArray*)allValues
+-(NSArray*)allValues
 {
 	return [self loadObjectsProperty:SPDictionaryEntityValue];
 }
 
-- (void)removeObjectForKey:(id)aKey
+-(void)removeObjectForKey:(id)aKey
 {
 	if(aKey == nil) {
 		return;
@@ -210,7 +205,6 @@ static NSString *SPDictionaryEntityKey		= @"key";
 
 		if(change) {
 			[self.managedObjectContext deleteObject:change];
-			[self.managedObjectContext save:&error];
 		}
 	}];
 	
@@ -218,7 +212,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	[self.cache removeObjectForKey:aKey];
 }
 
-- (void)removeAllObjects
+-(void)removeAllObjects
 {
 	// Remove from CoreData
 	[self.managedObjectContext performBlock:^{
@@ -234,8 +228,6 @@ static NSString *SPDictionaryEntityKey		= @"key";
 		for(NSManagedObject *object in allObjects) {
 			[self.managedObjectContext deleteObject:object];
 		}
-		
-		[self.managedObjectContext save:&error];
 	}];
 	
 	// Persist & Update the cache
@@ -247,7 +239,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 #pragma mark Core Data Stack
 #pragma mark ====================================================================================
 
-- (NSManagedObjectModel *)managedObjectModel
+-(NSManagedObjectModel *)managedObjectModel
 {
     if (_managedObjectModel != nil)
 	{
@@ -282,7 +274,7 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return _managedObjectModel;
 }
 
-- (NSManagedObjectContext*)managedObjectContext
+-(NSManagedObjectContext*)managedObjectContext
 {
     if (_managedObjectContext != nil)
 	{
@@ -295,20 +287,22 @@ static NSString *SPDictionaryEntityKey		= @"key";
 }
 
 
-- (NSPersistentStoreCoordinator*)persistentStoreCoordinator
+-(NSPersistentStoreCoordinator*)persistentStoreCoordinator
 {
     if (_persistentStoreCoordinator != nil)
 	{
         return _persistentStoreCoordinator;
     }
     
-    NSError* error	= nil;
-    _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
-    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:self.storeURL options:nil error:&error])
-	{
-        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
-    }
+	@synchronized(self) {
+		NSError* error	= nil;
+		_persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
+		if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:self.storeURL options:nil error:&error])
+		{
+			NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+			abort();
+		}
+	}
     
     return _persistentStoreCoordinator;
 }
@@ -318,19 +312,19 @@ static NSString *SPDictionaryEntityKey		= @"key";
 #pragma mark Helpers
 #pragma mark ====================================================================================
 
-- (NSURL*)storeURL
+-(NSURL*)storeURL
 {
 	NSURL* documentsPath = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 	NSString* filename = [NSString stringWithFormat:@"SPChanges-%@.sqlite", self.label];
 	return [documentsPath URLByAppendingPathComponent:filename];
 }
 
-- (NSFetchRequest*)requestForEntity
+-(NSFetchRequest*)requestForEntity
 {
 	return [NSFetchRequest fetchRequestWithEntityName:SPDictionaryEntityName];
 }
 
-- (NSFetchRequest*)requestForEntityWithKey:(id)aKey
+-(NSFetchRequest*)requestForEntityWithKey:(id)aKey
 {
 	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:SPDictionaryEntityName];
 	request.predicate = [NSPredicate predicateWithFormat:@"key == %@", aKey];
@@ -339,11 +333,10 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	return request;
 }
 
-- (NSArray*)loadObjectsProperty:(NSString*)property
+-(NSArray*)loadObjectsProperty:(NSString*)property
 {
 	NSMutableArray *keys = [NSMutableArray array];
 	
-	// Remove from CoreData
 	[self.managedObjectContext performBlockAndWait:^{
 		
 		// Fetch the objectID's
@@ -363,24 +356,6 @@ static NSString *SPDictionaryEntityKey		= @"key";
 	}];
 	
 	return keys;
-}
-
-- (void)saveContext
-{
-    if (self.managedObjectContext == nil)
-	{
-		return;
-	}
-	
-	[self.managedObjectContext performBlock:^{
-		
-		NSError* error = nil;
-		if ([self.managedObjectContext hasChanges] && ![self.managedObjectContext save:&error])
-		{
-			NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-			abort();
-		}
-	}];
 }
 
 @end

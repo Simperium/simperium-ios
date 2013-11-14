@@ -29,7 +29,7 @@ static NSUInteger const SPMetadataIterations = 100;
 
 @implementation SPDictionaryStorageTests
 
-- (void)testInserts
+-(void)testInserts
 {
 	NSString *storageLabel = [NSString sp_makeUUID];
 	SPDictionaryStorage *storage = [[SPDictionaryStorage alloc] initWithLabel:storageLabel];
@@ -60,7 +60,6 @@ static NSUInteger const SPMetadataIterations = 100;
 	}
 
 	// Test Hitting CoreData: Re-instantiate, so NSCache is empty
-	storage = nil;
 	storage = [[SPDictionaryStorage alloc] initWithLabel:storageLabel];
 	
 	for(NSInteger i = 0; ++i <= SPMetadataIterations; )
@@ -75,11 +74,12 @@ static NSUInteger const SPMetadataIterations = 100;
 	
 	// Cleanup
 	[storage removeAllObjects];
+	[storage save];
 	[integrity removeAllObjects];
 	XCTAssertTrue( (storage.count == 0), @"RemoveAllObjects Failed");
 }
 
-- (void)testRemoval
+-(void)testRemoval
 {
 	NSString *storageLabel = [NSString sp_makeUUID];
 	SPDictionaryStorage *storage = [[SPDictionaryStorage alloc] initWithLabel:storageLabel];
@@ -95,6 +95,8 @@ static NSUInteger const SPMetadataIterations = 100;
 		[allKeys addObject:key];
 	}
 	
+	[storage save];
+	
 	// Remove all of them
 	for(NSString *key in allKeys)
 	{
@@ -106,6 +108,8 @@ static NSUInteger const SPMetadataIterations = 100;
 		XCTAssertNil(object, @"Error removing object");
 		XCTAssertFalse([storage containsObjectForKey:key], @"Error in containsObjectForKey");
 	}
+	
+	[storage save];
 	
 	// Make sure next time they'll ""stay removed""
 	storage = [[SPDictionaryStorage alloc] initWithLabel:storageLabel];
@@ -121,7 +125,7 @@ static NSUInteger const SPMetadataIterations = 100;
 	[allKeys removeAllObjects];
 }
 
-- (void)testNamespaces
+-(void)testNamespaces
 {
 	// Fresh Start
 	NSString *firstLabel = [NSString sp_makeUUID];
@@ -156,7 +160,7 @@ static NSUInteger const SPMetadataIterations = 100;
 #pragma mark Helpers
 #pragma mark ====================================================================================
 
-- (NSDictionary*)randomContentObject
+-(NSDictionary*)randomContentObject
 {
 	NSMutableDictionary *random = [NSMutableDictionary dictionary];
 	

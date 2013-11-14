@@ -13,19 +13,19 @@
 
 @property (nonatomic, strong, readonly) NSString *label;
 
-- (id)initWithLabel:(NSString *)label;
+-(id)initWithLabel:(NSString *)label;
 
-- (NSInteger)count;
-- (BOOL)containsObjectForKey:(id)aKey;
+-(NSInteger)count;
+-(BOOL)containsObjectForKey:(id)aKey;
 
-- (id)objectForKey:(NSString*)aKey;
-- (void)setObject:(id)anObject forKey:(NSString*)aKey;
-- (BOOL)save;
+-(id)objectForKey:(NSString*)aKey;
+-(void)setObject:(id)anObject forKey:(NSString*)aKey;
+-(BOOL)save;
 
-- (NSArray*)allKeys;
-- (NSArray*)allValues;
+-(NSArray*)allKeys;
+-(NSArray*)allValues;
 
-- (void)removeObjectForKey:(id)aKey;
-- (void)removeAllObjects;
+-(void)removeObjectForKey:(id)aKey;
+-(void)removeAllObjects;
 
 @end

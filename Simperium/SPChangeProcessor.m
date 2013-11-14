@@ -128,6 +128,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
 - (void)reset {
     [self.changesPending removeAllObjects];
+	[self.changesPending save];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
     [self serializeKeysForObjectsWithMoreChanges];
 }
@@ -135,6 +136,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 // For debugging
 - (void)softReset {
     [self.changesPending removeAllObjects];
+	[self.changesPending save];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
     [self loadKeysForObjectsWithMoreChanges];
 }
@@ -343,6 +345,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     if ([change objectForKey:CH_ERROR]) {
         DDLogVerbose(@"Simperium error received (%@) for %@, should reload the object here to be safe", bucket.name, key);
         [self.changesPending removeObjectForKey:key];
+		[self.changesPending save];
         return NO;
     }
 	
@@ -359,6 +362,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
             DDLogVerbose(@"Simperium acknowledged change for %@, cv=%@", changeClientID, changeVersion);
 		}
         [self.changesPending removeObjectForKey:key];
+		[self.changesPending save];
     }
 
     DDLogVerbose(@"Simperium performing change operation: %@", operation);
@@ -472,6 +476,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     if (!object) {
         //DDLogWarn(@"Simperium warning: couldn't processLocalObjectWithKey %@ because the object no longer exists", key);
         [self.changesPending removeObjectForKey:key];
+		[self.changesPending save];
         [self.keysForObjectsWithMoreChanges removeObject:key];
         [self serializeKeysForObjectsWithMoreChanges];
         return nil;
