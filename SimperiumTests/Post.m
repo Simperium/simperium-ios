@@ -17,10 +17,10 @@
 
 
 -(NSString *)description {
-    return [NSString stringWithFormat:@"Post\n\ttitle: %@, numComments: %luu", self.title,(unsigned long) (unsigned long)[self.comments count]];
+    return [NSString stringWithFormat:@"Post\n\ttitle: %@, numComments: %luu", self.title,(unsigned long)[self.comments count]];
 }
 
--(BOOL)isEqualToObject:(TestObject *)otherObj {
+- (BOOL)isEqualToObject:(TestObject *)otherObj {
     Post *other = (Post *)otherObj;
     BOOL titleEqual = [self.title isEqualToString:other.title];
     

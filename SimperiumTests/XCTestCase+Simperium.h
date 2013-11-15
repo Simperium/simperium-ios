@@ -9,5 +9,5 @@
 #import <XCTest/XCTest.h>
 
 @interface XCTestCase (Simperium)
--(void)waitFor:(NSTimeInterval)seconds;
+- (void)waitFor:(NSTimeInterval)seconds;
 @end

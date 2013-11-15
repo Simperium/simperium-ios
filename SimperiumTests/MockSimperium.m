@@ -26,8 +26,7 @@
 
 @implementation MockSimperium
 
-+(MockSimperium*)mockSimperium
-{
++ (MockSimperium*)mockSimperium {
     // Use an in-memory store for testing
 	NSError *error = nil;
 	NSManagedObjectContext* context				= [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
@@ -45,8 +44,7 @@
 	return s;
 }
 
--(MockWebSocketInterface*)mockWebSocketInterface
-{
+- (MockWebSocketInterface*)mockWebSocketInterface {
 	return self.network;
 }
 

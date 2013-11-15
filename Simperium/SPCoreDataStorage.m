@@ -494,7 +494,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		[upsertedObjects unionSet:userInfo[NSRefreshedObjectsKey]];
 		[upsertedObjects unionSet:userInfo[NSInsertedObjectsKey]];
 		
-		for(NSManagedObject* mo in upsertedObjects) {
+		for (NSManagedObject* mo in upsertedObjects) {
 			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
 			if (localMO.isFault) {
                 [localMO willAccessValueForKey:nil];
@@ -505,7 +505,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		}
 		
 		NSSet* deletedObjects = userInfo[NSDeletedObjectsKey];
-		for(NSManagedObject* mo in deletedObjects) {
+		for (NSManagedObject* mo in deletedObjects) {
 			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
 			if(localMO && !localMO.isDeleted) {
 				[self.mainManagedObjectContext deleteObject:localMO];

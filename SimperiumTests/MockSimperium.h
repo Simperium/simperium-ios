@@ -18,8 +18,8 @@
 
 @interface MockSimperium : Simperium
 
-+(instancetype)mockSimperium;
++ (instancetype)mockSimperium;
 
--(MockWebSocketInterface*)mockWebSocketInterface;
+- (MockWebSocketInterface*)mockWebSocketInterface;
 
 @end
