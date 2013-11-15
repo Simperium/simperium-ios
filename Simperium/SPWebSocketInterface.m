@@ -213,6 +213,9 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 - (void)send:(NSString *)message {
+	if(!self.open) {
+		return;
+	}
     [self.webSocket send:message];
     [self resetHeartbeatTimer];
 }
