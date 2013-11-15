@@ -42,7 +42,6 @@ NSString * const COM_HEARTBEAT		= @"h";
 
 
 static int ddLogLevel = LOG_LEVEL_INFO;
-NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
 
 @interface SPWebSocketInterface() <SRWebSocketDelegate>
 @property (nonatomic, strong, readwrite) SRWebSocket *webSocket;

@@ -25,7 +25,6 @@
 #import "NSString+Simperium.h"
 #import "DDLog.h"
 #import "DDLogDebug.h"
-#import <objc/runtime.h>
 #import "SRWebSocket.h"
 
 #define INDEX_PAGE_SIZE 500
