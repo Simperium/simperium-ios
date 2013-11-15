@@ -532,7 +532,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)signOutAndRemoveLocalData:(BOOL)remove {
     DDLogInfo(@"Simperium clearing local data...");
     
-    // Reset Simperium
+    // Reset Simperium: Don't start network managers again; expect app to handle that
     [self stopNetworking];
     
     // Reset the network manager and processors; any enqueued tasks will get skipped
@@ -556,7 +556,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.authenticator reset];
     self.user = nil;
 
-    // Don't start network managers again; expect app to handle that
+	// Hit the delegate
+	if([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
+		[self.delegate simperiumDidLogout:self];
+	}
 }
 
 - (NSManagedObjectContext *)managedObjectContext {
@@ -583,6 +586,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self startNetworking];
         
     [self closeAuthViewControllerAnimated:YES];
+	
+	if([self.delegate respondsToSelector:@selector(simperiumDidLogin:)]) {
+		[self.delegate simperiumDidLogin:self];
+	}
 }
 
 - (void)authenticationDidCancel {
