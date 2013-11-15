@@ -10,8 +10,7 @@
 
 @implementation NSDate(NSDate_Simperium)
 
--(NSString *)sp_stringBeforeNow
-{
+- (NSString *)sp_stringBeforeNow {
     // TODO: localize
     NSDate *now = [NSDate date];
     double time = [self timeIntervalSinceDate:now];

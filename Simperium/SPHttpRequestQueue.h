@@ -22,12 +22,12 @@
 @property (nonatomic, assign, readonly)  NSSet *requests;
 @property (nonatomic, assign, readwrite) BOOL enabled;
 
-+(instancetype)sharedInstance;
++ (instancetype)sharedInstance;
 
--(void)enqueueHttpRequest:(SPHttpRequest*)httpRequest;
--(void)dequeueHttpRequest:(SPHttpRequest*)httpRequest;
+- (void)enqueueHttpRequest:(SPHttpRequest*)httpRequest;
+- (void)dequeueHttpRequest:(SPHttpRequest*)httpRequest;
 
--(void)cancelAllRequest;
--(void)cancelRequestsWithURL:(NSURL *)url;
+- (void)cancelAllRequest;
+- (void)cancelRequestsWithURL:(NSURL *)url;
 
 @end

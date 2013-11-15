@@ -42,7 +42,6 @@ NSString * const COM_HEARTBEAT		= @"h";
 
 
 static int ddLogLevel = LOG_LEVEL_INFO;
-NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
 
 @interface SPWebSocketInterface() <SRWebSocketDelegate>
 @property (nonatomic, strong, readwrite) SRWebSocket *webSocket;
@@ -103,14 +102,14 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
         [self loadChannelForBucket:bucket];
 }
 
--(void)startChannels {
+- (void)startChannels {
     for (SPWebSocketChannel *channel in [self.channels allValues]) {
         channel.webSocketManager = self;
         [self authenticateChannel:channel];
     }
 }
 
--(void)stopChannels {
+- (void)stopChannels {
     for (SPWebSocketChannel *channel in [self.channels allValues]) {
         channel.started = NO;
     }
@@ -126,8 +125,8 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     [channel sendObjectChanges:object];
 }
 
--(void)sendLogMessage:(NSString*)logMessage {
-	if(!self.open) {
+- (void)sendLogMessage:(NSString*)logMessage {
+	if (!self.open) {
 		return;
 	}
 	NSDictionary *payload = @{ @"log" : logMessage };
@@ -210,6 +209,9 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 }
 
 - (void)send:(NSString *)message {
+	if(!self.open) {
+		return;
+	}
     [self.webSocket send:message];
     [self resetHeartbeatTimer];
 }
@@ -227,7 +229,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 - (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
 	// Reconnection failsafe
-	if(theWebSocket != self.webSocket) {
+	if (theWebSocket != self.webSocket) {
 		return;
 	}
 	
@@ -360,7 +362,7 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
 
 #pragma mark - Public Methods
 
--(void)resetBucketAndWait:(SPBucket *)bucket {
+- (void)resetBucketAndWait:(SPBucket *)bucket {
     // Careful, this will block if the queue has work on it; however, enqueued tasks should empty quickly if the
     // started flag is set to false
     dispatch_sync(bucket.processorQueue, ^{
@@ -369,22 +371,22 @@ NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDi
     [bucket setLastChangeSignature:nil];
 }
 
--(void)requestVersions:(int)numVersions object:(id<SPDiffable>)object {
+- (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object {
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
     [channel requestVersions:numVersions object:object];
 }
 
--(void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email {
+- (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email {
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
     [channel shareObject:object withEmail:email];
 }
 
--(void)requestLatestVersionsForBucket:(SPBucket *)b {
+- (void)requestLatestVersionsForBucket:(SPBucket *)b {
     SPWebSocketChannel *channel = [self channelForName:b.name];
     [channel requestLatestVersionsForBucket:b];
 }
 
--(void)forceSyncBucket:(SPBucket *)bucket {
+- (void)forceSyncBucket:(SPBucket *)bucket {
 	// Let's reuse the start mechanism. This will post the latest CV + publish pending changes
 	SPWebSocketChannel *channel = [self channelForName:bucket.name];
 	[channel startProcessingChangesForBucket:bucket];

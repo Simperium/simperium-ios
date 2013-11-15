@@ -16,8 +16,7 @@
 
 @implementation SPSimperiumLogger
 
-+(instancetype)sharedInstance
-{
++ (instancetype)sharedInstance {
 	static SPSimperiumLogger* logger;
 	static dispatch_once_t onceToken;
 	
@@ -28,11 +27,10 @@
 	return logger;
 }
 
--(void)logMessage:(DDLogMessage *)logMessage
-{
+- (void)logMessage:(DDLogMessage *)logMessage {
     NSString *message = (formatter) ? [formatter formatLogMessage:logMessage] : logMessage->logMsg;
 	
-    if(message != nil && self.delegate != nil) {
+    if (message != nil && self.delegate != nil) {
 		[self.delegate handleLogMessage:message];
 	}
 }

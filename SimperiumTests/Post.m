@@ -17,11 +17,11 @@
 @dynamic picture;
 @dynamic pictureInfo;
 
--(NSString *)description {
+- (NSString *)description {
     return [NSString stringWithFormat:@"Post\n\ttitle: %@, numComments: %d", self.title, [self.comments count]];
 }
 
--(BOOL)isEqualToObject:(TestObject *)otherObj {
+- (BOOL)isEqualToObject:(TestObject *)otherObj {
     Post *other = (Post *)otherObj;
     BOOL titleEqual = [self.title isEqualToString:other.title];
     

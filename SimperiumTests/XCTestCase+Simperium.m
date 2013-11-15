@@ -10,13 +10,12 @@
 
 @implementation XCTestCase (Simperium)
 
--(void)waitFor:(NSTimeInterval)seconds
-{
-    NSDate*timeoutDate = [NSDate dateWithTimeIntervalSinceNow:seconds];
+- (void)waitFor:(NSTimeInterval)seconds {
+    NSDate* timeoutDate = [NSDate dateWithTimeIntervalSinceNow:seconds];
     NSLog(@"Waiting for %f seconds...", seconds);
 	do {
 		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:timeoutDate];
-		if([timeoutDate timeIntervalSinceNow] < 0.0) {
+		if ([timeoutDate timeIntervalSinceNow] < 0.0) {
 			break;
         }
 	} while (YES);

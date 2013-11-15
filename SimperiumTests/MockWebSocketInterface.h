@@ -14,9 +14,9 @@
 
 @interface MockWebSocketInterface : SPWebSocketInterface
 
--(MockWebSocketChannel*)mockChannelForBucket:(SPBucket*)bucket;
+- (MockWebSocketChannel*)mockChannelForBucket:(SPBucket*)bucket;
 
--(NSSet*)mockSentMessages;
--(void)mockReceiveMessage:(NSString*)message;
+- (NSSet*)mockSentMessages;
+- (void)mockReceiveMessage:(NSString*)message;
 
 @end
