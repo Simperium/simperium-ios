@@ -209,6 +209,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)send:(NSString *)message {
+	if(!self.open) {
+		return;
+	}
     [self.webSocket send:message];
     [self resetHeartbeatTimer];
 }
