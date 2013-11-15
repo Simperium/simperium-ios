@@ -10,5 +10,6 @@
 
 
 @interface DDFileLogger (Simperium)
-+(DDFileLogger*)sharedInstance;
++ (DDFileLogger*)sharedInstance;
+- (NSData*)exportLogfiles;
 @end

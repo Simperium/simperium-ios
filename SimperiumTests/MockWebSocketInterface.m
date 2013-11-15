@@ -16,9 +16,9 @@
 #pragma mark ====================================================================================
 
 @interface SPWebSocketInterface()
--(void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message;
--(SPWebSocketChannel *)loadChannelForBucket:(SPBucket *)bucket;
--(SPWebSocketChannel *)channelForName:(NSString *)str;
+- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message;
+- (SPWebSocketChannel *)loadChannelForBucket:(SPBucket *)bucket;
+- (SPWebSocketChannel *)channelForName:(NSString *)str;
 @end
 
 
@@ -33,24 +33,20 @@
 
 @implementation MockWebSocketInterface
 
-+(void)load
-{
++(void)load {
 	NSAssert([SPWebSocketInterface respondsToSelector:@selector(registerClass:)], nil);
 	[SPWebSocketInterface performSelector:@selector(registerClass:) withObject:[self class]];
 }
 
--(MockWebSocketChannel*)mockChannelForBucket:(SPBucket*)bucket
-{
+- (MockWebSocketChannel*)mockChannelForBucket:(SPBucket*)bucket {
 	return (MockWebSocketChannel*)[super channelForName:bucket.name];
 }
 
--(NSSet*)mockSentMessages
-{
+- (NSSet*)mockSentMessages {
 	return self.mutableSentMessages;
 }
 
--(void)mockReceiveMessage:(NSString*)message
-{
+- (void)mockReceiveMessage:(NSString*)message {
 	[super webSocket:nil didReceiveMessage:message];
 }
 
@@ -59,28 +55,24 @@
 #pragma mark Overriden Methods
 #pragma mark ====================================================================================
 
--(SPWebSocketChannel*)loadChannelForBucket:(SPBucket*)bucket
-{
+- (SPWebSocketChannel*)loadChannelForBucket:(SPBucket*)bucket {
 	SPWebSocketChannel* channel = [super loadChannelForBucket:bucket];
 	channel.webSocketManager = self;
 	channel.started = YES;
 	return channel;
 }
 
--(void)openWebSocket
-{
+- (void)openWebSocket {
 	// Do not open a SRWebSocket instance
 }
 
--(BOOL)open
-{
+- (BOOL)open {
 	// The "WebSocket" is always open, for unit testing purposes
 	return YES;
 }
 
--(void)send:(NSString*)message
-{
-	if(self.mutableSentMessages == nil) {
+- (void)send:(NSString*)message {
+	if (self.mutableSentMessages == nil) {
 		self.mutableSentMessages = [NSMutableSet set];
 	}
 	

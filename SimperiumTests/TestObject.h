@@ -11,6 +11,6 @@
 
 @interface TestObject : SPManagedObject
 
--(BOOL)isEqualToObject:(TestObject *)other;
+- (BOOL)isEqualToObject:(TestObject *)other;
 
 @end

@@ -26,7 +26,7 @@ NS_ENUM(NSInteger, SPRemoteLogLevels) {
 #pragma mark ====================================================================================
 
 @protocol SPSimperiumLoggerDelegate <NSObject>
--(void)handleLogMessage:(NSString*)logMessage;
+- (void)handleLogMessage:(NSString*)logMessage;
 @end
 
 
@@ -38,6 +38,6 @@ NS_ENUM(NSInteger, SPRemoteLogLevels) {
 
 @property (nonatomic, weak, readwrite) id<SPSimperiumLoggerDelegate> delegate;
 
-+(instancetype)sharedInstance;
++ (instancetype)sharedInstance;
 
 @end

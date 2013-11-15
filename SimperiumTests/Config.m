@@ -20,19 +20,19 @@
 @dynamic smallImageTest;
 @dynamic date;
 
--(void)awakeFromInsert {
+- (void)awakeFromInsert {
     [super awakeFromInsert];
     
     // Try setting to nil to make sure it works
     self.captainsLog = nil;
 }
 
--(NSString *)description {
+- (NSString *)description {
     return [NSString stringWithFormat:@"Config\n\twarpSpeed: %d\n\tcaptainsLog:%@\n\tshieldPercent:%f\n",
             [self.warpSpeed intValue], self.captainsLog, [self.shieldPercent floatValue]];
 }
 
--(BOOL)isEqualToObject:(TestObject *)otherObj {
+- (BOOL)isEqualToObject:(TestObject *)otherObj {
     Config *other = (Config *)otherObj;
     
     // Manual comparison (be paranoid and don't trust Simperium diff)
