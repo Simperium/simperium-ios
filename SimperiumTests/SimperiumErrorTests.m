@@ -6,15 +6,20 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
-#import "SimperiumErrorTests.h"
+#import "SimperiumTests.h"
 #import "Config.h"
 #import "Farm.h"
 #import "SPBucket.h"
 #import "DiffMatchPatch.h"
 
+
+@interface SimperiumErrorTests : SimperiumTests
+
+@end
+
 @implementation SimperiumErrorTests
 
-- (void)testDeletion404
+-(void)testDeletion404
 {
     // Leader sends an object to a follower, follower goes offline, both make changes, follower reconnects
     Farm *leader = [self createFarm:@"leader"];
@@ -35,7 +40,7 @@
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
     follower.expectedAdditions = 1;
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
+    XCTAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
     [self resetExpectations: farmArray];
     [self ensureFarmsEqual:farmArray entityName:@"Config"];
     NSLog(@"****************************DISCONNECT*************************");
@@ -45,7 +50,7 @@
     [leaderBucket deleteObject:leader.config];
     leader.expectedAcknowledgments = 1;
     [leader.simperium save];
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (deleting)");
+    XCTAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (deleting)");
     [self resetExpectations: farmArray];
     
     // Delete on follower before it syncs to force a 404
@@ -55,7 +60,7 @@
     [self waitFor:0.01];
     NSLog(@"****************************RECONNECT*************************");
     [follower connect];
-    STAssertTrue([self waitForCompletion:4.0 farmArray:farmArray], @"timed out (changing)");
+    XCTAssertTrue([self waitForCompletion:4.0 farmArray:farmArray], @"timed out (changing)");
     NSLog(@"%@ end", self.name);
 }
 

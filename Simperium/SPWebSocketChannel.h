@@ -24,7 +24,7 @@
 @property (nonatomic, assign) BOOL started;
 
 + (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled;
-- (id)initWithSimperium:(Simperium *)s clientID:(NSString *)cid;
+
 - (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
 - (void)requestLatestVersionsForBucket:(SPBucket *)bucket;
 - (void)sendObjectDeletion:(id<SPDiffable>)object;
@@ -35,5 +35,7 @@
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket;
+
++(instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID;
 
 @end

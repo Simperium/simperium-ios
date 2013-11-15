@@ -36,7 +36,7 @@
 		return value;
     
 	// Convert from NSString (base64) to NSData
-    NSData *data = [NSData decodeBase64WithString:value];
+    NSData *data = [NSData sp_decodeBase64WithString:value];
     id obj = (self.valueTransformerName ?
               [[NSValueTransformer valueTransformerForName:self.valueTransformerName] reverseTransformedValue:data] :
               [NSKeyedUnarchiver unarchiveObjectWithData:data]);

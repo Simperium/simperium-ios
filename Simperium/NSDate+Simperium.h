@@ -11,6 +11,6 @@
 
 @interface NSDate(NSDate_Simperium)
 
--(NSString *)sp_stringBeforeNow;
+- (NSString *)sp_stringBeforeNow;
 
 @end

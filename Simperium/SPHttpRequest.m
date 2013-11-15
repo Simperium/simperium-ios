@@ -83,9 +83,8 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 
 @implementation SPHttpRequest
 
--(id)initWithURL:(NSURL*)url
-{
-	if((self = [super init])) {
+- (id)initWithURL:(NSURL*)url {
+	if ((self = [super init])) {
 		self.url = url;
 		self.method = SPHttpRequestMethodsGet;
 		self.status	= SPHttpRequestStatusWorking;
@@ -105,13 +104,11 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 #pragma mark Private Methods: Custom getters
 #pragma mark ====================================================================================
 
--(NSData *)responseData
-{
+- (NSData *)responseData {
 	return self.responseMutable;
 }
 
--(NSString *)responseString
-{
+- (NSString *)responseString {
 	NSString *responseString = nil;
 	
 	if (self.responseData) {
@@ -126,18 +123,15 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 #pragma mark Private Methods: iOS Background support
 #pragma mark ====================================================================================
 
--(void)beginBackgroundTask
-{
+- (void)beginBackgroundTask {
 #if TARGET_OS_IPHONE
-	if (!self.shouldContinueWhenAppEntersBackground)
-	{
+	if (!self.shouldContinueWhenAppEntersBackground) {
 		return;
 	}
 	
 	self.backgroundTask = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
 		dispatch_async(dispatch_get_main_queue(), ^{
-			if (self.backgroundTask != UIBackgroundTaskInvalid)
-			{
+			if (self.backgroundTask != UIBackgroundTaskInvalid) {
 				[[UIApplication sharedApplication] endBackgroundTask:self.backgroundTask];
 				self.backgroundTask = UIBackgroundTaskInvalid;
 				[self stop];
@@ -147,11 +141,9 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 #endif
 }
 
--(void)endBackgroundTasks
-{
+- (void)endBackgroundTasks {
 #if TARGET_OS_IPHONE
-	if (!self.shouldContinueWhenAppEntersBackground)
-	{
+	if (!self.shouldContinueWhenAppEntersBackground) {
 		return;
 	}
 	
@@ -169,22 +161,19 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 #pragma mark Protected Methods: Called from SPHttpRequestQueue
 #pragma mark ====================================================================================
 
--(void)begin
-{
+- (void)begin {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[self _begin];
 	});
 }
 
--(void)stop
-{
+- (void)stop {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[self _stop];
 	});
 }
 
--(void)_begin
-{
+- (void)_begin {
     ++self.retryCount;
 	self.lastReportedDownloadProgress = 0;
 	self.lastReportedUploadProgress = 0;
@@ -199,15 +188,14 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 	
 	[self performSelector:@selector(checkActivityTimeout) withObject:nil afterDelay:0.1f inModes:@[ NSRunLoopCommonModes ]];
 	
-	if([self.delegate respondsToSelector:self.selectorStarted]) {
+	if ([self.delegate respondsToSelector:self.selectorStarted]) {
 		SuppressPerformSelectorLeakWarning(
 			[self.delegate performSelector:self.selectorStarted withObject:self];
 		);
 	}
 }
 
--(void)_stop
-{
+- (void)_stop {
 	// Disable the timeout check
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	
@@ -225,15 +213,15 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 #pragma mark Private Helper Methods
 #pragma mark ====================================================================================
 
--(NSURLRequest*)request
+- (NSURLRequest*)request
 {
     NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:self.url	cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData timeoutInterval:self.timeout];
     
-    for(NSString* headerField in [self.headers allKeys]) {
+    for (NSString* headerField in [self.headers allKeys]) {
         [request setValue:self.headers[headerField] forHTTPHeaderField:headerField];
     }
     
-	if(self.method == SPHttpRequestMethodsPost) {
+	if (self.method == SPHttpRequestMethodsPost) {
 		request.HTTPMethod = @"POST";
 	} else if (self.method == SPHttpRequestMethodsPut) {
 		request.HTTPMethod = @"PUT";
@@ -246,22 +234,20 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
     return request;
 }
 
--(void)checkActivityTimeout
-{
+- (void)checkActivityTimeout {
     NSTimeInterval secondsSinceLastActivity = [[NSDate date] timeIntervalSinceDate:self.lastActivityDate];
     
-    if ((secondsSinceLastActivity < self.timeout))
-    {
+    if ((secondsSinceLastActivity < self.timeout)) {
 		[self performSelector:@selector(checkActivityTimeout) withObject:nil afterDelay:0.1f inModes:@[ NSRunLoopCommonModes ]];
         return;
     }
 	
     [self stop];
     
-    if(self.retryCount < SPHttpRequestQueueMaxRetries) {
+    if (self.retryCount < SPHttpRequestQueueMaxRetries) {
         [self begin];
     } else {
-		if([self.delegate respondsToSelector:self.selectorFailed]) {
+		if ([self.delegate respondsToSelector:self.selectorFailed]) {
 			self.responseError = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPHttpRequestErrorsTimeout userInfo:nil];			
 			SuppressPerformSelectorLeakWarning(
 				[self.delegate performSelector:self.selectorFailed withObject:self];
@@ -277,28 +263,23 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 #pragma mark NSURLConnectionDelegate Methods
 #pragma mark ====================================================================================
 
--(void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
     self.responseMutable.length = 0;
     self.lastActivityDate = [NSDate date];
 	self.encoding = [response encoding];
 	
 	// Ref: http://stackoverflow.com/questions/6918760/nsurlconnectiondelegate-getting-http-status-codes
-	if ([response isKindOfClass:[NSHTTPURLResponse class]])
-	{
+	if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
 		NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
 		self.responseCode = (int)[httpResponse statusCode];
 		
 		NSString *length = httpResponse.allHeaderFields[SPHttpRequestLengthKey];
 		self.downloadLength = [length intValue];
-	}
-	else
-	{
+	} else {
 		self.responseCode = 501;
 	}
 	
-	if (self.responseCode >= 400)
-	{
+	if (self.responseCode >= 400) {
 		NSError *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:self.responseCode userInfo:nil];
 		[self connection:connection didFailWithError:error];
 		
@@ -308,8 +289,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 	}
 }
 
--(void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
     [self.responseMutable appendData:data];
     self.lastActivityDate = [NSDate date];
 	
@@ -319,25 +299,24 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 	self.downloadProgress = self.responseMutable.length * 1.0f / self.downloadLength * 1.0f;
 	
 	// Hit the delegate only if the delta is above the threshold. Don't spam our delegate
-	if((_downloadProgress - _lastReportedDownloadProgress) < SPHttpRequestProgressThreshold) {
+	if ((_downloadProgress - _lastReportedDownloadProgress) < SPHttpRequestProgressThreshold) {
 		return;
 	}
 	
 	self.lastReportedDownloadProgress = self.downloadProgress;
 	
-	if([self.delegate respondsToSelector:self.selectorProgress]) {
+	if ([self.delegate respondsToSelector:self.selectorProgress]) {
 		SuppressPerformSelectorLeakWarning(
 			[self.delegate performSelector:self.selectorProgress withObject:self];
 		);
 	}
 }
 
--(void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
-{
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
 	self.responseError = error;
 	self.status	= SPHttpRequestStatusDone;
 	
-	if([self.delegate respondsToSelector:self.selectorFailed]) {
+	if ([self.delegate respondsToSelector:self.selectorFailed]) {
 		SuppressPerformSelectorLeakWarning(
 			[self.delegate performSelector:self.selectorFailed withObject:self];
 		);
@@ -346,11 +325,10 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 	[self.httpRequestQueue dequeueHttpRequest:self];
 }
 
--(void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
 	self.status	= SPHttpRequestStatusDone;
 	
-	if([self.delegate respondsToSelector:self.selectorSuccess]) {
+	if ([self.delegate respondsToSelector:self.selectorSuccess]) {
 		SuppressPerformSelectorLeakWarning(
 			[self.delegate performSelector:self.selectorSuccess withObject:self];
 		);
@@ -359,21 +337,20 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 	[self.httpRequestQueue dequeueHttpRequest:self];
 }
 
--(void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
-{
+- (void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     self.lastActivityDate = [NSDate date];
 	
 	// Calculate the progress
 	self.uploadProgress = totalBytesWritten * 1.0f / totalBytesExpectedToWrite * 1.0f;
 	
 	// Hit the delegate only if the delta is above the threshold. Don't spam our delegate
-	if((_uploadProgress - _lastReportedUploadProgress) < SPHttpRequestProgressThreshold) {
+	if ((_uploadProgress - _lastReportedUploadProgress) < SPHttpRequestProgressThreshold) {
 		return;
 	}
 	
 	self.lastReportedUploadProgress = self.uploadProgress;
 	
-	if([self.delegate respondsToSelector:self.selectorProgress]) {
+	if ([self.delegate respondsToSelector:self.selectorProgress]) {
 		SuppressPerformSelectorLeakWarning(
 			[self.delegate performSelector:self.selectorProgress withObject:self];
 		);
@@ -385,8 +362,7 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 #pragma mark Static Helpers
 #pragma mark ====================================================================================
 
-+(SPHttpRequest *)requestWithURL:(NSURL*)url
-{
++ (SPHttpRequest *)requestWithURL:(NSURL*)url {
 	return [[self alloc] initWithURL:url];
 }
 

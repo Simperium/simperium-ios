@@ -9,7 +9,7 @@
 #import "NSArray+Simperium.h"
 #import "SPMember.h"
 #import "DiffMatchPatch.h"
-#import "JSONKit.h"
+#import "JSONKit+Simperium.h"
 #import "DDLog.h"
 
 
@@ -110,7 +110,7 @@
 		} else if (object == [NSNull null]) {
 			[JSONString appendString:@"null\n"];
 		} else if ([object isKindOfClass:[NSArray class]] || [object isKindOfClass:[NSDictionary class]]) {
-			[JSONString appendFormat:@"%@\n",[[object JSONString] stringByReplacingOccurrencesOfString:@"\n" withString:@""]];
+			[JSONString appendFormat:@"%@\n",[[object sp_JSONString] stringByReplacingOccurrencesOfString:@"\n" withString:@""]];
 		} else {
 			[NSException raise:NSInternalInconsistencyException format:@"Simperium: Cannot create diff match patch with non-json object %@ in %s",object,__PRETTY_FUNCTION__];
 		}
@@ -131,7 +131,7 @@
 		return ![evaluatedObject isEqual:@""];
 	}]];
 	NSString *JSONArrayString = [NSString stringWithFormat:@"[ %@ ]", [JSONStrings componentsJoinedByString:@", "]];
-	return [JSONArrayString objectFromJSONString];
+	return [JSONArrayString sp_objectFromJSONString];
 }
 
 

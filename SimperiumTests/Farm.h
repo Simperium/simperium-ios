@@ -11,33 +11,21 @@
 #import "Config.h"
 #import "SPBucket.h"
 
-@interface Farm : NSObject <SimperiumDelegate, SPBucketDelegate> {
-    Simperium *simperium;
-    Config *config;
-    NSString *token;
-    BOOL done;
-    
-    int expectedAcknowledgments;
-    int expectedAdditions;
-    int expectedDeletions;
-    int expectedChanges;
-    int expectedVersions;
-    int expectedIndexCompletions;
-}
+@interface Farm : NSObject <SimperiumDelegate, SPBucketDelegate>
 
-@property (nonatomic, strong) Simperium *simperium;
-@property (nonatomic, strong) Config *config;
-@property (nonatomic, copy) NSString *token;
-@property (nonatomic) BOOL done;
-@property (nonatomic) int expectedAcknowledgments;
-@property (nonatomic) int expectedAdditions;
-@property (nonatomic) int expectedDeletions;
-@property (nonatomic) int expectedChanges;
-@property (nonatomic) int expectedVersions;
-@property (nonatomic) int expectedIndexCompletions;
-@property (nonatomic, strong, readonly) NSManagedObjectContext *managedObjectContext;
-@property (nonatomic, strong, readonly) NSManagedObjectModel *managedObjectModel;
-@property (nonatomic, strong, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+@property (nonatomic, strong, readwrite) Simperium						*simperium;
+@property (nonatomic, strong, readwrite) Config							*config;
+@property (nonatomic, copy,   readwrite) NSString						*token;
+@property (nonatomic, assign, readwrite) BOOL							done;
+@property (nonatomic, assign, readwrite) int							expectedAcknowledgments;
+@property (nonatomic, assign, readwrite) int							expectedAdditions;
+@property (nonatomic, assign, readwrite) int							expectedDeletions;
+@property (nonatomic, assign, readwrite) int							expectedChanges;
+@property (nonatomic, assign, readwrite) int							expectedVersions;
+@property (nonatomic, assign, readwrite) int							expectedIndexCompletions;
+@property (nonatomic, strong, readonly)  NSManagedObjectContext			*managedObjectContext;
+@property (nonatomic, strong, readonly)  NSManagedObjectModel			*managedObjectModel;
+@property (nonatomic, strong, readonly)  NSPersistentStoreCoordinator	*persistentStoreCoordinator;
 
 -(id)initWithToken:(NSString *)token bucketOverrides:(NSDictionary *)bucketOverrides label:(NSString *)label;
 -(void)start;

@@ -54,6 +54,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         self.managedObjectModel = model;
         self.mainManagedObjectContext = mainContext;
 		
+        [self.mainManagedObjectContext setMergePolicy:NSMergeByPropertyStoreTrumpMergePolicy];
+		
 		// The new writer MOC will be the only one with direct access to the persistentStoreCoordinator
 		self.writerManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
 		self.mainManagedObjectContext.parentContext = self.writerManagedObjectContext;
@@ -77,7 +79,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		self.mainManagedObjectContext.parentContext = self.writerManagedObjectContext;
 		
         // Simperium's context always trumps the app's local context (potentially stomping in-memory changes)
-        [self.sibling.mainManagedObjectContext setMergePolicy:NSMergeByPropertyStoreTrumpMergePolicy];
         [self.mainManagedObjectContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
         
         // For efficiency
@@ -490,7 +491,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		[upsertedObjects unionSet:userInfo[NSRefreshedObjectsKey]];
 		[upsertedObjects unionSet:userInfo[NSInsertedObjectsKey]];
 		
-		for(NSManagedObject* mo in upsertedObjects) {
+		for (NSManagedObject* mo in upsertedObjects) {
 			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
 			if (localMO.isFault) {
                 [localMO willAccessValueForKey:nil];
@@ -501,7 +502,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		}
 		
 		NSSet* deletedObjects = userInfo[NSDeletedObjectsKey];
-		for(NSManagedObject* mo in deletedObjects) {
+		for (NSManagedObject* mo in deletedObjects) {
 			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
 			if(localMO && !localMO.isDeleted) {
 				[self.mainManagedObjectContext deleteObject:localMO];

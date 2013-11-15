@@ -19,6 +19,9 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
 }
 
 + (NSString *)sp_encodeBase64WithData:(NSData *)objData {
+    if ([NSData instancesRespondToSelector:@selector(base64EncodedStringWithOptions:)]) {
+        return [objData base64EncodedStringWithOptions:0];
+    }
     const unsigned char * objRawData = [objData bytes];
     char * objPointer;
     char * strResult;
