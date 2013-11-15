@@ -21,7 +21,7 @@ static NSString *SPDictionaryEntityName		= @"SPDictionaryEntityName";
 static NSString *SPDictionaryEntityValue	= @"value";
 static NSString *SPDictionaryEntityKey		= @"key";
 
-static int ddLogLevel						= LOG_LEVEL_INFO;
+static int ddLogLevel						= LOG_LEVEL_ERROR;
 
 
 #pragma mark ====================================================================================
@@ -34,7 +34,7 @@ static int ddLogLevel						= LOG_LEVEL_INFO;
 @property (nonatomic, strong, readwrite) NSManagedObjectContext* managedObjectContext;
 @property (nonatomic, strong, readwrite) NSManagedObjectModel* managedObjectModel;
 @property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator* persistentStoreCoordinator;
-- (NSURL*)storeURL;
+- (NSURL*)baseURL;
 @end
 
 
@@ -80,7 +80,7 @@ static int ddLogLevel						= LOG_LEVEL_INFO;
 	}
 	
 	// Do we have a cache hit?
-	__block BOOL exists = [self.cache objectForKey:aKey];
+	__block BOOL exists = ([self.cache objectForKey:aKey] != nil);
 	if (exists) {
 		return exists;
 	}
@@ -290,11 +290,24 @@ static int ddLogLevel						= LOG_LEVEL_INFO;
     }
     
 	@synchronized(self) {
-		NSError* error	= nil;
+		// If the baseURL doesn't exist, create it
+		NSURL *baseURL	= [self baseURL];
+		
+		NSError *error	= nil;
+		BOOL success	= [[NSFileManager defaultManager] createDirectoryAtURL:baseURL withIntermediateDirectories:YES attributes:nil error:&error];
+		
+		if (!success) {
+			DDLogError(@"%@ could not create baseURL %@", NSStringFromClass([self class]), baseURL);
+			abort();
+		}
+		
+		// Finally, load the PSC
+		NSURL *storeURL = [baseURL URLByAppendingPathComponent:self.filename];
+		
 		_persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
-		if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:self.storeURL options:nil error:&error])
+		if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
 		{
-			NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+			DDLogError(@"Unresolved error %@, %@", error, [error userInfo]);
 			abort();
 		}
 	}
@@ -307,17 +320,43 @@ static int ddLogLevel						= LOG_LEVEL_INFO;
 #pragma mark Helpers
 #pragma mark ====================================================================================
 
-- (NSURL*)storeURL {
-	NSURL* documentsPath = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
-	NSString* filename = [NSString stringWithFormat:@"SPChanges-%@.sqlite", self.label];
-	return [documentsPath URLByAppendingPathComponent:filename];
+- (NSString *)filename {
+	return [NSString stringWithFormat:@"SPDictionary-%@.sqlite", self.label];
 }
 
-- (NSFetchRequest*)requestForEntity {
+#if TARGET_OS_IPHONE
+
+- (NSURL *)baseURL {
+	return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
+#else
+
+- (NSURL *)baseURL {
+    NSURL *appSupportURL = [[[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask] lastObject];
+	
+	// NOTE:
+	// While running UnitTests on OSX, the applicationSupport folder won't bear any application name.
+	// This will cause, as a side effect, SPDictionaryStorage test-database's to get spread in the AppSupport folder.
+	// As a workaround (until we figure out a better way of handling this), let's detect XCTestCase class, and append the Simperium-OSX name to the path.
+	// That will generate an URL like this:
+	//		- //Users/[USER]/Library/Application 0Support/Simperium-OSX/SPDictionaryStorage/
+	//
+	if (NSClassFromString(@"XCTestCase") != nil) {
+		NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+		appSupportURL = [appSupportURL URLByAppendingPathComponent:[bundle objectForInfoDictionaryKey:(NSString*)kCFBundleNameKey]];
+	}
+		
+	return [appSupportURL URLByAppendingPathComponent:NSStringFromClass([self class])];
+}
+
+#endif
+
+- (NSFetchRequest *)requestForEntity {
 	return [NSFetchRequest fetchRequestWithEntityName:SPDictionaryEntityName];
 }
 
-- (NSFetchRequest*)requestForEntityWithKey:(id)aKey {
+- (NSFetchRequest *)requestForEntityWithKey:(id)aKey {
 	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:SPDictionaryEntityName];
 	request.predicate = [NSPredicate predicateWithFormat:@"key == %@", aKey];
 	request.fetchLimit = 1;
@@ -325,7 +364,7 @@ static int ddLogLevel						= LOG_LEVEL_INFO;
 	return request;
 }
 
-- (NSArray*)loadObjectsProperty:(NSString*)property unarchive:(BOOL)unarchive {
+- (NSArray *)loadObjectsProperty:(NSString*)property unarchive:(BOOL)unarchive {
 	NSMutableArray *keys = [NSMutableArray array];
 	
 	[self.managedObjectContext performBlockAndWait:^{
