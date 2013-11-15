@@ -17,7 +17,7 @@
 
 
 -(NSString *)description {
-    return [NSString stringWithFormat:@"Post\n\ttitle: %@, numComments: %d", self.title, [self.comments count]];
+    return [NSString stringWithFormat:@"Post\n\ttitle: %@, numComments: %luu", self.title,(unsigned long) (unsigned long)[self.comments count]];
 }
 
 -(BOOL)isEqualToObject:(TestObject *)otherObj {
@@ -25,8 +25,8 @@
     BOOL titleEqual = [self.title isEqualToString:other.title];
     
     // Break these out for ease of debugging
-    int numComments = [self.comments count];
-    int otherNumComments = [other.comments count];
+    int numComments = (int)[self.comments count];
+    int otherNumComments = (int)[other.comments count];
     BOOL numCommentsEqual =  numComments = otherNumComments;
     
     BOOL isEqual = titleEqual && numCommentsEqual;

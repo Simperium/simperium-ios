@@ -37,7 +37,7 @@ static NSUInteger const SPMetadataIterations = 100;
 	// Test SetObject
 	for(NSInteger i = 0; ++i <= SPMetadataIterations; ) {
 		NSDictionary *random = [self randomContentObject];
-		NSString* key = [NSString stringWithFormat:@"%d", i];
+		NSString* key = [NSString stringWithFormat:@"%ld", (long)i];
 		[storage setObject:random forKey:key];
 		[integrity setObject:random forKey:key];
 	}
@@ -48,7 +48,7 @@ static NSUInteger const SPMetadataIterations = 100;
 	
 	// Test Hitting NSCache
 	for(NSInteger i = 0; ++i <= SPMetadataIterations; ) {
-		NSString* key = [NSString stringWithFormat:@"%d", i];
+		NSString* key = [NSString stringWithFormat:@"%ld", (long)i];
 		NSDictionary *retrieved = [storage objectForKey:key];
 		NSDictionary *verify = [integrity objectForKey:key];
 
@@ -60,7 +60,7 @@ static NSUInteger const SPMetadataIterations = 100;
 	storage = [[SPDictionaryStorage alloc] initWithLabel:storageLabel];
 	
 	for(NSInteger i = 0; ++i <= SPMetadataIterations; ) {
-		NSString* key = [NSString stringWithFormat:@"%d", i];
+		NSString* key = [NSString stringWithFormat:@"%ld", (long)i];
 		NSDictionary *retrieved = [storage objectForKey:key];
 		NSDictionary *verify = [integrity objectForKey:key];
 		
@@ -84,7 +84,7 @@ static NSUInteger const SPMetadataIterations = 100;
 	
 	for(NSInteger i = 0; ++i <= SPMetadataIterations; ) {
 		NSDictionary *random = [self randomContentObject];
-		NSString* key = [NSString stringWithFormat:@"%d", i];
+		NSString* key = [NSString stringWithFormat:@"%ld", (long)i];
 		[storage setObject:random forKey:key];
 		[allKeys addObject:key];
 	}
@@ -129,7 +129,7 @@ static NSUInteger const SPMetadataIterations = 100;
 	
 	for(NSInteger i = 0; ++i <= SPMetadataIterations; ) {
 		NSDictionary *random = [self randomContentObject];
-		NSString* key = [NSString stringWithFormat:@"%d", i];
+		NSString* key = [NSString stringWithFormat:@"%ld", (long)i];
 		[firstStorage setObject:random forKey:key];
 		[allKeys addObject:key];
 	}
