@@ -102,14 +102,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [self loadChannelForBucket:bucket];
 }
 
--(void)startChannels {
+- (void)startChannels {
     for (SPWebSocketChannel *channel in [self.channels allValues]) {
         channel.webSocketManager = self;
         [self authenticateChannel:channel];
     }
 }
 
--(void)stopChannels {
+- (void)stopChannels {
     for (SPWebSocketChannel *channel in [self.channels allValues]) {
         channel.started = NO;
     }
@@ -125,8 +125,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [channel sendObjectChanges:object];
 }
 
--(void)sendLogMessage:(NSString*)logMessage {
-	if(!self.open) {
+- (void)sendLogMessage:(NSString*)logMessage {
+	if (!self.open) {
 		return;
 	}
 	NSDictionary *payload = @{ @"log" : logMessage };
@@ -226,7 +226,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
 	// Reconnection failsafe
-	if(theWebSocket != self.webSocket) {
+	if (theWebSocket != self.webSocket) {
 		return;
 	}
 	
@@ -359,7 +359,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 #pragma mark - Public Methods
 
--(void)resetBucketAndWait:(SPBucket *)bucket {
+- (void)resetBucketAndWait:(SPBucket *)bucket {
     // Careful, this will block if the queue has work on it; however, enqueued tasks should empty quickly if the
     // started flag is set to false
     dispatch_sync(bucket.processorQueue, ^{
@@ -368,22 +368,22 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [bucket setLastChangeSignature:nil];
 }
 
--(void)requestVersions:(int)numVersions object:(id<SPDiffable>)object {
+- (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object {
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
     [channel requestVersions:numVersions object:object];
 }
 
--(void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email {
+- (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email {
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
     [channel shareObject:object withEmail:email];
 }
 
--(void)requestLatestVersionsForBucket:(SPBucket *)b {
+- (void)requestLatestVersionsForBucket:(SPBucket *)b {
     SPWebSocketChannel *channel = [self channelForName:b.name];
     [channel requestLatestVersionsForBucket:b];
 }
 
--(void)forceSyncBucket:(SPBucket *)bucket {
+- (void)forceSyncBucket:(SPBucket *)bucket {
 	// Let's reuse the start mechanism. This will post the latest CV + publish pending changes
 	SPWebSocketChannel *channel = [self channelForName:bucket.name];
 	[channel startProcessingChangesForBucket:bucket];

@@ -21,18 +21,15 @@
 
 @implementation RemoteDebugTests
 
--(void)setUp
-{
+- (void)setUp {
     [super setUp];
 }
 
--(void)tearDown
-{
+- (void)tearDown {
     [super tearDown];
 }
 
--(void)testRemoteLogging
-{
+- (void)testRemoteLogging {
 	//	log:<log level>
 	//		log level = int, 0 = OFF, 1 = regular, 2 = verbose?
 	
@@ -63,8 +60,7 @@
 	XCTAssertTrue([sentMessages containsObject:message], @"Error message wasn't sent through the WebSocket interface");
 }
 
--(void)testRemoteIndex
-{
+- (void)testRemoteIndex {
 	// Add a new object
 	MockSimperium* s		= [MockSimperium mockSimperium];
 
@@ -85,14 +81,12 @@
 	//	Index Response
 	//		0:index:{ current: <cv>, index: { {id: <eid>, v: <version>}, ... }, pending: { { id: <eid>, sv: <version>, ccid: <ccid> }, ... }, extra: { ? } }
 	BOOL responseSent = NO;
-	for(id sent in s.mockWebSocketInterface.mockSentMessages)
-	{
+	for(id sent in s.mockWebSocketInterface.mockSentMessages) {
 		NSRange range			= [sent rangeOfString:@":"];
 		NSString *msgChannel	= [sent substringToIndex:range.location];
 		NSString *msgCommand	= [sent substringFromIndex:range.location+range.length];
 		
-		if([msgChannel intValue] != channel.number || [msgCommand hasPrefix:@"index:"] == NO)
-		{
+		if ([msgChannel intValue] != channel.number || [msgCommand hasPrefix:@"index:"] == NO) {
 			continue;
 		}
 		

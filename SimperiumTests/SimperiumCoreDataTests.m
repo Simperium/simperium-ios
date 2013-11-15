@@ -48,8 +48,7 @@ static NSString* const kDeletedKey = @"deleted";
 
 @implementation SimperiumCoreDataTests
 
--(void)setUp
-{		
+- (void)setUp {
 	[super setUp];
 	
 	// Fire up Simperium
@@ -66,8 +65,7 @@ static NSString* const kDeletedKey = @"deleted";
 	XCTAssertTrue((self.writerContext.concurrencyType == NSPrivateQueueConcurrencyType),	@"CoreData writerContext Setup Error");
 }
 
--(void)tearDown
-{
+- (void)tearDown {
 	[super tearDown];
 	
 	// Cleanup
@@ -83,13 +81,11 @@ static NSString* const kDeletedKey = @"deleted";
 #pragma mark Tests!
 #pragma mark ====================================================================================
 
--(void)testWriterMOC
-{
+- (void)testWriterMOC {
     NSLog(@"%@ start", self.name);
 	
 	// Let's insert new objects
-	for(NSInteger i = 0; ++i <= kObjectsCount; )
-	{
+	for(NSInteger i = 0; ++i <= kObjectsCount; ) {
 		Config* config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:self.mainContext];
 		config.warpSpeed = @( arc4random_uniform(UINT_MAX) );
 	}
@@ -118,8 +114,7 @@ static NSString* const kDeletedKey = @"deleted";
 
 
 
--(void)testBucketMechanism
-{
+- (void)testBucketMechanism {
     NSLog(@"%@ start", self.name);
 	
 	[super waitFor:kLocalTestTimeout];
@@ -149,8 +144,7 @@ static NSString* const kDeletedKey = @"deleted";
 
 
 
--(void)testNestedInsert
-{
+- (void)testNestedInsert {
     NSLog(@"%@ start", self.name);
 	
 	NSManagedObjectContext *workerContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
@@ -197,8 +191,7 @@ static NSString* const kDeletedKey = @"deleted";
     NSLog(@"%@ end", self.name);
 }
 
--(void)testRemoteCRUD
-{
+- (void)testRemoteCRUD {
     NSLog(@"%@ start", self.name);
 
 	// We'll need a follower farm
@@ -226,8 +219,7 @@ static NSString* const kDeletedKey = @"deleted";
 	//
 	
 	NSMutableSet* objects = [NSMutableSet set];
-	for(NSInteger i = 0; ++i <= kObjectsCount; )
-	{
+	for(NSInteger i = 0; ++i <= kObjectsCount; ) {
 		Config* config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:self.mainContext];
 		[objects addObject:config];
 	}
@@ -253,8 +245,7 @@ static NSString* const kDeletedKey = @"deleted";
 	// ====================================================================================
 	//
 	
-	for(Config* config in objects)
-	{
+	for(Config* config in objects) {
 		config.warpSpeed = @(31337);
 		config.shieldsUp = @(YES);
 		config.shieldPercent = @(100);
@@ -270,8 +261,7 @@ static NSString* const kDeletedKey = @"deleted";
 	NSArray *mainUpdated = [self changesForContext:followerWriterMOC][kUpdatedKey];
 	XCTAssertTrue( (mainUpdated.count == objects.count), @"Error Updating Objects" );
 	
-	for(Config* config in mainUpdated)
-	{
+	for(Config* config in mainUpdated) {
 		XCTAssertTrue([config.warpSpeed isEqual:@(31337)], @"Update Test Failed");
 		XCTAssertTrue([config.shieldsUp isEqual:@(YES)],	@"Update Test Failed");
 		XCTAssertTrue([config.shieldPercent isEqual:@(100)],	@"Update Test Failed");
@@ -311,14 +301,12 @@ static NSString* const kDeletedKey = @"deleted";
 #pragma mark Helpers
 #pragma mark ====================================================================================
 
--(void)handleContextNote:(NSNotification*)note
-{
+- (void)handleContextNote:(NSNotification*)note {
 	NSValue* wrappedSender		 = [NSValue valueWithNonretainedObject:note.object];
 	NSMutableDictionary* changes = self.changesByContext[wrappedSender];
 	
 	// First time?
-	if(!changes)
-	{
+	if (!changes) {
 		changes	= [NSMutableDictionary dictionary];
 		changes[kInsertedKey] = [NSMutableArray array];
 		changes[kUpdatedKey] = [NSMutableArray array];
@@ -332,27 +320,23 @@ static NSString* const kDeletedKey = @"deleted";
 	NSSet* receivedUpdates = userInfo[kUpdatedKey];
 	NSSet* receivedDeletions = userInfo[kDeletedKey];
 	
-	if(receivedInserts)
-	{
+	if (receivedInserts) {
 		NSMutableArray* inserted = changes[kInsertedKey];
 		[inserted addObjectsFromArray:[receivedInserts allObjects]];
 	}
 
-	if(receivedUpdates)
-	{
+	if (receivedUpdates) {
 		NSMutableArray* updated = changes[kUpdatedKey];
 		[updated addObjectsFromArray:[receivedUpdates allObjects]];
 	}
 	
-	if(receivedDeletions)
-	{
+	if (receivedDeletions) {
 		NSMutableArray* deleted = changes[kDeletedKey];
 		[deleted addObjectsFromArray:[receivedDeletions allObjects]];
 	}
 }
 
--(NSDictionary*)changesForContext:(NSManagedObjectContext*)context
-{
+- (NSDictionary*)changesForContext:(NSManagedObjectContext*)context {
 	NSValue* wrappedContext = [NSValue valueWithNonretainedObject:context];
 	return self.changesByContext[wrappedContext];
 }

@@ -11,11 +11,11 @@
 
 @implementation TestObject
 
--(NSString *)description {
+- (NSString *)description {
     return @"no test object";
 }
 
--(BOOL)isEqualToObject:(TestObject *)other {
+- (BOOL)isEqualToObject:(TestObject *)other {
     return NO;
 }
 

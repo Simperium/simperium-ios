@@ -264,7 +264,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.webSocketManager send:message];
 }
 
--(void)requestLatestVersionsForBucket:(SPBucket *)bucket {
+- (void)requestLatestVersionsForBucket:(SPBucket *)bucket {
     // Multiple errors could try to trigger multiple index refreshes
     if (self.indexing) {
         return;
@@ -505,7 +505,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     });
 }
 
-//-(void)getIndexFailed:(ASIHTTPRequest *)request
+//- (void)getIndexFailed:(ASIHTTPRequest *)request
 //{
 //    gettingVersions = NO;
 //    int retry = [self nextRetryDelay];
