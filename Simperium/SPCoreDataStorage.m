@@ -144,9 +144,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simperiumKey == %@", key];
     [fetchRequest setPredicate:predicate];
     
+	// Fetch just one object: we don't really need to go through the entire database!
+	[fetchRequest setFetchLimit:1];
+	
     NSError *error;
     NSArray *items = [self.mainManagedObjectContext executeFetchRequest:fetchRequest error:&error];
-    
+
     if ([items count] == 0) {
         return nil;
 	}

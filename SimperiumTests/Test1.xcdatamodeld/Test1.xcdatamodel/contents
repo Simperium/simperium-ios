@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1811" systemVersion="12C60" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
-    <entity name="Comment" representedClassName="Comment" parentEntity="SPManagedObject" syncable="YES">
-        <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
-        <relationship name="post" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Post" inverseName="comments" inverseEntity="Post" syncable="YES"/>
-    </entity>
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="3401" systemVersion="13A603" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="Config" representedClassName="Config" parentEntity="SPManagedObject" syncable="YES">
         <attribute name="binaryFile" optional="YES" attributeType="String" syncable="YES">
             <userInfo>
@@ -19,16 +15,20 @@
     </entity>
     <entity name="Post" representedClassName="Post" parentEntity="SPManagedObject" syncable="YES">
         <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
-        <relationship name="comments" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Comment" inverseName="post" inverseEntity="Comment" syncable="YES"/>
+        <relationship name="comments" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="PostComment" inverseName="post" inverseEntity="PostComment" syncable="YES"/>
+    </entity>
+    <entity name="PostComment" representedClassName="PostComment" parentEntity="SPManagedObject" syncable="YES">
+        <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="post" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Post" inverseName="comments" inverseEntity="Post" syncable="YES"/>
     </entity>
     <entity name="SPManagedObject" representedClassName="SPManagedObject" isAbstract="YES" syncable="YES">
         <attribute name="ghostData" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="simperiumKey" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Comment" positionX="72" positionY="198" width="128" height="75"/>
-        <element name="Config" positionX="-20" positionY="228" width="128" height="150"/>
-        <element name="Post" positionX="151" positionY="234" width="128" height="75"/>
-        <element name="SPManagedObject" positionX="153" positionY="96" width="128" height="75"/>
+        <element name="PostComment" positionX="0" positionY="0" width="0" height="0"/>
+        <element name="Config" positionX="0" positionY="0" width="0" height="0"/>
+        <element name="Post" positionX="0" positionY="0" width="0" height="0"/>
+        <element name="SPManagedObject" positionX="0" positionY="0" width="0" height="0"/>
     </elements>
 </model>
