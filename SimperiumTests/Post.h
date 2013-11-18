@@ -10,7 +10,7 @@
 #import <CoreData/CoreData.h>
 #import "TestObject.h"
 
-@class Comment;
+@class PostComment;
 
 @interface Post : TestObject
 
@@ -23,8 +23,8 @@
 
 @interface Post (CoreDataGeneratedAccessors)
 
-- (void)addCommentsObject:(Comment *)value;
-- (void)removeCommentsObject:(Comment *)value;
+- (void)addCommentsObject:(PostComment *)value;
+- (void)removeCommentsObject:(PostComment *)value;
 - (void)addComments:(NSSet *)values;
 - (void)removeComments:(NSSet *)values;
 

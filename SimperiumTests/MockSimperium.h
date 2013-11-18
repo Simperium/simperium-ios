@@ -6,7 +6,12 @@
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
+#if TARGET_OS_IPHONE
 #import <Simperium/Simperium.h>
+#else
+#import <Simperium-OSX/Simperium.h>
+#endif
+
 #import "MockWebSocketInterface.h"
 
 

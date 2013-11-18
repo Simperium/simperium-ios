@@ -81,33 +81,25 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(void(^)())completionBlock {
     // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
     dispatch_async(bucket.processorQueue, ^{
-		
-        NSArray *changes = [bucket.changeProcessor processPendingChanges:bucket onlyQueuedChanges:onlyQueuedChanges];
-        if ([changes count] == 0) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completionBlock) {
-                    completionBlock();
+		[bucket.changeProcessor enumeratePendingChanges:bucket onlyQueuedChanges:onlyQueuedChanges block:^(NSDictionary *change) {
+			dispatch_async(dispatch_get_main_queue(), ^{
+				if (!self.started) {
+					return;
 				}
-            });
-            return;
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (self.started) {
-                DDLogVerbose(@"Simperium sending all changes (%lu) for bucket %@", (unsigned long)[changes count], bucket.name);
-                for (NSDictionary *change in changes) {
-                    NSString *jsonStr = [change sp_JSONString];
-                    NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
-                    DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
-                    [self.webSocketManager send:message];
-                }
-			}
-			
-			// Done!
-			if (completionBlock) {
+				
+				NSString *jsonStr = [change sp_JSONString];
+				NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
+				DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
+				[self.webSocketManager send:message];
+			});
+		}];
+		
+		// All done!
+		if (completionBlock) {
+			dispatch_async(dispatch_get_main_queue(), ^{
 				completionBlock();
-			}
-        });
+			});
+		}
     });
 }
 
@@ -150,9 +142,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     dispatch_async(object.bucket.processorQueue, ^{
-        NSDictionary *change = [object.bucket.changeProcessor processLocalObjectWithKey:key bucket:object.bucket later:_indexing || !_started];
-        if (change) {
-            [self sendChange: change forKey: key bucket:object.bucket];
+		@autoreleasepool {
+			NSDictionary *change = [object.bucket.changeProcessor processLocalObjectWithKey:key bucket:object.bucket later:_indexing || !_started];
+			if (change) {
+				[self sendChange: change forKey: key bucket:object.bucket];
+			}
 		}
     });
 }

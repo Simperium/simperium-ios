@@ -36,8 +36,9 @@
 @protocol SimperiumDelegate <NSObject>
 @optional
 - (void)simperium:(Simperium *)simperium didFailWithError:(NSError *)error;
+- (void)simperiumDidLogin:(Simperium *)simperium;
+- (void)simperiumDidLogout:(Simperium *)simperium;
 @end
-
 
 
 #pragma mark ====================================================================================

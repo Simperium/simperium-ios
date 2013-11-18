@@ -7,7 +7,7 @@
 //
 
 #import "Post.h"
-#import "Comment.h"
+#import "PostComment.h"
 
 
 @implementation Post
@@ -17,8 +17,8 @@
 @dynamic picture;
 @dynamic pictureInfo;
 
-- (NSString *)description {
-    return [NSString stringWithFormat:@"Post\n\ttitle: %@, numComments: %d", self.title, [self.comments count]];
+-(NSString *)description {
+    return [NSString stringWithFormat:@"Post\n\ttitle: %@, numComments: %luu", self.title,(unsigned long)[self.comments count]];
 }
 
 - (BOOL)isEqualToObject:(TestObject *)otherObj {
@@ -26,8 +26,8 @@
     BOOL titleEqual = [self.title isEqualToString:other.title];
     
     // Break these out for ease of debugging
-    int numComments = [self.comments count];
-    int otherNumComments = [other.comments count];
+    int numComments = (int)[self.comments count];
+    int otherNumComments = (int)[other.comments count];
     BOOL numCommentsEqual =  numComments = otherNumComments;
     BOOL pictureEquals = ((self.picture == nil && other.picture == nil) || ([self.picture isEqualToData:other.picture]));
 	
