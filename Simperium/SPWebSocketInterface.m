@@ -45,9 +45,6 @@ NSString * const COM_LOG			= @"log";
 NSString * const COM_INDEX_STATE	= @"index";
 NSString * const COM_HEARTBEAT		= @"h";
 
-// TODO: Update this automatically via a script that looks at current git tag
-#define LIBRARY_VERSION @"0.6.1"
-
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 NSString * const WebSocketAuthenticationDidFailNotification = @"AuthenticationDidFailNotification";
