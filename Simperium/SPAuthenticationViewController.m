@@ -347,13 +347,27 @@
                          [progressView setHidden: YES];
                          [progressView stopAnimating];	
                          [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-                                                    
-                         [actionButton showErrorMessage:NSLocalizedString(@"Could not login with the provided email address and password.", @"Message displayed when login fails")];
+                         
+						 NSString* loginError = [self loginErrorForCode:responseCode];
+                         [actionButton showErrorMessage:loginError];
+						 
                          [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
                          [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]]];
                        }
      ];
 }
+
+- (NSString*)loginErrorForCode:(NSUInteger)responseCode {
+    switch (responseCode) {
+        case 401:
+            // Bad email or password
+			return NSLocalizedString(@"Could not login with the provided email address and password.", @"Message displayed when login fails");
+        default:
+            // General network problem
+			return NSLocalizedString(@"We're having problems. Please try again soon.", @"Generic error");
+    }
+}
+
 
 #pragma mark Creation
 
@@ -393,15 +407,7 @@
                 failure:^(int responseCode, NSString *responseString){
                     [self restoreCreationSettings];
 					
-					NSString *message = nil;
-					if(responseCode == SPHttpRequestErrorsTimeout) {
-						message = NSLocalizedString(@"There's a problem with the connection.  Please try again later.",
-													@"Details for a dialog that is displayed when there's a connection problem");
-					} else {
-						message = NSLocalizedString(@"Could not create an account with the provided email address and password.",
-													@"An error message");
-					}
-                    
+					NSString *message = [self signupErrorForCode:responseCode];
 					[actionButton showErrorMessage:message];
 					
                     [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]];
@@ -409,6 +415,21 @@
                     [self earthquake:[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:2 inSection:0]]];
                 }
      ];
+}
+
+
+- (NSString*)signupErrorForCode:(NSUInteger)responseCode {
+    switch (responseCode) {
+        case 409:
+            // User already exists
+			return NSLocalizedString(@"That email is already being used", @"Error when address is in use");
+        case 401:
+            // Bad email or password
+			return NSLocalizedString(@"Could not create an account with the provided email address and password.", @"Error for bad email or password");
+        default:
+            // General network problem
+			return NSLocalizedString(@"We're having problems. Please try again soon.", @"Generic error");
+    }
 }
 
 
