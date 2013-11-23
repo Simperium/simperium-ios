@@ -9,9 +9,7 @@ Adding Simperium to your project
 --------------------------------
 The easiest way to add Simperium is to [download the latest release](https://github.com/Simperium/simperium-ios/releases/latest). Unzip the source code somewhere convenient.
 
-Then, drag and drop Simperium.xcodeproj into your application's project, then add libSimperium.a in your target's Build Phase tab (under Link Binary with Libraries). You'll still need to [add some dependencies](http://simperium.com/docs/ios/#add). Note that you shouldn't have Simperium.xcodeproj open in another window at the same time. Xcode doesn't like this.
-
-If for some reason you want to build a binary framework, open Simperium.xcodeproj, then select and build the Framework target for iOS Device. You can build a release version of the Framework target by choosing Product -> Build for Archiving.
+Then, drag and drop Simperium.xcodeproj into your application's project, and add libSimperium.a in your target's Build Phase tab (under Link Binary with Libraries). You'll still need to [add some dependencies](http://simperium.com/docs/ios/#add).
 
 OSX
 ---
@@ -19,7 +17,7 @@ Everything works pretty much the same on OSX. Some changes are noted [in the onl
 
 Releases
 --------
-The master branch always has the latest stable release, and is tagged.Simperium is used by hundreds of thousands of people across many different apps and devices, and is considered production-ready.
+The master branch always has the latest stable release, and is tagged. Simperium is used by hundreds of thousands of people across many different apps and devices, and is considered production-ready.
 
 The develop branch has an ongoing development build (not intended for production use).
 
@@ -42,21 +40,6 @@ Folder structure
 **User**. Basic access to a user's data. In the future this will hold custom properties and presence information.
 
 **Helpers**. Exporter, keychain, etc.
-
-**Binary**. Basic support for moving binary files, either between client devices or potentially from a server to clients. Currently works by syncing a file URI and then using that to upload/download the corresponding data to/from S3. Still under development.
-
-Known transgressions
---------------------
-If you decide to dig into the source code, please expect problems and violations of best practices. Your help in identifying these would be greatly appreciated.
-
-* Core Data threading is currently messy (iOS 4 was originally targeted)
-* Support for raw JSON (without Core Data) is still being fleshed out
-* Some TODOs and hacks remain in the code
-* Some support for binary files and collaboration is committed, but not finished
-* Auth UI is in a .xib but could live more happily as code instead
-* External libraries are included as source files instead of submodules
-
-If you spot more transgressions that you don't feel like fixing yourself, you can add an issue, append to this list via a pull request, or [contact us](http://simperium.com/contact/).
 
 License
 -------
