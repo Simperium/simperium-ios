@@ -8,11 +8,6 @@
 
 #import "UIImage+Simperium.h"
 
-@interface FIXCATEGORYBUGIMAGE;
-@end
-@implementation FIXCATEGORYBUGIMAGE;
-@end
-
 @implementation UIImage (NSCoding)
 - (id)initWithCoder:(NSCoder *)decoder {
     NSData *pngData = [decoder decodeObjectForKey:@"PNGRepresentation"];
