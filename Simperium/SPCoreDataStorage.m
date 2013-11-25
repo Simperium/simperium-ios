@@ -85,7 +85,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [self.mainManagedObjectContext setUndoManager:nil];
         
         // An observer is expected to handle merges for otherContext when the threaded context is saved
-		[aSibling addObserversForChildrenContext:self.mainManagedObjectContext];
+		[self addObserversForChildrenContext:self.mainManagedObjectContext];
     }
     
     return self;
@@ -93,13 +93,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 -(void)dealloc
 {
-    if (self.sibling) {
-        // If a sibling was used, then this context was ephemeral and needs to be cleaned up
-        [[NSNotificationCenter defaultCenter] removeObserver:self.sibling name:NSManagedObjectContextWillSaveNotification object:self.mainManagedObjectContext];
-        [[NSNotificationCenter defaultCenter] removeObserver:self.sibling name:NSManagedObjectContextDidSaveNotification object:self.mainManagedObjectContext];
-    } else {
-		[[NSNotificationCenter defaultCenter] removeObserver:self];
-	}
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 -(void)setBucketList:(NSDictionary *)dict {
@@ -412,26 +406,26 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 
-# pragma mark Main MOC Notification Handlers
 
--(void)mainContextWillSave:(NSNotification *)notification
-{
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"objectID.isTemporaryID == YES"];
-    NSArray *unpersistedObjects = [[self.mainManagedObjectContext.insertedObjects filteredSetUsingPredicate:predicate] allObjects];
-    if(unpersistedObjects.count == 0) {
+# pragma mark Main MOC + Children MOC Notification Handlers
+
+- (void)managedContextWillSave:(NSNotification*)notification {
+	NSManagedObjectContext* context = notification.object;
+	if (context.insertedObjects.count == 0) {
 		return;
 	}
 	
 	// Obtain permanentID's for newly inserted objects
-    NSError *error = nil;
-    BOOL success = [(NSManagedObjectContext *)notification.object obtainPermanentIDsForObjects:unpersistedObjects error:&error];
-    if (!success) {
-        DDLogVerbose(@"Unable to obtain permanent IDs for objects newly inserted into the main context: %@", error);
-    }
+	NSError *error = nil;
+	if (![context obtainPermanentIDsForObjects:context.insertedObjects.allObjects error:&error]) {
+        DDLogError(@"Unable to obtain permanent IDs for objects newly inserted into a Worker Context: %@", error);
+	}
 }
 
--(void)mainContextDidSave:(NSNotification *)notification {
-	
+
+# pragma mark Main MOC Notification Handlers
+
+- (void)mainContextDidSave:(NSNotification *)notification {
 	// Now that the changes have been pushed to the writerMOC, persist to disk
 	[self saveWriterContext];
 	
@@ -446,7 +440,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.delegate storage:self updatedObjects:userInfo[NSUpdatedObjectsKey] insertedObjects:userInfo[NSInsertedObjectsKey] deletedObjects:userInfo[NSDeletedObjectsKey]];
 }
 
--(void)mainContextObjectsDidChange:(NSNotification *)notification {
+- (void)mainContextObjectsDidChange:(NSNotification *)notification {
     // Check for inserted objects and init them
     NSSet *insertedObjects = [notification.userInfo objectForKey:NSInsertedObjectsKey];
 
@@ -458,9 +452,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 }
 
--(void)addObserversForMainContext:(NSManagedObjectContext *)moc {
+- (void)addObserversForMainContext:(NSManagedObjectContext *)moc {
 	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-	[nc addObserver:self selector:@selector(mainContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:moc];
+	[nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:moc];
     [nc addObserver:self selector:@selector(mainContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:moc];
     [nc addObserver:self selector:@selector(mainContextObjectsDidChange:) name:NSManagedObjectContextObjectsDidChangeNotification object:moc];
 }
@@ -468,51 +462,34 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 # pragma mark Children MOC Notification Handlers
 
--(void)childrenContextDidSave:(NSNotification*)notification
-{
+- (void)childrenContextDidSave:(NSNotification*)notification {
 	// Persist to "disk"!
 	[self saveWriterContext];
 	
 	// Move the changes to the main MOC. This will NOT trigger main MOC's hasChanges flag.
 	// NOTE: setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
 	// Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
-	[self.mainManagedObjectContext performBlock:^{
+	NSManagedObjectContext* mainMOC = self.sibling.mainManagedObjectContext;
+	[mainMOC performBlock:^{
+		
+		// Fault in all updated objects
+		// (fixes NSFetchedResultsControllers that have predicates, see http://www.mlsite.net/blog/?p=518)		
+        NSArray* updated = [notification.userInfo[NSUpdatedObjectsKey] allObjects];
+		for(NSManagedObject* childMo in updated) {
+			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:childMo.objectID];
+			if (localMO.isFault) {
+				[localMO willAccessValueForKey:nil];
+			}
+        }
 		
 		// Proceed with the regular merge. This should trigger a contextDidChange note
-		[self.mainManagedObjectContext mergeChangesFromContextDidSaveNotification:notification];
-		
-		// Force fault & refresh any updated objects.
-		// Ref.: http://lists.apple.com/archives/cocoa-dev/2008/Jun/msg00264.html
-		// Ref.: http://stackoverflow.com/questions/16296364/nsfetchedresultscontroller-is-not-showing-all-results-after-merging-an-nsmanage/16296538#16296538
-		NSDictionary *userInfo = notification.userInfo;
-		NSMutableSet *upsertedObjects = [NSMutableSet set];
-		
-		[upsertedObjects unionSet:userInfo[NSUpdatedObjectsKey]];
-		[upsertedObjects unionSet:userInfo[NSRefreshedObjectsKey]];
-		[upsertedObjects unionSet:userInfo[NSInsertedObjectsKey]];
-		
-		for (NSManagedObject* mo in upsertedObjects) {
-			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
-			if (localMO.isFault) {
-                [localMO willAccessValueForKey:nil];
-                [self.mainManagedObjectContext refreshObject:localMO mergeChanges:NO];
-            } else {
-                [self.mainManagedObjectContext refreshObject:localMO mergeChanges:YES];
-            }
-		}
-		
-		NSSet* deletedObjects = userInfo[NSDeletedObjectsKey];
-		for (NSManagedObject* mo in deletedObjects) {
-			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
-			if(localMO && !localMO.isDeleted) {
-				[self.mainManagedObjectContext deleteObject:localMO];
-			}
-		}
+		[mainMOC mergeChangesFromContextDidSaveNotification:notification];
 	}];
 }
 
--(void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
+- (void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
 	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:context];
     [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:context];
 }
 
