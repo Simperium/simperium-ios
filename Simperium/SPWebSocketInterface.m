@@ -27,8 +27,8 @@
 #define HEARTBEAT 30
 
 
-// TODO: Move this to SPEnvironment, after protocol-tweaks branch is merged
-#define LIBRARY_VERSION @(1)
+#define API_VERSION @(1.1)
+
 
 NSString * const COM_AUTH			= @"auth";
 NSString * const COM_INDEX			= @"i";
@@ -141,13 +141,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         remoteBucketName = channel.name;
     
     NSDictionary *jsonData = @{
-                               @"api"		: @1,
+                               @"api"		: API_VERSION,
                                @"clientid"	: self.simperium.clientID,
                                @"app_id"	: self.simperium.appID,
                                @"token"		: self.simperium.user.authToken,
                                @"name"		: remoteBucketName,
                                @"library"	: SPLibraryID,
-                               @"version"	: LIBRARY_VERSION
+                               @"version"	: SPLibraryVersion
                                };
     
     DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
@@ -156,11 +156,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)openWebSocket {
+	// Prevent multiple 'openWebSocket' calls to get executed
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(openWebSocket) object:nil];
+	
+	// Open the socket!
     NSString *urlString = [NSString stringWithFormat:@"%@/%@/websocket", WEBSOCKET_URL, self.simperium.appID];
     SRWebSocket *newWebSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
     self.webSocket = newWebSocket;
     self.webSocket.delegate = self;
-    
+    self.open = NO;
+	
     DDLogVerbose(@"Simperium opening WebSocket connection...");
     [self.webSocket open];
 }
@@ -306,9 +311,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSString *data		= [commandStr substringFromIndex:range.location+range.length];
     
     if ([command isEqualToString:COM_AUTH]) {
-        if ([data isEqualToString:@"expired"]) {
-            // Ignore this; legacy
-        } else if ([data isEqualToString:[self.simperium.user.email lowercaseString]]) {
+        if ([data isEqualToString:[self.simperium.user.email lowercaseString]]) {
             channel.started = YES;
             BOOL bFirstStart = bucket.lastChangeSignature == nil;
             if (bFirstStart) {
@@ -327,17 +330,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         }
     } else if ([command isEqualToString:COM_INDEX]) {
         [channel handleIndexResponse:data bucket:bucket];
-//    } else if ([command isEqualToString:COM_CHANGE] || [command isEqualToString:COM_CHANGE_VERSION]) {
-    } else if ([command isEqualToString:COM_CHANGE]) {
-        if ([data isEqualToString:@"?"]) {
-            // The requested change version didn't exist, so re-index
-            DDLogVerbose(@"Simperium change version is out of date (%@), re-indexing", bucket.name);
-            [channel requestLatestVersionsForBucket:bucket];
-        } else {
-            // Incoming changes, handle them
-            NSArray *changes = [data sp_objectFromJSONString];
-			[channel handleRemoteChanges: changes bucket:bucket];
-        }
+    } else if ([command isEqualToString:COM_CHANGE_VERSION]) {
+		// Handle cv:? message: the requested change version didn't exist, so re-index
+		DDLogVerbose(@"Simperium change version is out of date (%@), re-indexing", bucket.name);
+		[channel requestLatestVersionsForBucket:bucket];
+	} else if ([command isEqualToString:COM_CHANGE]) {
+		// Incoming changes, handle them
+		NSArray *changes = [data sp_objectFromJSONString];
+		[channel handleRemoteChanges: changes bucket:bucket];
     } else if ([command isEqualToString:COM_ENTITY]) {
         [channel handleVersionResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_ERROR]) {

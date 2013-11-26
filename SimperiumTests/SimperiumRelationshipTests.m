@@ -8,7 +8,7 @@
 
 #import "SimperiumTests.h"
 #import "Post.h"
-#import "Comment.h"
+#import "PostComment.h"
 #import "Farm.h"
 #import "SPBucket.h"
 
@@ -51,7 +51,7 @@
     post.title = @"post title";
     
     SPBucket *leaderComments = [leader.simperium bucketForName:@"Comment"];
-    Comment *comment = (Comment *)[leaderComments insertNewObject];
+    PostComment *comment = (PostComment *)[leaderComments insertNewObject];
     comment.content = @"a comment";
     comment.post = post;
     
@@ -82,7 +82,7 @@
     [leader connect];
     [follower connect];
         
-    Comment *comment = [NSEntityDescription insertNewObjectForEntityForName:@"Comment" inManagedObjectContext:leader.managedObjectContext];
+    PostComment *comment = [NSEntityDescription insertNewObjectForEntityForName:@"Comment" inManagedObjectContext:leader.managedObjectContext];
     comment.content = @"a comment";
     [leader.simperium save];
     

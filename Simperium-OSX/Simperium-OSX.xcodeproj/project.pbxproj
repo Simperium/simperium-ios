@@ -163,11 +163,42 @@
 		B504EF52182818BE002FA5A1 /* SPHttpRequestQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = B504EF4B182818BE002FA5A1 /* SPHttpRequestQueue.m */; };
 		B518F653182D62FD00AD5B1D /* SPSimperiumLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = B518F651182D62FD00AD5B1D /* SPSimperiumLogger.h */; };
 		B518F654182D62FD00AD5B1D /* SPSimperiumLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B518F652182D62FD00AD5B1D /* SPSimperiumLogger.m */; };
+		B5351590183AB8A300A91BCD /* SPProcessorNotificationNames.h in Headers */ = {isa = PBXBuildFile; fileRef = B535158F183AB8A300A91BCD /* SPProcessorNotificationNames.h */; };
 		B53E4888182AAC58000AA4C8 /* NSURLResponse+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */; };
 		B53E4889182AAC58000AA4C8 /* NSURLResponse+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B53E4887182AAC58000AA4C8 /* NSURLResponse+Simperium.m */; };
+		B56B163F183566B800E45C98 /* SPDictionaryStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = B56B163D183566B800E45C98 /* SPDictionaryStorage.h */; };
+		B56B1640183566B800E45C98 /* SPDictionaryStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = B56B163E183566B800E45C98 /* SPDictionaryStorage.m */; };
+		B56B1643183566DA00E45C98 /* NSArray+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B56B1641183566DA00E45C98 /* NSArray+Simperium.h */; };
+		B56B1644183566DA00E45C98 /* NSArray+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B56B1642183566DA00E45C98 /* NSArray+Simperium.m */; };
+		B56B1645183567C600E45C98 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 268EDED0155F06D5006B566F /* CoreData.framework */; };
+		B56B16501835682500E45C98 /* PostComment.m in Sources */ = {isa = PBXBuildFile; fileRef = B56B16471835682500E45C98 /* PostComment.m */; };
+		B56B16511835682500E45C98 /* Config.m in Sources */ = {isa = PBXBuildFile; fileRef = B56B16491835682500E45C98 /* Config.m */; };
+		B56B16521835682500E45C98 /* Post.m in Sources */ = {isa = PBXBuildFile; fileRef = B56B164B1835682500E45C98 /* Post.m */; };
+		B56B16531835682500E45C98 /* Test1.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B56B164C1835682500E45C98 /* Test1.xcdatamodeld */; };
+		B56B16541835682500E45C98 /* TestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = B56B164F1835682500E45C98 /* TestObject.m */; };
+		B5D581BF183565A700B08996 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5D581BE183565A700B08996 /* XCTest.framework */; };
+		B5D581C5183565A700B08996 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B5D581C3183565A700B08996 /* InfoPlist.strings */; };
+		B5D581D0183565C500B08996 /* XCTestCase+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581CF183565C500B08996 /* XCTestCase+Simperium.m */; };
+		B5D581D8183565E300B08996 /* MockSimperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581D3183565E300B08996 /* MockSimperium.m */; };
+		B5D581D9183565E300B08996 /* MockWebSocketChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581D5183565E300B08996 /* MockWebSocketChannel.m */; };
+		B5D581DA183565E300B08996 /* MockWebSocketInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581D7183565E300B08996 /* MockWebSocketInterface.m */; };
+		B5D581DF183565FB00B08996 /* DiffMatchPatchArrayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581DC183565FB00B08996 /* DiffMatchPatchArrayTests.m */; };
+		B5D581E0183565FB00B08996 /* RemoteDebugTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581DD183565FB00B08996 /* RemoteDebugTests.m */; };
+		B5D581E1183565FB00B08996 /* SPDictionaryStorageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581DE183565FB00B08996 /* SPDictionaryStorageTests.m */; };
+		B5D581E31835661800B08996 /* Simperium-OSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 268EDEC9155F06D5006B566F /* Simperium-OSX.framework */; };
 		B5E03DA5182C236200412572 /* JSONKit+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5E03DA3182C236200412572 /* JSONKit+Simperium.h */; };
 		B5E03DA6182C236200412572 /* JSONKit+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5E03DA4182C236200412572 /* JSONKit+Simperium.m */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B5D581C9183565A700B08996 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 268EDEBF155F06D5006B566F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 268EDEC8155F06D5006B566F;
+			remoteInfo = "Simperium-OSX";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		268EDEC9155F06D5006B566F /* Simperium-OSX.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = "Simperium-OSX.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -284,7 +315,7 @@
 		2698BE5515C9097A0020565F /* JRSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JRSwizzle.m; sourceTree = "<group>"; };
 		26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPWebSocketChannel.h; path = ../../Simperium/SPWebSocketChannel.h; sourceTree = "<group>"; };
 		26C3E14E1666FE7500620306 /* SPWebSocketChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocketChannel.m; path = ../../Simperium/SPWebSocketChannel.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		460A505A17DE95B20070F02B /* SPProcessorNotificationNames.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPProcessorNotificationNames.m; path = ../Simperium/SPProcessorNotificationNames.m; sourceTree = "<group>"; };
+		460A505A17DE95B20070F02B /* SPProcessorNotificationNames.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPProcessorNotificationNames.m; path = ../../Simperium/SPProcessorNotificationNames.m; sourceTree = "<group>"; };
 		4617AEB9179A1A3400545BD9 /* SPReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPReachability.h; sourceTree = "<group>"; };
 		4617AEBA179A1A3400545BD9 /* SPReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPReachability.m; sourceTree = "<group>"; };
 		46263BAF17A7778E00131791 /* SPAuthenticationConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPAuthenticationConfiguration.h; path = ../../Simperium/SPAuthenticationConfiguration.h; sourceTree = "<group>"; };
@@ -323,7 +354,6 @@
 		46EA1AEA17569EA0009AC5AA /* SPNetworkInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPNetworkInterface.h; path = ../../Simperium/SPNetworkInterface.h; sourceTree = "<group>"; };
 		46EA1AEC17569EB4009AC5AA /* SPWebSocketInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPWebSocketInterface.h; path = ../../Simperium/SPWebSocketInterface.h; sourceTree = "<group>"; };
 		46EA1AED17569EB4009AC5AA /* SPWebSocketInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocketInterface.m; path = ../../Simperium/SPWebSocketInterface.m; sourceTree = "<group>"; };
-		A2ACCF2F16CD6A0300779D83 /* Simperium-complete.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Simperium-complete.h"; path = "../Simperium/Simperium-complete.h"; sourceTree = "<group>"; };
 		B504EF47182818BE002FA5A1 /* SPHttpRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPHttpRequest.h; path = ../../Simperium/SPHttpRequest.h; sourceTree = "<group>"; };
 		B504EF48182818BE002FA5A1 /* SPHttpRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPHttpRequest.m; path = ../../Simperium/SPHttpRequest.m; sourceTree = "<group>"; };
 		B504EF49182818BE002FA5A1 /* SPHttpRequest+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SPHttpRequest+Internals.h"; path = "../../Simperium/SPHttpRequest+Internals.h"; sourceTree = "<group>"; };
@@ -331,8 +361,38 @@
 		B504EF4B182818BE002FA5A1 /* SPHttpRequestQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPHttpRequestQueue.m; path = ../../Simperium/SPHttpRequestQueue.m; sourceTree = "<group>"; };
 		B518F651182D62FD00AD5B1D /* SPSimperiumLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPSimperiumLogger.h; path = ../../Simperium/SPSimperiumLogger.h; sourceTree = "<group>"; };
 		B518F652182D62FD00AD5B1D /* SPSimperiumLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPSimperiumLogger.m; path = ../../Simperium/SPSimperiumLogger.m; sourceTree = "<group>"; };
+		B535158F183AB8A300A91BCD /* SPProcessorNotificationNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPProcessorNotificationNames.h; path = ../../Simperium/SPProcessorNotificationNames.h; sourceTree = "<group>"; };
 		B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSURLResponse+Simperium.h"; path = "../../Simperium/NSURLResponse+Simperium.h"; sourceTree = "<group>"; };
 		B53E4887182AAC58000AA4C8 /* NSURLResponse+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSURLResponse+Simperium.m"; path = "../../Simperium/NSURLResponse+Simperium.m"; sourceTree = "<group>"; };
+		B56B163D183566B800E45C98 /* SPDictionaryStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPDictionaryStorage.h; path = ../../Simperium/SPDictionaryStorage.h; sourceTree = "<group>"; };
+		B56B163E183566B800E45C98 /* SPDictionaryStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPDictionaryStorage.m; path = ../../Simperium/SPDictionaryStorage.m; sourceTree = "<group>"; };
+		B56B1641183566DA00E45C98 /* NSArray+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSArray+Simperium.h"; path = "../../Simperium/NSArray+Simperium.h"; sourceTree = "<group>"; };
+		B56B1642183566DA00E45C98 /* NSArray+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSArray+Simperium.m"; path = "../../Simperium/NSArray+Simperium.m"; sourceTree = "<group>"; };
+		B56B16461835682500E45C98 /* PostComment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PostComment.h; path = ../../SimperiumTests/PostComment.h; sourceTree = "<group>"; };
+		B56B16471835682500E45C98 /* PostComment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PostComment.m; path = ../../SimperiumTests/PostComment.m; sourceTree = "<group>"; };
+		B56B16481835682500E45C98 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Config.h; path = ../../SimperiumTests/Config.h; sourceTree = "<group>"; };
+		B56B16491835682500E45C98 /* Config.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Config.m; path = ../../SimperiumTests/Config.m; sourceTree = "<group>"; };
+		B56B164A1835682500E45C98 /* Post.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Post.h; path = ../../SimperiumTests/Post.h; sourceTree = "<group>"; };
+		B56B164B1835682500E45C98 /* Post.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Post.m; path = ../../SimperiumTests/Post.m; sourceTree = "<group>"; };
+		B56B164D1835682500E45C98 /* Test1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Test1.xcdatamodel; sourceTree = "<group>"; };
+		B56B164E1835682500E45C98 /* TestObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestObject.h; path = ../../SimperiumTests/TestObject.h; sourceTree = "<group>"; };
+		B56B164F1835682500E45C98 /* TestObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TestObject.m; path = ../../SimperiumTests/TestObject.m; sourceTree = "<group>"; };
+		B5D581BD183565A700B08996 /* Simperium-OSX Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Simperium-OSX Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5D581BE183565A700B08996 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		B5D581C2183565A700B08996 /* Simperium-OSX Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Simperium-OSX Tests-Info.plist"; sourceTree = "<group>"; };
+		B5D581C4183565A700B08996 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B5D581C8183565A700B08996 /* Simperium-OSX Tests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Simperium-OSX Tests-Prefix.pch"; sourceTree = "<group>"; };
+		B5D581CE183565C500B08996 /* XCTestCase+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "XCTestCase+Simperium.h"; path = "../../SimperiumTests/XCTestCase+Simperium.h"; sourceTree = "<group>"; };
+		B5D581CF183565C500B08996 /* XCTestCase+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "XCTestCase+Simperium.m"; path = "../../SimperiumTests/XCTestCase+Simperium.m"; sourceTree = "<group>"; };
+		B5D581D2183565E300B08996 /* MockSimperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MockSimperium.h; path = ../../SimperiumTests/MockSimperium.h; sourceTree = "<group>"; };
+		B5D581D3183565E300B08996 /* MockSimperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MockSimperium.m; path = ../../SimperiumTests/MockSimperium.m; sourceTree = "<group>"; };
+		B5D581D4183565E300B08996 /* MockWebSocketChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MockWebSocketChannel.h; path = ../../SimperiumTests/MockWebSocketChannel.h; sourceTree = "<group>"; };
+		B5D581D5183565E300B08996 /* MockWebSocketChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MockWebSocketChannel.m; path = ../../SimperiumTests/MockWebSocketChannel.m; sourceTree = "<group>"; };
+		B5D581D6183565E300B08996 /* MockWebSocketInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MockWebSocketInterface.h; path = ../../SimperiumTests/MockWebSocketInterface.h; sourceTree = "<group>"; };
+		B5D581D7183565E300B08996 /* MockWebSocketInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MockWebSocketInterface.m; path = ../../SimperiumTests/MockWebSocketInterface.m; sourceTree = "<group>"; };
+		B5D581DC183565FB00B08996 /* DiffMatchPatchArrayTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DiffMatchPatchArrayTests.m; path = ../../SimperiumTests/DiffMatchPatchArrayTests.m; sourceTree = "<group>"; };
+		B5D581DD183565FB00B08996 /* RemoteDebugTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RemoteDebugTests.m; path = ../../SimperiumTests/RemoteDebugTests.m; sourceTree = "<group>"; };
+		B5D581DE183565FB00B08996 /* SPDictionaryStorageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPDictionaryStorageTests.m; path = ../../SimperiumTests/SPDictionaryStorageTests.m; sourceTree = "<group>"; };
 		B5E03DA3182C236200412572 /* JSONKit+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "JSONKit+Simperium.h"; path = "../../Simperium/JSONKit+Simperium.h"; sourceTree = "<group>"; };
 		B5E03DA4182C236200412572 /* JSONKit+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "JSONKit+Simperium.m"; path = "../../Simperium/JSONKit+Simperium.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -354,19 +414,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B5D581BA183565A700B08996 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B56B1645183567C600E45C98 /* CoreData.framework in Frameworks */,
+				B5D581E31835661800B08996 /* Simperium-OSX.framework in Frameworks */,
+				B5D581BF183565A700B08996 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		268EDEBD155F06D5006B566F = {
 			isa = PBXGroup;
 			children = (
-				460A505A17DE95B20070F02B /* SPProcessorNotificationNames.m */,
-				46DD162B17A1B9660093678C /* QuartzCore.framework */,
-				46A691FD17387ABE0080399F /* SFHFKeychainUtils.h */,
-				46A691FE17387ABE0080399F /* SFHFKeychainUtils.m */,
-				A2ACCF2F16CD6A0300779D83 /* Simperium-complete.h */,
 				268EDF82155F36B7006B566F /* External */,
 				268EDED2155F06D5006B566F /* Simperium-OSX */,
+				B5D581C0183565A700B08996 /* Simperium-Tests */,
 				268EDECB155F06D5006B566F /* Frameworks */,
 				268EDECA155F06D5006B566F /* Products */,
 			);
@@ -376,6 +442,7 @@
 			isa = PBXGroup;
 			children = (
 				268EDEC9155F06D5006B566F /* Simperium-OSX.framework */,
+				B5D581BD183565A700B08996 /* Simperium-OSX Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -383,7 +450,7 @@
 		268EDECB155F06D5006B566F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				268EDF7C155F3674006B566F /* libz.dylib */,
+				46DD162B17A1B9660093678C /* QuartzCore.framework */,
 				2693F85E15C9A7BE00797A5E /* Security.framework */,
 				268EDECF155F06D5006B566F /* AppKit.framework */,
 				268EDED0155F06D5006B566F /* CoreData.framework */,
@@ -391,6 +458,8 @@
 				268EDF80155F3683006B566F /* SystemConfiguration.framework */,
 				268EDF7E155F367B006B566F /* CoreServices.framework */,
 				268EDECC155F06D5006B566F /* Cocoa.framework */,
+				B5D581BE183565A700B08996 /* XCTest.framework */,
+				268EDF7C155F3674006B566F /* libz.dylib */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -400,6 +469,8 @@
 			children = (
 				26F1C7001562E76B002172D5 /* Auth */,
 				B5E03DA7182C237B00412572 /* Extensions */,
+				B535158F183AB8A300A91BCD /* SPProcessorNotificationNames.h */,
+				460A505A17DE95B20070F02B /* SPProcessorNotificationNames.m */,
 				46EA1AEC17569EB4009AC5AA /* SPWebSocketInterface.h */,
 				46EA1AED17569EB4009AC5AA /* SPWebSocketInterface.m */,
 				26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */,
@@ -408,6 +479,8 @@
 				466FFEA117CBEE7A00399652 /* SPNetworkInterface.m */,
 				46D5BC3F174C2A9B0027DBAF /* SPRelationshipResolver.h */,
 				46D5BC40174C2A9B0027DBAF /* SPRelationshipResolver.m */,
+				B56B163D183566B800E45C98 /* SPDictionaryStorage.h */,
+				B56B163E183566B800E45C98 /* SPDictionaryStorage.m */,
 				2698BE3915C908C60020565F /* SPBucket.h */,
 				2698BE3A15C908C60020565F /* SPBucket.m */,
 				2698BE3B15C908C70020565F /* SPDiffable.h */,
@@ -495,6 +568,7 @@
 		268EDF82155F36B7006B566F /* External */ = {
 			isa = PBXGroup;
 			children = (
+				B5351591183AB8D800A91BCD /* SFHFKeychainUtils */,
 				4617AEB8179A1A3400545BD9 /* SPReachability */,
 				463774DD171FC6D500E2E333 /* SocketRocket */,
 				2698BE5315C9097A0020565F /* jrswizzle */,
@@ -612,6 +686,87 @@
 			path = SocketRocket;
 			sourceTree = "<group>";
 		};
+		B5351591183AB8D800A91BCD /* SFHFKeychainUtils */ = {
+			isa = PBXGroup;
+			children = (
+				46A691FD17387ABE0080399F /* SFHFKeychainUtils.h */,
+				46A691FE17387ABE0080399F /* SFHFKeychainUtils.m */,
+			);
+			name = SFHFKeychainUtils;
+			path = "../Simperium-OSX";
+			sourceTree = "<group>";
+		};
+		B56B16551835682A00E45C98 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B56B16461835682500E45C98 /* PostComment.h */,
+				B56B16471835682500E45C98 /* PostComment.m */,
+				B56B16481835682500E45C98 /* Config.h */,
+				B56B16491835682500E45C98 /* Config.m */,
+				B56B164A1835682500E45C98 /* Post.h */,
+				B56B164B1835682500E45C98 /* Post.m */,
+				B56B164C1835682500E45C98 /* Test1.xcdatamodeld */,
+				B56B164E1835682500E45C98 /* TestObject.h */,
+				B56B164F1835682500E45C98 /* TestObject.m */,
+			);
+			name = Models;
+			sourceTree = "<group>";
+		};
+		B5D581C0183565A700B08996 /* Simperium-Tests */ = {
+			isa = PBXGroup;
+			children = (
+				B5D581D1183565CA00B08996 /* Extensions */,
+				B5D581DB183565E800B08996 /* Mocks */,
+				B56B16551835682A00E45C98 /* Models */,
+				B5D581E21835660000B08996 /* UnitTests */,
+				B5D581C1183565A700B08996 /* Supporting Files */,
+			);
+			name = "Simperium-Tests";
+			path = "Simperium-OSX Tests";
+			sourceTree = "<group>";
+		};
+		B5D581C1183565A700B08996 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				B5D581C2183565A700B08996 /* Simperium-OSX Tests-Info.plist */,
+				B5D581C3183565A700B08996 /* InfoPlist.strings */,
+				B5D581C8183565A700B08996 /* Simperium-OSX Tests-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		B5D581D1183565CA00B08996 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				B5D581CE183565C500B08996 /* XCTestCase+Simperium.h */,
+				B5D581CF183565C500B08996 /* XCTestCase+Simperium.m */,
+			);
+			name = Extensions;
+			sourceTree = "<group>";
+		};
+		B5D581DB183565E800B08996 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				B5D581D2183565E300B08996 /* MockSimperium.h */,
+				B5D581D3183565E300B08996 /* MockSimperium.m */,
+				B5D581D4183565E300B08996 /* MockWebSocketChannel.h */,
+				B5D581D5183565E300B08996 /* MockWebSocketChannel.m */,
+				B5D581D6183565E300B08996 /* MockWebSocketInterface.h */,
+				B5D581D7183565E300B08996 /* MockWebSocketInterface.m */,
+			);
+			name = Mocks;
+			sourceTree = "<group>";
+		};
+		B5D581E21835660000B08996 /* UnitTests */ = {
+			isa = PBXGroup;
+			children = (
+				B5D581DC183565FB00B08996 /* DiffMatchPatchArrayTests.m */,
+				B5D581DD183565FB00B08996 /* RemoteDebugTests.m */,
+				B5D581DE183565FB00B08996 /* SPDictionaryStorageTests.m */,
+			);
+			name = UnitTests;
+			sourceTree = "<group>";
+		};
 		B5E03DA7182C237B00412572 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
@@ -619,6 +774,8 @@
 				B5E03DA4182C236200412572 /* JSONKit+Simperium.m */,
 				4678FC3C182369E500B6D413 /* DDFileLogger+Simperium.h */,
 				4678FC3D182369E500B6D413 /* DDFileLogger+Simperium.m */,
+				B56B1641183566DA00E45C98 /* NSArray+Simperium.h */,
+				B56B1642183566DA00E45C98 /* NSArray+Simperium.m */,
 				2698BE3715C908C60020565F /* NSMutableDictionary+Simperium.h */,
 				2698BE3815C908C60020565F /* NSMutableDictionary+Simperium.m */,
 				B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */,
@@ -665,6 +822,7 @@
 				268EDF5A155F08A2006B566F /* SPMemberDouble.h in Headers */,
 				268EDF5C155F08A2006B566F /* SPMemberEntity.h in Headers */,
 				268EDF5E155F08A2006B566F /* SPMemberFloat.h in Headers */,
+				B56B163F183566B800E45C98 /* SPDictionaryStorage.h in Headers */,
 				268EDF60155F08A2006B566F /* SPMemberInt.h in Headers */,
 				268EDF62155F08A2006B566F /* SPMemberList.h in Headers */,
 				268EDF64155F08A2006B566F /* SPMemberText.h in Headers */,
@@ -695,6 +853,7 @@
 				2698BE4A15C908C80020565F /* SPDiffer.h in Headers */,
 				2698BE4C15C908C80020565F /* SPJSONStorage.h in Headers */,
 				2698BE4E15C908C80020565F /* SPObject.h in Headers */,
+				B56B1643183566DA00E45C98 /* NSArray+Simperium.h in Headers */,
 				2698BE5015C908C80020565F /* SPSchema.h in Headers */,
 				2698BE5215C908C80020565F /* SPStorageProvider.h in Headers */,
 				2698BE5615C9097A0020565F /* JRSwizzle.h in Headers */,
@@ -706,6 +865,7 @@
 				463774EA171FC6D500E2E333 /* SRWebSocket.h in Headers */,
 				46A691FF17387ABF0080399F /* SFHFKeychainUtils.h in Headers */,
 				46D5BC41174C2A9B0027DBAF /* SPRelationshipResolver.h in Headers */,
+				B5351590183AB8A300A91BCD /* SPProcessorNotificationNames.h in Headers */,
 				46EA1AEB17569EA0009AC5AA /* SPNetworkInterface.h in Headers */,
 				46EA1AEE17569EB4009AC5AA /* SPWebSocketInterface.h in Headers */,
 				4617AEBB179A1A3400545BD9 /* SPReachability.h in Headers */,
@@ -743,6 +903,24 @@
 			productReference = 268EDEC9155F06D5006B566F /* Simperium-OSX.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		B5D581BC183565A700B08996 /* Simperium-OSX Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B5D581CD183565A700B08996 /* Build configuration list for PBXNativeTarget "Simperium-OSX Tests" */;
+			buildPhases = (
+				B5D581B9183565A700B08996 /* Sources */,
+				B5D581BA183565A700B08996 /* Frameworks */,
+				B5D581BB183565A700B08996 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B5D581CA183565A700B08996 /* PBXTargetDependency */,
+			);
+			name = "Simperium-OSX Tests";
+			productName = "Simperium-OSX Tests";
+			productReference = B5D581BD183565A700B08996 /* Simperium-OSX Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -751,6 +929,11 @@
 			attributes = {
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = Simperium;
+				TargetAttributes = {
+					B5D581BC183565A700B08996 = {
+						TestTargetID = 268EDEC8155F06D5006B566F;
+					};
+				};
 			};
 			buildConfigurationList = 268EDEC2155F06D5006B566F /* Build configuration list for PBXProject "Simperium-OSX" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -765,6 +948,7 @@
 			projectRoot = "";
 			targets = (
 				268EDEC8155F06D5006B566F /* Simperium-OSX */,
+				B5D581BC183565A700B08996 /* Simperium-OSX Tests */,
 			);
 		};
 /* End PBXProject section */
@@ -776,6 +960,14 @@
 			files = (
 				268EDED7155F06D5006B566F /* InfoPlist.strings in Resources */,
 				268EDFFA155F36B7006B566F /* README.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B5D581BB183565A700B08996 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B5D581C5183565A700B08996 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -795,6 +987,7 @@
 				B5E03DA6182C236200412572 /* JSONKit+Simperium.m in Sources */,
 				268EDF3F155F08A2006B566F /* SPChangeProcessor.m in Sources */,
 				268EDF41155F08A2006B566F /* SPCoreDataExporter.m in Sources */,
+				B56B1640183566B800E45C98 /* SPDictionaryStorage.m in Sources */,
 				B504EF4F182818BE002FA5A1 /* SPHttpRequest.m in Sources */,
 				268EDF43155F08A2006B566F /* SPCoreDataStorage.m in Sources */,
 				268EDF47155F08A2006B566F /* SPEnvironment.m in Sources */,
@@ -829,6 +1022,7 @@
 				B53E4889182AAC58000AA4C8 /* NSURLResponse+Simperium.m in Sources */,
 				268EDFF9155F36B7006B566F /* DispatchQueueLogFormatter.m in Sources */,
 				2698BE4615C908C80020565F /* NSMutableDictionary+Simperium.m in Sources */,
+				B56B1644183566DA00E45C98 /* NSArray+Simperium.m in Sources */,
 				2698BE4815C908C80020565F /* SPBucket.m in Sources */,
 				2698BE4B15C908C80020565F /* SPDiffer.m in Sources */,
 				2698BE4D15C908C80020565F /* SPJSONStorage.m in Sources */,
@@ -859,13 +1053,48 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B5D581B9183565A700B08996 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B56B16531835682500E45C98 /* Test1.xcdatamodeld in Sources */,
+				B5D581D0183565C500B08996 /* XCTestCase+Simperium.m in Sources */,
+				B5D581DA183565E300B08996 /* MockWebSocketInterface.m in Sources */,
+				B5D581D9183565E300B08996 /* MockWebSocketChannel.m in Sources */,
+				B5D581DF183565FB00B08996 /* DiffMatchPatchArrayTests.m in Sources */,
+				B5D581D8183565E300B08996 /* MockSimperium.m in Sources */,
+				B56B16521835682500E45C98 /* Post.m in Sources */,
+				B5D581E1183565FB00B08996 /* SPDictionaryStorageTests.m in Sources */,
+				B5D581E0183565FB00B08996 /* RemoteDebugTests.m in Sources */,
+				B56B16511835682500E45C98 /* Config.m in Sources */,
+				B56B16541835682500E45C98 /* TestObject.m in Sources */,
+				B56B16501835682500E45C98 /* PostComment.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B5D581CA183565A700B08996 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 268EDEC8155F06D5006B566F /* Simperium-OSX */;
+			targetProxy = B5D581C9183565A700B08996 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		268EDED5155F06D5006B566F /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
 				268EDED6155F06D5006B566F /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		B5D581C3183565A700B08996 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B5D581C4183565A700B08996 /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -976,6 +1205,55 @@
 			};
 			name = Release;
 		};
+		B5D581CB183565A700B08996 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Simperium-OSX Tests/Simperium-OSX Tests-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				INFOPLIST_FILE = "Simperium-OSX Tests/Simperium-OSX Tests-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		B5D581CC183565A700B08996 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				ENABLE_NS_ASSERTIONS = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Simperium-OSX Tests/Simperium-OSX Tests-Prefix.pch";
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				INFOPLIST_FILE = "Simperium-OSX Tests/Simperium-OSX Tests-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -997,7 +1275,30 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B5D581CD183565A700B08996 /* Build configuration list for PBXNativeTarget "Simperium-OSX Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B5D581CB183565A700B08996 /* Debug */,
+				B5D581CC183565A700B08996 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		B56B164C1835682500E45C98 /* Test1.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				B56B164D1835682500E45C98 /* Test1.xcdatamodel */,
+			);
+			currentVersion = B56B164D1835682500E45C98 /* Test1.xcdatamodel */;
+			name = Test1.xcdatamodeld;
+			path = ../../SimperiumTests/Test1.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 268EDEBF155F06D5006B566F /* Project object */;
 }

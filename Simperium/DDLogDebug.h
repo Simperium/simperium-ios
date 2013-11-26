@@ -16,6 +16,9 @@
 //#define LOG_SLEEP_TIMER (ddLogLevel & LOG_FLAG_SLEEP_TIMER)
 
 #define DDLogDebug(frmt, ...)   ASYNC_LOG_OBJC_MAYBE(ddLogLevel, LOG_FLAG_DEBUG, 0, frmt, ##__VA_ARGS__)
+
+#define DDLogOnError(error) 	if(error != nil && [error isKindOfClass:[NSError class]]) { DDLogError(@"%@ error while executing '%@': %@", NSStringFromClass([self class]), NSStringFromSelector(_cmd), error); }
+
 //#define DDLogSleepTimer(frmt, ...)  ASYNC_LOG_OBJC_MAYBE(ddLogLevel, LOG_FLAG_SLEEP_TIMER, frmt, ##__VA_ARGS__)
 
 // Now we decide which flags we want to enable in our application
