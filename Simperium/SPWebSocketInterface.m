@@ -156,11 +156,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)openWebSocket {
+	// Prevent multiple 'openWebSocket' calls to get executed
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(openWebSocket) object:nil];
+	
+	// Open the socket!
     NSString *urlString = [NSString stringWithFormat:@"%@/%@/websocket", WEBSOCKET_URL, self.simperium.appID];
     SRWebSocket *newWebSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
     self.webSocket = newWebSocket;
     self.webSocket.delegate = self;
-    
+    self.open = NO;
+	
     DDLogVerbose(@"Simperium opening WebSocket connection...");
     [self.webSocket open];
 }
