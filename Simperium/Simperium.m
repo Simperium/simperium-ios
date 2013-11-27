@@ -61,6 +61,7 @@ NSString * const UUID_KEY = @"SPUUIDKey";
 @property (nonatomic, assign) BOOL						skipContextProcessing;
 @property (nonatomic, assign) BOOL						networkManagersStarted;
 @property (nonatomic, assign) BOOL						dynamicSchemaEnabled;
+@property (nonatomic, assign) BOOL						shouldHideSignupFields;
 
 #if TARGET_OS_IPHONE
 @property (nonatomic, strong) SPAuthenticationViewController *authenticationViewController;
@@ -556,6 +557,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.authenticator reset];
     self.user = nil;
 
+	// Keep track: remember we logged out
+	self.shouldHideSignupFields = YES;
+	
 	// Hit the delegate
 	if([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
 		[self.delegate simperiumDidLogout:self];
@@ -646,7 +650,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     SPAuthenticationViewController *loginController =  [[self.authenticationViewControllerClass alloc] init];
     self.authenticationViewController = loginController;
     self.authenticationViewController.authenticator = self.authenticator;
-    
+    self.authenticationViewController.showsSignupFields = (self.shouldHideSignupFields == NO);
+	
     if (!self.rootViewController) {
         UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
         self.rootViewController = [window rootViewController];

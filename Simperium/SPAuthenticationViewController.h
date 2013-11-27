@@ -12,14 +12,18 @@
 
 #import <UIKit/UIKit.h>
 
+
 @class SPAuthenticator;
-@class SPAuthenticationButton;
-@class SPAuthenticationValidator;
+
+#pragma mark ====================================================================================
+#pragma mark SPAuthenticationViewController
+#pragma mark ====================================================================================
 
 @interface SPAuthenticationViewController : UIViewController
 
 @property (nonatomic, strong) SPAuthenticator	*authenticator;
 @property (nonatomic, strong) UITableView		*tableView;
 @property (nonatomic, strong) UIImageView		*logoView;
+@property (nonatomic, assign) BOOL				showsSignupFields;
 
 @end
