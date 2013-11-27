@@ -21,13 +21,9 @@
 
 
 
-#define WEBSOCKET_URL @"wss://api.simperium.com/sock/1"
-#define INDEX_PAGE_SIZE 500
-#define INDEX_BATCH_SIZE 10
-#define HEARTBEAT 30
-
-
-#define API_VERSION @(1.1)
+#define INDEX_PAGE_SIZE				500
+#define INDEX_BATCH_SIZE			10
+#define HEARTBEAT					30
 
 
 NSString * const COM_AUTH			= @"auth";
@@ -139,9 +135,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSString *remoteBucketName = [self.bucketNameOverrides objectForKey:channel.name];
     if (!remoteBucketName || remoteBucketName.length == 0)
         remoteBucketName = channel.name;
-    
+
     NSDictionary *jsonData = @{
-                               @"api"		: API_VERSION,
+                               @"api"		: @(SPAPIVersion.floatValue),
                                @"clientid"	: self.simperium.clientID,
                                @"app_id"	: self.simperium.appID,
                                @"token"		: self.simperium.user.authToken,
@@ -160,7 +156,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(openWebSocket) object:nil];
 	
 	// Open the socket!
-    NSString *urlString = [NSString stringWithFormat:@"%@/%@/websocket", WEBSOCKET_URL, self.simperium.appID];
+    NSString *urlString = [NSString stringWithFormat:@"%@/%@/websocket", SPWebsocketURL, self.simperium.appID];
     SRWebSocket *newWebSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
     self.webSocket = newWebSocket;
     self.webSocket.delegate = self;
