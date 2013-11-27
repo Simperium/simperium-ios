@@ -61,7 +61,7 @@ NSString * const UUID_KEY = @"SPUUIDKey";
 @property (nonatomic, assign) BOOL						skipContextProcessing;
 @property (nonatomic, assign) BOOL						networkManagersStarted;
 @property (nonatomic, assign) BOOL						dynamicSchemaEnabled;
-@property (nonatomic, assign) BOOL						shouldHideSignupFields;
+@property (nonatomic, assign) BOOL						shouldSignIn;
 
 #if TARGET_OS_IPHONE
 @property (nonatomic, strong) SPAuthenticationViewController *authenticationViewController;
@@ -557,8 +557,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.authenticator reset];
     self.user = nil;
 
-	// Keep track: remember we logged out
-	self.shouldHideSignupFields = YES;
+	// We just logged out. Let's display SignIn fields next time!
+	self.shouldSignIn = YES;
 	
 	// Hit the delegate
 	if([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
@@ -650,7 +650,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     SPAuthenticationViewController *loginController =  [[self.authenticationViewControllerClass alloc] init];
     self.authenticationViewController = loginController;
     self.authenticationViewController.authenticator = self.authenticator;
-    self.authenticationViewController.showsSignupFields = (self.shouldHideSignupFields == NO);
+    self.authenticationViewController.signingIn = self.shouldSignIn;
 	
     if (!self.rootViewController) {
         UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
@@ -674,6 +674,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         self.authenticationWindowController = [[self.authenticationWindowControllerClass alloc] init];
         self.authenticationWindowController.authenticator = self.authenticator;
         self.authenticationWindowController.optional = self.authenticationOptional;
+        self.authenticationWindowController.signingIn = self.shouldSignIn;
     }
     
     // Hide the main window and show the auth window instead

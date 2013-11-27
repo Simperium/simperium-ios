@@ -67,26 +67,27 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 
 - (id)init {
 	if ((self = [super init])) {
-		_showsSignupFields = YES;
+		_signingIn = NO;
 	}
 	return self;
 }
 
-- (void)setShowsSignupFields:(BOOL)bCreating {
-	_showsSignupFields = bCreating;
-	[self refreshButtonsText];
+- (void)setSigningIn:(BOOL)bCreating {
+	_signingIn = bCreating;
+	[self refreshButtons];
 }
 
-- (void)refreshButtonsText {
-	NSString *actionTitle = _showsSignupFields ?
-		NSLocalizedString(@"Sign Up", @"Title of button to create a new account (must be short)") :
-		NSLocalizedString(@"Sign In", @"Title of button for logging in (must be short)");
-	NSString *changeTitle = _showsSignupFields ?
-		NSLocalizedString(@"Sign in", @"A short link to access the account login screen") :
-		NSLocalizedString(@"Sign up", @"A short link to access the account creation screen");
-    NSString *changeDetailTitle = _showsSignupFields ?
-		NSLocalizedString(@"Already have an account?", @"A short description to access the account login screen") :
-		NSLocalizedString(@"Don't have an account?", @"A short description to access the account creation screen");
+- (void)refreshButtons {
+	NSString *actionTitle = _signingIn ?
+		NSLocalizedString(@"Sign In", @"Title of button for logging in (must be short)") :
+		NSLocalizedString(@"Sign Up", @"Title of button to create a new account (must be short)");
+	NSString *changeTitle = _signingIn ?
+		NSLocalizedString(@"Sign up", @"A short link to access the account creation screen") :
+		NSLocalizedString(@"Sign in", @"A short link to access the account login screen");
+    NSString *changeDetailTitle = _signingIn ?
+		NSLocalizedString(@"Don't have an account?", @"A short description to access the account creation screen") :
+		NSLocalizedString(@"Already have an account?", @"A short description to access the account login screen");
+
     
     changeTitle = [[changeTitle stringByAppendingString:@" »"] uppercaseString];
     
@@ -94,7 +95,7 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     [self.changeButton setTitle:changeTitle forState:UIControlStateNormal];
     self.changeButton.detailTitleLabel.text = changeDetailTitle.uppercaseString;
 
-    self.termsButton.hidden = !_showsSignupFields;
+    self.termsButton.hidden = _signingIn;
 }
 
 - (void)viewDidLoad {
@@ -205,7 +206,7 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     [self.tableView addGestureRecognizer:tapGesture];
     
 	// Show / Hide signup fields, if needed
-	[self refreshButtonsText];
+	[self refreshButtons];
     
     // Layout views
     [self layoutViewsForInterfaceOrientation:self.interfaceOrientation];
@@ -520,17 +521,17 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 }
 
 - (void)changeAction:(id)sender {
-	_showsSignupFields = !_showsSignupFields;
+	_signingIn = !_signingIn;
     NSArray *indexPaths = @[ [self confirmIndexPath] ];
-    if (_showsSignupFields) {
-        [self.tableView insertRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
-    } else {
+    if (_signingIn) {
         [self.tableView deleteRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
+    } else {
+        [self.tableView insertRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
 	}
 	
     [self.usernameField becomeFirstResponder];
     
-    [self setShowsSignupFields:_showsSignupFields];
+    [self setSigningIn:_signingIn];
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [self positionTableViewWithDuration:0.3];
@@ -539,7 +540,7 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 
 - (void)goAction:(id)sender {
 	if ([self validateData]) {
-		if (_showsSignupFields && self.passwordConfirmField.text.length > 0) {
+		if (!_signingIn && self.passwordConfirmField.text.length > 0) {
 			if ([self validatePasswordConfirmation]) {
 				[self performCreation];
 			}
@@ -577,16 +578,16 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 		return NO;
 	} else if(theTextField == self.passwordField) {
 		if ([self validatePassword]) {
-			if (_showsSignupFields) {
+			if (_signingIn) {
+				[self performLogin];
+			} else {
 				// Advance to next field and don't dismiss keyboard
 				[self.passwordConfirmField becomeFirstResponder];
 				return NO;
-			} else {
-				[self performLogin];
 			}
 		}
 	} else {
-		if (_showsSignupFields && [self validatePasswordConfirmation] && [self validateData]) {
+		if (!_signingIn && [self validatePasswordConfirmation] && [self validateData]) {
 			[self performCreation];
 		}
 	}
@@ -630,7 +631,7 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section  {
-    return _showsSignupFields ? (SPAuthenticationRowsConfirm + 1) : (SPAuthenticationRowsPassword + 1);
+    return _signingIn ? (SPAuthenticationRowsPassword + 1) : (SPAuthenticationRowsConfirm + 1);
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -665,7 +666,7 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
             [cell.contentView addSubview:_passwordField];
 		}
 		
-		self.passwordField.returnKeyType = _showsSignupFields ? UIReturnKeyNext : UIReturnKeyGo;
+		self.passwordField.returnKeyType = _signingIn ? UIReturnKeyGo : UIReturnKeyNext;
 	} else {
 		cell = [tView dequeueReusableCellWithIdentifier:ConfirmCellIdentifier];		
 		// Password

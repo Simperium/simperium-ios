@@ -24,6 +24,6 @@
 @property (nonatomic, strong) SPAuthenticator	*authenticator;
 @property (nonatomic, strong) UITableView		*tableView;
 @property (nonatomic, strong) UIImageView		*logoView;
-@property (nonatomic, assign) BOOL				showsSignupFields;
+@property (nonatomic, assign) BOOL				signingIn;
 
 @end
