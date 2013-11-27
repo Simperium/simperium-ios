@@ -75,8 +75,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (SPWebSocketChannel *)channelForNumber:(NSNumber *)num {
     for (SPWebSocketChannel *channel in [self.channels allValues]) {
-        if ([num intValue] == channel.number)
+        if ([num intValue] == channel.number) {
             return channel;
+		}
     }
     return nil;
 }
@@ -94,8 +95,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)loadChannelsForBuckets:(NSDictionary *)bucketList overrides:(NSDictionary *)overrides {
     self.bucketNameOverrides = overrides;
     
-    for (SPBucket *bucket in [bucketList allValues])
+    for (SPBucket *bucket in [bucketList allValues]) {
         [self loadChannelForBucket:bucket];
+	}
 }
 
 - (void)startChannels {
@@ -133,8 +135,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)authenticateChannel:(SPWebSocketChannel *)channel {
     //    NSString *message = @"1:command:parameters";
     NSString *remoteBucketName = [self.bucketNameOverrides objectForKey:channel.name];
-    if (!remoteBucketName || remoteBucketName.length == 0)
+    if (!remoteBucketName || remoteBucketName.length == 0) {
         remoteBucketName = channel.name;
+	}
 
     NSDictionary *jsonData = @{
                                @"api"		: @(SPAPIVersion.floatValue),
@@ -173,9 +176,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (!channel)
         channel = [self loadChannelForBucket:bucket];
     
-    if (channel.started)
+    if (channel.started) {
         return;
-    
+    }
+	
     if (self.webSocket == nil) {
         [self openWebSocket];
         // Channels will get setup after successfully connection
@@ -210,7 +214,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)send:(NSString *)message {
-	if(!self.open) {
+	if (!self.open) {
 		return;
 	}
     [self.webSocket send:message];
@@ -394,18 +398,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 static Class _class;
 
-+(void)load
-{
++ (void)load {
 	_class = [SPWebSocketInterface class];
 }
 
-+(void)registerClass:(Class)c
-{
++ (void)registerClass:(Class)c {
 	_class = c;
 }
 
-+(instancetype)interfaceWithSimperium:(Simperium *)s appURL:(NSString *)appURL clientID:(NSString *)clientID
-{
++ (instancetype)interfaceWithSimperium:(Simperium *)s appURL:(NSString *)appURL clientID:(NSString *)clientID {
 	return [[_class alloc] initWithSimperium:s appURL:clientID clientID:clientID];
 }
 
