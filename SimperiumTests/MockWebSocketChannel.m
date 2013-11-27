@@ -16,8 +16,7 @@
 
 @implementation MockWebSocketChannel
 
-+(void)load
-{
++ (void)load {
 	NSAssert([SPWebSocketChannel respondsToSelector:@selector(registerClass:)], nil);
 	[SPWebSocketChannel performSelector:@selector(registerClass:) withObject:[self class]];
 }

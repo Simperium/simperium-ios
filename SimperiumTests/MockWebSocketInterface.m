@@ -33,7 +33,7 @@
 
 @implementation MockWebSocketInterface
 
-+(void)load {
++ (void)load {
 	NSAssert([SPWebSocketInterface respondsToSelector:@selector(registerClass:)], nil);
 	[SPWebSocketInterface performSelector:@selector(registerClass:) withObject:[self class]];
 }
