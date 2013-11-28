@@ -530,6 +530,23 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return result;
 }
 
+#if !TARGET_OS_IPHONE
+
+- (void)replyAppTerminationWhenReady {
+	// Dispatch a NO-OP on the processorQueue's: we need to wait until they're empty
+	dispatch_group_t group = dispatch_group_create();
+	for(SPBucket* bucket in self.buckets.allValues) {
+		dispatch_group_async(group, bucket.processorQueue, ^{ });
+	}
+	
+	// When the queues are empty, the changes are expected to be saved locally
+	dispatch_group_notify(group, dispatch_get_main_queue(), ^ {
+		[[NSApplication sharedApplication] replyToApplicationShouldTerminate:YES];
+	});
+}
+
+#endif
+
 - (void)signOutAndRemoveLocalData:(BOOL)remove {
     DDLogInfo(@"Simperium clearing local data...");
     

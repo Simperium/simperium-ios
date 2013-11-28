@@ -451,12 +451,6 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 - (void)processLocalChange:(NSDictionary *)change key:(NSString *)key {
     [self.changesPending setObject:change forKey:key];
 	[self.changesPending save];
-    
-    // Support delayed app termination to ensure local changes have a chance to fully save
-#if TARGET_OS_IPHONE
-#else
-    [[NSApplication sharedApplication] replyToApplicationShouldTerminate:YES];
-#endif
 }
 
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key {
