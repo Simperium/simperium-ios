@@ -125,7 +125,7 @@
 		463774E5171FC6D500E2E333 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 463774DE171FC6D500E2E333 /* base64.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		463774E6171FC6D500E2E333 /* base64.h in Headers */ = {isa = PBXBuildFile; fileRef = 463774DF171FC6D500E2E333 /* base64.h */; };
 		463774E7171FC6D500E2E333 /* NSData+SRB64Additions.h in Headers */ = {isa = PBXBuildFile; fileRef = 463774E0171FC6D500E2E333 /* NSData+SRB64Additions.h */; };
-		463774E8171FC6D500E2E333 /* NSData+SRB64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 463774E1171FC6D500E2E333 /* NSData+SRB64Additions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		463774E8171FC6D500E2E333 /* NSData+SRB64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 463774E1171FC6D500E2E333 /* NSData+SRB64Additions.m */; };
 		463774E9171FC6D500E2E333 /* SocketRocket-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 463774E2171FC6D500E2E333 /* SocketRocket-Prefix.pch */; };
 		463774EA171FC6D500E2E333 /* SRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 463774E3171FC6D500E2E333 /* SRWebSocket.h */; };
 		463774EB171FC6D500E2E333 /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 463774E4171FC6D500E2E333 /* SRWebSocket.m */; };
