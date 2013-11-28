@@ -10,13 +10,18 @@
 #import "SPObject.h"
 #import "SPGhost.h"
 #import "NSString+Simperium.h"
+#import "NSMutableDictionary+Simperium.h"
 #import "SPBucket.h"
 #import "SPSchema.h"
 #import "SPDiffer.h"
 #import "jrswizzle.h"
 
-@interface SPJSONStorage()
+
+@interface NSMutableDictionary ()
+-(void)simperiumSetObject:(id)anObject forKey:(id)aKey;
+-(void)simperiumSetValue:(id)anObject forKey:(id)aKey;
 @end
+
 
 @implementation SPJSONStorage
 @synthesize objects;
