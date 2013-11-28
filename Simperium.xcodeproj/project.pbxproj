@@ -226,6 +226,7 @@
 		B5EB869B1822E34F007450FF /* SPSimperiumLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B5EB86991822E34F007450FF /* SPSimperiumLogger.m */; };
 		B5F5D39418219CCE0048754C /* DDFileLogger+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */; };
 		B5F5D39518219CCE0048754C /* DDFileLogger+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */; };
+		B5F65F7A1847DE0100CEF48D /* SPManagedObject+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F65F791847DE0100CEF48D /* SPManagedObject+Internals.h */; };
 		E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */; };
 		E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */; };
 /* End PBXBuildFile section */
@@ -451,6 +452,7 @@
 		B5ECEA291831169E00B9289A /* MockWebSocketChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MockWebSocketChannel.m; sourceTree = "<group>"; };
 		B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DDFileLogger+Simperium.h"; sourceTree = "<group>"; };
 		B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DDFileLogger+Simperium.m"; sourceTree = "<group>"; };
+		B5F65F791847DE0100CEF48D /* SPManagedObject+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPManagedObject+Internals.h"; sourceTree = "<group>"; };
 		E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTOSViewController.h; sourceTree = "<group>"; };
 		E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTOSViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -622,6 +624,7 @@
 			children = (
 				267CE8F1156C0FD20028801C /* SPDiffable.h */,
 				264CD92C135DFE6D00C51BAD /* SPManagedObject.h */,
+				B5F65F791847DE0100CEF48D /* SPManagedObject+Internals.h */,
 				264CD92D135DFE6D00C51BAD /* SPManagedObject.m */,
 				267CE8F6156C0FD20028801C /* SPObject.h */,
 				267CE8F7156C0FD20028801C /* SPObject.m */,
@@ -1023,6 +1026,7 @@
 				466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */,
 				466EB41617BC45F5005F7599 /* SPAuthenticationValidator.h in Headers */,
 				466EB41A17BC4890005F7599 /* SPAuthenticationButton.h in Headers */,
+				B5F65F7A1847DE0100CEF48D /* SPManagedObject+Internals.h in Headers */,
 				460A505F17DE96350070F02B /* SPProcessorNotificationNames.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

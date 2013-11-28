@@ -7,7 +7,7 @@
 //
 
 #import "SPCoreDataStorage.h"
-#import "SPManagedObject.h"
+#import "SPManagedObject+Internals.h"
 #import "NSString+Simperium.h"
 #import "SPCoreDataExporter.h"
 #import "SPSchema.h"
