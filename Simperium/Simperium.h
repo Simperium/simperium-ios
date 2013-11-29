@@ -25,6 +25,9 @@
 @class NSWindow;
 #endif
 
+extern NSString * const SimperiumWillSaveNotification;
+
+
 #pragma mark ====================================================================================
 #pragma mark SimperiumDelegate
 #pragma mark ====================================================================================
@@ -88,7 +91,7 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 
 #if !TARGET_OS_IPHONE
 // Support for OSX delayed app termination: Ensure local changes have a chance to fully save
-- (void)replyAppTerminationWhenReady;
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
 #endif
 
 // Clears all locally stored data from the device. Can be used to perform a manual sign out.
