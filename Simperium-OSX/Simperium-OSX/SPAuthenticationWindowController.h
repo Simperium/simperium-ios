@@ -27,14 +27,14 @@
     NSButton *changeToSignUpButton;
     NSProgressIndicator *signInProgress;
     NSProgressIndicator *signUpProgress;
-    BOOL signingIn;
     BOOL optional;
     CGFloat rowSize;
 }
 
 @property (nonatomic, retain) SPAuthenticator *authenticator;
 @property (nonatomic, retain) SPAuthenticationValidator *validator;
-@property (assign) BOOL optional;
+@property (nonatomic, assign) BOOL optional;
+@property (nonatomic, assign) BOOL signingIn;
 
 - (IBAction) signUpAction:(id)sender;
 - (IBAction) signInAction:(id)sender;

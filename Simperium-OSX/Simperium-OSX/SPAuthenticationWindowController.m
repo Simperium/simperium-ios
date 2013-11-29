@@ -182,18 +182,26 @@ static NSUInteger windowHeight = 540;
 
 
 - (IBAction)toggleAuthenticationMode:(id)sender {
-    signingIn = sender == changeToSignInButton;
-    [signInButton setHidden:!signingIn];
-    [signInButton setEnabled:signingIn];
-    [signUpButton setHidden:signingIn];
-    [signUpButton setEnabled:!signingIn];
-    [changeToSignInButton setHidden:signingIn];
-    [changeToSignInButton setEnabled:!signingIn];
-    [changeToSignUpButton setHidden:!signingIn];
-    [changeToSignUpButton setEnabled:signingIn];
-    [changeToSignInField setHidden:signingIn];
-    [changeToSignUpField setHidden:!signingIn];
-    [confirmField setHidden:signingIn];
+	self.signingIn = (sender == changeToSignInButton);
+}
+
+- (void)setSigningIn:(BOOL)signingIn {
+    _signingIn = signingIn;
+	[self refreshFields];
+}
+
+- (void)refreshFields {
+    [signInButton setHidden:!_signingIn];
+    [signInButton setEnabled:_signingIn];
+    [signUpButton setHidden:_signingIn];
+    [signUpButton setEnabled:!_signingIn];
+    [changeToSignInButton setHidden:_signingIn];
+    [changeToSignInButton setEnabled:!_signingIn];
+    [changeToSignUpButton setHidden:!_signingIn];
+    [changeToSignUpButton setEnabled:_signingIn];
+    [changeToSignInField setHidden:_signingIn];
+    [changeToSignUpField setHidden:!_signingIn];
+    [confirmField setHidden:_signingIn];
     
     [self.window.contentView setNeedsDisplay:YES];
     [self clearAuthenticationError];
@@ -402,9 +410,9 @@ static NSUInteger windowHeight = 540;
     BOOL retval = NO;
     
     if (commandSelector == @selector(insertNewline:)) {
-        if (signingIn && [control isEqual:passwordField.textField]) {
+        if (_signingIn && [control isEqual:passwordField.textField]) {
             [self signInAction:nil];
-        } else if (!signingIn && [control isEqual:confirmField.textField]) {
+        } else if (!_signingIn && [control isEqual:confirmField.textField]) {
             [self signUpAction:nil];
         }
     }
@@ -421,9 +429,9 @@ static NSUInteger windowHeight = 540;
     // Intercept return and invoke actions
     NSEvent *currentEvent = [NSApp currentEvent];
     if (currentEvent.type == NSKeyDown && [currentEvent.charactersIgnoringModifiers isEqualToString:@"\r"]) {
-        if (signingIn && [[obj object] isEqual:passwordField.textField]) {
+        if (_signingIn && [[obj object] isEqual:passwordField.textField]) {
             [self signInAction:nil];
-        } else if (!signingIn && [[obj object] isEqual:confirmField.textField]) {
+        } else if (!_signingIn && [[obj object] isEqual:confirmField.textField]) {
             [self signUpAction:nil];
         }
     }

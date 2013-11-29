@@ -6,6 +6,9 @@
 // Production
 NSString* const SPBaseURL			= @"https://api.simperium.com/1/";
 NSString* const SPAuthURL			= @"https://auth.simperium.com/1/";
+NSString* const SPWebsocketURL		= @"wss://api.simperium.com/sock/1";
+
+NSString* const SPAPIVersion		= @"1.1";
 
 #if TARGET_OS_IPHONE
 NSString* const SPLibraryID			= @"ios";

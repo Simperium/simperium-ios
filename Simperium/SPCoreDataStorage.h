@@ -22,11 +22,11 @@
 
 extern NSString* const SPCoreDataBucketListKey;
 
-+(BOOL)newCoreDataStack:(NSString *)modelName mainContext:(NSManagedObjectContext **)mainContext model:(NSManagedObjectModel **)model coordinator:(NSPersistentStoreCoordinator **)coordinator;
++ (BOOL)newCoreDataStack:(NSString *)modelName mainContext:(NSManagedObjectContext **)mainContext model:(NSManagedObjectModel **)model coordinator:(NSPersistentStoreCoordinator **)coordinator;
 
--(id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator;
+- (id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator;
 
--(NSArray *)exportSchemas;
--(void)setBucketList:(NSDictionary *)dict;
+- (NSArray *)exportSchemas;
+- (void)setBucketList:(NSDictionary *)dict;
 
 @end

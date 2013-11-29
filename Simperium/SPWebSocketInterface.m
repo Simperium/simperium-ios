@@ -21,13 +21,9 @@
 
 
 
-#define WEBSOCKET_URL @"wss://api.simperium.com/sock/1"
-#define INDEX_PAGE_SIZE 500
-#define INDEX_BATCH_SIZE 10
-#define HEARTBEAT 30
-
-
-#define API_VERSION @(1.1)
+#define INDEX_PAGE_SIZE				500
+#define INDEX_BATCH_SIZE			10
+#define HEARTBEAT					30
 
 
 NSString * const COM_AUTH			= @"auth";
@@ -79,8 +75,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (SPWebSocketChannel *)channelForNumber:(NSNumber *)num {
     for (SPWebSocketChannel *channel in [self.channels allValues]) {
-        if ([num intValue] == channel.number)
+        if ([num intValue] == channel.number) {
             return channel;
+		}
     }
     return nil;
 }
@@ -98,8 +95,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)loadChannelsForBuckets:(NSDictionary *)bucketList overrides:(NSDictionary *)overrides {
     self.bucketNameOverrides = overrides;
     
-    for (SPBucket *bucket in [bucketList allValues])
+    for (SPBucket *bucket in [bucketList allValues]) {
         [self loadChannelForBucket:bucket];
+	}
 }
 
 - (void)startChannels {
@@ -137,11 +135,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)authenticateChannel:(SPWebSocketChannel *)channel {
     //    NSString *message = @"1:command:parameters";
     NSString *remoteBucketName = [self.bucketNameOverrides objectForKey:channel.name];
-    if (!remoteBucketName || remoteBucketName.length == 0)
+    if (!remoteBucketName || remoteBucketName.length == 0) {
         remoteBucketName = channel.name;
-    
+	}
+
     NSDictionary *jsonData = @{
-                               @"api"		: API_VERSION,
+                               @"api"		: @(SPAPIVersion.floatValue),
                                @"clientid"	: self.simperium.clientID,
                                @"app_id"	: self.simperium.appID,
                                @"token"		: self.simperium.user.authToken,
@@ -160,7 +159,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(openWebSocket) object:nil];
 	
 	// Open the socket!
-    NSString *urlString = [NSString stringWithFormat:@"%@/%@/websocket", WEBSOCKET_URL, self.simperium.appID];
+    NSString *urlString = [NSString stringWithFormat:@"%@/%@/websocket", SPWebsocketURL, self.simperium.appID];
     SRWebSocket *newWebSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
     self.webSocket = newWebSocket;
     self.webSocket.delegate = self;
@@ -177,9 +176,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (!channel)
         channel = [self loadChannelForBucket:bucket];
     
-    if (channel.started)
+    if (channel.started) {
         return;
-    
+    }
+	
     if (self.webSocket == nil) {
         [self openWebSocket];
         // Channels will get setup after successfully connection
@@ -214,7 +214,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)send:(NSString *)message {
-	if(!self.open) {
+	if (!self.open) {
 		return;
 	}
     [self.webSocket send:message];
@@ -398,18 +398,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 static Class _class;
 
-+(void)load
-{
++ (void)load {
 	_class = [SPWebSocketInterface class];
 }
 
-+(void)registerClass:(Class)c
-{
++ (void)registerClass:(Class)c {
 	_class = c;
 }
 
-+(instancetype)interfaceWithSimperium:(Simperium *)s appURL:(NSString *)appURL clientID:(NSString *)clientID
-{
++ (instancetype)interfaceWithSimperium:(Simperium *)s appURL:(NSString *)appURL clientID:(NSString *)clientID {
 	return [[_class alloc] initWithSimperium:s appURL:clientID clientID:clientID];
 }
 

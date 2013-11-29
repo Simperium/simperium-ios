@@ -547,18 +547,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 static Class _class;
 
-+(void)load
-{
++ (void)load {
 	_class = [SPWebSocketChannel class];
 }
 
-+(void)registerClass:(Class)c
-{
++ (void)registerClass:(Class)c {
 	_class = c;
 }
 
-+(instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID
-{
++ (instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID {
 	return [[_class alloc] initWithSimperium:s clientID:clientID];
 }
 

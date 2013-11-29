@@ -38,8 +38,13 @@
 #import "SPAuthenticationWindowController.h"
 #endif
 
-NSString * const UUID_KEY = @"SPUUIDKey";
 
+#pragma mark ====================================================================================
+#pragma mark Simperium: Constants
+#pragma mark ====================================================================================
+
+NSString * const UUID_KEY						= @"SPUUIDKey";
+NSString * const SimperiumWillSaveNotification	= @"SimperiumWillSaveNotification";
 
 
 #pragma mark ====================================================================================
@@ -61,6 +66,7 @@ NSString * const UUID_KEY = @"SPUUIDKey";
 @property (nonatomic, assign) BOOL						skipContextProcessing;
 @property (nonatomic, assign) BOOL						networkManagersStarted;
 @property (nonatomic, assign) BOOL						dynamicSchemaEnabled;
+@property (nonatomic, assign) BOOL						shouldSignIn;
 
 #if TARGET_OS_IPHONE
 @property (nonatomic, strong) SPAuthenticationViewController *authenticationViewController;
@@ -529,6 +535,34 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return result;
 }
 
+#if !TARGET_OS_IPHONE
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+	
+	// Post Notification: Allow the client app to perform last minute changes
+	[[NSNotificationCenter defaultCenter] postNotificationName:SimperiumWillSaveNotification object:self];
+		
+	// Proceed Saving!
+	[self save];
+	
+	// Dispatch a NO-OP on the processorQueue's: we need to wait until they're empty
+	dispatch_group_t group = dispatch_group_create();
+	for(SPBucket* bucket in self.buckets.allValues) {
+		dispatch_group_async(group, bucket.processorQueue, ^{ });
+	}
+	
+	// When the queues are empty, the changes are expected to be saved locally
+	dispatch_group_notify(group, dispatch_get_main_queue(), ^ {
+		[[NSApplication sharedApplication] replyToApplicationShouldTerminate:YES];
+	});
+	
+	// No matter what, delay App Termination:
+	// there's no warranty that the processor's queues will be empty, even if the mainMOC has no changes
+	return NSTerminateLater;
+}
+
+#endif
+
 - (void)signOutAndRemoveLocalData:(BOOL)remove {
     DDLogInfo(@"Simperium clearing local data...");
     
@@ -556,6 +590,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.authenticator reset];
     self.user = nil;
 
+	// We just logged out. Let's display SignIn fields next time!
+	self.shouldSignIn = YES;
+	
 	// Hit the delegate
 	if([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
 		[self.delegate simperiumDidLogout:self];
@@ -646,7 +683,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     SPAuthenticationViewController *loginController =  [[self.authenticationViewControllerClass alloc] init];
     self.authenticationViewController = loginController;
     self.authenticationViewController.authenticator = self.authenticator;
-    
+    self.authenticationViewController.signingIn = self.shouldSignIn;
+	
     if (!self.rootViewController) {
         UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
         self.rootViewController = [window rootViewController];
@@ -669,6 +707,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         self.authenticationWindowController = [[self.authenticationWindowControllerClass alloc] init];
         self.authenticationWindowController.authenticator = self.authenticator;
         self.authenticationWindowController.optional = self.authenticationOptional;
+        self.authenticationWindowController.signingIn = self.shouldSignIn;
     }
     
     // Hide the main window and show the auth window instead

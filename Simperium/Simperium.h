@@ -25,6 +25,9 @@
 @class NSWindow;
 #endif
 
+extern NSString * const SimperiumWillSaveNotification;
+
+
 #pragma mark ====================================================================================
 #pragma mark SimperiumDelegate
 #pragma mark ====================================================================================
@@ -83,6 +86,14 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 
 // OTHER
 
+// Saves without syncing (typically not used).
+- (BOOL)saveWithoutSyncing;
+
+#if !TARGET_OS_IPHONE
+// Support for OSX delayed app termination: Ensure local changes have a chance to fully save
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
+#endif
+
 // Clears all locally stored data from the device. Can be used to perform a manual sign out.
 - (void)signOutAndRemoveLocalData:(BOOL)remove;
 
@@ -99,9 +110,6 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 // Manually adds a binary file to be tracked by Simperium (forthcoming).
 - (NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
 - (void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
-
-// Saves without syncing (typically not used).
-- (BOOL)saveWithoutSyncing;
 
 // Exports Simperium Internal logfiles. Note: you should enable verboseLogging before!
 - (NSData*)exportLogfiles;
