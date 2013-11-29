@@ -121,7 +121,7 @@
 		463774E5171FC6D500E2E333 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 463774DE171FC6D500E2E333 /* base64.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		463774E6171FC6D500E2E333 /* base64.h in Headers */ = {isa = PBXBuildFile; fileRef = 463774DF171FC6D500E2E333 /* base64.h */; };
 		463774E7171FC6D500E2E333 /* NSData+SRB64Additions.h in Headers */ = {isa = PBXBuildFile; fileRef = 463774E0171FC6D500E2E333 /* NSData+SRB64Additions.h */; };
-		463774E8171FC6D500E2E333 /* NSData+SRB64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 463774E1171FC6D500E2E333 /* NSData+SRB64Additions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		463774E8171FC6D500E2E333 /* NSData+SRB64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 463774E1171FC6D500E2E333 /* NSData+SRB64Additions.m */; };
 		463774E9171FC6D500E2E333 /* SocketRocket-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 463774E2171FC6D500E2E333 /* SocketRocket-Prefix.pch */; };
 		463774EA171FC6D500E2E333 /* SRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 463774E3171FC6D500E2E333 /* SRWebSocket.h */; };
 		463774EB171FC6D500E2E333 /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 463774E4171FC6D500E2E333 /* SRWebSocket.m */; };
@@ -187,6 +187,7 @@
 		B5D581E31835661800B08996 /* Simperium-OSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 268EDEC9155F06D5006B566F /* Simperium-OSX.framework */; };
 		B5E03DA5182C236200412572 /* JSONKit+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5E03DA3182C236200412572 /* JSONKit+Simperium.h */; };
 		B5E03DA6182C236200412572 /* JSONKit+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5E03DA4182C236200412572 /* JSONKit+Simperium.m */; };
+		B5F65F7C1847DE3E00CEF48D /* SPManagedObject+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F65F7B1847DE3E00CEF48D /* SPManagedObject+Internals.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -392,6 +393,7 @@
 		B5D581DE183565FB00B08996 /* SPDictionaryStorageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPDictionaryStorageTests.m; path = ../../SimperiumTests/SPDictionaryStorageTests.m; sourceTree = "<group>"; };
 		B5E03DA3182C236200412572 /* JSONKit+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "JSONKit+Simperium.h"; path = "../../Simperium/JSONKit+Simperium.h"; sourceTree = "<group>"; };
 		B5E03DA4182C236200412572 /* JSONKit+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "JSONKit+Simperium.m"; path = "../../Simperium/JSONKit+Simperium.m"; sourceTree = "<group>"; };
+		B5F65F7B1847DE3E00CEF48D /* SPManagedObject+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SPManagedObject+Internals.h"; path = "../../Simperium/SPManagedObject+Internals.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -509,6 +511,7 @@
 				268EDF01155F089E006B566F /* SPIndexProcessor.h */,
 				268EDF02155F089F006B566F /* SPIndexProcessor.m */,
 				268EDF05155F089F006B566F /* SPManagedObject.h */,
+				B5F65F7B1847DE3E00CEF48D /* SPManagedObject+Internals.h */,
 				268EDF06155F089F006B566F /* SPManagedObject.m */,
 				268EDF07155F089F006B566F /* SPMember.h */,
 				268EDF08155F089F006B566F /* SPMember.m */,
@@ -864,6 +867,7 @@
 				4617AEBB179A1A3400545BD9 /* SPReachability.h in Headers */,
 				46DD15C6179A6DAC0093678C /* SPMemberJSONList.h in Headers */,
 				46DD161F17A1B8490093678C /* SPAuthenticationButton.h in Headers */,
+				B5F65F7C1847DE3E00CEF48D /* SPManagedObject+Internals.h in Headers */,
 				4678FC3E182369E500B6D413 /* DDFileLogger+Simperium.h in Headers */,
 				46DD162117A1B8490093678C /* SPAuthenticationButtonCell.h in Headers */,
 				46DD162317A1B8490093678C /* SPAuthenticationTextField.h in Headers */,

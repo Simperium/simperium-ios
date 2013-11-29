@@ -19,4 +19,8 @@
 - (NSString *)version;
 - (id)object;
 
+@optional
+- (NSString *)getSimperiumKeyFromLegacyKey;
+- (BOOL)shouldOverwriteLocalChangesFromIndex;
+
 @end

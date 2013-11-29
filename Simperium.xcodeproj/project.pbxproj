@@ -101,7 +101,6 @@
 		265D80141476461800002A19 /* SPStorageObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 265D80131476461800002A19 /* SPStorageObserver.h */; settings = {ATTRIBUTES = (); }; };
 		26653CFB15FE5DEA00461A28 /* SPReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 26653CF915FE5DE900461A28 /* SPReachability.h */; };
 		26653CFC15FE5DEA00461A28 /* SPReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 26653CFA15FE5DE900461A28 /* SPReachability.m */; };
-		2669E6E1144D5CA100C33988 /* UIImage+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 2669E6DF144D5CA000C33988 /* UIImage+Simperium.h */; };
 		2673D71B1479F4C000B7B6B3 /* SimperiumRelationshipTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D7181479F42000B7B6B3 /* SimperiumRelationshipTests.m */; };
 		2673D722147A018000B7B6B3 /* Post.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D721147A018000B7B6B3 /* Post.m */; };
 		2673D725147A018000B7B6B3 /* PostComment.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D724147A018000B7B6B3 /* PostComment.m */; };
@@ -227,6 +226,7 @@
 		B5EB869B1822E34F007450FF /* SPSimperiumLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B5EB86991822E34F007450FF /* SPSimperiumLogger.m */; };
 		B5F5D39418219CCE0048754C /* DDFileLogger+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */; };
 		B5F5D39518219CCE0048754C /* DDFileLogger+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */; };
+		B5F65F7A1847DE0100CEF48D /* SPManagedObject+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F65F791847DE0100CEF48D /* SPManagedObject+Internals.h */; };
 		E265DBD017CD3E0A00070550 /* SPTOSViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */; };
 		E265DBD117CD3E0A00070550 /* SPTOSViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */; };
 /* End PBXBuildFile section */
@@ -337,8 +337,6 @@
 		265EF73715B8E26700115E19 /* SimperiumBinaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumBinaryTests.m; sourceTree = "<group>"; };
 		26653CF915FE5DE900461A28 /* SPReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPReachability.h; sourceTree = "<group>"; };
 		26653CFA15FE5DE900461A28 /* SPReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPReachability.m; sourceTree = "<group>"; };
-		2669E6DF144D5CA000C33988 /* UIImage+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Simperium.h"; sourceTree = "<group>"; };
-		2669E6E0144D5CA000C33988 /* UIImage+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Simperium.m"; sourceTree = "<group>"; };
 		2673D7181479F42000B7B6B3 /* SimperiumRelationshipTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumRelationshipTests.m; sourceTree = "<group>"; };
 		2673D720147A018000B7B6B3 /* Post.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Post.h; sourceTree = "<group>"; };
 		2673D721147A018000B7B6B3 /* Post.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Post.m; sourceTree = "<group>"; };
@@ -454,6 +452,7 @@
 		B5ECEA291831169E00B9289A /* MockWebSocketChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MockWebSocketChannel.m; sourceTree = "<group>"; };
 		B5F5D39218219CCE0048754C /* DDFileLogger+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DDFileLogger+Simperium.h"; sourceTree = "<group>"; };
 		B5F5D39318219CCE0048754C /* DDFileLogger+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DDFileLogger+Simperium.m"; sourceTree = "<group>"; };
+		B5F65F791847DE0100CEF48D /* SPManagedObject+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPManagedObject+Internals.h"; sourceTree = "<group>"; };
 		E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTOSViewController.h; sourceTree = "<group>"; };
 		E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTOSViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -623,6 +622,7 @@
 			children = (
 				267CE8F1156C0FD20028801C /* SPDiffable.h */,
 				264CD92C135DFE6D00C51BAD /* SPManagedObject.h */,
+				B5F65F791847DE0100CEF48D /* SPManagedObject+Internals.h */,
 				264CD92D135DFE6D00C51BAD /* SPManagedObject.m */,
 				267CE8F6156C0FD20028801C /* SPObject.h */,
 				267CE8F7156C0FD20028801C /* SPObject.m */,
@@ -778,8 +778,6 @@
 				1854D50E1799F6D2006C4211 /* NSArray+Simperium.m */,
 				46A16A7F17289FE2003AED55 /* NSString+Simperium.h */,
 				46A16A8017289FE2003AED55 /* NSString+Simperium.m */,
-				2669E6DF144D5CA000C33988 /* UIImage+Simperium.h */,
-				2669E6E0144D5CA000C33988 /* UIImage+Simperium.m */,
 				26E83DA81399D05D00195758 /* NSDate+Simperium.h */,
 				26E83DA91399D05E00195758 /* NSDate+Simperium.m */,
 				26B16EFD13B1B78C00BEB3E5 /* NSData+Simperium.h */,
@@ -978,7 +976,6 @@
 				26905DA2142CF97D001ACF20 /* DDLog.h in Headers */,
 				26905DA4142CF97D001ACF20 /* DDTTYLogger.h in Headers */,
 				26905DA8142D344C001ACF20 /* DDLogDebug.h in Headers */,
-				2669E6E1144D5CA100C33988 /* UIImage+Simperium.h in Headers */,
 				26ED43EB146CE1FD00C3D7D6 /* Config.h in Headers */,
 				269A7F3F147355D100CB29EE /* SPChangeProcessor.h in Headers */,
 				24A73F5617E250E0000CA275 /* SPDictionaryStorage.h in Headers */,
@@ -1028,6 +1025,7 @@
 				466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */,
 				466EB41617BC45F5005F7599 /* SPAuthenticationValidator.h in Headers */,
 				466EB41A17BC4890005F7599 /* SPAuthenticationButton.h in Headers */,
+				B5F65F7A1847DE0100CEF48D /* SPManagedObject+Internals.h in Headers */,
 				460A505F17DE96350070F02B /* SPProcessorNotificationNames.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

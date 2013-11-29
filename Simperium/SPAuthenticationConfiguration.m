@@ -18,13 +18,12 @@
 
 static SPAuthenticationConfiguration *gInstance = NULL;
 
-+ (SPAuthenticationConfiguration *)sharedInstance
++ (instancetype)sharedInstance
 {
-    @synchronized(self)
-    {
-        if (gInstance == NULL)
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
             gInstance = [[self alloc] init];
-    }
+	});
     
     return(gInstance);
 }
@@ -70,7 +69,5 @@ static SPAuthenticationConfiguration *gInstance = NULL;
     return [kFontTestString sizeWithAttributes:attributes].height;
 }
 #endif
-
-
 
 @end

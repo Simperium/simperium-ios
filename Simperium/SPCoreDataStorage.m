@@ -7,7 +7,7 @@
 //
 
 #import "SPCoreDataStorage.h"
-#import "SPManagedObject.h"
+#import "SPManagedObject+Internals.h"
 #import "NSString+Simperium.h"
 #import "SPCoreDataExporter.h"
 #import "SPSchema.h"
@@ -26,8 +26,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 @property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *classMappings;
 @property (nonatomic, weak, readwrite) SPCoreDataStorage *sibling;
--(void)addObserversForMainContext:(NSManagedObjectContext *)context;
--(void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
+- (void)addObserversForMainContext:(NSManagedObjectContext *)context;
+- (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
 
 
@@ -41,8 +41,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
--(id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator
-{
+- (id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator {
     if (self = [super init]) {
 		// Create a writer MOC
 		self.writerManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
@@ -65,8 +64,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return self;
 }
 
--(id)initWithSibling:(SPCoreDataStorage *)aSibling
-{
+- (id)initWithSibling:(SPCoreDataStorage *)aSibling {
     if (self = [super init]) {
         self.sibling = aSibling;
 		
@@ -91,8 +89,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return self;
 }
 
--(void)dealloc
-{
+- (void)dealloc {
     if (self.sibling) {
         // If a sibling was used, then this context was ephemeral and needs to be cleaned up
         [[NSNotificationCenter defaultCenter] removeObserver:self.sibling name:NSManagedObjectContextWillSaveNotification object:self.mainManagedObjectContext];
@@ -102,12 +99,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	}
 }
 
--(void)setBucketList:(NSDictionary *)dict {
+- (void)setBucketList:(NSDictionary *)dict {
     // Set a custom field on the context so that objects can figure out their own buckets when they wake up
 	NSMutableDictionary* bucketList = self.writerManagedObjectContext.userInfo[SPCoreDataBucketListKey];
 	
-	if(!bucketList)
-	{
+	if (!bucketList) {
 		bucketList = [NSMutableDictionary dictionary];
 		[self.writerManagedObjectContext.userInfo setObject:bucketList forKey:SPCoreDataBucketListKey];
 	}
@@ -115,7 +111,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[bucketList addEntriesFromDictionary:dict];
 }
 
--(NSArray *)exportSchemas {
+- (NSArray *)exportSchemas {
     SPCoreDataExporter *exporter = [[SPCoreDataExporter alloc] init];
     NSDictionary *definitionDict = [exporter exportModel:self.managedObjectModel classMappings:self.classMappings];
     
@@ -132,11 +128,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return schemas;
 }
 
--(id<SPStorageProvider>)threadSafeStorage {
+- (id<SPStorageProvider>)threadSafeStorage {
     return [[SPCoreDataStorage alloc] initWithSibling:self];
 }
 
--(id<SPDiffable>)objectForKey: (NSString *)key bucketName:(NSString *)bucketName {
+- (id<SPDiffable>)objectForKey: (NSString *)key bucketName:(NSString *)bucketName {
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     NSEntityDescription *entityDescription = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     [fetchRequest setEntity:entityDescription];
@@ -157,13 +153,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return items[0];
 }
 
--(NSArray *)objectsForKeys:(NSSet *)keys bucketName:(NSString *)bucketName
-{
+- (NSArray *)objectsForKeys:(NSSet *)keys bucketName:(NSString *)bucketName {
     return [[self faultObjectsForKeys:[keys allObjects] bucketName:bucketName] allValues];
 }
 
--(NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
-{
+- (NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate {
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     [fetchRequest setEntity:entity];
@@ -179,7 +173,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return items;
 }
 
--(NSArray *)objectKeysAndIdsForBucketName:(NSString *)bucketName {
+- (NSArray *)objectKeysAndIdsForBucketName:(NSString *)bucketName {
     NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     if (entity == nil) {
         //DDLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
@@ -209,7 +203,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
 }
 
--(NSArray *)objectKeysForBucketName:(NSString *)bucketName {
+- (NSArray *)objectKeysForBucketName:(NSString *)bucketName {
     NSArray *results = [self objectKeysAndIdsForBucketName:bucketName];
     
     NSMutableArray *objectKeys = [NSMutableArray arrayWithCapacity:[results count]];
@@ -221,7 +215,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return objectKeys;
 }
 
--(NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
+- (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
 {
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:[NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext]];
@@ -232,7 +226,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	
     NSError *err;
     NSUInteger count = [self.mainManagedObjectContext countForFetchRequest:request error:&err];
-    if(count == NSNotFound) {
+    if (count == NSNotFound) {
         //Handle error
         return 0;
     }
@@ -240,16 +234,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return count;
 }
 
--(id)objectAtIndex:(NSUInteger)index bucketName:(NSString *)bucketName {
+- (id)objectAtIndex:(NSUInteger)index bucketName:(NSString *)bucketName {
     // Not supported
     return nil;
 }
 
--(void)insertObject:(id<SPDiffable>)object bucketName:(NSString *)bucketName {
+- (void)insertObject:(id<SPDiffable>)object bucketName:(NSString *)bucketName {
     // Not supported
 }
 
--(NSDictionary *)faultObjectsForKeys:(NSArray *)keys bucketName:(NSString *)bucketName {
+- (NSDictionary *)faultObjectsForKeys:(NSArray *)keys bucketName:(NSString *)bucketName {
     // Batch fault a bunch of objects for efficiency
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simperiumKey IN %@", keys];
     
@@ -269,14 +263,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return objects;
 }
 
--(void)refaultObjects:(NSArray *)objects {
+- (void)refaultObjects:(NSArray *)objects {
     for (SPManagedObject *object in objects) {
         [self.mainManagedObjectContext refreshObject:object mergeChanges:NO];
     }
 }
 
--(id)insertNewObjectForBucketName:(NSString *)bucketName simperiumKey:(NSString *)key
-{
+- (id)insertNewObjectForBucketName:(NSString *)bucketName simperiumKey:(NSString *)key {
 	// Every object has its persistent storage managed automatically
     SPManagedObject *object = [NSEntityDescription insertNewObjectForEntityForName:bucketName
 															inManagedObjectContext:self.mainManagedObjectContext];
@@ -290,13 +283,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	return object;
 }
 
--(void)deleteObject:(id<SPDiffable>)object
-{
+- (void)deleteObject:(id<SPDiffable>)object {
     SPManagedObject *managedObject = (SPManagedObject *)object;
     [managedObject.managedObjectContext deleteObject:managedObject];
 }
 
--(void)deleteAllObjectsForBucketName:(NSString *)bucketName {
+- (void)deleteAllObjectsForBucketName:(NSString *)bucketName {
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     [fetchRequest setEntity:entity];
@@ -316,8 +308,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 }
 
--(void)validateObjectsForBucketName:(NSString *)bucketName
-{
+- (void)validateObjectsForBucketName:(NSString *)bucketName {
     NSArray *results = [self objectKeysAndIdsForBucketName:bucketName];
     
     // Check each entity instance
@@ -355,35 +346,29 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSLog(@"Simperium managing %lu %@ object instances", (unsigned long)[results count], bucketName);
 }
 
--(BOOL)save
-{
+- (BOOL)save {
     // Standard way to save an NSManagedObjectContext
     NSError *error = nil;
-    if (self.mainManagedObjectContext != nil)
-    {
-        @try
-        {
+    if (self.mainManagedObjectContext != nil) {
+        @try {
             BOOL bChanged = [self.mainManagedObjectContext hasChanges];
-            if (bChanged && ![self.mainManagedObjectContext save:&error])
-            {
+            if (bChanged && ![self.mainManagedObjectContext save:&error]) {
                 NSLog(@"Critical Simperium error while saving context: %@, %@", error, [error userInfo]);
                 return NO;
             }
-        }
-        @catch (NSException *exception)
-        {
+        } @catch (NSException *exception) {
             NSLog(@"Simperium exception while saving context: %@", (id)[exception userInfo] ?: (id)[exception reason]);	
         }
     }  
     return YES;
 }
 
--(void)setMetadata:(NSDictionary *)metadata {
+- (void)setMetadata:(NSDictionary *)metadata {
     NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores objectAtIndex:0];
     [self.persistentStoreCoordinator setMetadata:metadata forPersistentStore:store];
 }
 
--(NSDictionary *)metadata {
+- (NSDictionary *)metadata {
     NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores objectAtIndex:0];
     return [store metadata];
 }
@@ -391,8 +376,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 // CD specific
 # pragma mark Stashing and unstashing entities
--(NSArray *)allUpdatedAndInsertedObjects
-{
+- (NSArray *)allUpdatedAndInsertedObjects {
     NSMutableSet *unsavedEntities = [NSMutableSet setWithCapacity:3];
     
     // Add updated objects
@@ -404,8 +388,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return [unsavedEntities allObjects];
 }
 
--(void)stashUnsavedObjects
-{
+- (void)stashUnsavedObjects {
     NSArray *entitiesToStash = [self allUpdatedAndInsertedObjects];
     
     if ([entitiesToStash count] > 0) {
@@ -417,11 +400,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 # pragma mark Main MOC Notification Handlers
 
--(void)mainContextWillSave:(NSNotification *)notification
-{
+- (void)mainContextWillSave:(NSNotification *)notification {
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"objectID.isTemporaryID == YES"];
     NSArray *unpersistedObjects = [[self.mainManagedObjectContext.insertedObjects filteredSetUsingPredicate:predicate] allObjects];
-    if(unpersistedObjects.count == 0) {
+    if (unpersistedObjects.count == 0) {
 		return;
 	}
 	
@@ -433,8 +415,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 }
 
--(void)mainContextDidSave:(NSNotification *)notification {
-	
+- (void)mainContextDidSave:(NSNotification *)notification {
 	// Now that the changes have been pushed to the writerMOC, persist to disk
 	[self saveWriterContext];
 	
@@ -449,7 +430,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.delegate storage:self updatedObjects:userInfo[NSUpdatedObjectsKey] insertedObjects:userInfo[NSInsertedObjectsKey] deletedObjects:userInfo[NSDeletedObjectsKey]];
 }
 
--(void)mainContextObjectsDidChange:(NSNotification *)notification {
+- (void)mainContextObjectsDidChange:(NSNotification *)notification {
     // Check for inserted objects and init them
     NSSet *insertedObjects = [notification.userInfo objectForKey:NSInsertedObjectsKey];
 
@@ -461,7 +442,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 }
 
--(void)addObserversForMainContext:(NSManagedObjectContext *)moc {
+- (void)addObserversForMainContext:(NSManagedObjectContext *)moc {
 	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
 	[nc addObserver:self selector:@selector(mainContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:moc];
     [nc addObserver:self selector:@selector(mainContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:moc];
@@ -471,8 +452,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 # pragma mark Children MOC Notification Handlers
 
--(void)childrenContextDidSave:(NSNotification*)notification
-{
+- (void)childrenContextDidSave:(NSNotification*)notification {
 	// Persist to "disk"!
 	[self saveWriterContext];
 	
@@ -507,14 +487,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		NSSet* deletedObjects = userInfo[NSDeletedObjectsKey];
 		for (NSManagedObject* mo in deletedObjects) {
 			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
-			if(localMO && !localMO.isDeleted) {
+			if (localMO && !localMO.isDeleted) {
 				[self.mainManagedObjectContext deleteObject:localMO];
 			}
 		}
 	}];
 }
 
--(void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
+- (void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
 	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
     [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:context];
 }
@@ -522,19 +502,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 # pragma mark Writer MOC Helpers
 
--(void)saveWriterContext
-{
+- (void)saveWriterContext {
 	[self.writerManagedObjectContext performBlock:^{
-        @try
-        {
+        @try {
 			NSError *error = nil;
-            if ([self.writerManagedObjectContext hasChanges] && ![self.writerManagedObjectContext save:&error])
-            {
+            if ([self.writerManagedObjectContext hasChanges] && ![self.writerManagedObjectContext save:&error]) {
                 NSLog(@"Critical Simperium error while persisting writer context's changes: %@, %@", error, error.userInfo);
             }
-        }
-        @catch (NSException *exception)
-        {
+        } @catch (NSException *exception) {
             NSLog(@"Simperium exception while persisting writer context's changes: %@", exception.userInfo ? : exception.reason);
         }
 	}];
@@ -543,8 +518,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 #pragma mark - Standard stack
 
-+(BOOL)isMigrationNecessary:(NSURL *)storeURL managedObjectModel:(NSManagedObjectModel *)managedObjectModel
-{
++ (BOOL)isMigrationNecessary:(NSURL *)storeURL managedObjectModel:(NSManagedObjectModel *)managedObjectModel {
     NSError *error = nil;
     
     // Determine if a migration is needed
@@ -557,8 +531,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return !pscCompatibile;
 }
 
-+(BOOL)newCoreDataStack:(NSString *)modelName mainContext:(NSManagedObjectContext **)mainContext model:(NSManagedObjectModel **)model coordinator:(NSPersistentStoreCoordinator **)coordinator
-{
++ (BOOL)newCoreDataStack:(NSString *)modelName mainContext:(NSManagedObjectContext **)mainContext model:(NSManagedObjectModel **)model coordinator:(NSPersistentStoreCoordinator **)coordinator {
     NSLog(@"Setting up Core Data: %@", modelName);
     //NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"Simplenote" withExtension:@"momd"];
     
@@ -609,10 +582,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 // Need to perform a manual migration in a particular case. Do this according to Apple's guidelines.
-- (BOOL)migrateStore:(NSURL *)storeURL
-		 sourceModel:(NSManagedObjectModel *)srcModel
-    destinationModel:(NSManagedObjectModel *)dstModel
-{
+- (BOOL)migrateStore:(NSURL *)storeURL sourceModel:(NSManagedObjectModel *)srcModel destinationModel:(NSManagedObjectModel *)dstModel {
     NSError *error;
     NSMappingModel *mappingModel = [NSMappingModel inferredMappingModelForSourceModel:srcModel
                                                                      destinationModel:dstModel error:&error];
