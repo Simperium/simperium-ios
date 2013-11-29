@@ -38,8 +38,13 @@
 #import "SPAuthenticationWindowController.h"
 #endif
 
-NSString * const UUID_KEY = @"SPUUIDKey";
 
+#pragma mark ====================================================================================
+#pragma mark Simperium: Constants
+#pragma mark ====================================================================================
+
+NSString * const UUID_KEY						= @"SPUUIDKey";
+NSString * const SimperiumWillSaveNotification	= @"SimperiumWillSaveNotification";
 
 
 #pragma mark ====================================================================================
@@ -532,7 +537,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 #if !TARGET_OS_IPHONE
 
-- (void)replyAppTerminationWhenReady {
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+	
+	// Post Notification: Allow the client app to perform last minute changes
+	[[NSNotificationCenter defaultCenter] postNotificationName:SimperiumWillSaveNotification object:self];
+		
+	// Proceed Saving!
+	[self save];
+	
 	// Dispatch a NO-OP on the processorQueue's: we need to wait until they're empty
 	dispatch_group_t group = dispatch_group_create();
 	for(SPBucket* bucket in self.buckets.allValues) {
@@ -543,6 +555,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	dispatch_group_notify(group, dispatch_get_main_queue(), ^ {
 		[[NSApplication sharedApplication] replyToApplicationShouldTerminate:YES];
 	});
+	
+	// No matter what, delay App Termination:
+	// there's no warranty that the processor's queues will be empty, even if the mainMOC has no changes
+	return NSTerminateLater;
 }
 
 #endif
