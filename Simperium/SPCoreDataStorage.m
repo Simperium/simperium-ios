@@ -484,7 +484,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		// (fixes NSFetchedResultsControllers that have predicates, see http://www.mlsite.net/blog/?p=518)		
         NSArray* updated = [notification.userInfo[NSUpdatedObjectsKey] allObjects];
 		for (NSManagedObject* childMo in updated) {
-			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:childMo.objectID];
+			NSManagedObject* localMO = [mainMOC objectWithID:childMo.objectID];
 			if (localMO.isFault) {
 				[localMO willAccessValueForKey:nil];
 			}
