@@ -38,7 +38,7 @@
 	// This instance won't have backend interaction. Let's just add a dummy user!.
 	MockSimperium* s		= [[MockSimperium alloc] init];
 	s.authenticationEnabled = NO;
-    s.user					= [[SPUser alloc] initWithEmail:@"Dummy" token:@"Dummy"];
+    s.user					= [[SPUser alloc] initWithEmail:@"dummy@dummy.com" token:@"Dummy"];
     [s startWithAppID:APP_ID APIKey:API_KEY model:model context:context coordinator:coordinator];
 	
 	return s;

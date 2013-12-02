@@ -17,8 +17,10 @@
 
 @interface SPWebSocketInterface()
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message;
+- (void)authenticateChannel:(SPWebSocketChannel *)channel;
 - (SPWebSocketChannel *)loadChannelForBucket:(SPBucket *)bucket;
 - (SPWebSocketChannel *)channelForName:(NSString *)str;
+- (void)startChannels;
 @end
 
 
@@ -59,6 +61,7 @@
 	SPWebSocketChannel* channel = [super loadChannelForBucket:bucket];
 	channel.webSocketManager = self;
 	channel.started = YES;
+	[super authenticateChannel:channel];
 	return channel;
 }
 
