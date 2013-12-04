@@ -151,8 +151,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
     NSString *message = [NSString stringWithFormat:@"%d:init:%@", channel.number, [jsonData sp_JSONString]];
-    [self.webSocket send:message];
+    [self send:message];
 }
+
 
 - (void)openWebSocket {
 	// Prevent multiple 'openWebSocket' calls to get executed
