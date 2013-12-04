@@ -198,8 +198,10 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 			id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
 			id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
 			
-			[threadSafeStorage deleteObject:object];
-			[threadSafeStorage save];
+			if(object) {
+				[threadSafeStorage deleteObject:object];
+				[threadSafeStorage save];
+			}
 			
 			dispatch_async(dispatch_get_main_queue(), ^{
 				NSDictionary *userInfo = @{
