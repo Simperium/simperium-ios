@@ -12,7 +12,6 @@
 - (void)waitFor:(NSTimeInterval)seconds;
 @end
 
-
 // Asynchronous Testing Helpers
 // Ref: http://dadabeatnik.wordpress.com/2013/09/12/xcode-and-asynchronous-unit-testing/
 
