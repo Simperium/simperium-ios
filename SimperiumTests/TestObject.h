@@ -10,11 +10,6 @@
 #import "SPManagedObject.h"
 
 
-<<<<<<< HEAD
 @interface TestObject : SPManagedObject
--(BOOL)isEqualToObject:(TestObject *)other;
-=======
 - (BOOL)isEqualToObject:(TestObject *)other;
-
->>>>>>> origin/develop
 @end
