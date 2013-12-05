@@ -15,7 +15,7 @@
     </entity>
     <entity name="Post" representedClassName="Post" parentEntity="SPManagedObject" syncable="YES">
         <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
-        <relationship name="comments" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="PostComment" inverseName="post" inverseEntity="PostComment" syncable="YES"/>
+        <relationship name="comments" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PostComment" inverseName="post" inverseEntity="PostComment" syncable="YES"/>
     </entity>
     <entity name="PostComment" representedClassName="PostComment" parentEntity="SPManagedObject" syncable="YES">
         <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
@@ -26,9 +26,9 @@
         <attribute name="simperiumKey" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <elements>
-        <element name="PostComment" positionX="0" positionY="0" width="0" height="0"/>
         <element name="Config" positionX="0" positionY="0" width="0" height="0"/>
         <element name="Post" positionX="0" positionY="0" width="0" height="0"/>
+        <element name="PostComment" positionX="0" positionY="0" width="0" height="0"/>
         <element name="SPManagedObject" positionX="0" positionY="0" width="0" height="0"/>
     </elements>
 </model>

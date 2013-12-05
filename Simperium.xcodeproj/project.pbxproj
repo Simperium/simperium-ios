@@ -205,6 +205,7 @@
 		B5C91A0B1827E8600002D306 /* SPHttpRequestQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C91A061827E8600002D306 /* SPHttpRequestQueue.m */; };
 		B5C91A0E1827E9CB0002D306 /* NSURLResponse+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5C91A0C1827E9CB0002D306 /* NSURLResponse+Simperium.h */; };
 		B5C91A0F1827E9CB0002D306 /* NSURLResponse+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C91A0D1827E9CB0002D306 /* NSURLResponse+Simperium.m */; };
+		B5DE0E0F1850D0200080C44D /* DeletionCascadeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B5DE0E0E1850D0200080C44D /* DeletionCascadeTest.m */; };
 		B5E03D99182C115100412572 /* JSONKit+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5E03D97182C115100412572 /* JSONKit+Simperium.m */; };
 		B5E8D3091831221100AE2C5A /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5E8D3081831221100AE2C5A /* XCTest.framework */; };
 		B5E8D30F1831237500AE2C5A /* MockWebSocketInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = B5ECEA251831154700B9289A /* MockWebSocketInterface.m */; };
@@ -440,6 +441,7 @@
 		B5C91A061827E8600002D306 /* SPHttpRequestQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHttpRequestQueue.m; sourceTree = "<group>"; };
 		B5C91A0C1827E9CB0002D306 /* NSURLResponse+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURLResponse+Simperium.h"; sourceTree = "<group>"; };
 		B5C91A0D1827E9CB0002D306 /* NSURLResponse+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURLResponse+Simperium.m"; sourceTree = "<group>"; };
+		B5DE0E0E1850D0200080C44D /* DeletionCascadeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DeletionCascadeTest.m; sourceTree = "<group>"; };
 		B5E03D96182C115100412572 /* JSONKit+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = "JSONKit+Simperium.h"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		B5E03D97182C115100412572 /* JSONKit+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "JSONKit+Simperium.m"; sourceTree = "<group>"; };
 		B5E8D3081831221100AE2C5A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
@@ -906,6 +908,7 @@
 				1854D513179A18B1006C4211 /* DiffMatchPatchArrayTests.m */,
 				B5C7D7F8183411B900E9109C /* SPDictionaryStorageTests.m */,
 				B597DD58183128FE005E95D7 /* RemoteDebugTests.m */,
+				B5DE0E0E1850D0200080C44D /* DeletionCascadeTest.m */,
 			);
 			name = UnitTests;
 			sourceTree = "<group>";
@@ -1323,6 +1326,7 @@
 				B565ECAA1832940B00D162FF /* XCTestCase+Simperium.m in Sources */,
 				B5E8D30F1831237500AE2C5A /* MockWebSocketInterface.m in Sources */,
 				B5E8D3121831237500AE2C5A /* MockWebSocketChannel.m in Sources */,
+				B5DE0E0F1850D0200080C44D /* DeletionCascadeTest.m in Sources */,
 				B5E8D3231831237500AE2C5A /* DiffMatchPatchArrayTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
