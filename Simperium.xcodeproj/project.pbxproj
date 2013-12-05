@@ -197,6 +197,7 @@
 		B597DD59183128FE005E95D7 /* RemoteDebugTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B597DD58183128FE005E95D7 /* RemoteDebugTests.m */; };
 		B59DEF311803575D00F7C0D5 /* SimperiumBinaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 265EF73715B8E26700115E19 /* SimperiumBinaryTests.m */; };
 		B5B69C0318325B2C001F0DE1 /* MockSimperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5B69C0218325B2C001F0DE1 /* MockSimperium.m */; };
+		B5C049FD1851326A00A1FF91 /* NSFileManager+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B586237B180D932F008E43C8 /* NSFileManager+Simperium.m */; };
 		B5C7D7F9183411B900E9109C /* SPDictionaryStorageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C7D7F8183411B900E9109C /* SPDictionaryStorageTests.m */; };
 		B5C91A071827E8600002D306 /* SPHttpRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = B5C91A021827E8600002D306 /* SPHttpRequest.h */; };
 		B5C91A081827E8600002D306 /* SPHttpRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C91A031827E8600002D306 /* SPHttpRequest.m */; };
@@ -1226,6 +1227,7 @@
 				264CD997135DFE7E00C51BAD /* DiffMatchPatch.m in Sources */,
 				264CD998135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.c in Sources */,
 				264CD99C135DFE7E00C51BAD /* NSMutableDictionary+DMPExtensions.m in Sources */,
+				B5C049FD1851326A00A1FF91 /* NSFileManager+Simperium.m in Sources */,
 				264CD99E135DFE7E00C51BAD /* NSString+JavaSubstring.m in Sources */,
 				264CD9A0135DFE7E00C51BAD /* NSString+UnicharUtilities.m in Sources */,
 				264CD9A2135DFE7E00C51BAD /* NSString+UriCompatibility.m in Sources */,
