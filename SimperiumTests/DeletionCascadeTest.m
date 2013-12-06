@@ -48,8 +48,9 @@ static NSInteger const kCommentsPerPost	= 50;
 
 	// Insert Comments
 	dispatch_group_async(group, commentBucket.processorQueue, ^{
+		id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
+		
 		for (NSString* simperiumKey in postKeys) {
-			id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
 			
 			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
 			for (NSInteger j = 0; ++j <= kCommentsPerPost; ) {
@@ -66,11 +67,11 @@ static NSInteger const kCommentsPerPost	= 50;
 	// Delete Posts
 	dispatch_group_async(group, postBucket.processorQueue, ^{
 		
+		id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
 		NSEnumerator* enumerator = [postKeys reverseObjectEnumerator];
 		NSString* simperiumKey = nil;
 		
 		while (simperiumKey = (NSString*)[enumerator nextObject]) {
-			id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
 			
 			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
 			[threadSafeStorage deleteObject:post];
@@ -122,9 +123,9 @@ static NSInteger const kCommentsPerPost	= 50;
 	}
 
 	// Update Comments
+	id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
+	
 	for (NSString* simperiumKey in postKeys) {
-		id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
-		
 		Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
 		for (PostComment* comment in post.comments) {
 			comment.content = [NSString stringWithFormat:@"Updated Comment"];
