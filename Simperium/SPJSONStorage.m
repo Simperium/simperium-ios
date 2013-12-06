@@ -318,7 +318,7 @@
 	
 }
 
-- (void)endCriticalSection {
+- (void)finishCriticalSection {
 	
 }
 
