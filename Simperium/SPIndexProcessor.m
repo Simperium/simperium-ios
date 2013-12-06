@@ -33,8 +33,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
--(id)init
-{
+- (id)init {
     if (self = [super init]) {
     }
     
@@ -43,10 +42,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 
 // Process an index of keys from the Simperium service for a particular bucket
--(void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(void(^)(NSString *key, NSString *version))versionHandler 
-{
-    id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
-    
+- (void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(void(^)(NSString *key, NSString *version))versionHandler  {
     // indexArray could have thousands of items; break it up into batches to manage memory use
     NSMutableDictionary *indexDict = [NSMutableDictionary dictionaryWithCapacity:[indexArray count]];
     NSInteger numBatches = 1 + [indexArray count] / kBatchSize;
@@ -79,10 +75,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
        data loss. Disabling this will mean that remotely deleted notes may linger if the
        deletion didn't sync before a reindexing.
        NSSet *remoteKeySet = [NSSet setWithArray:[indexDict allKeys]];
-       [self reconcileLocalAndRemoteIndex:remoteKeySet bucket:bucket storage:threadSafeStorage];
+       [self reconcileLocalAndRemoteIndex:remoteKeySet bucket:bucket];
      */
     
     // Process each batch while being efficient with memory and faulting
+    id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
+	[threadSafeStorage beginSafeSection];
+	
     for (NSMutableArray *batchList in batchLists) {
         @autoreleasepool {
         // Batch fault the entities for efficiency
@@ -108,15 +107,21 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             [threadSafeStorage refaultObjects: [objects allValues]];
         }
     }
+	
+	[threadSafeStorage finishSafeSection];
 }
 
--(void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket storage:(id<SPStorageProvider>)threadSafeStorage {
+-(void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket {
+	
+	id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
+	[threadSafeStorage beginCriticalSection];
+	
     NSArray *localKeys = [threadSafeStorage objectKeysForBucketName:bucket.name];
     NSMutableSet *localKeySet = [NSMutableSet setWithArray:localKeys];
     [localKeySet minusSet:remoteKeySet];
 
     // If any objects exist locally but not remotely, get rid of them
-    if ([localKeySet count] > 0) {
+    if (localKeySet.count > 0) {
         NSMutableSet *keysForDeletedObjects = [NSMutableSet setWithCapacity:[localKeySet count]];
         NSArray *objectsToDelete = [threadSafeStorage objectsForKeys:localKeySet bucketName:bucket.name];
         
@@ -134,21 +139,26 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         DDLogVerbose(@"Simperium deleting %ld objects after re-indexing", (long)[keysForDeletedObjects count]);
         [threadSafeStorage save];
         
-        NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  bucket.name, @"bucketName",
-                                  keysForDeletedObjects, @"keys", nil];
+        NSDictionary *userInfo = @{
+								   @"bucketName"	: bucket.name,
+								   @"keys"			: keysForDeletedObjects
+								 };
         [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
     }
+	
+	[threadSafeStorage finishCriticalSection];
 }
 
 // Process actual version data from the Simperium service for a particular bucket
 -(void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket firstSync:(BOOL)firstSync changeHandler:(void(^)(NSString *key))changeHandler
 {
     @autoreleasepool {
+        id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
+		[threadSafeStorage beginSafeSection];
+		
         NSMutableSet *addedKeys = [NSMutableSet setWithCapacity:5];
         NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:5];
-        id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
-        
+		
         // Batch fault all the objects into a dictionary for efficiency
         NSMutableArray *objectKeys = [NSMutableArray arrayWithCapacity:[versions count]];
         for (NSArray *versionData in versions) {
@@ -233,7 +243,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         // Store after processing the batch for efficiency
         [threadSafeStorage save];
         [threadSafeStorage refaultObjects:[objects allValues]];
-        
+		[threadSafeStorage finishSafeSection];
+		
         // Do all main thread work afterwards as well
         dispatch_async(dispatch_get_main_queue(), ^{
             // Manually resolve any pending references to added objects
@@ -263,6 +274,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 	// This routine shall be used for debugging purposes!
 	id<SPStorageProvider> storage	= [bucket.storage threadSafeStorage];
+	[storage beginSafeSection];
+	
 	NSSet *localKeys				= [NSSet setWithArray:[storage objectKeysForBucketName:bucket.name]];
 	NSArray *objects				= [storage objectsForKeys:localKeys bucketName:bucket.name];
 	NSMutableArray* index			= [NSMutableArray array];
@@ -271,6 +284,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	{
 		[index addObject:@{ [object.simperiumKey copy] : [object.ghost.version copy] }];
 	}
+	
+	[storage finishSafeSection];
 	
 	return index;
 }
