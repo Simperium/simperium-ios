@@ -138,28 +138,36 @@ static NSInteger const kStressIterations	= 500;
 	}
 
 	// Update Comments
-	for (NSString* simperiumKey in postKeys) {
-		id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
-		[threadSafeStorage beginSafeSection];
-		
-		Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
-		for (PostComment* comment in post.comments) {
-			comment.content = [NSString stringWithFormat:@"Updated Comment"];
-		}
-
-		// Delete Posts
-		dispatch_async(postBucket.processorQueue, ^{
+	StartBlock();
+	
+	dispatch_async(postBucket.processorQueue, ^{
+		for (NSString* simperiumKey in postKeys) {
 			id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
-			[threadSafeStorage beginCriticalSection];
+			[threadSafeStorage beginSafeSection];
 			
-			[threadSafeStorage deleteAllObjectsForBucketName:postBucket.name];
+			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
+			for (PostComment* comment in post.comments) {
+				comment.content = [NSString stringWithFormat:@"Updated Comment"];
+			}
+
+			// Delete Posts
+			dispatch_async(postBucket.processorQueue, ^{
+				id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
+				[threadSafeStorage beginCriticalSection];
+				
+				[threadSafeStorage deleteAllObjectsForBucketName:postBucket.name];
+				
+				[threadSafeStorage finishCriticalSection];
+			});
 			
-			[threadSafeStorage finishCriticalSection];
-		});
-		
-		[threadSafeStorage save];
-		[threadSafeStorage finishSafeSection];
-	}
+			[threadSafeStorage save];
+			[threadSafeStorage finishSafeSection];
+		}
+	});
+	
+	EndBlock();
+	
+	WaitUntilBlockCompletes();
 }
 
 

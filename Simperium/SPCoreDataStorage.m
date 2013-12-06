@@ -479,7 +479,7 @@ static NSUInteger _workers				= 0;
 	// NOTE: setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
 	// Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
 	NSManagedObjectContext* mainMOC = self.sibling.mainManagedObjectContext;
-	[mainMOC performBlock:^{
+	[mainMOC performBlockAndWait:^{
 		
 		// Fault in all updated objects
 		// (fixes NSFetchedResultsControllers that have predicates, see http://www.mlsite.net/blog/?p=518)		
@@ -535,6 +535,7 @@ static NSUInteger _workers				= 0;
 }
 
 - (void)beginSafeSection {
+	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
 	NSCondition *mutex = [[self class] sharedMutex];
 	
 	[mutex lock];
@@ -552,6 +553,7 @@ static NSUInteger _workers				= 0;
 }
 
 - (void)beginCriticalSection {
+	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
 	NSCondition *mutex = [[self class] sharedMutex];
 	
 	[mutex lock];
