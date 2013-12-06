@@ -16,7 +16,8 @@
 
 
 NSString* const SPCoreDataBucketListKey = @"SPCoreDataBucketListKey";
-static int ddLogLevel = LOG_LEVEL_INFO;
+static int ddLogLevel					= LOG_LEVEL_INFO;
+static NSUInteger _workers				= 0;
 
 
 @interface SPCoreDataStorage ()
@@ -513,6 +514,50 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             NSLog(@"Simperium exception while persisting writer context's changes: %@", exception.userInfo ? : exception.reason);
         }
 	}];
+}
+
+
+#pragma mark - Sincronization
+
++ (NSCondition *)sharedMutex {
+	static NSCondition *mutex;
+	static dispatch_once_t onceToken;
+	
+	dispatch_once(&onceToken, ^{
+		mutex = [[NSCondition alloc] init];
+	});
+	
+	return mutex;
+}
+
+- (void)beginSafeSection {
+	NSCondition *mutex = [[self class] sharedMutex];
+	
+	[mutex lock];
+	++_workers;
+	[mutex unlock];
+}
+
+- (void)finishSafeSection {
+	NSCondition *mutex = [[self class] sharedMutex];
+	
+	[mutex lock];
+	--_workers;
+	[mutex signal];
+	[mutex unlock];
+}
+
+- (void)beginCriticalSection {
+	NSCondition *mutex = [[self class] sharedMutex];
+	
+	[mutex lock];
+	while (_workers > 0) {
+		[mutex wait];
+	}
+}
+
+- (void)endCriticalSection {
+	[[[self class] sharedMutex] unlock];
 }
 
 

@@ -306,4 +306,20 @@
     return NO;
 }
 
+- (void)beginSafeSection {
+	
+}
+
+- (void)finishSafeSection {
+	
+}
+
+- (void)beginCriticalSection {
+	
+}
+
+- (void)endCriticalSection {
+	
+}
+
 @end
