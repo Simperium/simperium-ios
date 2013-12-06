@@ -6,9 +6,11 @@
 //  Copyright (c) 2011 Simperium. All rights reserved.
 //
 #import "SPDiffable.h"
-@class SPStorage;
+
+
 
 @protocol SPStorageProvider <NSObject>
+
 -(BOOL)save;
 -(NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate;
 -(NSArray *)objectKeysForBucketName:(NSString *)bucketName;
@@ -31,6 +33,12 @@
 -(NSArray *)stashedObjects;
 -(void)unstashUnsavedObjects;
 -(void)unloadAllObjects;
+
+// Synchronization
+- (void)beginSafeSection;
+- (void)finishSafeSection;
+- (void)beginCriticalSection;
+- (void)finishCriticalSection;
 
 @optional
 -(void)object:(id)object forKey:(NSString *)simperiumKey didChangeValue:(id)value forKey:(NSString *)key;

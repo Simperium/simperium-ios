@@ -14,14 +14,23 @@
 #import "SPCoreDataStorage.h"
 
 
-static NSInteger const kNumberOfPosts	= 10;
-static NSInteger const kCommentsPerPost	= 50;
+static NSInteger const kNumberOfPosts		= 10;
+static NSInteger const kCommentsPerPost		= 50;
+static NSInteger const kStressIterations	= 500;
 
 @interface DeletionCascadeTest : XCTestCase
 
 @end
 
 @implementation DeletionCascadeTest
+
+- (void)testStress {
+	for (NSInteger i = 0; ++i <= kStressIterations; ) {
+		NSLog(@"<> Stress Iteration %d", i);
+		[self testInsertion];
+		[self testUpdates];
+	}
+}
 
 - (void)testInsertion
 {
@@ -48,8 +57,10 @@ static NSInteger const kCommentsPerPost	= 50;
 
 	// Insert Comments
 	dispatch_group_async(group, commentBucket.processorQueue, ^{
+		id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
+		[threadSafeStorage beginSafeSection];
+		
 		for (NSString* simperiumKey in postKeys) {
-			id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
 			
 			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
 			for (NSInteger j = 0; ++j <= kCommentsPerPost; ) {
@@ -58,24 +69,29 @@ static NSInteger const kCommentsPerPost	= 50;
 				[post addCommentsObject:comment];
 				[commentKeys addObject:comment.simperiumKey];
 			}
-			
-			[threadSafeStorage save];
 		}
+		
+		[threadSafeStorage save];
+		[threadSafeStorage finishSafeSection];
 	});
 	
 	// Delete Posts
 	dispatch_group_async(group, postBucket.processorQueue, ^{
 		
+		id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
+		[threadSafeStorage beginCriticalSection];
+		
 		NSEnumerator* enumerator = [postKeys reverseObjectEnumerator];
 		NSString* simperiumKey = nil;
 		
 		while (simperiumKey = (NSString*)[enumerator nextObject]) {
-			id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
 			
 			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
 			[threadSafeStorage deleteObject:post];
 			[threadSafeStorage save];
 		}
+		
+		[threadSafeStorage finishCriticalSection];
 	});
 	
 	StartBlock();
@@ -124,6 +140,7 @@ static NSInteger const kCommentsPerPost	= 50;
 	// Update Comments
 	for (NSString* simperiumKey in postKeys) {
 		id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
+		[threadSafeStorage beginSafeSection];
 		
 		Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
 		for (PostComment* comment in post.comments) {
@@ -131,13 +148,17 @@ static NSInteger const kCommentsPerPost	= 50;
 		}
 
 		// Delete Posts
-		dispatch_sync(postBucket.processorQueue, ^{
+		dispatch_async(postBucket.processorQueue, ^{
 			id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
+			[threadSafeStorage beginCriticalSection];
+			
 			[threadSafeStorage deleteAllObjectsForBucketName:postBucket.name];
-			[threadSafeStorage save];
+			
+			[threadSafeStorage finishCriticalSection];
 		});
 		
 		[threadSafeStorage save];
+		[threadSafeStorage finishSafeSection];
 	}
 }
 

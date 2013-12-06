@@ -17,7 +17,8 @@
 
 
 NSString* const SPCoreDataBucketListKey = @"SPCoreDataBucketListKey";
-static int ddLogLevel = LOG_LEVEL_INFO;
+static int ddLogLevel					= LOG_LEVEL_INFO;
+static NSUInteger _workers				= 0;
 
 
 @interface SPCoreDataStorage ()
@@ -483,8 +484,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		// Fault in all updated objects
 		// (fixes NSFetchedResultsControllers that have predicates, see http://www.mlsite.net/blog/?p=518)		
         NSArray* updated = [notification.userInfo[NSUpdatedObjectsKey] allObjects];
-		for (NSManagedObject* childMo in updated) {
-			NSManagedObject* localMO = [mainMOC objectWithID:childMo.objectID];
+		for (NSManagedObject* childMO in updated) {
+			
+			// Do not use 'objectWithId': might return an object that already got deleted
+			NSManagedObject* localMO = [self.mainManagedObjectContext existingObjectWithID:childMO.objectID error:nil];
 			if (localMO.isFault) {
 				[localMO willAccessValueForKey:nil];
 			}
@@ -515,6 +518,50 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             NSLog(@"Simperium exception while persisting writer context's changes: %@", exception.userInfo ? : exception.reason);
         }
 	}];
+}
+
+
+#pragma mark - Sincronization
+
++ (NSCondition *)sharedMutex {
+	static NSCondition *mutex;
+	static dispatch_once_t onceToken;
+	
+	dispatch_once(&onceToken, ^{
+		mutex = [[NSCondition alloc] init];
+	});
+	
+	return mutex;
+}
+
+- (void)beginSafeSection {
+	NSCondition *mutex = [[self class] sharedMutex];
+	
+	[mutex lock];
+	++_workers;
+	[mutex unlock];
+}
+
+- (void)finishSafeSection {
+	NSCondition *mutex = [[self class] sharedMutex];
+	
+	[mutex lock];
+	--_workers;
+	[mutex signal];
+	[mutex unlock];
+}
+
+- (void)beginCriticalSection {
+	NSCondition *mutex = [[self class] sharedMutex];
+	
+	[mutex lock];
+	while (_workers > 0) {
+		[mutex wait];
+	}
+}
+
+- (void)finishCriticalSection {
+	[[[self class] sharedMutex] unlock];
 }
 
 
