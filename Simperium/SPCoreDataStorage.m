@@ -476,7 +476,8 @@ static NSUInteger _workers				= 0;
 		[upsertedObjects unionSet:userInfo[NSInsertedObjectsKey]];
 		
 		for (NSManagedObject* mo in upsertedObjects) {
-			NSManagedObject* localMO = [self.mainManagedObjectContext objectWithID:mo.objectID];
+			// Do not use 'objectWithId': might return an object that already got deleted
+			NSManagedObject* localMO = [self.mainManagedObjectContext existingObjectWithID:mo.objectID error:nil];
 			if (localMO.isFault) {
                 [localMO willAccessValueForKey:nil];
                 [self.mainManagedObjectContext refreshObject:localMO mergeChanges:NO];
@@ -556,7 +557,7 @@ static NSUInteger _workers				= 0;
 	}
 }
 
-- (void)endCriticalSection {
+- (void)finishCriticalSection {
 	[[[self class] sharedMutex] unlock];
 }
 
