@@ -38,7 +38,7 @@
 - (void)beginSafeSection;
 - (void)finishSafeSection;
 - (void)beginCriticalSection;
-- (void)endCriticalSection;
+- (void)finishCriticalSection;
 
 @optional
 -(void)object:(id)object forKey:(NSString *)simperiumKey didChangeValue:(id)value forKey:(NSString *)key;
