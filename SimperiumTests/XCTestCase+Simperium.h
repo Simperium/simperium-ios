@@ -24,5 +24,5 @@
 // Macro - Wait and loop until flag is set
 #define WaitUntilBlockCompletes() \
 do { \
-while(waitingForBlock) { [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]]; } \
+	while(waitingForBlock) { [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]]; } \
 } while(0)
