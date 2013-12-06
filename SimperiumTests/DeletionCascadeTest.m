@@ -140,7 +140,7 @@ static NSInteger const kStressIterations	= 500;
 	// Update Comments
 	StartBlock();
 	
-	dispatch_async(postBucket.processorQueue, ^{
+	dispatch_async(commentBucket.processorQueue, ^{
 		for (NSString* simperiumKey in postKeys) {
 			id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
 			[threadSafeStorage beginSafeSection];
