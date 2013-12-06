@@ -185,40 +185,34 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
 - (BOOL)processRemoteDeleteWithKey:(NSString*)simperiumKey acknowledged:(BOOL)acknowledged bucket:(SPBucket *)bucket {
 	
-	// Process deletions in a shared queue:
-	// Cascade deletion operations will -potentially- interfere with other deletions being executed at the same time.
-	
-	dispatch_async([[self class] sharedQueue], ^{
-
-		// REMOVE operation
-		// If this wasn't just an ack, perform the deletion
-		if (!acknowledged) {
-			DDLogVerbose(@"Simperium non-local REMOVE ENTITY received");
-			
-			id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
-			id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
-			
-			if(object) {
-				[threadSafeStorage deleteObject:object];
-				[threadSafeStorage save];
-			}
-			
-			dispatch_async(dispatch_get_main_queue(), ^{
-				NSDictionary *userInfo = @{
-											@"bucketName"	: bucket.name,
-											@"keys"			: [NSSet setWithObject:simperiumKey]
-										 };
-				[[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
-			});
-
-		} else {
-			dispatch_async(dispatch_get_main_queue(), ^{
-				// Not really useful except for testing
-				NSDictionary *userInfo = @{  @"bucketName" : bucket.name };
-				[[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidAcknowledgeDeleteNotification object:bucket userInfo:userInfo];
-			});
+	// REMOVE operation
+	// If this wasn't just an ack, perform the deletion
+	if (!acknowledged) {
+		DDLogVerbose(@"Simperium non-local REMOVE ENTITY received");
+		
+		id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
+		id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
+		
+		if(object) {
+			[threadSafeStorage deleteObject:object];
+			[threadSafeStorage save];
 		}
-	});
+		
+		dispatch_async(dispatch_get_main_queue(), ^{
+			NSDictionary *userInfo = @{
+										@"bucketName"	: bucket.name,
+										@"keys"			: [NSSet setWithObject:simperiumKey]
+									 };
+			[[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
+		});
+
+	} else {
+		dispatch_async(dispatch_get_main_queue(), ^{
+			// Not really useful except for testing
+			NSDictionary *userInfo = @{  @"bucketName" : bucket.name };
+			[[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidAcknowledgeDeleteNotification object:bucket userInfo:userInfo];
+		});
+	}
 	
     return YES;
 }
@@ -650,19 +644,6 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	}
 	
 	return pendings;
-}
-
-+ (dispatch_queue_t)sharedQueue {
-	
-	static dispatch_queue_t sharedQueue;
-	static dispatch_once_t onceToken;
-	
-	dispatch_once(&onceToken, ^{
-        NSString *queueLabel = @"com.simperium.processor.sharedQueue";
-        sharedQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
-	});
-	
-	return sharedQueue;
 }
 
 @end
