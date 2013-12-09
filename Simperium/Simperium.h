@@ -122,14 +122,14 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 // Toggle verbose logging.
 @property (nonatomic) BOOL verboseLoggingEnabled;
 
+// Toggle remote logging.
+@property (nonatomic) BOOL remoteLoggingEnabled;
+
 // Enables or disables the network.
 @property (nonatomic) BOOL networkEnabled;
 
 // Overrides the built-in authentication flow so you can customize the behavior.
 @property (nonatomic) BOOL authenticationEnabled;
-
-// Toggle websockets (should only be done before starting Simperium).
-@property (nonatomic) BOOL useWebSockets;
 
 // Returns the currently authenticated Simperium user.
 @property (nonatomic,strong) SPUser *user;

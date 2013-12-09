@@ -25,7 +25,9 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
     
     // Get the Raw Data length and ensure we actually have data
     int intLength = (int)[objData length];
-    if (intLength == 0) return nil;
+    if (intLength == 0) {
+		return nil;	
+	}
     
     // Setup the String-based Result placeholder and pointer within that placeholder
     strResult = (char *)calloc(((intLength + 2) / 3) * 4, sizeof(char));
@@ -61,9 +63,7 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
     *objPointer = '\0';
     
     // Return the results as an NSString object
-    NSString *string = [NSString stringWithCString:strResult encoding:NSASCIIStringEncoding];
-    free(strResult);
-    return string;
+	return [[NSString alloc] initWithBytesNoCopy:strResult length:(objPointer - strResult) encoding:NSASCIIStringEncoding freeWhenDone:YES];
 }
 
 + (NSString *)sp_makeUUID

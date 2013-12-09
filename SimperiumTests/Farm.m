@@ -31,8 +31,6 @@
         done = NO;
         
         self.simperium = [[Simperium alloc] initWithRootViewController:nil];
-        // Some stuff is stored in user prefs / keychain, so be sure to remove it
-        [simperium signOutAndRemoveLocalData:YES];
         
         // Setting a label allows each Simperium instance to store user prefs under a different key
         // (be sure to do this before the call to clearLocalData)
@@ -41,7 +39,6 @@
         [simperium setAuthenticationEnabled:NO];
         [simperium setBucketOverrides:bucketOverrides];
         [simperium setVerboseLoggingEnabled:YES];
-        simperium.useWebSockets = YES;
         self.token = aToken;
     }
     return self;
@@ -62,11 +59,15 @@
     
     simperium.user = [[SPUser alloc] initWithEmail:USERNAME token:token];
     for (NSString *bucketName in [simperium.bucketOverrides allKeys]) {
-        [simperium bucketForName:bucketName].notifyWhileIndexing = YES;
+        SPBucket *bucket = [simperium bucketForName:bucketName];
+        bucket.notifyWhileIndexing = YES;
+        
+        // Clear data from previous tests if necessary
+        [bucket.network resetBucketAndWait:bucket];
     }
 }
 
-- (void)dealloc {
+- (void)stop {
     [simperium signOutAndRemoveLocalData:YES];
 }
 

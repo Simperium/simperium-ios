@@ -23,4 +23,19 @@
 	return logger;
 }
 
+-(NSData*)exportLogfiles
+{
+	NSArray *logfiles = [self.logFileManager sortedLogFilePaths];
+	NSMutableData *export = [NSMutableData data];
+	
+	for(NSString *path in logfiles) {
+		NSData *logfile = [NSData dataWithContentsOfFile:path];
+		if(logfile.length) {
+			[export appendData:logfile];
+		}
+	}
+	
+	return export;
+}
+
 @end
