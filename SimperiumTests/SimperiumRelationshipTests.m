@@ -6,25 +6,30 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
-#import "SimperiumRelationshipTests.h"
+#import "SimperiumTests.h"
 #import "Post.h"
-#import "Comment.h"
+#import "PostComment.h"
 #import "Farm.h"
 #import "SPBucket.h"
 
+
+@interface SimperiumRelationshipTests : SimperiumTests
+
+@end
+
 @implementation SimperiumRelationshipTests
 
-- (NSDictionary *)bucketOverrides {
+-(NSDictionary *)bucketOverrides {
     // Each farm for each test case should share bucket overrides
-    if (overrides == nil) {
+    if (self.overrides == nil) {
         self.overrides = [NSDictionary dictionaryWithObjectsAndKeys:
                           [self uniqueBucketFor:@"Post"], @"Post",
                           [self uniqueBucketFor:@"Comment"], @"Comment", nil];
     }
-    return overrides;
+    return self.overrides;
 }
 
-- (void)testSingleRelationship
+-(void)testSingleRelationship
 {
     NSLog(@"%@ start", self.name);
     
@@ -37,8 +42,8 @@
     follower.expectedIndexCompletions = 1;
     [leader connect];
     [follower connect];
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farms], @"timed out (initial index)");
-    [self resetExpectations:farms];
+    XCTAssertTrue([self waitForCompletion: 4.0 farmArray:self.farms], @"timed out (initial index)");
+    [self resetExpectations:self.farms];
 
     
     SPBucket *leaderPosts = [leader.simperium bucketForName:@"Post"];
@@ -46,25 +51,25 @@
     post.title = @"post title";
     
     SPBucket *leaderComments = [leader.simperium bucketForName:@"Comment"];
-    Comment *comment = (Comment *)[leaderComments insertNewObject];
+    PostComment *comment = (PostComment *)[leaderComments insertNewObject];
     comment.content = @"a comment";
     comment.post = post;
     
     leader.expectedAcknowledgments = 2;
     follower.expectedAdditions = 2;
     [leader.simperium save];
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farms], @"timed out (adding)");
+    XCTAssertTrue([self waitForCompletion: 4.0 farmArray:self.farms], @"timed out (adding)");
     
     // Ensure pending references have an opportunity to resolve
     [self waitFor:0.5];
     
-    [self ensureFarmsEqual:farms entityName:@"Post"];
-    [self ensureFarmsEqual:farms entityName:@"Comment"];
+    [self ensureFarmsEqual:self.farms entityName:@"Post"];
+    [self ensureFarmsEqual:self.farms entityName:@"Comment"];
 
     NSLog(@"%@ end", self.name); 
 }
 
-- (void)testSingleRelationshipVariant
+-(void)testSingleRelationshipVariant
 {
     NSLog(@"%@ start", self.name);
     
@@ -77,7 +82,7 @@
     [leader connect];
     [follower connect];
         
-    Comment *comment = [NSEntityDescription insertNewObjectForEntityForName:@"Comment" inManagedObjectContext:leader.managedObjectContext];
+    PostComment *comment = [NSEntityDescription insertNewObjectForEntityForName:@"Comment" inManagedObjectContext:leader.managedObjectContext];
     comment.content = @"a comment";
     [leader.simperium save];
     
@@ -89,7 +94,7 @@
     leader.expectedAcknowledgments = 2;
     follower.expectedAdditions = 2;
     [leader.simperium save];
-    STAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
+    XCTAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
     
     // Ensure pending references have an opportunity to resolve
     [self waitFor:0.5];

@@ -74,7 +74,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)awakeFromFetch {
     [super awakeFromFetch];
-    
+    SPGhost *newGhost = [[SPGhost alloc] initFromDictionary: [self.ghostData sp_objectFromJSONString]];
+    self.ghost = newGhost;
     [self.managedObjectContext userInfo];
 	
     [self configureBucket];

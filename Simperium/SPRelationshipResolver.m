@@ -140,10 +140,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         // Resolve the references but do it in the background
         dispatch_async(queue, ^{
             id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
+			[threadSafeStorage beginSafeSection];
+			
             id<SPDiffable>toObject = [threadSafeStorage objectForKey:toKey bucketName:bucketName];
             
             if (!toObject) {
                 DDLogError(@"Simperium error, tried to resolve reference to an object that doesn't exist yet (%@): %@", bucketName, toKey);
+				[threadSafeStorage finishSafeSection];
                 return;
             }
 
@@ -161,8 +164,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                 [fromObject.ghost.memberData setObject:toKey forKey: attributeName];
                 fromObject.ghost.needsSave = YES;
             }
+			
             [threadSafeStorage save];
-        
+			[threadSafeStorage finishSafeSection];
+			
             dispatch_async(dispatch_get_main_queue(), ^{
                 // All references to entity were resolved above, so remove it from the pending array
                 [pendingRelationships removeObjectForKey:toKey];

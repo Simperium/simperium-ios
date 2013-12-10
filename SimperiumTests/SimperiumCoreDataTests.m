@@ -6,11 +6,16 @@
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
-#import "SimperiumCoreDataTests.h"
+#import "SimperiumTests.h"
 #import "Farm.h"
 #import "Config.h"
 #import "NSString+Simperium.h"
 
+
+
+@interface SimperiumCoreDataTests : SimperiumTests
+
+@end
 
 
 #pragma mark ====================================================================================
@@ -43,8 +48,7 @@ static NSString* const kDeletedKey = @"deleted";
 
 @implementation SimperiumCoreDataTests
 
--(void)setUp {
-		
+- (void)setUp {
 	[super setUp];
 	
 	// Fire up Simperium
@@ -52,17 +56,16 @@ static NSString* const kDeletedKey = @"deleted";
     [self connectFarms];
 
 	// Load the contexts
-    Farm *leader = [farms lastObject];
+    Farm *leader = [self.farms lastObject];
 	self.writerContext = leader.simperium.writerManagedObjectContext;
 	self.mainContext = leader.simperium.managedObjectContext;
 	self.changesByContext = [NSMutableDictionary dictionary];
 	
-	STAssertTrue((self.mainContext.concurrencyType == NSMainQueueConcurrencyType), @"CoreData mainContext Setup Error");
-	STAssertTrue((self.writerContext.concurrencyType == NSPrivateQueueConcurrencyType),	@"CoreData writerContext Setup Error");
+	XCTAssertTrue((self.mainContext.concurrencyType == NSMainQueueConcurrencyType), @"CoreData mainContext Setup Error");
+	XCTAssertTrue((self.writerContext.concurrencyType == NSPrivateQueueConcurrencyType),	@"CoreData writerContext Setup Error");
 }
 
--(void)tearDown {
-	
+- (void)tearDown {
 	[super tearDown];
 	
 	// Cleanup
@@ -78,13 +81,11 @@ static NSString* const kDeletedKey = @"deleted";
 #pragma mark Tests!
 #pragma mark ====================================================================================
 
--(void)testWriterMOC {
-	
+- (void)testWriterMOC {
     NSLog(@"%@ start", self.name);
 	
 	// Let's insert new objects
-	for(NSInteger i = 0; ++i <= kObjectsCount; )
-	{
+	for(NSInteger i = 0; ++i <= kObjectsCount; ) {
 		Config* config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:self.mainContext];
 		config.warpSpeed = @( arc4random_uniform(UINT_MAX) );
 	}
@@ -93,12 +94,12 @@ static NSString* const kDeletedKey = @"deleted";
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleContextNote:) name:NSManagedObjectContextDidSaveNotification object:self.writerContext];
 	
 	// Scotty, beam the changes down!
-	STAssertTrue(self.mainContext.hasChanges, @"Main MOC should have changes");
-	STAssertFalse(self.writerContext.hasChanges, @"Writer MOC should not have changes");
+	XCTAssertTrue(self.mainContext.hasChanges, @"Main MOC should have changes");
+	XCTAssertFalse(self.writerContext.hasChanges, @"Writer MOC should not have changes");
 	
 	NSError* error = nil;
 	[self.mainContext save:&error];
-	STAssertFalse(error, @"Error Saving mainContext");
+	XCTAssertFalse(error, @"Error Saving mainContext");
 	
 	// The writer save is async, and automatic. Hold the runloop just a sec
 	[self waitFor:kLocalTestTimeout];
@@ -106,16 +107,17 @@ static NSString* const kDeletedKey = @"deleted";
 	// The writerContext should have persisted the changes
 	NSArray *savedChanges = [[self changesForContext:self.writerContext] objectForKey:kInsertedKey];
 	
-	STAssertTrue( (savedChanges.count == kObjectsCount), @"Writer MOC failed to persist the inserted objects");
+	XCTAssertTrue( (savedChanges.count == kObjectsCount), @"Writer MOC failed to persist the inserted objects");
 	
     NSLog(@"%@ end", self.name);
 }
 
 
 
--(void)testBucketMechanism {
-	
+- (void)testBucketMechanism {
     NSLog(@"%@ start", self.name);
+	
+	[super waitFor:kLocalTestTimeout];
 	
 	NSManagedObjectContext* workerContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
 	NSManagedObjectContext* deepContext	= [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
@@ -127,21 +129,22 @@ static NSString* const kDeletedKey = @"deleted";
 	Config* config = nil;
 	
 	config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:self.mainContext];
-	STAssertTrue( (config.bucket != nil), @"The MainContext newObject's bucket should not be nil");
+	XCTAssertTrue( (config.bucket != nil), @"The MainContext newObject's bucket should not be nil");
 	
 	config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:workerContext];
-	STAssertTrue( (config.bucket != nil), @"The WorkerContext newObject's bucket should not be nil");
+	XCTAssertTrue( (config.bucket != nil), @"The WorkerContext newObject's bucket should not be nil");
 	
 	config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:deepContext];
-	STAssertTrue( (config.bucket != nil), @"The DeepContext newObject's bucket should not be nil");
+	XCTAssertTrue( (config.bucket != nil), @"The DeepContext newObject's bucket should not be nil");
+	
+	[super waitFor:kLocalTestTimeout];
 	
     NSLog(@"%@ end", self.name);
 }
 
 
 
--(void)testNestedInsert {
-	
+- (void)testNestedInsert {
     NSLog(@"%@ start", self.name);
 	
 	NSManagedObjectContext *workerContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
@@ -154,30 +157,33 @@ static NSString* const kDeletedKey = @"deleted";
 		
 		// Insert an object into the last context of the chain
 		Config* inserted = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:deepContext];
-		STAssertNotNil(inserted, @"Error inserting object in child");
-		STAssertTrue(  (deepContext.hasChanges), @"Error inserting into Deep Context");
-		STAssertFalse( (workerContext.hasChanges), @"Worker context shouldn't have changes");
+		XCTAssertNotNil(inserted, @"Error inserting object in child");
+		XCTAssertTrue(  (deepContext.hasChanges), @"Error inserting into Deep Context");
+		XCTAssertFalse( (workerContext.hasChanges), @"Worker context shouldn't have changes");
 
 		// Push the changes one level up (to the 'workerContext')
 		NSError* error = nil;
 		[deepContext save:&error];
-		STAssertNil(error, @"Error saving deep context");
-		STAssertTrue( (workerContext.hasChanges), @"Worker context SHOULD have changes");
+		XCTAssertNil(error, @"Error saving deep context");
+		XCTAssertTrue( (workerContext.hasChanges), @"Worker context SHOULD have changes");
 		
 		[workerContext performBlockAndWait:^{
 		
 			// Push one level up (mainContext)
 			NSError* error = nil;
 			[workerContext save:&error];
-			STAssertNil(error, @"Error saving worker context");
-			STAssertTrue( (self.mainContext.hasChanges), @"Main context SHOULD have changes");
+			XCTAssertNil(error, @"Error saving worker context");
+			XCTAssertTrue( (self.mainContext.hasChanges), @"Main context SHOULD have changes");
 			
 			// Finally, this will reach the writer
 			[self.mainContext performBlockAndWait:^{
 				
 				NSError* error = nil;
 				[self.mainContext save:&error];
-				STAssertNil(error, @"Error saving Main context");
+				XCTAssertNil(error, @"Error saving Main context");
+				NSLog(@"%@ BLOCK end", self.name);
+				
+				[super waitFor:kLocalTestTimeout];
 			}];
 		}];
 	}];
@@ -185,10 +191,7 @@ static NSString* const kDeletedKey = @"deleted";
     NSLog(@"%@ end", self.name);
 }
 
-
-
--(void)testRemoteCRUD {
-	
+- (void)testRemoteCRUD {
     NSLog(@"%@ start", self.name);
 
 	// We'll need a follower farm
@@ -216,8 +219,7 @@ static NSString* const kDeletedKey = @"deleted";
 	//
 	
 	NSMutableSet* objects = [NSMutableSet set];
-	for(NSInteger i = 0; ++i <= kObjectsCount; )
-	{
+	for(NSInteger i = 0; ++i <= kObjectsCount; ) {
 		Config* config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:self.mainContext];
 		[objects addObject:config];
 	}
@@ -225,15 +227,15 @@ static NSString* const kDeletedKey = @"deleted";
 	// Verify that the objects make it to the Follower's writer & main MOC's
 	NSError* error = nil;
 	[self.mainContext save:&error];
-	STAssertNil(error, @"Error saving Leader MOC");
+	XCTAssertNil(error, @"Error saving Leader MOC");
 
 	[self waitFor:kRemoteTestTimeout];
 
 	NSArray *mainInserted = [[self changesForContext:followerMainMOC] objectForKey:kInsertedKey];
 	NSArray *writerInserted = [[self changesForContext:followerWriterMOC] objectForKey:kInsertedKey];
 	
-	STAssertTrue( (mainInserted.count == kObjectsCount), @"The follower's mainMOC didn't get the new objects");
-	STAssertTrue( (writerInserted.count == kObjectsCount), @"The follower's writerMOC didn't persist the new objects");
+	XCTAssertTrue( (mainInserted.count == kObjectsCount), @"The follower's mainMOC didn't get the new objects");
+	XCTAssertTrue( (writerInserted.count == kObjectsCount), @"The follower's writerMOC didn't persist the new objects");
 	
 	
 	// ====================================================================================
@@ -243,8 +245,7 @@ static NSString* const kDeletedKey = @"deleted";
 	// ====================================================================================
 	//
 	
-	for(Config* config in objects)
-	{
+	for(Config* config in objects) {
 		config.warpSpeed = @(31337);
 		config.shieldsUp = @(YES);
 		config.shieldPercent = @(100);
@@ -253,19 +254,18 @@ static NSString* const kDeletedKey = @"deleted";
 	
 	error = nil;
 	[self.mainContext save:&error];
-	STAssertNil(error, @"Error saving Main Context");
+	XCTAssertNil(error, @"Error saving Main Context");
 	
 	[self waitFor:kRemoteTestTimeout];
 	
 	NSArray *mainUpdated = [self changesForContext:followerWriterMOC][kUpdatedKey];
-	STAssertTrue( (mainUpdated.count == objects.count), @"Error Updating Objects" );
+	XCTAssertTrue( (mainUpdated.count == objects.count), @"Error Updating Objects" );
 	
-	for(Config* config in mainUpdated)
-	{
-		STAssertTrue([config.warpSpeed isEqual:@(31337)], @"Update Test Failed");
-		STAssertTrue([config.shieldsUp isEqual:@(YES)],	@"Update Test Failed");
-		STAssertTrue([config.shieldPercent isEqual:@(100)],	@"Update Test Failed");
-		STAssertTrue([config.captainsLog isEqual:@"You damn dirty borgs!"], @"Update Test Failed");
+	for(Config* config in mainUpdated) {
+		XCTAssertTrue([config.warpSpeed isEqual:@(31337)], @"Update Test Failed");
+		XCTAssertTrue([config.shieldsUp isEqual:@(YES)],	@"Update Test Failed");
+		XCTAssertTrue([config.shieldPercent isEqual:@(100)],	@"Update Test Failed");
+		XCTAssertTrue([config.captainsLog isEqual:@"You damn dirty borgs!"], @"Update Test Failed");
 	}
 	
 	
@@ -283,15 +283,15 @@ static NSString* const kDeletedKey = @"deleted";
 	
 	error = nil;
 	[self.mainContext save:&error];
-	STAssertNil(error, @"Error saving Leader MOC");
+	XCTAssertNil(error, @"Error saving Leader MOC");
 	
 	[self waitFor:kRemoteTestTimeout];
 	
 	NSArray *mainDeleted = [[self changesForContext:followerMainMOC] objectForKey:kDeletedKey];
 	NSArray *writerDeleted = [[self changesForContext:followerWriterMOC] objectForKey:kDeletedKey];
 	
-	STAssertTrue( (mainDeleted.count == kObjectsCount), @"The follower's mainMOC failed to delete objects");
-	STAssertTrue( (writerDeleted.count == kObjectsCount), @"The follower's writerMOC failed to delete objects");
+	XCTAssertTrue( (mainDeleted.count == kObjectsCount), @"The follower's mainMOC failed to delete objects");
+	XCTAssertTrue( (writerDeleted.count == kObjectsCount), @"The follower's writerMOC failed to delete objects");
 		
     NSLog(@"%@ end", self.name);
 }
@@ -301,14 +301,12 @@ static NSString* const kDeletedKey = @"deleted";
 #pragma mark Helpers
 #pragma mark ====================================================================================
 
--(void)handleContextNote:(NSNotification*)note
-{
+- (void)handleContextNote:(NSNotification*)note {
 	NSValue* wrappedSender		 = [NSValue valueWithNonretainedObject:note.object];
 	NSMutableDictionary* changes = self.changesByContext[wrappedSender];
 	
 	// First time?
-	if(!changes)
-	{
+	if (!changes) {
 		changes	= [NSMutableDictionary dictionary];
 		changes[kInsertedKey] = [NSMutableArray array];
 		changes[kUpdatedKey] = [NSMutableArray array];
@@ -322,27 +320,23 @@ static NSString* const kDeletedKey = @"deleted";
 	NSSet* receivedUpdates = userInfo[kUpdatedKey];
 	NSSet* receivedDeletions = userInfo[kDeletedKey];
 	
-	if(receivedInserts)
-	{
+	if (receivedInserts) {
 		NSMutableArray* inserted = changes[kInsertedKey];
 		[inserted addObjectsFromArray:[receivedInserts allObjects]];
 	}
 
-	if(receivedUpdates)
-	{
+	if (receivedUpdates) {
 		NSMutableArray* updated = changes[kUpdatedKey];
 		[updated addObjectsFromArray:[receivedUpdates allObjects]];
 	}
 	
-	if(receivedDeletions)
-	{
+	if (receivedDeletions) {
 		NSMutableArray* deleted = changes[kDeletedKey];
 		[deleted addObjectsFromArray:[receivedDeletions allObjects]];
 	}
 }
 
--(NSDictionary*)changesForContext:(NSManagedObjectContext*)context
-{
+- (NSDictionary*)changesForContext:(NSManagedObjectContext*)context {
 	NSValue* wrappedContext = [NSValue valueWithNonretainedObject:context];
 	return self.changesByContext[wrappedContext];
 }

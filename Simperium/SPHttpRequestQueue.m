@@ -27,7 +27,7 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 @property (nonatomic, strong, readwrite) NSMutableArray *pendingRequests;
 @property (nonatomic, strong, readwrite) NSMutableArray *activeRequests;
 
--(void)processNextRequest;
+- (void)processNextRequest;
 @end
 
 
@@ -37,10 +37,8 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 
 @implementation SPHttpRequestQueue
 
--(id)init
-{
-    if((self = [super init]))
-    {
+- (id)init {
+    if ((self = [super init])) {
         self.queueLock = dispatch_queue_create("com.simperium.SPHttpRequestQueue", NULL);
 		self.enabled = true;
 		self.maxConcurrentConnections = SPHttpRequestsMaxConcurrentRequests;
@@ -51,8 +49,7 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
     return self;
 }
 
-+(instancetype)sharedInstance
-{
++ (instancetype)sharedInstance {
 	static dispatch_once_t pred;
 	static SPHttpRequestQueue* queue = nil;
 	
@@ -67,8 +64,7 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 #pragma mark Public Methods
 #pragma mark ====================================================================================
 
--(void)enqueueHttpRequest:(SPHttpRequest*)httpRequest
-{
+- (void)enqueueHttpRequest:(SPHttpRequest*)httpRequest {
     dispatch_sync(self.queueLock, ^(void) {
 		httpRequest.httpRequestQueue = self;
 		[self.pendingRequests addObject:httpRequest];
@@ -77,17 +73,16 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
     [self processNextRequest];
 }
 
--(void)dequeueHttpRequest:(SPHttpRequest*)httpRequest
-{
+- (void)dequeueHttpRequest:(SPHttpRequest*)httpRequest {
 	[httpRequest stop];
 	
     dispatch_sync(self.queueLock, ^(void) {
 		
-		if([self.pendingRequests containsObject:httpRequest]) {
+		if ([self.pendingRequests containsObject:httpRequest]) {
 			[self.pendingRequests removeObject:httpRequest];
 		}
 
-		if([self.activeRequests containsObject:httpRequest]) {
+		if ([self.activeRequests containsObject:httpRequest]) {
 			[self.activeRequests removeObject:httpRequest];
 		}
 	});
@@ -95,9 +90,8 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
     [self processNextRequest];
 }
 
--(void)processNextRequest
-{
-    if((self.pendingRequests.count == 0) || (self.activeRequests.count >= _maxConcurrentConnections) || (self.enabled == false)) {
+- (void)processNextRequest {
+    if ((self.pendingRequests.count == 0) || (self.activeRequests.count >= _maxConcurrentConnections) || (self.enabled == false)) {
         return;
     }
 
@@ -109,16 +103,15 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 	});
 }
 
--(void)setEnabled:(BOOL)enabled
-{
+- (void)setEnabled:(BOOL)enabled {
 	_enabled = enabled;
-	if(enabled) {
+	if (enabled) {
 		[self processNextRequest];
 		return;
 	}
 	
 	// No active requests?. We're cool then.
-	if(self.activeRequests.count == 0) {
+	if (self.activeRequests.count == 0) {
 		return;
 	}
 		
@@ -133,8 +126,7 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 }
 
 
--(NSSet *)requests
-{
+- (NSSet *)requests {
 	NSMutableSet *requests = [NSMutableSet set];
     dispatch_sync(self.queueLock, ^(void) {
 		[requests addObjectsFromArray:self.activeRequests];
@@ -144,9 +136,8 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 	return requests;
 }
 
--(void)cancelAllRequest
-{
-	if( (self.activeRequests.count == 0) && (self.pendingRequests.count == 0) ) {
+- (void)cancelAllRequest {
+	if ( (self.activeRequests.count == 0) && (self.pendingRequests.count == 0) ) {
 		return;
 	}
 			
@@ -159,8 +150,7 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 	});
 }
 
--(void)cancelRequestsWithURL:(NSURL *)url
-{
+- (void)cancelRequestsWithURL:(NSURL *)url {
 	dispatch_sync(self.queueLock, ^(void) {
 		NSSet *pendingCancelled = [self cancelRequestsWithURL:url fromQueue:self.pendingRequests];
 		NSSet *activeCancelled = [self cancelRequestsWithURL:url fromQueue:self.activeRequests];
@@ -175,12 +165,11 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 #pragma mark Private Helpers
 #pragma mark ====================================================================================
 
--(NSSet *)cancelRequestsWithURL:(NSURL *)url fromQueue:(NSArray *)queue
-{
+- (NSSet *)cancelRequestsWithURL:(NSURL *)url fromQueue:(NSArray *)queue {
 	NSMutableSet *cancelled = [NSMutableSet set];
 	
 	for (SPHttpRequest *request in queue){
-		if([request.url isEqual:url]) {
+		if ([request.url isEqual:url]) {
 			[request stop];
 			[cancelled addObject:request];
 		}

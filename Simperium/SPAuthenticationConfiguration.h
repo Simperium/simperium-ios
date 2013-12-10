@@ -16,10 +16,10 @@
 
 #if TARGET_OS_IPHONE
 #else
-@property (nonatomic, retain) NSColor *controlColor;
+@property (nonatomic, strong) NSColor *controlColor;
 #endif
 
-+ (SPAuthenticationConfiguration *)sharedInstance;
++ (instancetype)sharedInstance;
 - (float)regularFontHeightForSize:(float)size;
 
 @end

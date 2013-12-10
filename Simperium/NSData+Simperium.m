@@ -35,6 +35,10 @@ static const short _base64DecodingTable[256] = {
         return [[NSData alloc] initWithBase64EncodedString:strBase64 options:NSDataBase64DecodingIgnoreUnknownCharacters];
     }
     const char * objPointer = [strBase64 cStringUsingEncoding:NSASCIIStringEncoding];
+	if (objPointer == NULL) {
+		return nil;
+	}
+
     int intLength = (int)strlen(objPointer);
     int intCurrent;
     int i = 0, j = 0, k;
@@ -102,7 +106,6 @@ static const short _base64DecodingTable[256] = {
     }
     
     // Cleanup and setup the return NSData
-	NSData* objData = [NSData dataWithBytesNoCopy:objResult length:j freeWhenDone:YES];
-    return objData;
+	return [NSData dataWithBytesNoCopy:objResult length:j freeWhenDone:YES];
 }
 @end

@@ -12,7 +12,7 @@
 
 @class Post;
 
-@interface Comment : TestObject
+@interface PostComment : TestObject
 
 @property (nonatomic, strong) NSString * content;
 @property (nonatomic, strong) Post *post;

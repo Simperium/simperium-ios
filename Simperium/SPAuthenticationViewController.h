@@ -12,30 +12,18 @@
 
 #import <UIKit/UIKit.h>
 
+
 @class SPAuthenticator;
-@class SPAuthenticationButton;
-@class SPAuthenticationValidator;
 
-@interface SPAuthenticationViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate>
-{   
-    SPAuthenticator *authenticator;
-    SPAuthenticationValidator *validator;
-	BOOL creating;
-	UITextField *usernameField;
-	UITextField *passwordField;
-	UITextField *passwordConfirmField;
-	UIActivityIndicatorView *progressView;
-	SPAuthenticationButton *actionButton;
-    UIButton *termsButton;
-    SPAuthenticationButton *changeButton;
+#pragma mark ====================================================================================
+#pragma mark SPAuthenticationViewController
+#pragma mark ====================================================================================
 
-    BOOL editing;
-    
-    UIBarButtonItem *cancelButton;
-}
+@interface SPAuthenticationViewController : UIViewController
 
-@property (nonatomic, strong) SPAuthenticator *authenticator;
-@property (nonatomic, strong) UITableView* tableView;
-@property (nonatomic, strong) UIImageView *logoView;
+@property (nonatomic, strong) SPAuthenticator	*authenticator;
+@property (nonatomic, strong) UITableView		*tableView;
+@property (nonatomic, strong) UIImageView		*logoView;
+@property (nonatomic, assign) BOOL				signingIn;
 
 @end

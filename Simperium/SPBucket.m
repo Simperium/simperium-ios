@@ -299,8 +299,9 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 - (NSDictionary*)exportStatus {
 	
 	// This routine shall be used for debugging purposes!
+	NSString* signature = self.lastChangeSignature ?: @"";
 	return @{
-		@"current"	: self.lastChangeSignature,
+		@"current"	: signature,
 		@"index"	: [self.indexProcessor exportIndexStatus:self],
 		@"pendings"	: [self.changeProcessor exportPendingChanges]
 	};

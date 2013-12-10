@@ -1,5 +1,5 @@
 //
-//  SPRemoteLogger.h
+//  SPSimperiumLogger.h
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 10/31/13.
@@ -14,30 +14,30 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-NS_ENUM(NSInteger, SPNetworkLogLevels) {
-	SPNetworkLogLevelsOff		= 0,
-	SPNetworkLogLevelsRegular	= 1,
-	SPNetworkLogLevelsVerbose	= 2
+NS_ENUM(NSInteger, SPRemoteLogLevels) {
+	SPRemoteLogLevelsOff		= 0,
+	SPRemoteLogLevelsRegular	= 1,
+	SPRemoteLogLevelsVerbose	= 2
 };
 
 
 #pragma mark ====================================================================================
-#pragma mark SPRemoteLoggerDelegate
+#pragma mark SPSimperiumLoggerDelegate
 #pragma mark ====================================================================================
 
-@protocol SPRemoteLoggerDelegate <NSObject>
--(void)sendLogMessage:(NSString*)logMessage;
+@protocol SPSimperiumLoggerDelegate <NSObject>
+- (void)handleLogMessage:(NSString*)logMessage;
 @end
 
 
 #pragma mark ====================================================================================
-#pragma mark SPRemoteLogger
+#pragma mark SPSimperiumLogger
 #pragma mark ====================================================================================
 
-@interface SPRemoteLogger : DDAbstractLogger <DDLogger>
+@interface SPSimperiumLogger : DDAbstractLogger <DDLogger>
 
-@property (nonatomic, weak, readwrite) id<SPRemoteLoggerDelegate> delegate;
+@property (nonatomic, weak, readwrite) id<SPSimperiumLoggerDelegate> delegate;
 
--(id)initWithDelegate:(id<SPRemoteLoggerDelegate>)delegate;
++ (instancetype)sharedInstance;
 
 @end

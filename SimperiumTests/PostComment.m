@@ -6,21 +6,22 @@
 //  Copyright (c) 2011 Simperium. All rights reserved.
 //
 
-#import "Comment.h"
+#import "PostComment.h"
 #import "Post.h"
 
 
-@implementation Comment
+@implementation PostComment
 
 @dynamic content;
 @dynamic post;
 
--(NSString *)description {
+- (NSString *)description {
     return [NSString stringWithFormat:@"Comment\n\tcontent: %@, postKey: %@", self.content, self.post.simperiumKey];
 }
 
--(BOOL)isEqualToObject:(TestObject *)otherObj {
-    Comment *other = (Comment *)otherObj;
+- (BOOL)isEqualToObject:(TestObject *)otherObj {
+    PostComment *other = (PostComment *)otherObj;
+
     BOOL contentEqual = [self.content isEqualToString:other.content];
     // Break these out for ease of debugging
     NSString *thisKey = self.post.simperiumKey;
