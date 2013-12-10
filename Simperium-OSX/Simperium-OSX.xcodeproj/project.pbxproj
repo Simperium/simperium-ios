@@ -176,6 +176,8 @@
 		B56B16521835682500E45C98 /* Post.m in Sources */ = {isa = PBXBuildFile; fileRef = B56B164B1835682500E45C98 /* Post.m */; };
 		B56B16531835682500E45C98 /* Test1.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B56B164C1835682500E45C98 /* Test1.xcdatamodeld */; };
 		B56B16541835682500E45C98 /* TestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = B56B164F1835682500E45C98 /* TestObject.m */; };
+		B5AC54641857AB3900608CAC /* SPMutableSet.h in Headers */ = {isa = PBXBuildFile; fileRef = B5AC54621857AB3900608CAC /* SPMutableSet.h */; };
+		B5AC54651857AB3900608CAC /* SPMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = B5AC54631857AB3900608CAC /* SPMutableSet.m */; };
 		B5D581BF183565A700B08996 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5D581BE183565A700B08996 /* XCTest.framework */; };
 		B5D581C5183565A700B08996 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B5D581C3183565A700B08996 /* InfoPlist.strings */; };
 		B5D581D0183565C500B08996 /* XCTestCase+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581CF183565C500B08996 /* XCTestCase+Simperium.m */; };
@@ -378,6 +380,8 @@
 		B56B164D1835682500E45C98 /* Test1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Test1.xcdatamodel; sourceTree = "<group>"; };
 		B56B164E1835682500E45C98 /* TestObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestObject.h; path = ../../SimperiumTests/TestObject.h; sourceTree = "<group>"; };
 		B56B164F1835682500E45C98 /* TestObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TestObject.m; path = ../../SimperiumTests/TestObject.m; sourceTree = "<group>"; };
+		B5AC54621857AB3900608CAC /* SPMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMutableSet.h; path = ../../Simperium/SPMutableSet.h; sourceTree = "<group>"; };
+		B5AC54631857AB3900608CAC /* SPMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMutableSet.m; path = ../../Simperium/SPMutableSet.m; sourceTree = "<group>"; };
 		B5D581BD183565A700B08996 /* Simperium-OSX Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Simperium-OSX Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D581BE183565A700B08996 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		B5D581C2183565A700B08996 /* Simperium-OSX Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Simperium-OSX Tests-Info.plist"; sourceTree = "<group>"; };
@@ -502,6 +506,8 @@
 				268EDEF0155F089D006B566F /* SPBinaryManager.h */,
 				268EDEF1155F089D006B566F /* SPBinaryManager.m */,
 				268EDEF2155F089D006B566F /* SPBinaryTransportDelegate.h */,
+				B5AC54621857AB3900608CAC /* SPMutableSet.h */,
+				B5AC54631857AB3900608CAC /* SPMutableSet.m */,
 				268EDEF3155F089D006B566F /* SPChangeProcessor.h */,
 				268EDEF4155F089E006B566F /* SPChangeProcessor.m */,
 				268EDEF5155F089E006B566F /* SPCoreDataExporter.h */,
@@ -809,6 +815,7 @@
 				268EDF37155F08A2006B566F /* SPAuthenticator.h in Headers */,
 				268EDF3B155F08A2006B566F /* SPBinaryManager.h in Headers */,
 				B504EF4E182818BE002FA5A1 /* SPHttpRequest.h in Headers */,
+				B5AC54641857AB3900608CAC /* SPMutableSet.h in Headers */,
 				268EDF3D155F08A2006B566F /* SPBinaryTransportDelegate.h in Headers */,
 				B504EF50182818BE002FA5A1 /* SPHttpRequest+Internals.h in Headers */,
 				268EDF3E155F08A2006B566F /* SPChangeProcessor.h in Headers */,
@@ -1037,6 +1044,7 @@
 				463774E5171FC6D500E2E333 /* base64.c in Sources */,
 				463774E8171FC6D500E2E333 /* NSData+SRB64Additions.m in Sources */,
 				463774EB171FC6D500E2E333 /* SRWebSocket.m in Sources */,
+				B5AC54651857AB3900608CAC /* SPMutableSet.m in Sources */,
 				46A6920017387ABF0080399F /* SFHFKeychainUtils.m in Sources */,
 				46D5BC42174C2A9B0027DBAF /* SPRelationshipResolver.m in Sources */,
 				46EA1AEF17569EB4009AC5AA /* SPWebSocketInterface.m in Sources */,
