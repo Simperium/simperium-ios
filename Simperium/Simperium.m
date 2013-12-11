@@ -27,7 +27,7 @@
 #import "SPSimperiumLogger.h"
 #import "SPCoreDataStorage.h"
 #import "SPAuthenticator.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "SPRelationshipResolver.h"
 #import "SPReachability.h"
 

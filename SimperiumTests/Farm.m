@@ -9,6 +9,7 @@
 #import "Farm.h"
 #import "TestParams.h"
 #import "SPUser.h"
+#import "SPBucket+Internals.h"
 
 @implementation Farm
 @synthesize managedObjectContext		= __managedObjectContext;
@@ -128,6 +129,10 @@
             break;
         case SPBucketChangeUpdate:
             self.expectedChanges -= 1;
+			break;
+		case SPBucketChangeMove:
+// TODO: Implement!
+			break;
     }
 }
 

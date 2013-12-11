@@ -17,7 +17,7 @@
 #import "JSONKit+Simperium.h"
 #import "SPGhost.h"
 #import "DDLog.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "SPDiffer.h"
 
 static int ddLogLevel = LOG_LEVEL_INFO;

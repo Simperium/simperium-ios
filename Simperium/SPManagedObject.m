@@ -7,7 +7,7 @@
 
 #import "SPManagedObject.h"
 #import "SPCoreDataStorage.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "SPSchema.h"
 #import "SPDiffer.h"
 #import "SPMember.h"

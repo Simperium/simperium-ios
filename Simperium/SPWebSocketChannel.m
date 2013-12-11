@@ -12,7 +12,7 @@
 #import "SPEnvironment.h"
 #import "Simperium.h"
 #import "SPDiffer.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "SPStorage.h"
 #import "SPUser.h"
 #import "SPChangeProcessor.h"

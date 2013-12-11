@@ -8,7 +8,7 @@
 
 #import "NSMutableDictionary+Simperium.h"
 #import "SPObject.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import <objc/runtime.h>
 
 static char const * const ObjectKey = "objectKey";

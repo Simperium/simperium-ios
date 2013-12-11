@@ -10,7 +10,7 @@
 #import "Farm.h"
 #import "Config.h"
 #import "NSString+Simperium.h"
-
+#import "SPBucket+Internals.h"
 
 
 @interface SimperiumCoreDataTests : SimperiumTests

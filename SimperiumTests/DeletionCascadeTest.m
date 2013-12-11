@@ -12,6 +12,7 @@
 #import "Post.h"
 #import "PostComment.h"
 #import "SPCoreDataStorage.h"
+#import "SPBucket+Internals.h"
 
 
 static NSInteger const kNumberOfPosts		= 10;

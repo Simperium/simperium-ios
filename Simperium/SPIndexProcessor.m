@@ -15,7 +15,7 @@
 #import "SPStorage.h"
 #import "JSONKit+Simperium.h"
 #import "DDLog.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "SPDiffable.h"
 #import "SPDiffer.h"
 

@@ -20,14 +20,13 @@
 
 /** SPBucketChangeType is used in the bucket:didChangeObjectForKey:forChangeType: method of SPBucketDelegate. It's similar to NSFetchedResultsChangeType, which is used with an NSFetchedResultsControllerDelegate.
  */
-enum {
-	SPBucketChangeInsert = 1,
-    SPBucketChangeDelete = 2,
-	SPBucketChangeMove = 3, // not yet implemented
-	SPBucketChangeUpdate = 4,
-    SPBucketChangeAcknowledge = 5
+typedef NS_ENUM(NSUInteger, SPBucketChangeType) {
+	SPBucketChangeInsert		= 1,
+    SPBucketChangeDelete		= 2,
+	SPBucketChangeMove			= 3, // not yet implemented
+	SPBucketChangeUpdate		= 4,
+    SPBucketChangeAcknowledge	= 5
 };
-typedef NSUInteger SPBucketChangeType;
 
 
 /** Delegate protocol for Simperium bucket notifications.
@@ -49,27 +48,15 @@ typedef NSUInteger SPBucketChangeType;
 
 /** An SPBucket instance is conceptually a collection of all objects of a particular type. If you're using Core Data, there is one SPBucket per Entity in your model, and it's used to track all objects corresponding to that Entity type.
  */
-@interface SPBucket : NSObject {
-    NSString *name;
-    NSString *instanceLabel;
-    BOOL notifyWhileIndexing;
-    id<SPNetworkInterface> network;
-    SPRelationshipResolver *relationshipResolver;
-    SPDiffer *differ;
-    id<SPStorageProvider> __weak storage;
-    SPSchema *schema;
-   
-    id<SPBucketDelegate> __weak delegate;
-    
-    NSString *lastChangeSignature;
-}
+@interface SPBucket : NSObject
+
+@property (nonatomic, copy, readonly) NSString *name;
 
 /// Assign this delegate to be notified when objects in this bucket change (see SPBucketDelegate above)
-@property (weak) id<SPBucketDelegate> delegate;
-@property (nonatomic, readonly) NSString *name;
+@property (nonatomic, weak) id<SPBucketDelegate> delegate;
 
 /// Enable this to receive SPBucketDelegate notifications during indexing (disabled by default because it's slow)
-@property BOOL notifyWhileIndexing;
+@property (nonatomic, assign) BOOL notifyWhileIndexing;
 
 
 /** The following are convenience methods for accessing, inserting and deleting objects. If you're using Core Data, you can instead just access your context directly and Simperium will identify any changes accordingly.
@@ -104,34 +91,5 @@ typedef NSUInteger SPBucketChangeType;
 // Efficiently returns the number of objects in the bucket (optionally specifying a predicate).
 - (NSInteger)numObjects;
 - (NSInteger)numObjectsForPredicate:(NSPredicate *)predicate;
-
-
-/** For internal use
- */
-
-typedef void (^SPBucketForceSyncCompletion)(void);
-
-@property (nonatomic, copy) NSString *instanceLabel;
-@property (nonatomic, weak) id<SPStorageProvider> storage;
-@property (nonatomic, strong) id<SPNetworkInterface> network;
-@property (nonatomic, strong) SPDiffer *differ;
-@property (nonatomic, strong) SPRelationshipResolver *relationshipResolver;
-@property (strong) SPChangeProcessor* changeProcessor;
-@property (strong) SPIndexProcessor* indexProcessor;
-@property (nonatomic, strong) dispatch_queue_t processorQueue;
-@property (nonatomic, copy) NSString *lastChangeSignature;
-@property (nonatomic, copy) SPBucketForceSyncCompletion forceSyncCompletion;
-
-- (id)initWithSchema:(SPSchema *)aSchema
-             storage:(id<SPStorageProvider>)aStorage
-     networkInterface:(id<SPNetworkInterface>)netInterface
-relationshipResolver:(SPRelationshipResolver *)resolver
-               label:(NSString *)label;
-- (void)validateObjects;
-- (void)unloadAllObjects;
-- (void)resolvePendingRelationshipsToKeys:(NSSet *)keys;
-- (void)forceSyncWithCompletion:(SPBucketForceSyncCompletion)completion;
-- (void)bucketDidSync;
-- (NSDictionary*)exportStatus;
 
 @end

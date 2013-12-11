@@ -12,16 +12,16 @@
 @class SPBucket;
 
 @protocol SPNetworkInterface <NSObject>
--(void)start:(SPBucket *)bucket name:(NSString *)name;
--(void)stop:(SPBucket *)bucket;
--(void)resetBucketAndWait:(SPBucket *)bucket;
--(void)requestLatestVersionsForBucket:(SPBucket *)bucket;
--(void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
--(void)sendObjectDeletion:(id<SPDiffable>)object;
--(void)sendObjectChanges:(id<SPDiffable>)object;
--(void)sendLogMessage:(NSString*)logMessage;
--(void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
--(void)forceSyncBucket:(SPBucket *)bucket;
+- (void)start:(SPBucket *)bucket name:(NSString *)name;
+- (void)stop:(SPBucket *)bucket;
+- (void)resetBucketAndWait:(SPBucket *)bucket;
+- (void)requestLatestVersionsForBucket:(SPBucket *)bucket;
+- (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
+- (void)sendObjectDeletion:(id<SPDiffable>)object;
+- (void)sendObjectChanges:(id<SPDiffable>)object;
+- (void)sendLogMessage:(NSString*)logMessage;
+- (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
+- (void)forceSyncBucket:(SPBucket *)bucket;
 @end
 
 extern NSString * const SPAuthenticationDidFail;

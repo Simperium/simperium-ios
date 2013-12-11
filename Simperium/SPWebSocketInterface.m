@@ -9,7 +9,7 @@
 #import "Simperium.h"
 #import "SPChangeProcessor.h"
 #import "SPUser.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "DDLog.h"
@@ -124,9 +124,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)sendLogMessage:(NSString*)logMessage {
-	if (!self.open) {
-		return;
-	}
 	NSDictionary *payload = @{ @"log" : logMessage };
 	NSString *message = [NSString stringWithFormat:@"%@:%@", COM_LOG, [payload sp_JSONString]];
 	[self send:message];

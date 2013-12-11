@@ -199,6 +199,7 @@
 		B565ECA91832940B00D162FF /* XCTestCase+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B565ECA81832940B00D162FF /* XCTestCase+Simperium.m */; };
 		B565ECAA1832940B00D162FF /* XCTestCase+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B565ECA81832940B00D162FF /* XCTestCase+Simperium.m */; };
 		B597DD59183128FE005E95D7 /* RemoteDebugTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B597DD58183128FE005E95D7 /* RemoteDebugTests.m */; };
+		B5AC545E1857917800608CAC /* SPBucket+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5AC545C1857917800608CAC /* SPBucket+Internals.h */; };
 		B5B69C0318325B2C001F0DE1 /* MockSimperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5B69C0218325B2C001F0DE1 /* MockSimperium.m */; };
 		B5C7D7F9183411B900E9109C /* SPDictionaryStorageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C7D7F8183411B900E9109C /* SPDictionaryStorageTests.m */; };
 		B5C91A071827E8600002D306 /* SPHttpRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = B5C91A021827E8600002D306 /* SPHttpRequest.h */; };
@@ -437,6 +438,7 @@
 		B597DD58183128FE005E95D7 /* RemoteDebugTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RemoteDebugTests.m; sourceTree = "<group>"; };
 		B5A0136A18312852003D4620 /* UnitTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "UnitTests-Info.plist"; sourceTree = "<group>"; };
 		B5A0136C1831285A003D4620 /* IntegrationTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "IntegrationTests-Info.plist"; sourceTree = "<group>"; };
+		B5AC545C1857917800608CAC /* SPBucket+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPBucket+Internals.h"; sourceTree = "<group>"; };
 		B5B69C0118325B2C001F0DE1 /* MockSimperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockSimperium.h; sourceTree = "<group>"; };
 		B5B69C0218325B2C001F0DE1 /* MockSimperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MockSimperium.m; sourceTree = "<group>"; };
 		B5C7D7F8183411B900E9109C /* SPDictionaryStorageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDictionaryStorageTests.m; sourceTree = "<group>"; };
@@ -603,6 +605,7 @@
 				460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */,
 				460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */,
 				267CE8EF156C0FD20028801C /* SPBucket.h */,
+				B5AC545C1857917800608CAC /* SPBucket+Internals.h */,
 				267CE8F0156C0FD20028801C /* SPBucket.m */,
 				269A7F3D147355D100CB29EE /* SPChangeProcessor.h */,
 				269A7F3E147355D100CB29EE /* SPChangeProcessor.m */,
@@ -1035,6 +1038,7 @@
 				B5F5D39418219CCE0048754C /* DDFileLogger+Simperium.h in Headers */,
 				464DC336176946ED00E75D05 /* SFHFKeychainUtils.h in Headers */,
 				1854D50F1799F6D2006C4211 /* NSArray+Simperium.h in Headers */,
+				B5AC545E1857917800608CAC /* SPBucket+Internals.h in Headers */,
 				46DD15CA179A6F4B0093678C /* SPMemberJSONList.h in Headers */,
 				466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */,
 				466EB41617BC45F5005F7599 /* SPAuthenticationValidator.h in Headers */,
