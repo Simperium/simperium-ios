@@ -77,6 +77,8 @@
     
     [bucket deleteObject:leader.config];
     [leader.simperium save];
+	
+	[self resetExpectations:self.farms];
     [self expectAdditions:0 deletions:1 changes:0 fromLeader:leader expectAcks:YES];
     XCTAssertTrue([self waitForCompletion], @"timed out (deleting)");
     

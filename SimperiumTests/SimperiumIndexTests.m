@@ -56,7 +56,7 @@
     follower.expectedIndexCompletions = 1;
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:NO];
     [follower connect];
-    
+	
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
     [self ensureFarmsEqual:self.farms entityName:[Config entityName]];

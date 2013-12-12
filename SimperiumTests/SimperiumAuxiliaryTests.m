@@ -83,13 +83,13 @@
     XCTAssertTrue([self waitForCompletion], @"timed out (changing)");
     
     // The object was synced, now connect with the follower
-    [follower start];
-    
     [self resetExpectations: self.farms];
     follower.expectedIndexCompletions = 1;
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:NO];
+	
+    [follower start];
     [follower connect];
-    
+	
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
     [self ensureFarmsEqual:self.farms entityName:[Config entityName]];

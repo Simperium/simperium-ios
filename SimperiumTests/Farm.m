@@ -12,6 +12,10 @@
 #import "SPBucket+Internals.h"
 #import "Simperium+Internals.h"
 
+#import "Config.h"
+#import "Post.h"
+#import "PostComment.h"
+
 @implementation Farm
 @synthesize managedObjectContext		= __managedObjectContext;
 @synthesize managedObjectModel			= __managedObjectModel;
@@ -51,7 +55,9 @@
     [self.simperium setAllBucketDelegates: self];
     
     self.simperium.user = [[SPUser alloc] initWithEmail:USERNAME token:self.token];
-    for (NSString *bucketName in [self.simperium.bucketOverrides allKeys]) {
+	
+	NSArray *buckets = @[ [Config entityName], [Post entityName], [PostComment entityName] ];
+    for (NSString *bucketName in buckets) {
         SPBucket *bucket = [self.simperium bucketForName:bucketName];
         bucket.notifyWhileIndexing = YES;
         
