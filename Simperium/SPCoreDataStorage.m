@@ -587,7 +587,24 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
 
 # pragma mark Children MOC Notification Handlers
 
-- (void)childrenContextDidSave:(NSNotification*)notification {
+-(void)childrenContextWillSave:(NSNotification*)notification
+{
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"objectID.isTemporaryID == YES"];
+    NSArray *unpersistedObjects = [[[(NSManagedObjectContext *)notification.object insertedObjects] filteredSetUsingPredicate:predicate] allObjects];
+    if(unpersistedObjects.count == 0) {
+		return;
+	}
+	
+	// Obtain permanentID's for newly inserted objects
+    NSError *error = nil;
+    BOOL success = [(NSManagedObjectContext *)notification.object obtainPermanentIDsForObjects:unpersistedObjects error:&error];
+    if (!success) {
+        DDLogVerbose(@"Unable to obtain permanent IDs for objects newly inserted into the main context: %@", error);
+    }
+}
+
+-(void)childrenContextDidSave:(NSNotification*)notification
+{
 	// Persist to "disk"!
 	[self saveWriterContext];
 	
@@ -617,6 +634,7 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
 	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
     [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:context];
+    [nc addObserver:self selector:@selector(childrenContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:context];
     [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:context];
 }
 
