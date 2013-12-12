@@ -19,16 +19,6 @@
 
 @implementation SimperiumRelationshipTests
 
--(NSDictionary *)bucketOverrides {
-    // Each farm for each test case should share bucket overrides
-    if (self.overrides == nil) {
-        self.overrides = [NSDictionary dictionaryWithObjectsAndKeys:
-                          [self uniqueBucketFor:@"Post"], @"Post",
-                          [self uniqueBucketFor:@"Comment"], @"Comment", nil];
-    }
-    return self.overrides;
-}
-
 -(void)testSingleRelationship
 {
     NSLog(@"%@ start", self.name);
@@ -46,11 +36,11 @@
     [self resetExpectations:self.farms];
 
     
-    SPBucket *leaderPosts = [leader.simperium bucketForName:@"Post"];
+    SPBucket *leaderPosts = [leader.simperium bucketForName:[Post entityName]];
     Post *post = (Post *)[leaderPosts insertNewObject];
     post.title = @"post title";
     
-    SPBucket *leaderComments = [leader.simperium bucketForName:@"Comment"];
+    SPBucket *leaderComments = [leader.simperium bucketForName:[PostComment entityName]];
     PostComment *comment = (PostComment *)[leaderComments insertNewObject];
     comment.content = @"a comment";
     comment.post = post;
@@ -63,8 +53,8 @@
     // Ensure pending references have an opportunity to resolve
     [self waitFor:0.5];
     
-    [self ensureFarmsEqual:self.farms entityName:@"Post"];
-    [self ensureFarmsEqual:self.farms entityName:@"Comment"];
+    [self ensureFarmsEqual:self.farms entityName:[Post entityName]];
+    [self ensureFarmsEqual:self.farms entityName:[PostComment entityName]];
 
     NSLog(@"%@ end", self.name); 
 }
@@ -82,11 +72,11 @@
     [leader connect];
     [follower connect];
         
-    PostComment *comment = [NSEntityDescription insertNewObjectForEntityForName:@"Comment" inManagedObjectContext:leader.managedObjectContext];
+    PostComment *comment = [NSEntityDescription insertNewObjectForEntityForName:[PostComment entityName] inManagedObjectContext:leader.managedObjectContext];
     comment.content = @"a comment";
     [leader.simperium save];
     
-    Post *post = [NSEntityDescription insertNewObjectForEntityForName:@"Post" inManagedObjectContext:leader.managedObjectContext];
+    Post *post = [NSEntityDescription insertNewObjectForEntityForName:[Post entityName] inManagedObjectContext:leader.managedObjectContext];
     post.title = @"post title";
 
     [post addCommentsObject:comment];
@@ -99,8 +89,8 @@
     // Ensure pending references have an opportunity to resolve
     [self waitFor:0.5];
     
-    [self ensureFarmsEqual:farmArray entityName:@"Post"];
-    [self ensureFarmsEqual:farmArray entityName:@"Comment"];
+    [self ensureFarmsEqual:farmArray entityName:[Post entityName]];
+    [self ensureFarmsEqual:farmArray entityName:[PostComment entityName]];
     
     NSLog(@"%@ end", self.name);
 }

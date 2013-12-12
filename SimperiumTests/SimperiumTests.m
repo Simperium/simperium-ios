@@ -83,29 +83,12 @@
     return [self waitForCompletion:3.0+NUM_FARMS*3 farmArray:self.farms];
 }
 
--(NSString *)uniqueBucketFor:(NSString *)entityName
-{
-    NSString *bucketSuffix = [[NSString sp_makeUUID] substringToIndex:8];
-    NSString *bucket = [NSString stringWithFormat:@"%@-%@", entityName, bucketSuffix];
-    return bucket;
-}
-
--(NSDictionary *)bucketOverrides
-{
-    // Each farm for each test case should share bucket overrides
-    if (self.overrides == nil) {
-        self.overrides = [NSDictionary dictionaryWithObjectsAndKeys:
-                          [self uniqueBucketFor:@"Config"], @"Config", nil];
-    }
-    return self.overrides;
-}
-
 -(Farm *)createFarm:(NSString *)label
 {
     if (!self.farms) {
         self.farms = [NSMutableArray arrayWithCapacity:NUM_FARMS];
     }
-    Farm *farm = [[Farm alloc] initWithToken:self.token bucketOverrides:[self bucketOverrides] label:label];
+    Farm *farm = [[Farm alloc] initWithToken:self.token label:label];
     [self.farms addObject:farm];
     return farm;
 }

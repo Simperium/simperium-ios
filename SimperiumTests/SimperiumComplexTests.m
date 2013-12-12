@@ -33,24 +33,24 @@
     
     NSLog(@"****************************ADD*************************");
     for (int i=0; i<numConfigs; i++) {
-        Config *config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-        config.warpSpeed = [NSNumber numberWithInt:2];
+        Config *config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
+        config.warpSpeed = @(2);
         config.captainsLog = @"Hi";
-        config.shieldPercent = [NSNumber numberWithFloat:3.14];
+        config.shieldPercent = @(3.14);
     }    
     [leader.simperium save];
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
     XCTAssertTrue([self waitForCompletion: numConfigs*8 farmArray:self.farms], @"timed out (adding)");
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     
     NSLog(@"****************************CHANGE*************************");
-    NSArray *leaderConfigs = [[leader.simperium bucketForName:@"Config"] allObjects];
+    NSArray *leaderConfigs = [[leader.simperium bucketForName:[Config entityName]] allObjects];
     XCTAssertEqual(numConfigs, [leaderConfigs count], @"");
     for (int i=0; i<numConfigs; i++) {
         Config *config = [leaderConfigs objectAtIndex:i];
-        config.warpSpeed = [NSNumber numberWithInt:4];
+        config.warpSpeed = @(4);
         config.captainsLog = @"Hi!!!";
-        config.shieldPercent = [NSNumber numberWithFloat:2.718];
+        config.shieldPercent = @(2.718);
     }
     [leader.simperium save];
     [self expectAdditions:0 deletions:0 changes:numConfigs fromLeader:leader expectAcks:YES];
@@ -60,7 +60,7 @@
     Config *leaderConfig = [leaderConfigs objectAtIndex:0];
     XCTAssertTrue([leaderConfig.captainsLog isEqualToString: @"Hi!!!"], @"");
     
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     
     NSLog(@"%@ end", self.name); 
 }
@@ -77,13 +77,13 @@
     
     [self waitFor:1];
     
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     leader.config.simperiumKey = @"config";
-    leader.config.warpSpeed = [NSNumber numberWithInt:2];
+    leader.config.warpSpeed = @(2);
     leader.config.captainsLog = @"Hi";
-    leader.config.shieldPercent = [NSNumber numberWithFloat:3.14];
+    leader.config.shieldPercent = @(3.14);
     
-    Config *config2 = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    Config *config2 = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     config2.simperiumKey = @"config2";
     config2.captainsLog = @"The second";
     
@@ -97,9 +97,9 @@
     //[self expectAdditions:2 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
         
     // Now change right away without waiting for the object insertion to be acked
-    NSNumber *refWarpSpeed = [NSNumber numberWithInt:4];
+    NSNumber *refWarpSpeed = @(4);
     NSString *refCaptainsLog = @"Hi!!!";
-    NSNumber *refShieldPercent = [NSNumber numberWithFloat:2.718];
+    NSNumber *refShieldPercent = @(2.718);
     leader.config.warpSpeed = refWarpSpeed;
     leader.config.captainsLog = refCaptainsLog;
     leader.config.shieldPercent = refShieldPercent;
@@ -114,7 +114,7 @@
     XCTAssertTrue([refWarpSpeed isEqualToNumber: leader.config.warpSpeed], @"");
     XCTAssertTrue([refCaptainsLog isEqualToString: leader.config.captainsLog], @"");
     XCTAssertTrue([refShieldPercent isEqualToNumber: leader.config.shieldPercent], @"");
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name);
 }
 
@@ -130,7 +130,7 @@
     
     int changeNumber = 0;
     NSString *refString = [NSString stringWithFormat:@"%d", changeNumber];
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     leader.config.captainsLog = refString;
     [leader.simperium save];
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
@@ -149,7 +149,7 @@
     
     XCTAssertTrue([refString isEqualToString: leader.config.captainsLog],
                  @"leader %@ != ref %@", leader.config.captainsLog, refString);
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name); 
 }
 

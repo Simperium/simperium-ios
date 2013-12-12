@@ -32,7 +32,7 @@
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     leader.config.warpSpeed = refWarpSpeed;
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
@@ -59,7 +59,7 @@
     
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name);     
 }
 
@@ -76,7 +76,7 @@
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
     int numObjects = 2;
     for (int i=0; i<numObjects; i++) {
-        leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+        leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
         leader.config.warpSpeed = refWarpSpeed;
     }
     [leader.simperium save];
@@ -95,7 +95,7 @@
     
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name);    
 }
 
@@ -120,14 +120,14 @@
     
     NSLog(@"****************************ADD ONE*************************");
     // Add one object
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     leader.config.captainsLog = @"a";
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
     follower.expectedAdditions = 1;
     XCTAssertTrue([self waitForCompletion: 4.0 farmArray:self.farms], @"timed out (adding one)");
     [self resetExpectations:self.farms];
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"*********************FOLLOWER DISCONNECT*********************");
     [follower disconnect];
 
@@ -135,10 +135,10 @@
     int numConfigs = 50;
     NSLog(@"****************************ADD MANY*************************");
     for (int i=0; i<numConfigs; i++) {
-        Config *config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-        config.warpSpeed = [NSNumber numberWithInt:2];
+        Config *config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
+        config.warpSpeed = @(2);
         config.captainsLog = @"Hi";
-        config.shieldPercent = [NSNumber numberWithFloat:3.14];
+        config.shieldPercent = @(3.14);
     }
     [leader.simperium save];
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
@@ -151,7 +151,7 @@
     // Expect 404 and reindex?
     follower.expectedAdditions = numConfigs;
     XCTAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:self.farms], @"timed out (receiving many)");
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     
     NSLog(@"%@ end", self.name);
 }
@@ -175,17 +175,17 @@
     XCTAssertTrue([self waitForCompletion: 4.0 farmArray:self.farms], @"timed out (initial index)");
     [self resetExpectations:self.farms];
     
-    SPBucket *leaderBucket = [leader.simperium bucketForName:@"Config"];
-    SPBucket *followerBucket = [follower.simperium bucketForName:@"Config"];
+    SPBucket *leaderBucket = [leader.simperium bucketForName:[Config entityName]];
+    SPBucket *followerBucket = [follower.simperium bucketForName:[Config entityName]];
     
     // Add 50 objects
     int numConfigs = 50;
     NSLog(@"****************************ADD MANY*************************");
     for (int i=0; i<numConfigs; i++) {
         Config *config = [leaderBucket insertNewObject];
-        config.warpSpeed = [NSNumber numberWithInt:2];
+        config.warpSpeed = @(2);
         config.captainsLog = @"Hi";
-        config.shieldPercent = [NSNumber numberWithFloat:3.14];
+        config.shieldPercent = @(3.14);
     }
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
     [leader.simperium save];
@@ -193,7 +193,7 @@
     XCTAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:self.farms], @"timed out (adding many)");
     XCTAssertTrue([[leaderBucket allObjects] count] == numConfigs, @"didn't add correct number (leader)");
     XCTAssertTrue([[followerBucket allObjects] count] == numConfigs, @"didn't add correct number (follower)");
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     [self resetExpectations:self.farms];
     
     // Add 20 more
@@ -201,15 +201,15 @@
     NSLog(@"****************************ADD MORE*************************");
     for (int i=0; i<numConfigs; i++) {
         Config *config = [leaderBucket insertNewObject];
-        config.warpSpeed = [NSNumber numberWithInt:2];
+        config.warpSpeed = @(2);
         config.captainsLog = @"Hi";
-        config.shieldPercent = [NSNumber numberWithFloat:3.14];
+        config.shieldPercent = @(3.14);
     }
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
     [leader.simperium save];
     
     XCTAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:self.farms], @"timed out (receiving many)");
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     [self resetExpectations:self.farms];
     
     [self waitFor:2.0];

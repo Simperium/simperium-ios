@@ -37,7 +37,7 @@
     [self connectFarms];
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
-    SPBucket *leaderBucket = [leader.simperium bucketForName:@"Config"];
+    SPBucket *leaderBucket = [leader.simperium bucketForName:[Config entityName]];
     leaderBucket.delegate = leader;
     leader.config = [leaderBucket insertNewObject];
     [leader.config setValue:refWarpSpeed forKey:@"warpSpeed"];
@@ -53,7 +53,7 @@
     // I need to add dynamic schema support to the REMOTE ADD and REMOTE MODIFY cases as well, so that followers
     // can consruct their schemas as new data comes off the wire.
     
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
 
     NSLog(@"%@ end", self.name); 
 }
@@ -67,7 +67,7 @@
     Farm *leader = self.farms[0];
     [self connectFarms];
     
-    SPBucket *bucket = [leader.simperium bucketForName:@"Config"];
+    SPBucket *bucket = [leader.simperium bucketForName:[Config entityName]];
     leader.config = [bucket insertNewObject];
     leader.config.warpSpeed = [NSNumber numberWithInt:2];
     [leader.simperium save];
@@ -82,7 +82,7 @@
     
     int i=0;
     for (Farm *farm in self.farms) {
-        farm.config = (Config *)[[farm.simperium bucketForName:@"Config"] objectForKey:configKey];
+        farm.config = (Config *)[[farm.simperium bucketForName:[Config entityName]] objectForKey:configKey];
         XCTAssertNil(farm.config, @"config %d wasn't deleted: %@", i, farm.config);
         i += 1;
     }
@@ -99,7 +99,7 @@
     [self connectFarms];
     [self waitFor:1.0];
     
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     leader.config.warpSpeed = [NSNumber numberWithInt:2];
     leader.config.captainsLog = @"Hi";
     leader.config.shieldPercent = [NSNumber numberWithFloat:3.14];
@@ -126,7 +126,7 @@
     XCTAssertTrue([refShieldPercent isEqualToNumber: leader.config.shieldPercent], @"");
     XCTAssertTrue([refCost isEqualToNumber: leader.config.cost], @"");
 
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name); 
 }
 
@@ -141,7 +141,7 @@
     
     [self waitFor:1];
     
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     leader.config.warpSpeed = [NSNumber numberWithInt:2];
     leader.config.captainsLog = @"Hi";
     leader.config.shieldPercent = [NSNumber numberWithFloat:3.14];
@@ -166,7 +166,7 @@
     XCTAssertTrue([refWarpSpeed isEqualToNumber: leader.config.warpSpeed], @"");
     XCTAssertTrue([refCaptainsLog isEqualToString: leader.config.captainsLog], @"");
     XCTAssertTrue([refShieldPercent isEqualToNumber: leader.config.shieldPercent], @"");
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name);
 }
 
@@ -181,7 +181,7 @@
     
     int changeNumber = 0;
     NSString *refString = [NSString stringWithFormat:@"%d", changeNumber];
-    SPBucket *bucket = [leader.simperium bucketForName:@"Config"];
+    SPBucket *bucket = [leader.simperium bucketForName:[Config entityName]];
     leader.config = [bucket insertNewObject];
     leader.config.captainsLog = refString;
     [leader.simperium save];

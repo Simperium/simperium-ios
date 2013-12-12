@@ -10,6 +10,7 @@
 #import "TestParams.h"
 #import "SPUser.h"
 #import "SPBucket+Internals.h"
+#import "Simperium+Internals.h"
 
 @implementation Farm
 @synthesize managedObjectContext		= __managedObjectContext;
@@ -17,7 +18,7 @@
 @synthesize persistentStoreCoordinator	= __persistentStoreCoordinator;
 
 
--(id)initWithToken:(NSString *)aToken bucketOverrides:(NSDictionary *)bucketOverrides label:(NSString *)label
+-(id)initWithToken:(NSString *)aToken label:(NSString *)label
 {
     if (self = [super init]) {
         self.done = NO;
@@ -29,7 +30,6 @@
         self.simperium.label = label;
         
         [self.simperium setAuthenticationEnabled:NO];
-        [self.simperium setBucketOverrides:bucketOverrides];
         [self.simperium setVerboseLoggingEnabled:YES];
         self.token = aToken;
     }
@@ -62,7 +62,9 @@
 
 -(void)stop
 {
-    [self.simperium signOutAndRemoveLocalData:YES];
+	[self.simperium removeRemoteData];
+	[self waitForCompletion:1.0f];
+	[self.simperium signOutAndRemoveLocalData:YES];
 }
 
 -(BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs
@@ -98,8 +100,8 @@
 -(void)logUnfulfilledExpectations
 {
     if (![self isDone]) {
-        NSLog(@"acks: %d changes: %d adds: %d dels: %d idxs: %d", self.expectedAcknowledgments, self.expectedChanges, self.expectedAdditions,
-              self.expectedDeletions, self.expectedIndexCompletions);
+        NSLog(@"[%@] acks: %d changes: %d adds: %d dels: %d idxs: %d", self.simperium.label, self.expectedAcknowledgments, self.expectedChanges,
+			  self.expectedAdditions, self.expectedDeletions, self.expectedIndexCompletions);
 	}
 }
 

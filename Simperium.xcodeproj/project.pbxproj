@@ -188,6 +188,7 @@
 		46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */; };
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
+		B52674721858EC4800A89D7A /* Simperium+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B52674701858EC4800A89D7A /* Simperium+Internals.h */; };
 		B5549FE318457F72007EA226 /* SPMutableSet.h in Headers */ = {isa = PBXBuildFile; fileRef = B5549FE118457F72007EA226 /* SPMutableSet.h */; };
 		B5549FE418457F72007EA226 /* SPMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = B5549FE218457F72007EA226 /* SPMutableSet.m */; };
 		B5549FE6184581BF007EA226 /* SPMutableSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5549FE5184581BF007EA226 /* SPMutableSetTests.m */; };
@@ -430,6 +431,7 @@
 		46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumComplexTests.m; sourceTree = "<group>"; };
 		46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumAuxiliaryTests.m; sourceTree = "<group>"; };
 		46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumErrorTests.m; sourceTree = "<group>"; };
+		B52674701858EC4800A89D7A /* Simperium+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Simperium+Internals.h"; sourceTree = "<group>"; };
 		B5549FE118457F72007EA226 /* SPMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMutableSet.h; sourceTree = "<group>"; };
 		B5549FE218457F72007EA226 /* SPMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMutableSet.m; sourceTree = "<group>"; };
 		B5549FE5184581BF007EA226 /* SPMutableSetTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMutableSetTests.m; sourceTree = "<group>"; };
@@ -602,6 +604,7 @@
 		2622FD01147F237800C8EEB4 /* System */ = {
 			isa = PBXGroup;
 			children = (
+				B52674701858EC4800A89D7A /* Simperium+Internals.h */,
 				460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */,
 				460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */,
 				267CE8EF156C0FD20028801C /* SPBucket.h */,
@@ -983,6 +986,7 @@
 				26E83C2613985DBE00195758 /* SPCoreDataExporter.h in Headers */,
 				26E83D9913999C0F00195758 /* SPUser.h in Headers */,
 				26E83DAA1399D05F00195758 /* NSDate+Simperium.h in Headers */,
+				B52674721858EC4800A89D7A /* Simperium+Internals.h in Headers */,
 				26B16EFF13B1B79100BEB3E5 /* NSData+Simperium.h in Headers */,
 				26905D9C142CF97D001ACF20 /* DDAbstractDatabaseLogger.h in Headers */,
 				26905D9E142CF97D001ACF20 /* DDASLLogger.h in Headers */,

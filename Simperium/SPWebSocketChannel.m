@@ -161,6 +161,21 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[self.webSocketManager send:message];
 }
 
+- (void)removeAllBucketObjects:(SPBucket *)bucket {
+	// TODO: Can we convert this message into something like this, perhaps?: 'd:bucket_name'
+	NSDictionary *rawMessage =	@{
+		@"o"		: @"EMPTY",
+		@"id"		: bucket.name,
+		@"ccid"		: [NSString sp_makeUUID],
+		@"clientid"	: self.simperium.clientID
+	};
+	
+	NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [rawMessage sp_JSONString]];
+	DDLogVerbose(@"Simperium deleting all Bucket Objects (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
+	
+	[self.webSocketManager send:message];
+}
+
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
     __block int numChangesPending;
     __block int numKeysForObjectsWithMoreChanges;

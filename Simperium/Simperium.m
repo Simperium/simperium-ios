@@ -5,12 +5,11 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 
-#import "Simperium.h"
+#import "Simperium+Internals.h"
 #import "SPUser.h"
 #import "SPSchema.h"
 #import "SPManagedObject.h"
 #import "SPBinaryManager.h"
-#import "SPJSONStorage.h"
 #import "SPStorageObserver.h"
 #import "SPMember.h"
 #import "SPMemberBinary.h"
@@ -24,19 +23,9 @@
 #import "DDASLLogger.h"
 #import "DDTTYLogger.h"
 #import "DDFileLogger+Simperium.h"
-#import "SPSimperiumLogger.h"
-#import "SPCoreDataStorage.h"
-#import "SPAuthenticator.h"
 #import "SPBucket+Internals.h"
 #import "SPRelationshipResolver.h"
-#import "SPReachability.h"
 
-
-#if TARGET_OS_IPHONE
-#import "SPAuthenticationViewController.h"
-#else
-#import "SPAuthenticationWindowController.h"
-#endif
 
 
 #pragma mark ====================================================================================
@@ -46,36 +35,6 @@
 NSString * const UUID_KEY						= @"SPUUIDKey";
 NSString * const SimperiumWillSaveNotification	= @"SimperiumWillSaveNotification";
 
-
-#pragma mark ====================================================================================
-#pragma mark Simperium: Private Methods
-#pragma mark ====================================================================================
-
-@interface Simperium() <SPStorageObserver, SPAuthenticatorDelegate, SPSimperiumLoggerDelegate>
-
-@property (nonatomic, strong) SPCoreDataStorage			*coreDataStorage;
-@property (nonatomic, strong) SPJSONStorage				*JSONStorage;
-@property (nonatomic, strong) NSMutableDictionary		*buckets;
-@property (nonatomic, strong) id<SPNetworkInterface>	network;
-@property (nonatomic, strong) SPRelationshipResolver	*relationshipResolver;
-@property (nonatomic, strong) SPReachability			*reachability;
-@property (nonatomic,	copy) NSString					*clientID;
-@property (nonatomic,	copy) NSString					*appID;
-@property (nonatomic,	copy) NSString					*APIKey;
-@property (nonatomic,	copy) NSString					*appURL;
-@property (nonatomic, assign) BOOL						skipContextProcessing;
-@property (nonatomic, assign) BOOL						networkManagersStarted;
-@property (nonatomic, assign) BOOL						dynamicSchemaEnabled;
-@property (nonatomic, assign) BOOL						shouldSignIn;
-
-#if TARGET_OS_IPHONE
-@property (nonatomic, strong) SPAuthenticationViewController *authenticationViewController;
-#else
-@property (nonatomic, strong) SPAuthenticationWindowController *authenticationWindowController;
-#endif
-
-- (BOOL)save;
-@end
 
 
 #pragma mark ====================================================================================
@@ -742,6 +701,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)handleLogMessage:(NSString*)logMessage {
 	if (self.remoteLoggingEnabled) {
 		[self.network sendLogMessage:logMessage];
+	}
+}
+
+
+#pragma mark Private Methods
+
+- (void)removeRemoteData {
+	// Note: this method should only be used by the Integration Tests. Will only delete the remote data
+    for (SPBucket *bucket in [self.buckets allValues]) {
+		[bucket.network removeAllBucketObjects:bucket];
 	}
 }
 

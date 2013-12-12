@@ -69,7 +69,7 @@
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObjectForKey:@"key.with.periods"];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObjectForKey:@"key.with.periods"];
     leader.config.warpSpeed = refWarpSpeed;
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
@@ -92,7 +92,7 @@
     
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name);
 }
 

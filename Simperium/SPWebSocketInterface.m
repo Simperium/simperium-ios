@@ -123,6 +123,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [channel sendObjectChanges:object];
 }
 
+- (void)removeAllBucketObjects:(SPBucket *)bucket {
+    SPWebSocketChannel *channel = [self channelForName:bucket.name];
+	[channel removeAllBucketObjects:bucket];
+}
+
 - (void)sendLogMessage:(NSString*)logMessage {
 	NSDictionary *payload = @{ @"log" : logMessage };
 	NSString *message = [NSString stringWithFormat:@"%@:%@", COM_LOG, [payload sp_JSONString]];
