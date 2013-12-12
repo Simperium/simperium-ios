@@ -162,6 +162,22 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
     [storage save];
 }
 
+- (void)sendAllObjectsWithChanges {
+    for (NSString *key in [storage objectKeysForBucketName:self.name]) {
+        // Objects that differ to their ghost and have no pending changes remain
+        // stuck in a bad state until a local change occurs because any remote
+        // diffs are transformed against the local diff, but the local diff
+        // remains unsent. This method resolves the bad state by sending a
+        // change for any objects which differ from their ghost.
+        //
+        // As -[SPWebSocketChannel sendObjectChangesForKey:bucket:] sends
+        // changes only for objects with local diffs, attempting to send every
+        // object skips all except those that should be sent.
+        [network sendObjectChangesForKey:key bucket:self];
+    }
+}
+
+
 - (void)unloadAllObjects {
     [storage unloadAllObjects];
     [relationshipResolver reset:storage];

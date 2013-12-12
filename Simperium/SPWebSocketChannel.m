@@ -133,19 +133,17 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     });
 }
 
-- (void)sendObjectChanges:(id<SPDiffable>)object {
-    // Consider being more careful about faulting here (since only the simperiumKey is needed)
-    NSString *key = [object simperiumKey];
+- (void)sendObjectChangesForKey:(NSString *)key bucket:(SPBucket *)bucket {
     if (key == nil) {
         DDLogWarn(@"Simperium tried to send changes for an object with a nil simperiumKey (%@)", self.name);
         return;
     }
-    
-    dispatch_async(object.bucket.processorQueue, ^{
+
+    dispatch_async(bucket.processorQueue, ^{
 		@autoreleasepool {
-			NSDictionary *change = [object.bucket.changeProcessor processLocalObjectWithKey:key bucket:object.bucket later:_indexing || !_started];
+			NSDictionary *change = [bucket.changeProcessor processLocalObjectWithKey:key bucket:bucket later:_indexing || !_started];
 			if (change) {
-				[self sendChange: change forKey: key bucket:object.bucket];
+				[self sendChange: change forKey: key bucket:bucket];
 			}
 		}
     });

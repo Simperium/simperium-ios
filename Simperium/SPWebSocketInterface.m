@@ -120,7 +120,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)sendObjectChanges:(id<SPDiffable>)object {
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
-    [channel sendObjectChanges:object];
+    // Consider being more careful about faulting here (since only the simperiumKey is needed)
+    NSString *key = [object simperiumKey];
+    SPBucket *bucket = object.bucket;
+    [self sendObjectChangesForKey:key bucket:bucket];
+}
+
+- (void)sendObjectChangesForKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket {
+    SPWebSocketChannel *channel = [self channelForName:bucket.name];
+    [channel sendObjectChangesForKey:simperiumKey bucket:bucket];
 }
 
 - (void)sendLogMessage:(NSString*)logMessage {

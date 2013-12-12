@@ -18,6 +18,7 @@
 -(void)requestLatestVersionsForBucket:(SPBucket *)bucket;
 -(void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
 -(void)sendObjectDeletion:(id<SPDiffable>)object;
+-(void)sendObjectChangesForKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket;
 -(void)sendObjectChanges:(id<SPDiffable>)object;
 -(void)sendLogMessage:(NSString*)logMessage;
 -(void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;

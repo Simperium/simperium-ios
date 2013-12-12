@@ -73,6 +73,11 @@ extern NSString * const SimperiumWillSaveNotification;
 typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 - (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumForceSyncCompletion)completion;
 
+
+// This method sends any object with changes. Its performance heavy so don't
+// run it except to troubleshoot sync issues.
+- (void)processAllLocalObjectsForChanges;
+
 // Get a particular bucket (which, for Core Data, corresponds to a particular Entity name in your model).
 // Once you have a bucket instance, you can set a SPBucketDelegate to react to changes.
 - (SPBucket *)bucketForName:(NSString *)name;

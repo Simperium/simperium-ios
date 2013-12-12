@@ -354,6 +354,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return bucketList;
 }
 
+- (void)processAllLocalObjectsForChanges {
+    for (SPBucket *bucket in [self.buckets allValues]) {
+        [bucket sendAllObjectsWithChanges];
+    }
+}
+
 - (void)validateObjects {
     for (SPBucket *bucket in [self.buckets allValues]) {
         // Check all existing objects (e.g. in case there are existing ones that aren't in Simperium yet)
