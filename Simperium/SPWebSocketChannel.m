@@ -107,9 +107,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     DDLogVerbose(@"Simperium adding pending change (%@): %@", self.name, key);
     
     [bucket.changeProcessor processLocalChange:change key:key];
+    NSString *jsonStr = [change sp_JSONString];
+    NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSString *jsonStr = [change sp_JSONString];
-        NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
         DDLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
         [self.webSocketManager send:message];
     });
