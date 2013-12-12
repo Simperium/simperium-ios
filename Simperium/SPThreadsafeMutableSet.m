@@ -1,12 +1,12 @@
 //
-//  SPMutableSet.m
+//  SPThreadsafeMutableSet.m
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 11/26/13.
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
-#import "SPMutableSet.h"
+#import "SPThreadsafeMutableSet.h"
 
 
 
@@ -14,22 +14,22 @@
 #pragma mark Private
 #pragma mark ====================================================================================
 
-@interface SPMutableSet ()
+@interface SPThreadsafeMutableSet ()
 @property (nonatomic, strong) NSMutableSet		*contents;
 @property (nonatomic, strong) dispatch_queue_t	queue;
 @end
 
 
 #pragma mark ====================================================================================
-#pragma mark SPMutableSet
+#pragma mark SPThreadsafeMutableSet
 #pragma mark ====================================================================================
 
-@implementation SPMutableSet
+@implementation SPThreadsafeMutableSet
 
 - (id)init {
 	if ((self = [super init])) {
 		self.contents = [NSMutableSet set];
-        self.queue = dispatch_queue_create("com.simperium.SPMutableSet", NULL);
+        self.queue = dispatch_queue_create("com.simperium.SPThreadsafeMutableSet", NULL);
 	}
 	
 	return self;

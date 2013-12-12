@@ -1,5 +1,5 @@
 //
-//  SPMutableSetTests.m
+//  SPThreadsafeMutableSetTests.m
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 11/26/13.
@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "SPMutableSet.h"
+#import "SPThreadsafeMutableSet.h"
 #import "XCTestCase+Simperium.h"
 
 
@@ -20,17 +20,17 @@ static NSUInteger const SPSetIterations		= 10000;
 static NSUInteger const SPConcurrentWorkers	= 100;
 
 #pragma mark ====================================================================================
-#pragma mark SPMutableSetTests
+#pragma mark SPThreadsafeMutableSetTests
 #pragma mark ====================================================================================
 
-@interface SPMutableSetTests : XCTestCase
+@interface SPThreadsafeMutableSetTests : XCTestCase
 
 @end
 
-@implementation SPMutableSetTests
+@implementation SPThreadsafeMutableSetTests
 
 - (void)testCRUD {
-	SPMutableSet *set = [SPMutableSet set];
+	SPThreadsafeMutableSet *set = [SPThreadsafeMutableSet set];
 	NSMutableSet *helper = [NSMutableSet set];
 	
 	for(NSInteger i = 0; ++i <= SPSetIterations; ) {
@@ -51,13 +51,13 @@ static NSUInteger const SPConcurrentWorkers	= 100;
 
 - (void)testThreading {
 	
-	// If you replace SPMutableSet with the regular NSMutableSet, you should see a nice error: "pointer being freed was not allocated"
-	SPMutableSet *set = [SPMutableSet set];
+	// If you replace SPThreadsafeMutableSet with the regular NSMutableSet, you should see a nice error: "pointer being freed was not allocated"
+	SPThreadsafeMutableSet *set = [SPThreadsafeMutableSet set];
 	dispatch_group_t group = dispatch_group_create();
 	
 	// Launch concurrent workers
 	for(NSInteger i = 0; ++i <= SPConcurrentWorkers; ) {
-		dispatch_queue_t queue = dispatch_queue_create("com.simperium.SPMutableSetTests", NULL);
+		dispatch_queue_t queue = dispatch_queue_create("com.simperium.SPThreadsafeMutableSetTests", NULL);
 		
 		dispatch_group_enter(group);
 		dispatch_async(queue, ^{
