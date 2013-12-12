@@ -71,6 +71,7 @@
 	[self.simperium removeRemoteData];
 	[self waitForCompletion:1.0f];
 	[self.simperium signOutAndRemoveLocalData:YES];
+	[self waitForCompletion:1.0f];
 }
 
 -(BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs
