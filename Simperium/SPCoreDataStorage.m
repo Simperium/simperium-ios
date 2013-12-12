@@ -11,7 +11,7 @@
 #import "NSString+Simperium.h"
 #import "SPCoreDataExporter.h"
 #import "SPSchema.h"
-#import "SPMutableSet.h"
+#import "SPThreadsafeMutableSet.h"
 #import "DDLog.h"
 
 
@@ -27,7 +27,7 @@ static NSUInteger _workers				= 0;
 @property (nonatomic, strong, readwrite) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *classMappings;
-@property (nonatomic, strong, readwrite) SPMutableSet *remotelyDeletedKeys;
+@property (nonatomic, strong, readwrite) SPThreadsafeMutableSet *remotelyDeletedKeys;
 @property (nonatomic, weak,   readwrite) SPCoreDataStorage *sibling;
 - (void)addObserversForMainContext:(NSManagedObjectContext *)context;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
@@ -51,7 +51,7 @@ static NSUInteger _workers				= 0;
 		
         stashedObjects = [NSMutableSet setWithCapacity:3];
         self.classMappings = [NSMutableDictionary dictionary];
-		self.remotelyDeletedKeys = [SPMutableSet set];
+		self.remotelyDeletedKeys = [SPThreadsafeMutableSet set];
 		
         self.persistentStoreCoordinator = coordinator;
         self.managedObjectModel = model;
