@@ -406,16 +406,20 @@ static NSUInteger _workers				= 0;
 # pragma mark Main MOC + Children MOC Notification Handlers
 
 - (void)managedContextWillSave:(NSNotification*)notification {
-	NSManagedObjectContext* context = notification.object;
-	if (context.insertedObjects.count == 0) {
+	NSManagedObjectContext *context	= (NSManagedObjectContext *)notification.object;
+	NSSet *temporaryObjects	= [context.insertedObjects objectsWithOptions:NSEnumerationConcurrent passingTest:^(id obj, BOOL *stop) {
+		return ((NSManagedObject*)obj).objectID.isTemporaryID;
+	}];
+
+	if (temporaryObjects.count == 0) {
 		return;
 	}
 	
 	// Obtain permanentID's for newly inserted objects
 	NSError *error = nil;
-	if (![context obtainPermanentIDsForObjects:context.insertedObjects.allObjects error:&error]) {
-        DDLogError(@"Unable to obtain permanent IDs for objects newly inserted into a Worker Context: %@", error);
-	}
+	if (![context obtainPermanentIDsForObjects:temporaryObjects.allObjects error:&error]) {
+        DDLogVerbose(@"Unable to obtain permanent IDs for objects newly inserted into the main context: %@", error);
+    }
 }
 
 
