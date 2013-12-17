@@ -407,10 +407,14 @@ static NSUInteger _workers				= 0;
 
 - (void)managedContextWillSave:(NSNotification*)notification {
 	NSManagedObjectContext *context	= (NSManagedObjectContext *)notification.object;
-	NSSet *temporaryObjects	= [context.insertedObjects objectsWithOptions:NSEnumerationConcurrent passingTest:^(id obj, BOOL *stop) {
-		return ((NSManagedObject*)obj).objectID.isTemporaryID;
-	}];
-
+	NSMutableSet *temporaryObjects = [NSMutableSet set];
+	
+	for (NSManagedObject *mo in context.insertedObjects) {
+		if (mo.objectID.isTemporaryID) {
+			[temporaryObjects addObject:mo];
+		}
+	}
+	
 	if (temporaryObjects.count == 0) {
 		return;
 	}
