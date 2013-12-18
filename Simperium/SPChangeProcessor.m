@@ -30,7 +30,9 @@ NSString * const CH_OPERATION		= @"o";
 NSString * const CH_VALUE			= @"v";
 NSString * const CH_START_VERSION   = @"sv";
 NSString * const CH_END_VERSION     = @"ev";
+NSString * const CH_CHANGE_VERSION	= @"cv";
 NSString * const CH_LOCAL_ID		= @"ccid";
+NSString * const CH_CLIENT_ID		= @"clientid";
 NSString * const CH_ERROR           = @"error";
 NSString * const CH_DATA            = @"d";
 
@@ -226,7 +228,8 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     return YES;
 }
 
-- (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket change:(NSDictionary *)change acknowledged:(BOOL)acknowledged
+- (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket change:(NSDictionary *)change
+					  acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches
 {
     id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
 	[threadSafeStorage beginSafeSection];
@@ -238,9 +241,16 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     
     // MODIFY operation
     if (!object) {
-        newlyAdded = YES;
+		// If the change was sent by this very same client, and the object isn't available, don't add it.
+		// It Must have been locally deleted before the confirmation got through!
+		if (clientMatches) {
+			[threadSafeStorage finishSafeSection];
+			return NO;
+		}
+		
         // It doesn't exist yet, so ADD it
-        
+        newlyAdded = YES;
+		
         // Create the new object
         object = [threadSafeStorage insertNewObjectForBucketName:bucket.name simperiumKey:key];
         DDLogVerbose(@"Simperium managing newly added entity %@", [object simperiumKey]);
@@ -353,8 +363,8 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	[threadSafeStorage beginSafeSection];
 	
     NSString *operation = [change objectForKey:CH_OPERATION];
-    NSString *changeVersion = [change objectForKey:@"cv"];
-    NSString *changeClientID = [change objectForKey:@"clientid"];
+    NSString *changeVersion = [change objectForKey:CH_CHANGE_VERSION];
+    NSString *changeClientID = [change objectForKey:CH_CLIENT_ID];
     NSString *key = [change objectForKey:CH_KEY];
     id<SPDiffable> object = [threadSafeStorage objectForKey:key bucketName:bucket.name];
     
@@ -391,7 +401,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
             return [self processRemoteDeleteWithKey:key bucket:bucket acknowledged:acknowledged];
 		}
     } else if (operation && [operation compare: CH_MODIFY] == NSOrderedSame) {
-        return [self processRemoteModifyWithKey:key bucket:bucket change:change acknowledged:acknowledged];
+        return [self processRemoteModifyWithKey:key bucket:bucket change:change acknowledged:acknowledged clientMatches:clientMatches];
     }
 	
 	// invalid
@@ -431,7 +441,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
                 
                 // Remember the last version
                 // This persists...do it inside the loop in case something happens to abort the loop
-                NSString *changeVersion = change[@"cv"];
+                NSString *changeVersion = change[CH_CHANGE_VERSION];
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [bucket setLastChangeSignature: changeVersion];
