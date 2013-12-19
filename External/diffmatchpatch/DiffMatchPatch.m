@@ -1620,8 +1620,8 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
     if (prevDiff.operation == DIFF_DELETE && thisDiff.operation == DIFF_INSERT) {
 
 	  // JLP: claiming ownership of prevDiff + thisDiff strings
-      NSString *deletion = [prevDiff.text retain];
-      NSString *insertion = [thisDiff.text retain];
+      NSString *deletion = [prevDiff.text copy];
+      NSString *insertion = [thisDiff.text copy];
 		
       NSUInteger overlap_length1 = (NSUInteger)diff_commonOverlap((CFStringRef)deletion, (CFStringRef)insertion);
       NSUInteger overlap_length2 = (NSUInteger)diff_commonOverlap((CFStringRef)insertion, (CFStringRef)deletion);
