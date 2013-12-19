@@ -144,12 +144,7 @@
 		case SPBucketChangeMove:
 // TODO: Implement!
 			break;
-    }
-	
-	if(_expectedAcknowledgments < 0 || _expectedDeletions < 0 || _expectedAcknowledgments < 0 || _expectedChanges < 0) {
-		NSLog(@"Here");
-	}
-	
+    }	
 }
 
 -(void)bucket:(SPBucket *)bucket willChangeObjectsForKeys:(NSSet *)keys

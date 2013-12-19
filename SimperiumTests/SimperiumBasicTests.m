@@ -11,7 +11,6 @@
 #import "Farm.h"
 #import "SPBucket.h"
 #import "DiffMatchPatch.h"
-#import "SPBucket+Internals.h"
 
 
 @interface SimperiumBasicTests : SimperiumTests
@@ -67,7 +66,6 @@
     // Leader sends an object to followers, then removes it
     Farm *leader = self.farms[0];
     [self connectFarms];
-	[self waitFor:1.0f];
 	
     SPBucket *bucket = [leader.simperium bucketForName:[Config entityName]];
     leader.config = [bucket insertNewObject];
@@ -75,24 +73,16 @@
     [leader.simperium save];
 
     NSString *configKey = [leader.config.simperiumKey copy];
-//    [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
-//    XCTAssertTrue([self waitForCompletion], @"timed out (adding)");
+	[self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
+	XCTAssertTrue([self waitForCompletion], @"timed out (adding)");
 
-	dispatch_sync(bucket.processorQueue, ^{
-		id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
-		NSManagedObject *config = [storage objectForKey:configKey bucketName:[Config entityName]];
-		[storage deleteObject:config];
-		[storage save];
-    [leader.simperium save];
-	});
+	[bucket deleteObject:leader.config];
+	[leader.simperium save];
 	
-	
-//	[self resetExpectations:self.farms];
-    [self expectAdditions:1 deletions:1 changes:0 fromLeader:leader expectAcks:YES];
+	[self resetExpectations:self.farms];
+    [self expectAdditions:0 deletions:1 changes:0 fromLeader:leader expectAcks:YES];
     XCTAssertTrue([self waitForCompletion], @"timed out (deleting)");
     
-	[self waitFor:5.0f];
-	
     int i=0;
     for (Farm *farm in self.farms) {
         farm.config = (Config *)[[farm.simperium bucketForName:[Config entityName]] objectForKey:configKey];
