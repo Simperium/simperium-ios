@@ -127,22 +127,29 @@
     switch(change) {
         case SPBucketChangeAcknowledge:
             self.expectedAcknowledgments -= 1;
-//            NSLog(@"%@ acknowledged (%d)", simperium.label, expectedAcknowledgments);
+            NSLog(@"%@ acknowledged (%d)", self.simperium.label, self.expectedAcknowledgments);
             break;
         case SPBucketChangeDelete:
             self.expectedDeletions -= 1;
-//            NSLog(@"%@ received deletion (%d)", simperium.label, expectedDeletions);
+            NSLog(@"%@ received deletion (%d)", self.simperium.label, self.expectedDeletions);
             break;
         case SPBucketChangeInsert:
+            NSLog(@"%@ received insert (%d)", self.simperium.label, self.expectedAdditions);
             self.expectedAdditions -= 1;
             break;
         case SPBucketChangeUpdate:
+            NSLog(@"%@ received change (%d)", self.simperium.label, self.expectedChanges);
             self.expectedChanges -= 1;
 			break;
 		case SPBucketChangeMove:
 // TODO: Implement!
 			break;
     }
+	
+	if(_expectedAcknowledgments < 0 || _expectedDeletions < 0 || _expectedAcknowledgments < 0 || _expectedChanges < 0) {
+		NSLog(@"Here");
+	}
+	
 }
 
 -(void)bucket:(SPBucket *)bucket willChangeObjectsForKeys:(NSSet *)keys
