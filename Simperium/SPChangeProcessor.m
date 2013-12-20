@@ -281,11 +281,20 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     id endVersion = [change objectForKey:CH_END_VERSION];
     
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
-    if ([startVersion isKindOfClass:[NSNumber class]])
+    if ([startVersion isKindOfClass:[NSNumber class]]) {
         startVersion = [NSString stringWithFormat:@"%ld", (long)[startVersion integerValue]];
-    if ([endVersion isKindOfClass:[NSNumber class]])
+	}
+	
+    if ([endVersion isKindOfClass:[NSNumber class]]) {
         endVersion = [NSString stringWithFormat:@"%ld", (long)[endVersion integerValue]];
-    
+    }
+	
+	// If the local version matches the remote endVersion, don't process this change: it's a dupe message
+	if ([object.ghost.version isEqual:endVersion]) {
+		[threadSafeStorage finishSafeSection];
+		return NO;
+	}
+	
     DDLogVerbose(@"Simperium received version = %@, previous version = %@", startVersion, oldVersion);
     // If the versions are equal or there's no start version (new object), process the change
     if (startVersion == nil || [oldVersion isEqualToString:startVersion]) {
