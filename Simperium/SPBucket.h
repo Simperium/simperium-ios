@@ -135,4 +135,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver
 - (void)bucketDidSync;
 - (NSDictionary*)exportStatus;
 
+@property (atomic, assign, readonly, getter = isWorking) BOOL working;
+
 @end

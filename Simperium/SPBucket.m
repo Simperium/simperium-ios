@@ -22,6 +22,11 @@
 static int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface SPBucket()
+{
+    NSUInteger _inFlightProcessCount;
+}
+@property (atomic, assign, readwrite, getter = isWorking) BOOL working;
+@property (nonatomic, assign, readwrite, getter = isProcessing) BOOL processing;
 @end
 
 @implementation SPBucket
@@ -46,6 +51,42 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
+
+- (void)increaseInFlightProcess {
+    @synchronized(self) {
+        if (_inFlightProcessCount == 0) self.processing = YES;
+        _inFlightProcessCount++;
+    }
+}
+
+- (void)decreaseInFlightProcess {
+    @synchronized(self) {
+        _inFlightProcessCount--;
+        if (_inFlightProcessCount == 0) self.processing = NO;
+    }
+}
+
+- (void)setProcessing:(BOOL)processing {
+    _processing = processing;
+    [self updateWorking];
+}
+
+- (void)updateWorking {
+    self.working = (self.processing || self.changeProcessor.isProcessingChanges || self.indexProcessor.isProcessingChanges);
+}
+
+- (void)syncInFlightProcess:(dispatch_block_t)block {
+    [self increaseInFlightProcess];
+    block();
+    [self decreaseInFlightProcess];
+}
+
+- (void)asyncInFlightProcess:(void (^)(dispatch_block_t processFinished))block {
+    [self increaseInFlightProcess];
+    void (^finishedBlock)() = ^{ [self decreaseInFlightProcess]; };
+    block([finishedBlock copy]);
+}
+
 - (id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
 relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 {
@@ -61,10 +102,16 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
         // Label is used to support multiple simperium instances (e.g. unit testing)
         self.instanceLabel = [NSString stringWithFormat:@"%@%@", self.name, label];
 
+        __weak typeof(self)weakSelf = self;
+        void (^isProcessingChangesUpdated)(BOOL) = ^(__unused BOOL x){
+            [weakSelf updateWorking];
+        };
         SPChangeProcessor *cp = [[SPChangeProcessor alloc] initWithLabel:self.instanceLabel];
+        cp.isProcessingChangesUpdated = isProcessingChangesUpdated;
         self.changeProcessor = cp;
 
         SPIndexProcessor *ip = [[SPIndexProcessor alloc] init];
+        ip.isProcessingChangesUpdated = isProcessingChangesUpdated;
         self.indexProcessor = ip;
 
         NSString *queueLabel = [@"com.simperium.processor." stringByAppendingString:self.name];
@@ -163,18 +210,20 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
 }
 
 - (void)sendAllObjectsWithChanges {
-    for (NSString *key in [storage objectKeysForBucketName:self.name]) {
-        // Objects that differ to their ghost and have no pending changes remain
-        // stuck in a bad state until a local change occurs because any remote
-        // diffs are transformed against the local diff, but the local diff
-        // remains unsent. This method resolves the bad state by sending a
-        // change for any objects which differ from their ghost.
-        //
-        // As -[SPWebSocketChannel sendObjectChangesForKey:bucket:] sends
-        // changes only for objects with local diffs, attempting to send every
-        // object skips all except those that should be sent.
-        [network sendObjectChangesForKey:key bucket:self];
-    }
+    [self syncInFlightProcess:^{
+        for (NSString *key in [storage objectKeysForBucketName:self.name]) {
+            // Objects that differ to their ghost and have no pending changes remain
+            // stuck in a bad state until a local change occurs because any remote
+            // diffs are transformed against the local diff, but the local diff
+            // remains unsent. This method resolves the bad state by sending a
+            // change for any objects which differ from their ghost.
+            //
+            // As -[SPWebSocketChannel sendObjectChangesForKey:bucket:] sends
+            // changes only for objects with local diffs, attempting to send every
+            // object skips all except those that should be sent.
+            [network sendObjectChangesForKey:key bucket:self];
+        }
+    }];
 }
 
 
