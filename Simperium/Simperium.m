@@ -55,7 +55,6 @@ NSString * const SimperiumWillSaveNotification	= @"SimperiumWillSaveNotification
 
 @property (nonatomic, strong) SPCoreDataStorage			*coreDataStorage;
 @property (nonatomic, strong) SPJSONStorage				*JSONStorage;
-@property (nonatomic, strong) NSMutableDictionary		*buckets;
 @property (nonatomic, strong) id<SPNetworkInterface>	network;
 @property (nonatomic, strong) SPRelationshipResolver	*relationshipResolver;
 @property (nonatomic, strong) SPReachability			*reachability;
