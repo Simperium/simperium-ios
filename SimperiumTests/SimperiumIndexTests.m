@@ -26,9 +26,9 @@
     // Leader sends an object to follower, but make follower get it from the index
     Farm *leader = [self createFarm:@"leader"];
     Farm *follower = [self createFarm:@"follower"];
+    leader.expectedIndexCompletions = 1;
     [leader start];
     [leader connect];
-    leader.expectedIndexCompletions = 1;
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
@@ -83,6 +83,10 @@
     leader.expectedAcknowledgments = numObjects;
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
+	// Set the new expectations, before connecting
+    [self resetExpectations:self.farms];
+    [self expectAdditions:numObjects deletions:0 changes:0 fromLeader:leader expectAcks:NO];
+	
     // The object was synced, now connect with the followers
     for (Farm *farm in self.farms) {
         if (farm == leader) {
@@ -90,13 +94,12 @@
 		}
         [farm connect];
     }
-    [self resetExpectations:self.farms];
-    [self expectAdditions:numObjects deletions:0 changes:0 fromLeader:leader expectAcks:NO];
     
+	// Now it's safe to wait
     XCTAssertTrue([self waitForCompletion], @"timed out");
-    
     [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
-    NSLog(@"%@ end", self.name);    
+
+    NSLog(@"%@ end", self.name);
 }
 
 // This test is known to break for the HTTP implementation. The reason is that POST responses aren't processed
@@ -146,10 +149,10 @@
     
     NSLog(@"**********************FOLLOWER RECONNECT********************");
     [self resetExpectations:self.farms];
+    follower.expectedAdditions = numConfigs;
     [follower connect];
 
     // Expect 404 and reindex?
-    follower.expectedAdditions = numConfigs;
     XCTAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:self.farms], @"timed out (receiving many)");
     [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     

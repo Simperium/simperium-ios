@@ -63,9 +63,9 @@
     // Leader sends an object to follower, but make follower get it from the index
     Farm *leader = [self createFarm:@"leader"];
     Farm *follower = [self createFarm:@"follower"];
+    leader.expectedIndexCompletions = 1;
     [leader start];
     [leader connect];
-    leader.expectedIndexCompletions = 1;
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
