@@ -110,6 +110,7 @@
 
 - (void)connect {
     [self.simperium performSelector:@selector(startNetworkManagers)];
+	[self waitForCompletion:6.0f];
 }
 
 - (void)disconnect {

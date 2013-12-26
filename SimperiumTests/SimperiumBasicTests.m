@@ -70,6 +70,7 @@
     SPBucket *bucket = [leader.simperium bucketForName:[Config entityName]];
     leader.config = [bucket insertNewObject];
     leader.config.warpSpeed = [NSNumber numberWithInt:2];
+	leader.config.captainsLog = [NSString stringWithFormat:@"%@", [NSDate date]];
     [leader.simperium save];
 
     NSString *configKey = [leader.config.simperiumKey copy];
