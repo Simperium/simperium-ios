@@ -95,7 +95,7 @@
     // (We should periodically Delete All Data in the test app to clean stuff up)
     
     for (int i = 0; i < NUM_FARMS; i++) {
-        NSString *label = [NSString stringWithFormat:@"client%d", i];
+        NSString *label = [NSString sp_makeUUID];
         [self createFarm: label];
     }
 }
