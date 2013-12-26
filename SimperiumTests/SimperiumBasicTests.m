@@ -9,7 +9,7 @@
 #import "SimperiumTests.h"
 #import "Config.h"
 #import "Farm.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "DiffMatchPatch.h"
 
 
@@ -143,9 +143,10 @@
     Farm *leader = self.farms[0];
     [self connectFarms];
     
-    [self waitFor:1];
+    [self waitFor:4];
     
-    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
+	SPBucket *entityBucket = [leader.simperium bucketForName:[Config entityName]];
+    leader.config = [entityBucket insertNewObject];
     leader.config.warpSpeed = [NSNumber numberWithInt:2];
     leader.config.captainsLog = @"Hi";
     leader.config.shieldPercent = [NSNumber numberWithFloat:3.14];
@@ -153,9 +154,9 @@
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
     
     // Wait just enough time for the change to be sent, but not enough time for an ack to come back
-    // (a better test will be to send a bunch of changes with random delays from 0..1s)
-    [self waitFor:0.01];
-    
+	// Dispatch a blocking no-op in the bucket!
+	dispatch_sync(entityBucket.processorQueue, ^{ });
+	
     // Now change right away without waiting for the object insertion to be acked
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:4];
     NSString *refCaptainsLog = @"Hi!!!";
