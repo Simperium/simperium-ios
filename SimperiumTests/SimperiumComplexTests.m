@@ -9,7 +9,7 @@
 #import "SimperiumTests.h"
 #import "Config.h"
 #import "Farm.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "DiffMatchPatch.h"
 
 
@@ -75,15 +75,17 @@
     Farm *leader = self.farms[0];
     [self connectFarms];
     
-    [self waitFor:1];
+    [self waitFor:4];
     
-    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
+	SPBucket *entityBucket = [leader.simperium bucketForName:[Config entityName]];
+	
+    leader.config = [entityBucket insertNewObject];
     leader.config.simperiumKey = @"config";
     leader.config.warpSpeed = @(2);
     leader.config.captainsLog = @"Hi";
     leader.config.shieldPercent = @(3.14);
     
-    Config *config2 = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
+    Config *config2 = [entityBucket insertNewObject];
     config2.simperiumKey = @"config2";
     config2.captainsLog = @"The second";
     
@@ -91,8 +93,8 @@
     
     // The timing here is critical for testing websockets...it needs to be long enough for the first save to be processed and sent, but not
     // so long that the ack has been processed. Find a way to block for successful sends instead.
-    // NOTE: This test will fail sometimes as a result of this imprecise timing.
-    [self waitFor:0.1];
+	// Dispatch a blocking no-op in the bucket!
+	dispatch_sync(entityBucket.processorQueue, ^{ });
     
     //[self expectAdditions:2 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
         
@@ -142,7 +144,7 @@
         [leader.simperium save];
         [self waitFor: (arc4random() % 200) / 1000.0];
     }
-    [self waitFor:5];
+    [self waitFor:10];
     // Can't know how many to expect since some changes will get sent together
     //[self expectAdditions:0 deletions:0 changes:changeNumber-1 fromLeader:leader expectAcks:YES];
     //STAssertTrue([self waitForCompletion], @"timed out (changing)");
