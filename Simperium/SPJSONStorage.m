@@ -11,7 +11,7 @@
 #import "SPGhost.h"
 #import "NSString+Simperium.h"
 #import "NSMutableDictionary+Simperium.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "SPSchema.h"
 #import "SPDiffer.h"
 #import "jrswizzle.h"
@@ -304,6 +304,22 @@
     [delegate storage:self updatedObjects:updatedObjects insertedObjects:nil deletedObjects:nil];
 
     return NO;
+}
+
+- (void)beginSafeSection {
+	
+}
+
+- (void)finishSafeSection {
+	
+}
+
+- (void)beginCriticalSection {
+	
+}
+
+- (void)finishCriticalSection {
+	
 }
 
 @end

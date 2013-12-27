@@ -38,14 +38,17 @@
     BOOL captainsLogEqual = (self.captainsLog == nil && other.captainsLog == nil) || [self.captainsLog isEqualToString:other.captainsLog];
     BOOL shieldsUpEqual = (self.shieldsUp == nil && other.shieldsUp == nil) || [self.shieldsUp isEqualToNumber:other.shieldsUp];
     BOOL shieldPercentEqual = (self.shieldPercent == nil && other.shieldPercent == nil) || [self.shieldPercent floatValue] == [other.shieldPercent floatValue];
-    BOOL costEqual = (self.cost == nil && other.cost == nil) || [self.shieldPercent doubleValue] == [other.shieldPercent doubleValue];
-    BOOL dateEqual = (self.date == nil && other.date == nil) || [self.date isEqualToDate:other.date];
+    BOOL costEqual = (self.cost == nil && other.cost == nil) || [self.shieldPercent floatValue] == [other.shieldPercent floatValue];
+	
+	// NOTE: Compare the description (and not the date itself). There might be differences for less than a second!
+    BOOL dateEqual = (self.date == nil && other.date == nil) || [self.date.description isEqual:other.date.description];
     
     // Separate BOOLs for easier debugging
     BOOL isEqual = warpSpeedEqual && captainsLogEqual && shieldsUpEqual && shieldPercentEqual && costEqual && dateEqual;
     
-    if (!isEqual)
+    if (!isEqual) {
         NSLog(@"Argh, Config not equal");
+	}
     
     return isEqual;
 }

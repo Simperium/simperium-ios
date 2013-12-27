@@ -11,6 +11,7 @@
 #import "SPBinaryManager+Internals.h"
 #import "JSONKit+Simperium.h"
 #import "NSArray+Simperium.h"
+#import "SPBucket+Internals.h"
 
 
 NSString* const SPMemberBinaryInfoSuffix = @"Info";

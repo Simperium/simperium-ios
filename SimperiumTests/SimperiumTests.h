@@ -16,13 +16,10 @@
 
 @interface SimperiumTests : XCTestCase <SimperiumDelegate>
 
-@property (nonatomic, strong) NSDictionary		*overrides;
 @property (nonatomic, strong) NSMutableArray	*farms;
 @property (nonatomic, copy)   NSString			*token;
 @property (nonatomic, assign) BOOL				done;
 
--(NSDictionary *)bucketOverrides;
--(NSString *)uniqueBucketFor:(NSString *)entityName;
 -(void)waitFor:(NSTimeInterval)seconds;
 -(BOOL)farmsDone:(NSArray *)farmArray;
 -(BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs farmArray:(NSArray *)farmArray;

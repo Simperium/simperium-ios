@@ -12,4 +12,5 @@
 
 @interface TestObject : SPManagedObject
 - (BOOL)isEqualToObject:(TestObject *)other;
++ (NSString *)entityName;
 @end

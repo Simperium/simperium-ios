@@ -8,7 +8,7 @@
 
 #import "SPMemberEntity.h"
 #import "SPManagedObject.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "SPRelationshipResolver.h"
 
 @implementation SPMemberEntity

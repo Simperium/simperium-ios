@@ -15,6 +15,7 @@
 #import "DDLog.h"
 #import "NSFileManager+Simperium.h"
 #import "NSString+Simperium.h"
+#import "SPBucket+Internals.h"
 
 #import "SPHttpRequest.h"
 #import "SPHttpRequestQueue.h"

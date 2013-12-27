@@ -9,7 +9,7 @@
 #import "Simperium.h"
 #import "SPChangeProcessor.h"
 #import "SPUser.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "DDLog.h"
@@ -123,10 +123,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [channel sendObjectChanges:object];
 }
 
+- (void)removeAllBucketObjects:(SPBucket *)bucket {
+    SPWebSocketChannel *channel = [self channelForName:bucket.name];
+	[channel removeAllBucketObjects:bucket];
+}
+
 - (void)sendLogMessage:(NSString*)logMessage {
-	if (!self.open) {
-		return;
-	}
 	NSDictionary *payload = @{ @"log" : logMessage };
 	NSString *message = [NSString stringWithFormat:@"%@:%@", COM_LOG, [payload sp_JSONString]];
 	[self send:message];
@@ -151,8 +153,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
     NSString *message = [NSString stringWithFormat:@"%d:init:%@", channel.number, [jsonData sp_JSONString]];
-    [self.webSocket send:message];
+    [self send:message];
 }
+
 
 - (void)openWebSocket {
 	// Prevent multiple 'openWebSocket' calls to get executed

@@ -63,13 +63,13 @@
     // Leader sends an object to follower, but make follower get it from the index
     Farm *leader = [self createFarm:@"leader"];
     Farm *follower = [self createFarm:@"follower"];
+    leader.expectedIndexCompletions = 1;
     [leader start];
     [leader connect];
-    leader.expectedIndexCompletions = 1;
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObjectForKey:@"key.with.periods"];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObjectForKey:@"key.with.periods"];
     leader.config.warpSpeed = refWarpSpeed;
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
@@ -83,16 +83,16 @@
     XCTAssertTrue([self waitForCompletion], @"timed out (changing)");
     
     // The object was synced, now connect with the follower
-    [follower start];
-    
     [self resetExpectations: self.farms];
     follower.expectedIndexCompletions = 1;
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:NO];
+	
+    [follower start];
     [follower connect];
-    
+	
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name);
 }
 

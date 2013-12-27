@@ -22,8 +22,7 @@
 
 @implementation SimperiumTests
 
--(void)waitFor:(NSTimeInterval)seconds
-{
+- (void)waitFor:(NSTimeInterval)seconds {
     NSDate	*timeoutDate = [NSDate dateWithTimeIntervalSinceNow:seconds];
     NSLog(@"Waiting for %f seconds...", seconds);
 	do {
@@ -36,8 +35,7 @@
 	return;
 }
 
--(BOOL)farmsDone:(NSArray *)farmArray
-{
+- (BOOL)farmsDone:(NSArray *)farmArray {
     for (Farm *farm in farmArray) {
         if (![farm isDone]) {
             return NO;
@@ -46,11 +44,11 @@
     return YES;
 }
 
--(BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs farmArray:(NSArray *)farmArray
-{
+- (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs farmArray:(NSArray *)farmArray {
     // Don't wait if everything is done already
-    if ([self farmsDone:farmArray])
+    if ([self farmsDone:farmArray]) {
         return YES;
+	}
     
 	NSDate *timeoutDate = [NSDate dateWithTimeIntervalSinceNow:timeoutSecs];
     self.done = NO;
@@ -78,67 +76,45 @@
 	return self.done;
 }
 
--(BOOL)waitForCompletion
-{
+- (BOOL)waitForCompletion {
     return [self waitForCompletion:3.0+NUM_FARMS*3 farmArray:self.farms];
 }
 
--(NSString *)uniqueBucketFor:(NSString *)entityName
-{
-    NSString *bucketSuffix = [[NSString sp_makeUUID] substringToIndex:8];
-    NSString *bucket = [NSString stringWithFormat:@"%@-%@", entityName, bucketSuffix];
-    return bucket;
-}
-
--(NSDictionary *)bucketOverrides
-{
-    // Each farm for each test case should share bucket overrides
-    if (self.overrides == nil) {
-        self.overrides = @{ @"Config" : [self uniqueBucketFor:@"Config"] };
-    }
-    return self.overrides;
-}
-
--(Farm *)createFarm:(NSString *)label
-{
+- (Farm *)createFarm:(NSString *)label {
     if (!self.farms) {
         self.farms = [NSMutableArray arrayWithCapacity:NUM_FARMS];
     }
-    Farm *farm = [[Farm alloc] initWithToken:self.token bucketOverrides:[self bucketOverrides] label:label];
+	
+    Farm *farm = [[Farm alloc] initWithToken:self.token label:label];
     [self.farms addObject:farm];
     return farm;
 }
 
--(void)createFarms
-{
+- (void)createFarms {
     // Use a different bucket for each test so it's always starting fresh
     // (We should periodically Delete All Data in the test app to clean stuff up)
     
-    for (int i=0; i<NUM_FARMS; i++)
-	{
-        NSString *label = [NSString stringWithFormat:@"client%d", i];
+    for (int i = 0; i < NUM_FARMS; i++) {
+        NSString *label = [NSString stringWithFormat:@"client %@", [NSString sp_makeUUID]];
         [self createFarm: label];
     }
 }
 
--(void)startFarms
-{
-    for (int i=0; i<NUM_FARMS; i++)
-	{
+- (void)startFarms {
+    for (int i = 0; i < NUM_FARMS; i++) {
         Farm *farm = self.farms[i];
         [farm start];
     }
 }
 
--(void)createAndStartFarms
-{
+- (void)createAndStartFarms {
     [self createFarms];
     [self startFarms];
 }
 
--(void)setUp
-{
+- (void)setUp {
     [super setUp];
+	
 	// prepare the URL Request
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@/1/%@/authorize/", SERVER, APP_ID]];
 	NSMutableURLRequest* request = [[NSMutableURLRequest alloc] initWithURL:tokenURL];
@@ -183,8 +159,7 @@
     NSLog(@"auth token is %@", self.token);
 }
 
--(void)tearDown
-{
+- (void)tearDown {
     [super tearDown];
     
     for (Farm *farm in self.farms) {
@@ -192,7 +167,7 @@
     }
 }
 
-//-(void)ensureConfigsAreEqualTo:(Farm *)leader
+//- (void)ensureConfigsAreEqualTo:(Farm *)leader
 //{
 //    for (Farm *farm in farms) {
 //        if (farm == leader)
@@ -203,8 +178,7 @@
 //}
 
 
--(void)ensureFarmsEqual: (NSArray *)farmArray entityName:(NSString *)entityName
-{
+- (void)ensureFarmsEqual: (NSArray *)farmArray entityName:(NSString *)entityName {
     // Assume all leader configs are the same since they're set manually
     Farm *leader = [farmArray objectAtIndex:0];
     NSArray *leaderObjects = [[leader.simperium bucketForName:entityName] allObjects] ;
@@ -215,8 +189,9 @@
         return;
     
     for (Farm *farm in farmArray) {
-        if (farm == leader)
+        if (farm == leader) {
             continue;
+		}
         
         NSArray *objects = [[farm.simperium bucketForName:entityName] allObjects];
         XCTAssertEqual([leaderObjects count], [objects count], @"");
@@ -241,26 +216,20 @@
     }
 }
 
--(void)connectFarms
-{
+- (void)connectFarms {
     for (Farm *farm in self.farms) {
         [farm connect];
 	}
-    // Wait a jiffy (there are no callbacks for the first GET because there don't need to be)
-    // Could skip this to test offline changes
-    [self waitFor:1.0];
 }
 
--(void)disconnectFarms
-{
+- (void)disconnectFarms {
     for (Farm *farm in self.farms) {
         [farm disconnect];
 	}
 }
 
 // Tell farms what to expect so it's possible to wait for async networking to complete
--(void)expectAdditions:(int)additions deletions:(int)deletions changes:(int)changes fromLeader:(Farm *)leader expectAcks:(BOOL)expectAcks
-{
+- (void)expectAdditions:(int)additions deletions:(int)deletions changes:(int)changes fromLeader:(Farm *)leader expectAcks:(BOOL)expectAcks {
     if (expectAcks) {
         int acknowledgements = additions + deletions + changes;
         leader.expectedAcknowledgments += acknowledgements;
@@ -269,8 +238,9 @@
 	}
     
     for (Farm *farm in self.farms) {
-        if (farm == leader)
+        if (farm == leader) {
             continue;
+		}
         farm.expectedAcknowledgments = 0;
         farm.expectedAdditions += additions;
         farm.expectedDeletions += deletions;
@@ -278,8 +248,7 @@
     }
 }
 
--(void)resetExpectations:(NSArray *)farmArray
-{
+- (void)resetExpectations:(NSArray *)farmArray {
     for (Farm *farm in farmArray) {
         [farm resetExpectations];
     }

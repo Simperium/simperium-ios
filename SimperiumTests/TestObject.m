@@ -20,4 +20,8 @@
     return NO;
 }
 
++ (NSString *)entityName {
+	return NSStringFromClass([self class]);
+}
+
 @end

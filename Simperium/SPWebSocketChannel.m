@@ -12,7 +12,7 @@
 #import "SPEnvironment.h"
 #import "Simperium.h"
 #import "SPDiffer.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "SPStorage.h"
 #import "SPUser.h"
 #import "SPChangeProcessor.h"
@@ -161,6 +161,21 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[self.webSocketManager send:message];
 }
 
+- (void)removeAllBucketObjects:(SPBucket *)bucket {
+	// TODO: Can we convert this message into something like this, perhaps?: 'd:bucket_name'
+	NSDictionary *rawMessage =	@{
+		@"o"		: @"EMPTY",
+		@"id"		: bucket.name,
+		@"ccid"		: [NSString sp_makeUUID],
+		@"clientid"	: self.simperium.clientID
+	};
+	
+	NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [rawMessage sp_JSONString]];
+	DDLogVerbose(@"Simperium deleting all Bucket Objects (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
+	
+	[self.webSocketManager send:message];
+}
+
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
     __block int numChangesPending;
     __block int numKeysForObjectsWithMoreChanges;
@@ -243,14 +258,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         DDLogError(@"Simperium critical error: tried to retrieve index with no user set");
         return;
     }
-    //
-    //    // Don't get changes while processing an index
-    //    if ([getRequest isExecuting]) {
-    //        DDLogVerbose(@"Simperium cancelling get request to retrieve index");
-    //        [getRequest clearDelegatesAndCancel];
-    //    }
-    //
-    //    // Get an index of all objects and fetch their latest versions
+
+	// Get an index of all objects and fetch their latest versions
     self.indexing = YES;
     
     NSString *message = [NSString stringWithFormat:@"%d:i::%@::%d", self.number, mark ? mark : @"", INDEX_PAGE_SIZE];
@@ -263,6 +272,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     if (self.indexing) {
         return;
 	}
+	
+	self.indexing = YES;
     
     // Send any pending changes first
     // This could potentially lead to some duplicate changes being sent if there are some that are awaiting
@@ -323,14 +334,21 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
+	
     DDLogVerbose(@"Simperium received index (%@): %@", self.name, responseString);
+	
+	if(self.indexing == false) {
+		DDLogError(@"ERROR: Index response was NOT expected!");
+	}
+		
     NSDictionary *responseDict = [responseString sp_objectFromJSONString];
     NSArray *currentIndexArray = [responseDict objectForKey:@"index"];
     id current = [responseDict objectForKey:@"current"];
 
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
-    if ([current isKindOfClass:[NSNumber class]])
+    if ([current isKindOfClass:[NSNumber class]]) {
         current = [NSString stringWithFormat:@"%ld", (long)[current integerValue]];
+	}
     self.pendingLastChangeSignature = [current length] > 0 ? [NSString stringWithFormat:@"%@", current] : nil;
     self.nextMark = [responseDict objectForKey:@"mark"];
     

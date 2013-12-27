@@ -121,6 +121,9 @@
 
 	__managedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
 
+//	__managedObjectContext = [[NSManagedObjectContext alloc] init];
+// 	__managedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
+	
     return __managedObjectContext;
 }
 

@@ -9,7 +9,7 @@
 #import "SimperiumTests.h"
 #import "Config.h"
 #import "Farm.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "DiffMatchPatch.h"
 
 
@@ -37,7 +37,7 @@
     [self connectFarms];
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
-    SPBucket *leaderBucket = [leader.simperium bucketForName:@"Config"];
+    SPBucket *leaderBucket = [leader.simperium bucketForName:[Config entityName]];
     leaderBucket.delegate = leader;
     leader.config = [leaderBucket insertNewObject];
     [leader.config setValue:refWarpSpeed forKey:@"warpSpeed"];
@@ -53,7 +53,7 @@
     // I need to add dynamic schema support to the REMOTE ADD and REMOTE MODIFY cases as well, so that followers
     // can consruct their schemas as new data comes off the wire.
     
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
 
     NSLog(@"%@ end", self.name); 
 }
@@ -66,27 +66,32 @@
     // Leader sends an object to followers, then removes it
     Farm *leader = self.farms[0];
     [self connectFarms];
-    
-    SPBucket *bucket = [leader.simperium bucketForName:@"Config"];
+	
+    SPBucket *bucket = [leader.simperium bucketForName:[Config entityName]];
     leader.config = [bucket insertNewObject];
     leader.config.warpSpeed = [NSNumber numberWithInt:2];
+	leader.config.captainsLog = [NSString stringWithFormat:@"%@", [NSDate date]];
     [leader.simperium save];
+
     NSString *configKey = [leader.config.simperiumKey copy];
-    [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
-    XCTAssertTrue([self waitForCompletion], @"timed out (adding)");
-    
-    [bucket deleteObject:leader.config];
-    [leader.simperium save];
+	[self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
+	XCTAssertTrue([self waitForCompletion], @"timed out (adding)");
+
+	[bucket deleteObject:leader.config];
+	[leader.simperium save];
+	
+	[self resetExpectations:self.farms];
     [self expectAdditions:0 deletions:1 changes:0 fromLeader:leader expectAcks:YES];
     XCTAssertTrue([self waitForCompletion], @"timed out (deleting)");
     
     int i=0;
     for (Farm *farm in self.farms) {
-        farm.config = (Config *)[[farm.simperium bucketForName:@"Config"] objectForKey:configKey];
+        farm.config = (Config *)[[farm.simperium bucketForName:[Config entityName]] objectForKey:configKey];
         XCTAssertNil(farm.config, @"config %d wasn't deleted: %@", i, farm.config);
         i += 1;
     }
-    NSLog(@"%@ end", self.name);    
+
+    NSLog(@"%@ end", self.name);
 }
 
 -(void)testChangesToSingleObject
@@ -99,7 +104,7 @@
     [self connectFarms];
     [self waitFor:1.0];
     
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     leader.config.warpSpeed = [NSNumber numberWithInt:2];
     leader.config.captainsLog = @"Hi";
     leader.config.shieldPercent = [NSNumber numberWithFloat:3.14];
@@ -126,7 +131,7 @@
     XCTAssertTrue([refShieldPercent isEqualToNumber: leader.config.shieldPercent], @"");
     XCTAssertTrue([refCost isEqualToNumber: leader.config.cost], @"");
 
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name); 
 }
 
@@ -139,9 +144,10 @@
     Farm *leader = self.farms[0];
     [self connectFarms];
     
-    [self waitFor:1];
+    [self waitFor:4];
     
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+	SPBucket *entityBucket = [leader.simperium bucketForName:[Config entityName]];
+    leader.config = [entityBucket insertNewObject];
     leader.config.warpSpeed = [NSNumber numberWithInt:2];
     leader.config.captainsLog = @"Hi";
     leader.config.shieldPercent = [NSNumber numberWithFloat:3.14];
@@ -149,9 +155,9 @@
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
     
     // Wait just enough time for the change to be sent, but not enough time for an ack to come back
-    // (a better test will be to send a bunch of changes with random delays from 0..1s)
-    [self waitFor:0.01];
-    
+	// Dispatch a blocking no-op in the bucket!
+	dispatch_sync(entityBucket.processorQueue, ^{ });
+	
     // Now change right away without waiting for the object insertion to be acked
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:4];
     NSString *refCaptainsLog = @"Hi!!!";
@@ -166,7 +172,7 @@
     XCTAssertTrue([refWarpSpeed isEqualToNumber: leader.config.warpSpeed], @"");
     XCTAssertTrue([refCaptainsLog isEqualToString: leader.config.captainsLog], @"");
     XCTAssertTrue([refShieldPercent isEqualToNumber: leader.config.shieldPercent], @"");
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name);
 }
 
@@ -181,7 +187,7 @@
     
     int changeNumber = 0;
     NSString *refString = [NSString stringWithFormat:@"%d", changeNumber];
-    SPBucket *bucket = [leader.simperium bucketForName:@"Config"];
+    SPBucket *bucket = [leader.simperium bucketForName:[Config entityName]];
     leader.config = [bucket insertNewObject];
     leader.config.captainsLog = refString;
     [leader.simperium save];
