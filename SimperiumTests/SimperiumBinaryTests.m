@@ -33,16 +33,15 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 
 
 @interface SimperiumBinaryTests : SimperiumTests
-@property (nonatomic, strong, readwrite) Farm *leader;
-@property (nonatomic, strong, readwrite) Farm *follower;
-@property (nonatomic, strong, readwrite) SPBucket *leaderBucket;
-@property (nonatomic, strong, readwrite) SPBucket *followerBucket;
+@property (nonatomic, strong, readwrite) Farm		*leader;
+@property (nonatomic, strong, readwrite) Farm		*follower;
+@property (nonatomic, strong, readwrite) SPBucket	*leaderBucket;
+@property (nonatomic, strong, readwrite) SPBucket	*followerBucket;
 @end
 
 @implementation SimperiumBinaryTests
 
-+(void)setUp
-{
++ (void)setUp {
 	//	Note:
 	//	=====
 	//	This **HACK** will initialize a disposable bucket with a binary endpoint, specified with the constant BINARY_BACKEND.
@@ -56,7 +55,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	NSAssert(ADMIN_TOKEN.length > 0, @"Please specify an admin token!");
 	
 	NSDictionary *rawPayload = @{ @"binary_backend": BINARY_BACKEND, @"key": BINARY_BACKEND};
-	NSString *bucket = [[[self class] postBucket] lowercaseString];
+	NSString *bucket = [[Post entityName] lowercaseString];
 	NSString *rawUrl = [SPBaseURL stringByAppendingFormat:@"%@/__options__/i/%@", APP_ID, bucket];
 	
 	NSURL *url = [NSURL URLWithString:rawUrl];
@@ -78,30 +77,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 #pragma mark Helpers
 #pragma mark ====================================================================================
 
-+(NSString *)postBucket
-{
-	static dispatch_once_t pred;
-	static NSString* postBucket = nil;
-	
-	dispatch_once(&pred, ^{
-		NSString *bucketSuffix = [[NSString sp_makeUUID] substringToIndex:8];
-		postBucket = [NSString stringWithFormat:@"Post-%@", bucketSuffix];
-	});
-	
-	return postBucket;
-}
-
--(NSDictionary *)bucketOverrides
-{
-	[self uniqueBucketFor:nil];
-	if(!self.overrides) {
-		self.overrides = @{ @"Post" : [[self class] postBucket] };
-	}
-	return self.overrides;
-}
-
--(NSData *)randomDataWithLength:(NSUInteger)length
-{
+- (NSData *)randomDataWithLength:(NSUInteger)length {
     NSMutableData *mutableData = [NSMutableData dataWithCapacity: length];
     for (unsigned int i = 0; i < length; i++) {
         NSInteger randomBits = arc4random();
@@ -113,7 +89,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 
 
 #pragma mark ====================================================================================
-#pragma mark Execute Per UnitTest!
+#pragma mark Execute Per IntegrationTest!
 #pragma mark ====================================================================================
 
 /**
@@ -126,8 +102,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 		 3. Binary Metadata Change		3.	Binary Download
  */
 
--(void)setUp
-{
+- (void)setUp {
 	[super setUp];
 	
 	// Load the farms
@@ -144,13 +119,12 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	[self waitFor:1];
 	
 	// Load the buckets
-	NSString *bucketName = NSStringFromClass([Post class]);
+	NSString *bucketName = [Post entityName];
 	self.leaderBucket = [self.leader.simperium bucketForName:bucketName];
 	self.followerBucket = [self.follower.simperium bucketForName:bucketName];
 }
 
--(void)tearDown
-{
+- (void)tearDown {
 	// Cleanup
 	[self.leaderBucket deleteAllObjects];
 	[self.leader.simperium save];
@@ -172,11 +146,10 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 
 
 #pragma mark ====================================================================================
-#pragma mark UnitTests!
+#pragma mark IntegrationTests!
 #pragma mark ====================================================================================
 
--(void)testBigFiles
-{
+- (void)testBigFiles {
 	// Inserting + Adding a binary without connectivity. Should hit (NO) delegate!
     Post *leadPost = [self.leaderBucket insertNewObject];
     leadPost.picture = [self randomDataWithLength:SPTestBigFileBytes];
@@ -197,8 +170,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	XCTAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
 }
 
--(void)testNetworking
-{
+- (void)testNetworking {
 	// Follower: Disconnect right now!
 	[self.follower disconnect];
 	
@@ -213,6 +185,11 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	self.leader.expectedChanges = 1;
 	
     XCTAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.leader] ], @"BinarySync Upload timeout");
+		
+	// Follower: Set expectations
+    self.follower.expectedAdditions = 1;
+    self.follower.expectedChanges = 1;
+	self.follower.expectedBinaryDownloads = 1;
 	
 	// Follower: Enable / disable networking
     [self.follower connect];
@@ -222,9 +199,6 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	[self waitFor:1.0f];
 
 	// Follower: Allow sync to happen. No changes expected, we'll just get the 'ready' version
-    self.follower.expectedAdditions = 1;
-	self.follower.expectedBinaryDownloads = 1;
-	
     [self.follower connect];
     XCTAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.follower] ], @"BinarySync Download timeout");
 	
@@ -234,8 +208,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	XCTAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
 }
 
--(void)testUploads
-{
+- (void)testUploads {
 	// Insert a new object, right away
     Post *leadPost = [self.leaderBucket insertNewObject];
 	[self.leader.simperium save];
@@ -269,8 +242,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	XCTAssertEqualObjects(leadPost.picture, followPost.picture, @"BinarySync Integrity Error");
 }
 
--(void)testDownloads
-{
+- (void)testDownloads {
 	// Follower: Disconnect right now!
 	[self.follower disconnect];
 	
@@ -288,7 +260,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	
 	// Follower: Begin downloading the huge picture
     [self.follower connect];
-	[self waitFor:3.0f];
+	[self waitFor:0.1f];
 	
 	// Leader: Update the picture with a super small binary.
 	// Goal: a new change comes in, while a previous download was in course
@@ -303,7 +275,7 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	
 	// Follower: Should only sync the small file
     self.follower.expectedAdditions += 1;
-    self.follower.expectedChanges += 1;
+    self.follower.expectedChanges += 2;
 	self.follower.expectedBinaryDownloads += 1;
 
     XCTAssertTrue([self waitForCompletion:SPTestSmallFileTimeout farmArray:@[self.follower] ], @"BinarySync Download timeout");
