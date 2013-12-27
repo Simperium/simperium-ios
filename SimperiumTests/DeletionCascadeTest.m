@@ -27,7 +27,7 @@ static NSInteger const kStressIterations	= 500;
 
 - (void)testStress {
 	for (NSInteger i = 0; ++i <= kStressIterations; ) {
-		NSLog(@"<> Stress Iteration %d", i);
+		NSLog(@"<> Stress Iteration %ld", (long)i);
 		[self testInsertion];
 		[self testUpdates];
 	}
@@ -50,7 +50,7 @@ static NSInteger const kStressIterations	= 500;
 	// Insert Posts
 	for (NSInteger i = 0; ++i <= kNumberOfPosts; ) {
 		Post* post = [storage insertNewObjectForBucketName:postBucket.name simperiumKey:nil];
-		post.title = [NSString stringWithFormat:@"Post [%d]", i];
+		post.title = [NSString stringWithFormat:@"Post [%ld]", (long)i];
 		[postKeys addObject:post.simperiumKey];
 		
 		[storage save];
@@ -66,7 +66,7 @@ static NSInteger const kStressIterations	= 500;
 			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
 			for (NSInteger j = 0; ++j <= kCommentsPerPost; ) {
 				PostComment* comment = [threadSafeStorage insertNewObjectForBucketName:commentBucket.name simperiumKey:nil];
-				comment.content = [NSString stringWithFormat:@"Comment [%d]", j];
+				comment.content = [NSString stringWithFormat:@"Comment [%ld]", (long)j];
 				[post addCommentsObject:comment];
 				[commentKeys addObject:comment.simperiumKey];
 			}
@@ -119,7 +119,7 @@ static NSInteger const kStressIterations	= 500;
 	// Insert Posts
 	for (NSInteger i = 0; ++i <= kNumberOfPosts; ) {
 		Post* post = [storage insertNewObjectForBucketName:postBucket.name simperiumKey:nil];
-		post.title = [NSString stringWithFormat:@"Post [%d]", i];
+		post.title = [NSString stringWithFormat:@"Post [%ld]", (long)i];
 		[postKeys addObject:post.simperiumKey];
 		
 		[storage save];
@@ -130,7 +130,7 @@ static NSInteger const kStressIterations	= 500;
 		Post* post = [storage objectForKey:simperiumKey bucketName:postBucket.name];
 		for (NSInteger j = 0; ++j <= kCommentsPerPost; ) {
 			PostComment* comment = [storage insertNewObjectForBucketName:commentBucket.name simperiumKey:nil];
-			comment.content = [NSString stringWithFormat:@"Comment [%d]", j];
+			comment.content = [NSString stringWithFormat:@"Comment [%ld]", (long)j];
 			[post addCommentsObject:comment];
 			[commentKeys addObject:comment.simperiumKey];
 		}

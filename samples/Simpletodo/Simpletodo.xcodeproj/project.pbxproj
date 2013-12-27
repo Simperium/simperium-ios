@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0CD3AD8D17A83A9800E9CCFE /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CD3AD8C17A83A9800E9CCFE /* Default-568h@2x.png */; };
 		26156ACC14EC3D4C003332BA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26156ACB14EC3D4C003332BA /* UIKit.framework */; };
 		26156ACE14EC3D4C003332BA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26156ACD14EC3D4C003332BA /* Foundation.framework */; };
 		26156AD014EC3D4C003332BA /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26156ACF14EC3D4C003332BA /* CoreGraphics.framework */; };
@@ -25,6 +26,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0CD3AD8C17A83A9800E9CCFE /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		26156AC714EC3D4C003332BA /* Simpletodo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Simpletodo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		26156ACB14EC3D4C003332BA /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		26156ACD14EC3D4C003332BA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -67,6 +69,7 @@
 		26156ABC14EC3D4C003332BA = {
 			isa = PBXGroup;
 			children = (
+				0CD3AD8C17A83A9800E9CCFE /* Default-568h@2x.png */,
 				26C93A7214F86D1800BE99F5 /* icon.png */,
 				26C93A7314F86D1800BE99F5 /* icon@2x.png */,
 				26156AD314EC3D4C003332BA /* Simpletodo */,
@@ -150,7 +153,7 @@
 		26156ABE14EC3D4C003332BA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0430;
+				LastUpgradeCheck = 0460;
 			};
 			buildConfigurationList = 26156AC114EC3D4C003332BA /* Build configuration list for PBXProject "Simpletodo" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -179,6 +182,7 @@
 				26156AE414EC3D4C003332BA /* MainStoryboard_iPad.storyboard in Resources */,
 				26C93A7514F86D1800BE99F5 /* icon.png in Resources */,
 				26C93A7614F86D1800BE99F5 /* icon@2x.png in Resources */,
+				0CD3AD8D17A83A9800E9CCFE /* Default-568h@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,6 +238,10 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -247,6 +255,7 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				SDKROOT = iphoneos;
@@ -260,12 +269,17 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";

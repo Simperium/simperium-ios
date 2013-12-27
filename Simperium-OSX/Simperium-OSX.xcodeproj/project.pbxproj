@@ -178,6 +178,10 @@
 		B56B16541835682500E45C98 /* TestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = B56B164F1835682500E45C98 /* TestObject.m */; };
 		B59AAC95185B90F000B557D3 /* SPThreadsafeMutableSet.h in Headers */ = {isa = PBXBuildFile; fileRef = B59AAC93185B90F000B557D3 /* SPThreadsafeMutableSet.h */; };
 		B59AAC96185B90F000B557D3 /* SPThreadsafeMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = B59AAC94185B90F000B557D3 /* SPThreadsafeMutableSet.m */; };
+		B59C751F186DAB0E003A1C8D /* DeletionCascadeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B59C751E186DAB0E003A1C8D /* DeletionCascadeTest.m */; };
+		B59C7521186DAB29003A1C8D /* SPThreadsafeMutableSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B59C7520186DAB29003A1C8D /* SPThreadsafeMutableSetTests.m */; };
+		B59C7523186DAB42003A1C8D /* DiffMatchPatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B59C7522186DAB42003A1C8D /* DiffMatchPatchTest.m */; };
+		B59C7525186DAB70003A1C8D /* SPBucket+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B59C7524186DAB70003A1C8D /* SPBucket+Internals.h */; };
 		B5D581BF183565A700B08996 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5D581BE183565A700B08996 /* XCTest.framework */; };
 		B5D581C5183565A700B08996 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B5D581C3183565A700B08996 /* InfoPlist.strings */; };
 		B5D581D0183565C500B08996 /* XCTestCase+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581CF183565C500B08996 /* XCTestCase+Simperium.m */; };
@@ -382,6 +386,10 @@
 		B56B164F1835682500E45C98 /* TestObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TestObject.m; path = ../../SimperiumTests/TestObject.m; sourceTree = "<group>"; };
 		B59AAC93185B90F000B557D3 /* SPThreadsafeMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPThreadsafeMutableSet.h; path = ../../Simperium/SPThreadsafeMutableSet.h; sourceTree = "<group>"; };
 		B59AAC94185B90F000B557D3 /* SPThreadsafeMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPThreadsafeMutableSet.m; path = ../../Simperium/SPThreadsafeMutableSet.m; sourceTree = "<group>"; };
+		B59C751E186DAB0E003A1C8D /* DeletionCascadeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DeletionCascadeTest.m; path = ../../SimperiumTests/DeletionCascadeTest.m; sourceTree = "<group>"; };
+		B59C7520186DAB29003A1C8D /* SPThreadsafeMutableSetTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPThreadsafeMutableSetTests.m; path = ../../SimperiumTests/SPThreadsafeMutableSetTests.m; sourceTree = "<group>"; };
+		B59C7522186DAB42003A1C8D /* DiffMatchPatchTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DiffMatchPatchTest.m; path = ../../SimperiumTests/DiffMatchPatchTest.m; sourceTree = "<group>"; };
+		B59C7524186DAB70003A1C8D /* SPBucket+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SPBucket+Internals.h"; path = "../../Simperium/SPBucket+Internals.h"; sourceTree = "<group>"; };
 		B5D581BD183565A700B08996 /* Simperium-OSX Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Simperium-OSX Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D581BE183565A700B08996 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		B5D581C2183565A700B08996 /* Simperium-OSX Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Simperium-OSX Tests-Info.plist"; sourceTree = "<group>"; };
@@ -488,6 +496,7 @@
 				B56B163D183566B800E45C98 /* SPDictionaryStorage.h */,
 				B56B163E183566B800E45C98 /* SPDictionaryStorage.m */,
 				2698BE3915C908C60020565F /* SPBucket.h */,
+				B59C7524186DAB70003A1C8D /* SPBucket+Internals.h */,
 				2698BE3A15C908C60020565F /* SPBucket.m */,
 				2698BE3B15C908C70020565F /* SPDiffable.h */,
 				2698BE3C15C908C70020565F /* SPDiffer.h */,
@@ -769,9 +778,12 @@
 		B5D581E21835660000B08996 /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				B59C7522186DAB42003A1C8D /* DiffMatchPatchTest.m */,
 				B5D581DC183565FB00B08996 /* DiffMatchPatchArrayTests.m */,
+				B59C751E186DAB0E003A1C8D /* DeletionCascadeTest.m */,
 				B5D581DD183565FB00B08996 /* RemoteDebugTests.m */,
 				B5D581DE183565FB00B08996 /* SPDictionaryStorageTests.m */,
+				B59C7520186DAB29003A1C8D /* SPThreadsafeMutableSetTests.m */,
 			);
 			name = UnitTests;
 			sourceTree = "<group>";
@@ -877,6 +889,7 @@
 				46D5BC41174C2A9B0027DBAF /* SPRelationshipResolver.h in Headers */,
 				B5351590183AB8A300A91BCD /* SPProcessorNotificationNames.h in Headers */,
 				46EA1AEB17569EA0009AC5AA /* SPNetworkInterface.h in Headers */,
+				B59C7525186DAB70003A1C8D /* SPBucket+Internals.h in Headers */,
 				46EA1AEE17569EB4009AC5AA /* SPWebSocketInterface.h in Headers */,
 				4617AEBB179A1A3400545BD9 /* SPReachability.h in Headers */,
 				46DD15C6179A6DAC0093678C /* SPMemberJSONList.h in Headers */,
@@ -1074,11 +1087,14 @@
 				B5D581DA183565E300B08996 /* MockWebSocketInterface.m in Sources */,
 				B5D581D9183565E300B08996 /* MockWebSocketChannel.m in Sources */,
 				B5D581DF183565FB00B08996 /* DiffMatchPatchArrayTests.m in Sources */,
+				B59C7523186DAB42003A1C8D /* DiffMatchPatchTest.m in Sources */,
+				B59C7521186DAB29003A1C8D /* SPThreadsafeMutableSetTests.m in Sources */,
 				B5D581D8183565E300B08996 /* MockSimperium.m in Sources */,
 				B56B16521835682500E45C98 /* Post.m in Sources */,
 				B5D581E1183565FB00B08996 /* SPDictionaryStorageTests.m in Sources */,
 				B5D581E0183565FB00B08996 /* RemoteDebugTests.m in Sources */,
 				B56B16511835682500E45C98 /* Config.m in Sources */,
+				B59C751F186DAB0E003A1C8D /* DeletionCascadeTest.m in Sources */,
 				B56B16541835682500E45C98 /* TestObject.m in Sources */,
 				B56B16501835682500E45C98 /* PostComment.m in Sources */,
 			);
