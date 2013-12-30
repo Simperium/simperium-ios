@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Simperium"
-  s.version      = "0.5.0"
+  s.version      = "0.6.2"
   s.summary      = "Simperium libraries."
   s.description  = "Simperium is a simple way for developers to move data as it changes, instantly and automatically."
   s.homepage     = "https://github.com/Simperium/simperium-ios"
@@ -9,23 +9,19 @@ Pod::Spec.new do |s|
 
   s.source       = { :git => "https://github.com/Simperium/simperium-ios.git", :tag => "v{s.version}" }
 
-  s.ios.deployment_target = '5.0'
-  s.osx.deployment_target = '10.7'
+  s.ios.deployment_target = '6.0'
+  s.osx.deployment_target = '10.8'
 
   s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*', 'External/SFHFKeychainUtils/*'
   s.osx.source_files = 'Simperium-OSX/**/*.{h,m}'
 
   s.exclude_files = 'Simperium/SPS3Manager.{h,m}'
-  s.ios.exclude_files = 'Simperium/SPAuthView.{h,m}'
-  s.osx.exclude_files = 'Simperium/SPLoginViewController.{h,m}', 'Simperium/UIImage+Simperium.{h,m}'
+  s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}'
 
   # If you do not explicitly set the list of public header files,
   # all headers of source_files will be made public.
   #
   # s.public_header_files = 'Simperium/**/*.h'
-
-  s.ios.resources = 'Resources/LoginView.xib', 'Resources/LoginView-iPad.xib', 'Resources/View.xib'
-  s.osx.resources = 'Resources/AuthWindow.xib'
 
   # Specify a list of frameworks that the application needs to link
   # against for this Pod to work.
@@ -48,11 +44,9 @@ Pod::Spec.new do |s|
 
   # Finally, specify any Pods that this Pod depends on.
   #
-  s.dependency 'ASIHTTPRequest', '~> 1.8.1'
   s.dependency 'CocoaLumberjack'
   s.dependency 'Google-Diff-Match-Patch'
   s.dependency 'JRSwizzle'
-  s.dependency 'JSONKit'
   s.dependency 'SocketRocket'
 
 end
