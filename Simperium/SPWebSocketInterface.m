@@ -21,20 +21,17 @@
 
 
 
-#define INDEX_PAGE_SIZE				500
-#define INDEX_BATCH_SIZE			10
-#define HEARTBEAT					30
+NSTimeInterval const SPWebSocketHeartbeatInterval	= 30;
 
-
-NSString * const COM_AUTH			= @"auth";
-NSString * const COM_INDEX			= @"i";
-NSString * const COM_CHANGE			= @"c";
-NSString * const COM_CHANGE_VERSION = @"cv";
-NSString * const COM_ENTITY			= @"e";
-NSString * const COM_ERROR			= @"?";
-NSString * const COM_LOG			= @"log";
-NSString * const COM_INDEX_STATE	= @"index";
-NSString * const COM_HEARTBEAT		= @"h";
+NSString * const COM_AUTH							= @"auth";
+NSString * const COM_INDEX							= @"i";
+NSString * const COM_CHANGE							= @"c";
+NSString * const COM_CHANGE_VERSION					= @"cv";
+NSString * const COM_ENTITY							= @"e";
+NSString * const COM_ERROR							= @"?";
+NSString * const COM_LOG							= @"log";
+NSString * const COM_INDEX_STATE					= @"index";
+NSString * const COM_HEARTBEAT						= @"h";
 
 
 static int ddLogLevel = LOG_LEVEL_INFO;
@@ -133,17 +130,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)authenticateChannel:(SPWebSocketChannel *)channel {
     //    NSString *message = @"1:command:parameters";
-    NSString *remoteBucketName = channel.name;
 
     NSDictionary *jsonData = @{
-                               @"api"		: @(SPAPIVersion.floatValue),
-                               @"clientid"	: self.simperium.clientID,
-                               @"app_id"	: self.simperium.appID,
-                               @"token"		: self.simperium.user.authToken,
-                               @"name"		: remoteBucketName,
-                               @"library"	: SPLibraryID,
-                               @"version"	: SPLibraryVersion
-                               };
+		@"api"		: @(SPAPIVersion.floatValue),
+		@"clientid"	: self.simperium.clientID,
+		@"app_id"	: self.simperium.appID,
+		@"token"	: self.simperium.user.authToken,
+		@"name"		: channel.name,
+		@"library"	: SPLibraryID,
+		@"version"	: SPLibraryVersion
+	};
     
     DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
     NSString *message = [NSString stringWithFormat:@"%d:init:%@", channel.number, [jsonData sp_JSONString]];
@@ -166,13 +162,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.webSocket open];
 }
 
-- (void)start:(SPBucket *)bucket name:(NSString *)name {
-    //[self resetRetryDelay];
-    
+- (void)start:(SPBucket *)bucket {
     SPWebSocketChannel *channel = [self channelForName:bucket.name];
-    if (!channel)
+    if (!channel) {
         channel = [self loadChannelForBucket:bucket];
-    
+    }
+	
     if (channel.started) {
         return;
     }
@@ -203,19 +198,22 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // TODO: Consider ensuring threads are done their work and sending a notification
 }
 
-- (void)resetHeartbeatTimer {
-    if (self.heartbeatTimer != nil) {
-		[self.heartbeatTimer invalidate];
-	}
-	self.heartbeatTimer = [NSTimer scheduledTimerWithTimeInterval:HEARTBEAT target:self selector:@selector(sendHeartbeat:) userInfo:nil repeats:NO];
-}
-
 - (void)send:(NSString *)message {
 	if (!self.open) {
 		return;
 	}
     [self.webSocket send:message];
     [self resetHeartbeatTimer];
+}
+
+
+#pragma mark - Heatbeat Helpers
+
+- (void)resetHeartbeatTimer {
+    if (self.heartbeatTimer != nil) {
+		[self.heartbeatTimer invalidate];
+	}
+	self.heartbeatTimer = [NSTimer scheduledTimerWithTimeInterval:SPWebSocketHeartbeatInterval target:self selector:@selector(sendHeartbeat:) userInfo:nil repeats:NO];
 }
 
 - (void)sendHeartbeat:(NSTimer *)timer {
@@ -356,6 +354,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     self.webSocket = nil;
     self.open = NO;
 }
+
 
 #pragma mark - Public Methods
 

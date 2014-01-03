@@ -196,7 +196,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 								 relationshipResolver:self.relationshipResolver label:self.label];
 
 			[self.buckets setObject:bucket forKey:name];
-            [self.network start:bucket name:bucket.name];
+            [self.network start:bucket];
         }
     }
     
@@ -226,7 +226,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     DDLogInfo(@"Simperium starting network managers...");
     // Finally, start the network managers to start syncing data
     for (SPBucket *bucket in [self.buckets allValues]) {
-        [bucket.network start:bucket name:bucket.name];
+        [bucket.network start:bucket];
 	}
     self.networkManagersStarted = YES;
 }
@@ -277,15 +277,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (NSMutableDictionary *)loadBuckets:(NSArray *)schemas {
     NSMutableDictionary *bucketList = [NSMutableDictionary dictionaryWithCapacity:[schemas count]];
     SPBucket *bucket;
-    
+
+	// For websockets, one network manager for all buckets
+	if (!self.network) {
+		self.network = [SPWebSocketInterface interfaceWithSimperium:self appURL:self.appURL clientID:self.clientID];
+	}
+	
     for (SPSchema *schema in schemas) {
 //        Class entityClass = NSClassFromString(schema.bucketName);
 //        NSAssert1(entityClass != nil, @"Simperium error: couldn't find a class mapping for: ", schema.bucketName);
         
-		// For websockets, one network manager for all buckets
-		if (!self.network) {
-			self.network = [SPWebSocketInterface interfaceWithSimperium:self appURL:self.appURL clientID:self.clientID];
-		}
 		bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
 							 relationshipResolver:self.relationshipResolver label:self.label];
         
