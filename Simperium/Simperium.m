@@ -699,9 +699,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark SPSimperiumLoggerDelegate
 
 - (void)handleLogMessage:(NSString*)logMessage {
-	if (self.remoteLoggingEnabled) {
-		[self.network sendLogMessage:logMessage];
+	if (!self.remoteLoggingEnabled) {
+		return;
 	}
+	
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[self.network sendLogMessage:logMessage];
+	});
 }
 
 
