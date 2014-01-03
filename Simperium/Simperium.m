@@ -180,14 +180,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (SPBucket *)bucketForName:(NSString *)name { 
     SPBucket *bucket = [self.buckets objectForKey:name];
     if (!bucket) {
-        // First check for an override
-        for (NSString *testName in [self.bucketOverrides allKeys]) {
-            NSString *testOverride = [self.bucketOverrides objectForKey:testName];
-            if ([testOverride isEqualToString:name]) {
-                return [self.buckets objectForKey:testName];
-			}
-        }
-        
         // Lazily start buckets
         if (self.dynamicSchemaEnabled) {
             // Create and start a network manager for it
@@ -234,9 +226,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     DDLogInfo(@"Simperium starting network managers...");
     // Finally, start the network managers to start syncing data
     for (SPBucket *bucket in [self.buckets allValues]) {
-        // TODO: move nameOverride into the buckets themselves
-        NSString *nameOverride = [self.bucketOverrides objectForKey:bucket.name];
-        [bucket.network start:bucket name:nameOverride && nameOverride.length > 0 ? nameOverride : bucket.name];
+        [bucket.network start:bucket name:bucket.name];
 	}
     self.networkManagersStarted = YES;
 }
@@ -292,12 +282,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 //        Class entityClass = NSClassFromString(schema.bucketName);
 //        NSAssert1(entityClass != nil, @"Simperium error: couldn't find a class mapping for: ", schema.bucketName);
         
-        // If bucket overrides exist, but this entityClassName isn't included in them, then don't start a network
-        // manager for that bucket. This provides simple bucket exclusion for unit tests.
-        if (self.bucketOverrides != nil && [self.bucketOverrides objectForKey:schema.bucketName] == nil) {
-            continue;
-		}
-        
 		// For websockets, one network manager for all buckets
 		if (!self.network) {
 			self.network = [SPWebSocketInterface interfaceWithSimperium:self appURL:self.appURL clientID:self.clientID];
@@ -308,7 +292,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [bucketList setObject:bucket forKey:schema.bucketName];
     }
     
-	[(SPWebSocketInterface *)self.network loadChannelsForBuckets:bucketList overrides:self.bucketOverrides];
+	[(SPWebSocketInterface *)self.network loadChannelsForBuckets:bucketList];
     
     return bucketList;
 }

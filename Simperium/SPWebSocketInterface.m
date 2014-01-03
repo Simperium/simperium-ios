@@ -40,13 +40,12 @@ NSString * const COM_HEARTBEAT		= @"h";
 static int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface SPWebSocketInterface() <SRWebSocketDelegate>
-@property (nonatomic, strong, readwrite) SRWebSocket *webSocket;
-@property (nonatomic, weak,   readwrite) Simperium *simperium;
-@property (nonatomic, strong, readwrite) NSMutableDictionary *channels;
-@property (nonatomic, copy,   readwrite) NSString *clientID;
-@property (nonatomic, strong, readwrite) NSDictionary *bucketNameOverrides;
-@property (nonatomic, strong, readwrite) NSTimer *heartbeatTimer;
-@property (nonatomic, assign, readwrite) BOOL open;
+@property (nonatomic, strong, readwrite) SRWebSocket			*webSocket;
+@property (nonatomic, weak,   readwrite) Simperium				*simperium;
+@property (nonatomic, strong, readwrite) NSMutableDictionary	*channels;
+@property (nonatomic, copy,   readwrite) NSString				*clientID;
+@property (nonatomic, strong, readwrite) NSTimer				*heartbeatTimer;
+@property (nonatomic, assign, readwrite) BOOL					open;
 @end
 
 @implementation SPWebSocketInterface
@@ -92,9 +91,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return [self.channels objectForKey:bucket.name];
 }
 
-- (void)loadChannelsForBuckets:(NSDictionary *)bucketList overrides:(NSDictionary *)overrides {
-    self.bucketNameOverrides = overrides;
-    
+- (void)loadChannelsForBuckets:(NSDictionary *)bucketList {
     for (SPBucket *bucket in [bucketList allValues]) {
         [self loadChannelForBucket:bucket];
 	}
@@ -136,10 +133,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)authenticateChannel:(SPWebSocketChannel *)channel {
     //    NSString *message = @"1:command:parameters";
-    NSString *remoteBucketName = [self.bucketNameOverrides objectForKey:channel.name];
-    if (!remoteBucketName || remoteBucketName.length == 0) {
-        remoteBucketName = channel.name;
-	}
+    NSString *remoteBucketName = channel.name;
 
     NSDictionary *jsonData = @{
                                @"api"		: @(SPAPIVersion.floatValue),
