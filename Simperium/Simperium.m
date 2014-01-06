@@ -95,6 +95,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #else
         self.authenticationWindowControllerClass = [SPAuthenticationWindowController class];
 #endif
+		
+#if !TARGET_OS_IPHONE
+		NSNotificationCenter* wc = [[NSWorkspace sharedWorkspace] notificationCenter];
+		[wc addObserver:self selector:@selector(handleSleepNote:) name:NSWorkspaceWillSleepNotification object: NULL];
+		[wc addObserver:self selector:@selector(handleWakeNote:) name:NSWorkspaceDidWakeNotification object: NULL];
+#endif
+		
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(authenticationDidFail)
                                                      name:SPAuthenticationDidFail object:nil];
     }
@@ -128,6 +135,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     self.rootURL = nil;
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+	
+#if !TARGET_OS_IPHONE
+	[[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
+#endif
 }
 
 - (NSString *)clientID {
@@ -679,6 +690,27 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (void)shutdown {
 	
 }
+
+
+
+#pragma mark - OSX System Wake/Sleep Handlers
+
+#if !TARGET_OS_IPHONE
+- (void)handleSleepNote:(NSNotification *)note {
+	DDLogVerbose(@"<> OSX Sleep: Stopping Network Managers");
+	
+	[self stopNetworkManagers];
+}
+
+- (void)handleWakeNote:(NSNotification *)note {
+	DDLogVerbose(@"<> OSX WakeUp: Restarting Network Managers");
+	
+	if (self.user.authenticated) {
+        [self startNetworkManagers];
+	}
+}
+#endif
+
 
 
 #pragma mark SPSimperiumLoggerDelegate
