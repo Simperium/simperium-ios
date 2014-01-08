@@ -250,9 +250,6 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 	if(!self.simperium.user.authenticated) {
 		return;
 	}
-
-	// Handle bucket overrides
-	bucketName = ( [self.simperium.bucketOverrides objectForKey:bucketName] ?: bucketName );
 	
 	// Grab Remote + Local metadata
 	NSString *remoteHash			= binaryInfo[SPBinaryManagerHashKey];
@@ -409,9 +406,6 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 	if(!self.simperium.user.authenticated || !self.simperium.networkEnabled) {
 		return;
 	}
-	
-	// Handle bucket overrides
-	bucketName = ( [self.simperium.bucketOverrides objectForKey:bucketName] ?: bucketName );
 	
 	// Are we there yet?
 	NSString *localHash  = [NSString sp_md5StringFromData:binaryData];

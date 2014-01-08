@@ -158,9 +158,6 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 @property (nonatomic, weak) Class authenticationWindowControllerClass;
 #endif
 
-// Optional overrides (used for unit testing).
-@property (nonatomic, copy) NSDictionary *bucketOverrides;
-
 @property (nonatomic, strong) SPBinaryManager *binaryManager;
 
 @property (nonatomic, strong) SPAuthenticator *authenticator;

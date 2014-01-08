@@ -52,6 +52,9 @@
 	NSString* error = @"Simulating Error Message";
 	DDLogError(@"%@", error);
 
+	// Release main thread so the log gets posted. (WebSocket gets called only in the main thread)
+	[self waitFor:0.1];
+	
 	// Check if the error got actually posted. We expect:
 	//		log:{ "log" : "log message" }
 	NSDictionary *payload	= @{ @"log" : error };
