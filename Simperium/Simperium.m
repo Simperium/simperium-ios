@@ -589,6 +589,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.authenticator reset];
     self.user.authToken = nil;
     [self closeAuthViewControllerAnimated:YES];
+	
+	if ([self.delegate respondsToSelector:@selector(simperiumDidCancelLogin:)]) {
+		[self.delegate simperiumDidCancelLogin:self];
+	}
 }
 
 - (void)authenticationDidFail {

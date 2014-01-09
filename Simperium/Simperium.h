@@ -41,6 +41,7 @@ extern NSString * const SimperiumWillSaveNotification;
 - (void)simperium:(Simperium *)simperium didFailWithError:(NSError *)error;
 - (void)simperiumDidLogin:(Simperium *)simperium;
 - (void)simperiumDidLogout:(Simperium *)simperium;
+- (void)simperiumDidCancelLogin:(Simperium *)simperium;
 @end
 
 
