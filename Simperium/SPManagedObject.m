@@ -82,10 +82,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [super didTurnIntoFault];
 }
 
-//-(void)prepareForDeletion
-//{
-//}
-
 - (void)willSave {
     // When the entity is saved, check to see if its ghost has changed, in which case its data needs to be converted
     // to a string for storage

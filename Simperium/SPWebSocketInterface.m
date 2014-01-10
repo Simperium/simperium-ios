@@ -14,18 +14,14 @@
 #import "NSString+Simperium.h"
 #import "DDLog.h"
 #import "DDLogDebug.h"
-#import "SRWebSocket.h"
+#import "SPWebSocket.h"
 #import "SPWebSocketChannel.h"
 #import "SPSimperiumLogger.h"
 #import "SPEnvironment.h"
 
-#if TARGET_OS_IPHONE
-#import <UIKit/UIKit.h>
-#endif
 
 
 NSTimeInterval const SPWebSocketHeartbeatInterval	= 30;
-NSTimeInterval const SPWebSocketTimeoutInterval		= SPWebSocketHeartbeatInterval * 2;
 
 NSString * const COM_AUTH							= @"auth";
 NSString * const COM_INDEX							= @"i";
@@ -41,7 +37,7 @@ NSString * const COM_HEARTBEAT						= @"h";
 static int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface SPWebSocketInterface() <SRWebSocketDelegate>
-@property (nonatomic, strong, readwrite) SRWebSocket			*webSocket;
+@property (nonatomic, strong, readwrite) SPWebSocket			*webSocket;
 @property (nonatomic, weak,   readwrite) Simperium				*simperium;
 @property (nonatomic, strong, readwrite) NSMutableDictionary	*channels;
 @property (nonatomic, copy,   readwrite) NSString				*clientID;
@@ -65,12 +61,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         self.simperium = s;
         self.clientID = cid;
         self.channels = [NSMutableDictionary dictionaryWithCapacity:20];
-		
-#if TARGET_OS_IPHONE
-		NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-		[nc addObserver:self selector:@selector(handleBackgroundNote:) name:UIApplicationDidEnterBackgroundNotification object:nil];
-		[nc addObserver:self selector:@selector(handleForegroundNote:) name:UIApplicationWillEnterForegroundNotification object:nil];
-#endif
 	}
 	
 	return self;
@@ -164,22 +154,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	
 	// Open the socket!
     NSString *urlString = [NSString stringWithFormat:@"%@/%@/websocket", SPWebsocketURL, self.simperium.appID];
-    SRWebSocket *newWebSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
+    SPWebSocket *newWebSocket = [[SPWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
     self.webSocket = newWebSocket;
     self.webSocket.delegate = self;
     self.open = NO;
 	
     DDLogVerbose(@"Simperium opening WebSocket connection...");
     [self.webSocket open];
-}
-
-- (void)closeWebSocket {
-	[self stopChannels];
-	
-	self.webSocket.delegate = nil;
-	[self.webSocket close];
-	self.webSocket = nil;
-	self.open = NO;
 }
 
 - (void)start:(SPBucket *)bucket {
@@ -213,6 +194,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Mark it closed so it doesn't reopen
     self.open = NO;
     [self.webSocket close];
+	self.webSocket.delegate = nil;
     self.webSocket = nil;
     
     // TODO: Consider ensuring threads are done their work and sending a notification
@@ -244,54 +226,23 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[self send:@"h:1"];
 }
 
-- (void)resetTimeoutTimer {
-	[self.timeoutTimer invalidate];
-	self.timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:SPWebSocketTimeoutInterval target:self selector:@selector(handleTimeout:) userInfo:nil repeats:NO];
-}
-
-- (void)handleTimeout:(NSTimer *)timer {
-	if (self.webSocket.readyState != SR_OPEN) {
-		DDLogVerbose(@"Simperium WebSocket Timeout executed while state != open.");
-		return;
-	}
-	
-	DDLogError(@"Simperium WebSocket Timeout. Reconnecting...");
-	[self closeWebSocket];
-	[self openWebSocket];
-}
-
-
-#pragma mark iOS Background/Foreground Helpers
-
-- (void)handleBackgroundNote:(NSNotification *)note {
-	// Invalidate Timeout timer: If not, the websocket will be killed as soon as the app becomes active again, no matter what
-	[self.timeoutTimer invalidate];
-	self.timeoutTimer = nil;
-}
-
-- (void)handleForegroundNote:(NSNotification *)note {
-	// Reset Timers
-	[self resetTimeoutTimer];
-	[self resetHeartbeatTimer];
-}
-
 
 #pragma mark - SRWebSocketDelegate Methods
 
 - (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
 	// Reconnection failsafe
-	if (theWebSocket != self.webSocket) {
+	if ( theWebSocket != (SRWebSocket*)self.webSocket) {
 		return;
 	}
 	
     self.open = YES;
     [self startChannels];
     [self resetHeartbeatTimer];
-	[self resetTimeoutTimer];
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
 	[self stopChannels];
+	self.webSocket.delegate = nil;
     self.webSocket = nil;
     self.open = NO;
 	
@@ -306,10 +257,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-	
-	// If no new message is received 'SPWebSocketTimeoutInterval' seconds from now, reopen the websocket
-	[self resetTimeoutTimer];
-	
+			
 	// Parse!
     NSRange range = [message rangeOfString:@":"];
     
@@ -407,6 +355,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 
 	[self stopChannels];
+	self.webSocket.delegate = nil;
     self.webSocket = nil;
     self.open = NO;
 }
