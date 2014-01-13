@@ -76,30 +76,38 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 // Open a UI to handle authentication if necessary
 - (BOOL)authenticateIfNecessary {
     // Look up a stored token (if it exists) and try authenticating
-    NSString *username = nil, *token = nil;
-    username = [[NSUserDefaults standardUserDefaults] objectForKey:USERNAME_KEY];
-    
-    if (username)
-        token = [SFHFKeychainUtils getPasswordForUsername:username andServiceName:simperium.appID error:nil];
-    
+    NSString *username = [[NSUserDefaults standardUserDefaults] objectForKey:USERNAME_KEY];
+    NSString *token = nil;
+	
+    if (username) {
+		NSError *error = nil;
+        token = [SFHFKeychainUtils getPasswordForUsername:username andServiceName:simperium.appID error:&error];
+		
+		if (error) {
+			DDLogError(@"Simperium couldn't retrieve token from keychain. Error: %@", error);
+		}
+    }
+	
     if (!username || username.length == 0 || !token || token.length == 0) {
         DDLogInfo(@"Simperium didn't find an existing auth token (username %@; token %@; appID: %@)", username, token, simperium.appID);
-        if ([delegate respondsToSelector:@selector(authenticationDidFail)])
+        if ([delegate respondsToSelector:@selector(authenticationDidFail)]) {
             [delegate authenticationDidFail];
-        
+        }
+			
         return YES;
-    } else {
-         DDLogInfo(@"Simperium found an existing auth token for %@", username);
-        // Assume the token is valid and return success
-        // TODO: ensure if it isn't valid, a reauth process will get triggered
-
-        // Set the Simperium user
-        SPUser *aUser = [[SPUser alloc] initWithEmail:username token:token];
-        simperium.user = aUser;
-
-        if ([delegate respondsToSelector:@selector(authenticationDidSucceedForUsername:token:)])
-            [delegate authenticationDidSucceedForUsername:username token:token];
     }
+	
+	DDLogInfo(@"Simperium found an existing auth token for %@", username);
+	// Assume the token is valid and return success
+	// TODO: ensure if it isn't valid, a reauth process will get triggered
+
+	// Set the Simperium user
+	self.simperium.user = [[SPUser alloc] initWithEmail:username token:token];
+
+	if ([delegate respondsToSelector:@selector(authenticationDidSucceedForUsername:token:)]) {
+		[delegate authenticationDidSucceedForUsername:username token:token];
+	}
+	
     return NO;
 }
 
@@ -147,8 +155,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     DDLogInfo(@"Simperium authentication success!");
 
-    if ([delegate respondsToSelector:@selector(authenticationDidSucceedForUsername:token:)])
+    if ([delegate respondsToSelector:@selector(authenticationDidSucceedForUsername:token:)]) {
         [delegate authenticationDidSucceedForUsername:simperium.user.email token:simperium.user.authToken];
+	}
 }
 
 - (void)authDidSucceed:(SPHttpRequest *)request {
@@ -185,8 +194,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     
     DDLogError(@"Simperium authentication error (%d): %@", request.responseCode, request.responseError);
     
-    if ([delegate respondsToSelector:@selector(authenticationDidFail)])
+    if ([delegate respondsToSelector:@selector(authenticationDidFail)]) {
         [delegate authenticationDidFail];
+	}
 }
 
 - (void)createWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock {
@@ -223,21 +233,26 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)reset {
+	DDLogVerbose(@"Simperium Authenticator resetting credentials");
+	
     NSString *username = [[NSUserDefaults standardUserDefaults] objectForKey:USERNAME_KEY];
-    if (!username || username.length == 0)
+    if (!username || username.length == 0) {
         username = simperium.user.email;
+	}
     
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:USERNAME_KEY];
     
-    if (username && username.length > 0)
+    if (username && username.length > 0) {
         [SFHFKeychainUtils deleteItemForUsername:simperium.user.email andServiceName:simperium.appID error:nil];
+	}
 }
 
 - (void)cancel {
     DDLogVerbose(@"Simperium authentication cancelled");
     
-    if ([delegate respondsToSelector:@selector(authenticationDidCancel)])
+    if ([delegate respondsToSelector:@selector(authenticationDidCancel)]) {
         [delegate authenticationDidCancel];
+	}
 }
 
 @end
