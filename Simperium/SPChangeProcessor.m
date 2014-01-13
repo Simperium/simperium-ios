@@ -75,11 +75,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
 
 - (BOOL)awaitingAcknowledgementForKey:(NSString *)key {
-    if (key == nil)
-        return NO;
-    
-    BOOL awaitingAcknowledgement = [self.changesPending objectForKey:key] != nil;
-    return awaitingAcknowledgement;
+	return [self.changesPending containsObjectForKey:key];
 }
 
 // Note: We've moved changesPending collection to SPDictionaryStorage class, which will help to lower memory requirements.
@@ -146,7 +142,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
 - (BOOL)change:(NSDictionary *)change equals:(NSDictionary *)anotherChange {
 	return [[change objectForKey:CH_KEY] compare:[anotherChange objectForKey:CH_KEY]] == NSOrderedSame &&
-    [[change objectForKey:CH_LOCAL_ID] compare:[anotherChange objectForKey:CH_LOCAL_ID]] == NSOrderedSame;
+			[[change objectForKey:CH_LOCAL_ID] compare:[anotherChange objectForKey:CH_LOCAL_ID]] == NSOrderedSame;
 }
 
 - (BOOL)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
@@ -324,10 +320,11 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
                 // Load from the ghost data so the subsequent diff is applied to the correct data
                 // Do an extra check in case there was a problem with the transform/diff, e.g. if a client's own change was misinterpreted
                 // as another client's change, in other words not properly acknowledged.
-                if ([diff count] > 0)
+                if ([diff count] > 0) {
                     [object loadMemberData: [object.ghost memberData]];
-                else
+                } else {
                     DDLogVerbose(@"Simperium transform resulted in empty diff (invalid ack?)");
+				}
             }
         }
         
@@ -351,6 +348,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
                 notificationName = ProcessorDidChangeObjectNotification;                
                 [userInfo setObject:[diff allKeys] forKey:@"changedMembers"];
             }
+			
             [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:bucket userInfo:userInfo];
         });
         
@@ -481,12 +479,14 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	[change setObject:operation forKey:CH_OPERATION];
     
 	// Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
-    if (data)
+    if (data) {
         [change setObject:data forKey:CH_VALUE];
+	}
 	
 	// If it's a modify operation, also include the object's version as the last known version
-	if (operation == CH_MODIFY && version != nil && [version intValue] != 0)
+	if (operation == CH_MODIFY && version != nil && [version intValue] != 0) {
         [change setObject: version forKey: CH_START_VERSION];
+	}
 	
 	return change;
 }
@@ -497,8 +497,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 }
 
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key {
-    NSDictionary *change = [self createChangeForKey:key operation:CH_REMOVE version:nil data:nil];
-    return change;
+	return [self createChangeForKey:key operation:CH_REMOVE version:nil data:nil];
 }
 
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later {
