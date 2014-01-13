@@ -233,7 +233,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
 	
     BOOL newlyAdded = NO;
-    NSString *key = [change objectForKey:CH_KEY];
+    NSString *key = change[CH_KEY];
     
     // MODIFY operation
     if (!object) {
@@ -272,9 +272,9 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     }
     
     // Make sure the expected last change matches the actual last change
-    NSString *oldVersion = [object.ghost version];
-    id startVersion = [change objectForKey:CH_START_VERSION];
-    id endVersion = [change objectForKey:CH_END_VERSION];
+    NSString *oldVersion	= [object.ghost version];
+    id startVersion			= change[CH_START_VERSION];
+    id endVersion			= change[CH_END_VERSION];
     
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
     if ([startVersion isKindOfClass:[NSNumber class]]) {
@@ -365,30 +365,31 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 }
 
 - (BOOL)processRemoteChange:(NSDictionary *)change bucket:(SPBucket *)bucket clientID:(NSString *)clientID {
+	
+	// Check for an error
+    NSString *key	= change[CH_KEY];
+	NSString *error = change[CH_ERROR];
+    if (error) {
+        DDLogVerbose(@"Simperium error received (%@) for %@, should reload the object here to be safe", bucket.name, key);
+        [self.changesPending removeObjectForKey:key];
+        return NO;
+    }
+	
     // Create a new context (to be thread-safe) and fetch the entity from it
     id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
 	[threadSafeStorage beginSafeSection];
 	
-    NSString *operation = [change objectForKey:CH_OPERATION];
-    NSString *changeVersion = [change objectForKey:CH_CHANGE_VERSION];
-    NSString *changeClientID = [change objectForKey:CH_CLIENT_ID];
-    NSString *key = [change objectForKey:CH_KEY];
-    id<SPDiffable> object = [threadSafeStorage objectForKey:key bucketName:bucket.name];
+    NSString *operation			= change[CH_OPERATION];
+    NSString *changeVersion		= change[CH_CHANGE_VERSION];
+    NSString *changeClientID	= change[CH_CLIENT_ID];
+    id<SPDiffable> object		= [threadSafeStorage objectForKey:key bucketName:bucket.name];
     
     DDLogVerbose(@"Simperium client %@ received change (%@) %@: %@", clientID, bucket.name, changeClientID, change);
-    
-	// Check for an error
-    if ([change objectForKey:CH_ERROR]) {
-        DDLogVerbose(@"Simperium error received (%@) for %@, should reload the object here to be safe", bucket.name, key);
-        [self.changesPending removeObjectForKey:key];
-		[threadSafeStorage finishSafeSection];
-        return NO;
-    }
 	
 	// Process
-    BOOL clientMatches = [changeClientID compare:clientID] == NSOrderedSame;
-    BOOL remove = operation && [operation compare: CH_REMOVE] == NSOrderedSame;
-    BOOL acknowledged = [self awaitingAcknowledgementForKey:key] && clientMatches;
+    BOOL clientMatches			= [changeClientID compare:clientID] == NSOrderedSame;
+    BOOL remove					= operation && [operation compare: CH_REMOVE] == NSOrderedSame;
+    BOOL acknowledged			= [self awaitingAcknowledgementForKey:key] && clientMatches;
     
     // If the entity already exists locally, or it's being removed, then check for an ack
     if (remove || (object && acknowledged && clientMatches)) {
