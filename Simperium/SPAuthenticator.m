@@ -174,11 +174,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Set the user's details
     [[NSUserDefaults standardUserDefaults] setObject:username forKey:USERNAME_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    [SFHFKeychainUtils storeUsername:username andPassword:token forServiceName:simperium.appID updateExisting:YES error:nil];
+	
+	NSError *error = nil;
+    [SFHFKeychainUtils storeUsername:username andPassword:token forServiceName:simperium.appID updateExisting:YES error:&error];
     
+	if (error) {
+		DDLogError(@"Simperium couldn't store token in the keychain. Error: %@", error);
+	}
+	
     // Set the Simperium user
-    SPUser *aUser = [[SPUser alloc] initWithEmail:username token:token];
-    simperium.user = aUser;
+    self.simperium.user = [[SPUser alloc] initWithEmail:username token:token];
     
     [self performSelector:@selector(delayedAuthenticationDidFinish) withObject:nil afterDelay:0.1];
 }
