@@ -163,6 +163,8 @@
 		B504EF52182818BE002FA5A1 /* SPHttpRequestQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = B504EF4B182818BE002FA5A1 /* SPHttpRequestQueue.m */; };
 		B518F653182D62FD00AD5B1D /* SPSimperiumLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = B518F651182D62FD00AD5B1D /* SPSimperiumLogger.h */; };
 		B518F654182D62FD00AD5B1D /* SPSimperiumLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B518F652182D62FD00AD5B1D /* SPSimperiumLogger.m */; };
+		B525F1F218842757003E4AA0 /* SPWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = B525F1F018842757003E4AA0 /* SPWebSocket.h */; };
+		B525F1F318842757003E4AA0 /* SPWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = B525F1F118842757003E4AA0 /* SPWebSocket.m */; };
 		B5351590183AB8A300A91BCD /* SPProcessorNotificationNames.h in Headers */ = {isa = PBXBuildFile; fileRef = B535158F183AB8A300A91BCD /* SPProcessorNotificationNames.h */; };
 		B53E4888182AAC58000AA4C8 /* NSURLResponse+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */; };
 		B53E4889182AAC58000AA4C8 /* NSURLResponse+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B53E4887182AAC58000AA4C8 /* NSURLResponse+Simperium.m */; };
@@ -368,6 +370,8 @@
 		B504EF4B182818BE002FA5A1 /* SPHttpRequestQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPHttpRequestQueue.m; path = ../../Simperium/SPHttpRequestQueue.m; sourceTree = "<group>"; };
 		B518F651182D62FD00AD5B1D /* SPSimperiumLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPSimperiumLogger.h; path = ../../Simperium/SPSimperiumLogger.h; sourceTree = "<group>"; };
 		B518F652182D62FD00AD5B1D /* SPSimperiumLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPSimperiumLogger.m; path = ../../Simperium/SPSimperiumLogger.m; sourceTree = "<group>"; };
+		B525F1F018842757003E4AA0 /* SPWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPWebSocket.h; path = ../../Simperium/SPWebSocket.h; sourceTree = "<group>"; };
+		B525F1F118842757003E4AA0 /* SPWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocket.m; path = ../../Simperium/SPWebSocket.m; sourceTree = "<group>"; };
 		B535158F183AB8A300A91BCD /* SPProcessorNotificationNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPProcessorNotificationNames.h; path = ../../Simperium/SPProcessorNotificationNames.h; sourceTree = "<group>"; };
 		B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSURLResponse+Simperium.h"; path = "../../Simperium/NSURLResponse+Simperium.h"; sourceTree = "<group>"; };
 		B53E4887182AAC58000AA4C8 /* NSURLResponse+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSURLResponse+Simperium.m"; path = "../../Simperium/NSURLResponse+Simperium.m"; sourceTree = "<group>"; };
@@ -485,6 +489,8 @@
 				B5E03DA7182C237B00412572 /* Extensions */,
 				B535158F183AB8A300A91BCD /* SPProcessorNotificationNames.h */,
 				460A505A17DE95B20070F02B /* SPProcessorNotificationNames.m */,
+				B525F1F018842757003E4AA0 /* SPWebSocket.h */,
+				B525F1F118842757003E4AA0 /* SPWebSocket.m */,
 				46EA1AEC17569EB4009AC5AA /* SPWebSocketInterface.h */,
 				46EA1AED17569EB4009AC5AA /* SPWebSocketInterface.m */,
 				26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */,
@@ -897,6 +903,7 @@
 				B5F65F7C1847DE3E00CEF48D /* SPManagedObject+Internals.h in Headers */,
 				4678FC3E182369E500B6D413 /* DDFileLogger+Simperium.h in Headers */,
 				46DD162117A1B8490093678C /* SPAuthenticationButtonCell.h in Headers */,
+				B525F1F218842757003E4AA0 /* SPWebSocket.h in Headers */,
 				46DD162317A1B8490093678C /* SPAuthenticationTextField.h in Headers */,
 				46DD162517A1B8490093678C /* SPAuthenticationView.h in Headers */,
 				46DD162717A1B8490093678C /* SPAuthenticationWindow.h in Headers */,
@@ -1002,6 +1009,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B525F1F318842757003E4AA0 /* SPWebSocket.m in Sources */,
 				268EDF2E155F08A2006B566F /* NSData+Simperium.m in Sources */,
 				268EDF30155F08A2006B566F /* NSDate+Simperium.m in Sources */,
 				268EDF32155F08A2006B566F /* NSString+Simperium.m in Sources */,
