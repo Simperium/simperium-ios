@@ -49,7 +49,9 @@ static NSString *STKeychainErrorDomain = @"STKeychainErrorDomain";
 
 + (NSString *)getPasswordForUsername:(NSString *)username andServiceName:(NSString *)serviceName error:(NSError **)error {
 	if (!username || !serviceName) {
-		*error = [NSError errorWithDomain:STKeychainErrorDomain code:-2000 userInfo:nil];
+		if (error) {
+			*error = [NSError errorWithDomain:STKeychainErrorDomain code:-2000 userInfo:nil];
+		}
 		return nil;
 	}
 	
@@ -102,7 +104,9 @@ static NSString *STKeychainErrorDomain = @"STKeychainErrorDomain";
 
 + (BOOL)storeUsername:(NSString *)username andPassword:(NSString *)password forServiceName:(NSString *)serviceName updateExisting:(BOOL)updateExisting error:(NSError **)error {
 	if (!username || !password || !serviceName) {
-		*error = [NSError errorWithDomain:STKeychainErrorDomain code:-2000 userInfo:nil];
+		if (error) {
+			*error = [NSError errorWithDomain:STKeychainErrorDomain code:-2000 userInfo:nil];
+		}
 		return NO;
 	}
 	
@@ -144,15 +148,23 @@ static NSString *STKeychainErrorDomain = @"STKeychainErrorDomain";
 
 + (BOOL)deleteItemForUsername:(NSString *)username andServiceName:(NSString *)serviceName error:(NSError **)error {
 	if (!username || !serviceName) {
-		*error = [NSError errorWithDomain:STKeychainErrorDomain code:2000 userInfo:nil];
+		if (error) {
+			*error = [NSError errorWithDomain:STKeychainErrorDomain code:2000 userInfo:nil];
+		}
 		return NO;
 	}
 	
-	*error = nil;
+	if (error) {
+		*error = nil;
+	}
 	
-	SecKeychainItemRef item = [STKeychain getKeychainItemReferenceForUsername:username andServiceName:serviceName error:error];
+	NSError *loadError = nil;
+	SecKeychainItemRef item = [STKeychain getKeychainItemReferenceForUsername:username andServiceName:serviceName error:&loadError];
 	
-	if (*error && [*error code] != noErr) {
+	if (loadError && loadError.code != noErr) {
+		if (error) {
+			*error = loadError;
+		}
 		return NO;
 	}
 	
@@ -175,11 +187,15 @@ static NSString *STKeychainErrorDomain = @"STKeychainErrorDomain";
 // NOTE: Item reference passed back by reference must be released!
 + (SecKeychainItemRef)getKeychainItemReferenceForUsername:(NSString *)username andServiceName:(NSString *)serviceName error:(NSError **)error {
 	if (!username || !serviceName) {
-		*error = [NSError errorWithDomain:STKeychainErrorDomain code:-2000 userInfo:nil];
+		if (error) {
+			*error = [NSError errorWithDomain:STKeychainErrorDomain code:-2000 userInfo:nil];
+		}
 		return nil;
 	}
 	
-	*error = nil;
+	if (error) {
+		*error = nil;
+	}
     
 	SecKeychainItemRef item;
 	
@@ -194,7 +210,9 @@ static NSString *STKeychainErrorDomain = @"STKeychainErrorDomain";
 	
 	if (status != noErr) {
 		if (status != errSecItemNotFound) {
-			*error = [NSError errorWithDomain:STKeychainErrorDomain code:status userInfo:nil];
+			if (error) {
+				*error = [NSError errorWithDomain:STKeychainErrorDomain code:status userInfo:nil];
+			}
 		}
 		
 		return nil;		
