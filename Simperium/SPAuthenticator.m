@@ -13,7 +13,7 @@
 #import "SPBinaryManager.h"
 #import "DDLog.h"
 #import "JSONKit+Simperium.h"
-#import "SFHFKeychainUtils.h"
+#import "STKeychain.h"
 #import "SPReachability.h"
 #import "SPHttpRequest.h"
 #import "SPHttpRequestQueue.h"
@@ -81,7 +81,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	
     if (username) {
 		NSError *error = nil;
-        token = [SFHFKeychainUtils getPasswordForUsername:username andServiceName:simperium.appID error:&error];
+        token = [STKeychain getPasswordForUsername:username andServiceName:simperium.appID error:&error];
 		
 		if (error) {
 			DDLogError(@"Simperium couldn't retrieve token from keychain. Error: %@", error);
@@ -176,9 +176,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [[NSUserDefaults standardUserDefaults] synchronize];
 	
 	NSError *error = nil;
-    [SFHFKeychainUtils storeUsername:username andPassword:token forServiceName:simperium.appID updateExisting:YES error:&error];
+    BOOL success = [STKeychain storeUsername:username andPassword:token forServiceName:simperium.appID updateExisting:YES error:&error];
     
-	if (error) {
+	if (success == NO) {
 		DDLogError(@"Simperium couldn't store token in the keychain. Error: %@", error);
 	}
 	
@@ -248,7 +248,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:USERNAME_KEY];
     
     if (username && username.length > 0) {
-        [SFHFKeychainUtils deleteItemForUsername:simperium.user.email andServiceName:simperium.appID error:nil];
+        [STKeychain deleteItemForUsername:simperium.user.email andServiceName:simperium.appID error:nil];
 	}
 }
 
