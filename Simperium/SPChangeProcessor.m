@@ -7,7 +7,8 @@
 //
 
 #import "SPChangeProcessor.h"
-#import "SPDictionaryStorage.h"
+#import "SPPersistentMutableDictionary.h"
+#import "SPPersistentMutableSet.h"
 #import "SPManagedObject.h"
 #import "NSString+Simperium.h"
 #import "SPDiffer.h"
@@ -43,11 +44,9 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
 
 @interface SPChangeProcessor()
-@property (nonatomic, strong, readwrite) NSString				*instanceLabel;
-@property (nonatomic, strong, readwrite) SPDictionaryStorage	*changesPending;
-@property (nonatomic, strong, readwrite) NSMutableSet			*keysForObjectsWithMoreChanges;
-
--(void)loadKeysForObjectsWithMoreChanges;
+@property (nonatomic, strong, readwrite) NSString						*instanceLabel;
+@property (nonatomic, strong, readwrite) SPPersistentMutableDictionary	*changesPending;
+@property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsWithMoreChanges;
 @end
 
 @implementation SPChangeProcessor
@@ -63,10 +62,11 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 - (id)initWithLabel:(NSString *)label {
     if (self = [super init]) {
         self.instanceLabel = label;
-		self.changesPending = [[SPDictionaryStorage alloc] initWithLabel:label];
-        self.keysForObjectsWithMoreChanges = [NSMutableSet setWithCapacity:3];
-        
-        [self loadKeysForObjectsWithMoreChanges];
+		self.changesPending = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
+		
+		NSString *moreKey = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", self.instanceLabel];
+        self.keysForObjectsWithMoreChanges = [SPPersistentMutableSet loadSetWithLabel:moreKey];
+		
 		[self migratePendingChangesIfNeeded];
     }
     
@@ -106,35 +106,11 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-- (void)serializeKeysForObjectsWithMoreChanges {
-    NSString *json = [[self.keysForObjectsWithMoreChanges allObjects] sp_JSONString];
-    NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", self.instanceLabel];
-	[[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
-- (void)loadKeysForObjectsWithMoreChanges {
-    // Load keys for entities that have more changes to send
-    NSString *key = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", self.instanceLabel];
-	NSString *json = [[NSUserDefaults standardUserDefaults] objectForKey:key];
-    NSArray *list = [json sp_objectFromJSONString];
-    if (list && [list count] > 0) {
-        [self.keysForObjectsWithMoreChanges addObjectsFromArray:list];
-	}
-}
-
 - (void)reset {
     [self.changesPending removeAllObjects];
 	[self.changesPending save];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
-    [self serializeKeysForObjectsWithMoreChanges];
-}
-
-// For debugging
-- (void)softReset {
-    [self.changesPending removeAllObjects];
-    [self.keysForObjectsWithMoreChanges removeAllObjects];
-    [self loadKeysForObjectsWithMoreChanges];
+    [self.keysForObjectsWithMoreChanges save];
 }
 
 
@@ -516,9 +492,9 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     if (!object) {
         //DDLogWarn(@"Simperium warning: couldn't processLocalObjectWithKey %@ because the object no longer exists", key);
         [self.changesPending removeObjectForKey:key];
-        [self.keysForObjectsWithMoreChanges removeObject:key];
 		[self.changesPending save];
-        [self serializeKeysForObjectsWithMoreChanges];
+        [self.keysForObjectsWithMoreChanges removeObject:key];
+        [self.keysForObjectsWithMoreChanges save];
 		[storage finishSafeSection];
         return nil;
     }
@@ -527,7 +503,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     if (([self.changesPending objectForKey:object.simperiumKey] != nil) || later) {
         DDLogVerbose(@"Simperium marking object for sending more changes when ready (%@): %@", bucket.name, object.simperiumKey);
         [self.keysForObjectsWithMoreChanges addObject:[object simperiumKey]];
-        [self serializeKeysForObjectsWithMoreChanges];
+        [self.keysForObjectsWithMoreChanges save];
 		[storage finishSafeSection];
         return nil;
     }
@@ -608,7 +584,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	// Clear any keys that were processed into pending changes & Persist
 	[self.changesPending save];
 	[self.keysForObjectsWithMoreChanges minusSet:queuedKeys];
-    [self serializeKeysForObjectsWithMoreChanges];
+    [self.keysForObjectsWithMoreChanges save];
 }
 
 - (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket {
@@ -641,7 +617,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		[self.changesPending save];
     }
     
-    [self serializeKeysForObjectsWithMoreChanges];
+    [self.keysForObjectsWithMoreChanges save];
     
     // TODO: to fix duplicate send, make this return only changes for keysProcessed?
     return newChangesPending;
