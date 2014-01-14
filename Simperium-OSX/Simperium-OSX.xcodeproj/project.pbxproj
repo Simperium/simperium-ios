@@ -401,7 +401,7 @@
 		B59C751E186DAB0E003A1C8D /* DeletionCascadeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DeletionCascadeTest.m; path = ../../SimperiumTests/DeletionCascadeTest.m; sourceTree = "<group>"; };
 		B59C7522186DAB42003A1C8D /* DiffMatchPatchTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DiffMatchPatchTest.m; path = ../../SimperiumTests/DiffMatchPatchTest.m; sourceTree = "<group>"; };
 		B59C7524186DAB70003A1C8D /* SPBucket+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SPBucket+Internals.h"; path = "../../Simperium/SPBucket+Internals.h"; sourceTree = "<group>"; };
-		B5D581BD183565A700B08996 /* Simperium-OSX Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Simperium-OSX Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5D581BD183565A700B08996 /* UnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D581BE183565A700B08996 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		B5D581C2183565A700B08996 /* Simperium-OSX Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Simperium-OSX Tests-Info.plist"; sourceTree = "<group>"; };
 		B5D581C4183565A700B08996 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -466,7 +466,7 @@
 			isa = PBXGroup;
 			children = (
 				268EDEC9155F06D5006B566F /* Simperium-OSX.framework */,
-				B5D581BD183565A700B08996 /* Simperium-OSX Tests.xctest */,
+				B5D581BD183565A700B08996 /* UnitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -958,7 +958,7 @@
 			);
 			name = UnitTests;
 			productName = "Simperium-OSX Tests";
-			productReference = B5D581BD183565A700B08996 /* Simperium-OSX Tests.xctest */;
+			productReference = B5D581BD183565A700B08996 /* UnitTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
