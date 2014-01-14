@@ -134,6 +134,8 @@ static NSUInteger const SPMetadataIterations = 100;
 		[allKeys addObject:key];
 	}
 	
+	[firstStorage save];
+	
 	// Verify that the second storage doesn't return anything for those keys
 	for (NSString *key in allKeys) {
 		id object = [secondStorage objectForKey:key];
@@ -142,8 +144,10 @@ static NSUInteger const SPMetadataIterations = 100;
 	
 	// Cleanup
 	[firstStorage removeAllObjects];
+	[firstStorage save];
+	
 	[secondStorage removeAllObjects];
-	[allKeys removeAllObjects];
+	[secondStorage save];
 }
 
 
