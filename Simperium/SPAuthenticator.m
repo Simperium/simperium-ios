@@ -248,7 +248,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:USERNAME_KEY];
     
     if (username && username.length > 0) {
-        [STKeychain deleteItemForUsername:simperium.user.email andServiceName:simperium.appID error:nil];
+        [STKeychain deleteItemForUsername:username andServiceName:simperium.appID error:nil];
 	}
 }
 
