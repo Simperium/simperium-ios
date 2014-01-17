@@ -84,6 +84,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     SPWebSocketChannel *channel = [SPWebSocketChannel channelWithSimperium:self.simperium clientID:self.clientID];
     channel.number = channelNumber;
     channel.name = bucket.name;
+	channel.remoteName = bucket.remoteName;
     [self.channels setObject:channel forKey:bucket.name];
     
     return [self.channels objectForKey:bucket.name];
@@ -137,7 +138,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		@"clientid"	: self.simperium.clientID,
 		@"app_id"	: self.simperium.appID,
 		@"token"	: self.simperium.user.authToken,
-		@"name"		: channel.name,
+		@"name"		: channel.remoteName,
 		@"library"	: SPLibraryID,
 		@"version"	: SPLibraryVersion
 	};

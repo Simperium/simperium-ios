@@ -20,6 +20,7 @@
 @property (nonatomic, copy) NSString *nextMark;
 @property (nonatomic, copy) NSString *pendingLastChangeSignature;
 @property (nonatomic, copy) NSString *name;
+@property (nonatomic, copy) NSString *remoteName;
 @property (nonatomic, assign) int number;
 @property (nonatomic, assign) BOOL started;
 

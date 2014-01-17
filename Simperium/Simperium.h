@@ -155,6 +155,9 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 // Set this if for some reason you want to use multiple Simperium instances (e.g. unit testing).
 @property (nonatomic, copy) NSString *label;
 
+// Remote Bucket Name Overrides!
+@property (nonatomic, copy) NSDictionary *bucketOverrides;
+
 // You can implement your own subclass of SPAuthenticationViewController (iOS) or
 // SPAuthenticationWindowController (OSX) to customize authentication.
 #if TARGET_OS_IPHONE

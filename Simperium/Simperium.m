@@ -191,6 +191,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 - (SPBucket *)bucketForName:(NSString *)name { 
     SPBucket *bucket = [self.buckets objectForKey:name];
     if (!bucket) {
+        // First check for an override
+        for (SPBucket *someBucket in self.buckets.allValues) {
+            if ([someBucket.remoteName isEqualToString:name]) {
+                return bucket;
+			}
+        }
+		
         // Lazily start buckets
         if (self.dynamicSchemaEnabled) {
             // Create and start a network manager for it
@@ -203,8 +210,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			}
 						
 			// New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
+			NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
 			bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkInterface:self.network
-								 relationshipResolver:self.relationshipResolver label:self.label];
+								 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName];
 
 			[self.buckets setObject:bucket forKey:name];
             [self.network start:bucket];
@@ -298,8 +306,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 //        Class entityClass = NSClassFromString(schema.bucketName);
 //        NSAssert1(entityClass != nil, @"Simperium error: couldn't find a class mapping for: ", schema.bucketName);
         
+		NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
 		bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
-							 relationshipResolver:self.relationshipResolver label:self.label];
+							 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName];
         
         [bucketList setObject:bucket forKey:schema.bucketName];
     }
