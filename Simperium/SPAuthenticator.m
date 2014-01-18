@@ -245,8 +245,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         username = simperium.user.email;
 	}
     
-    [[NSUserDefaults standardUserDefaults] setObject:nil forKey:USERNAME_KEY];
-    
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:USERNAME_KEY];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+	
     if (username && username.length > 0) {
         [STKeychain deleteItemForUsername:username andServiceName:simperium.appID error:nil];
 	}
