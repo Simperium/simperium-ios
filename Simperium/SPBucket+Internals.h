@@ -19,6 +19,7 @@ typedef void (^SPBucketForceSyncCompletion)(void);
 @interface SPBucket ()
 
 @property (nonatomic,   copy) NSString						*name;
+@property (nonatomic,   copy) NSString						*remoteName;
 @property (nonatomic,   copy) NSString						*instanceLabel;
 @property (nonatomic,   copy) NSString						*lastChangeSignature;
 @property (nonatomic,   weak) id<SPStorageProvider>			storage;
@@ -37,8 +38,8 @@ typedef void (^SPBucketForceSyncCompletion)(void);
 	networkInterface:(id<SPNetworkInterface>)netInterface
 	   binaryManager:(SPBinaryManager *)binaryManager
 relationshipResolver:(SPRelationshipResolver *)resolver
-			   label:(NSString *)label;
-
+               label:(NSString *)label
+		  remoteName:(NSString *)remoteName;
 - (void)validateObjects;
 - (void)unloadAllObjects;
 - (void)resolvePendingRelationshipsToKeys:(NSSet *)keys;

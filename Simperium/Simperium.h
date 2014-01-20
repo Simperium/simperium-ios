@@ -41,6 +41,7 @@ extern NSString * const SimperiumWillSaveNotification;
 - (void)simperium:(Simperium *)simperium didFailWithError:(NSError *)error;
 - (void)simperiumDidLogin:(Simperium *)simperium;
 - (void)simperiumDidLogout:(Simperium *)simperium;
+- (void)simperiumDidCancelLogin:(Simperium *)simperium;
 @end
 
 
@@ -149,6 +150,9 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 
 // Set this if for some reason you want to use multiple Simperium instances (e.g. unit testing).
 @property (nonatomic, copy) NSString *label;
+
+// Remote Bucket Name Overrides!
+@property (nonatomic, copy) NSDictionary *bucketOverrides;
 
 // You can implement your own subclass of SPAuthenticationViewController (iOS) or
 // SPAuthenticationWindowController (OSX) to customize authentication.

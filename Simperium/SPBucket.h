@@ -53,6 +53,8 @@ typedef NS_ENUM(NSUInteger, SPBucketChangeType) {
 
 @property (nonatomic, copy, readonly) NSString *name;
 
+@property (nonatomic, copy, readonly) NSString *remoteName;
+
 /// Assign this delegate to be notified when objects in this bucket change (see SPBucketDelegate above)
 @property (nonatomic, weak) id<SPBucketDelegate> delegate;
 

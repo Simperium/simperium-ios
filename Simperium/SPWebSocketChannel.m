@@ -19,7 +19,6 @@
 #import "SPIndexProcessor.h"
 #import "SPMember.h"
 #import "SPGhost.h"
-#import "SPWebSocketChannel.h"
 #import "SPWebSocketInterface.h"
 #import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
