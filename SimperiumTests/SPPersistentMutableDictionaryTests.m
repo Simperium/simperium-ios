@@ -1,5 +1,5 @@
 //
-//  SPDictionaryStorageTests.m
+//  SPPersistentMutableDictionaryTests.m
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 9/12/13.
@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "SPDictionaryStorage.h"
+#import "SPPersistentMutableDictionary.h"
 #import "NSString+Simperium.h"
 
 
@@ -20,18 +20,18 @@ static NSUInteger const SPMetadataIterations = 100;
 
 
 #pragma mark ====================================================================================
-#pragma mark SPDictionaryStorageTests
+#pragma mark SPPersistentMutableDictionaryTests
 #pragma mark ====================================================================================
 
-@interface SPDictionaryStorageTests : XCTestCase
+@interface SPPersistentMutableDictionaryTests : XCTestCase
 
 @end
 
-@implementation SPDictionaryStorageTests
+@implementation SPPersistentMutableDictionaryTests
 
 - (void)testInserts {
 	NSString *storageLabel = [NSString sp_makeUUID];
-	SPDictionaryStorage *storage = [[SPDictionaryStorage alloc] initWithLabel:storageLabel];
+	SPPersistentMutableDictionary *storage = [SPPersistentMutableDictionary loadDictionaryWithLabel:storageLabel];
 	NSMutableDictionary *integrity = [NSMutableDictionary dictionary];
 		
 	// Test SetObject
@@ -57,7 +57,7 @@ static NSUInteger const SPMetadataIterations = 100;
 	}
 
 	// Test Hitting CoreData: Re-instantiate, so NSCache is empty
-	storage = [[SPDictionaryStorage alloc] initWithLabel:storageLabel];
+	storage = [SPPersistentMutableDictionary loadDictionaryWithLabel:storageLabel];
 	
 	for(NSInteger i = 0; ++i <= SPMetadataIterations; ) {
 		NSString* key = [NSString stringWithFormat:@"%ld", (long)i];
@@ -77,7 +77,7 @@ static NSUInteger const SPMetadataIterations = 100;
 
 - (void)testRemoval {
 	NSString *storageLabel = [NSString sp_makeUUID];
-	SPDictionaryStorage *storage = [[SPDictionaryStorage alloc] initWithLabel:storageLabel];
+	SPPersistentMutableDictionary *storage = [SPPersistentMutableDictionary loadDictionaryWithLabel:storageLabel];
 		
 	// Insert N objects
 	NSMutableSet *allKeys = [NSMutableSet set];
@@ -105,7 +105,7 @@ static NSUInteger const SPMetadataIterations = 100;
 	[storage save];
 	
 	// Make sure next time they'll ""stay removed""
-	storage = [[SPDictionaryStorage alloc] initWithLabel:storageLabel];
+	storage = [SPPersistentMutableDictionary loadDictionaryWithLabel:storageLabel];
 	
 	for(NSString *key in allKeys) {
 		id object = [storage objectForKey:key];
@@ -121,8 +121,8 @@ static NSUInteger const SPMetadataIterations = 100;
 	// Fresh Start
 	NSString *firstLabel = [NSString sp_makeUUID];
 	NSString *secondLabel = [NSString sp_makeUUID];
-	SPDictionaryStorage *firstStorage = [[SPDictionaryStorage alloc] initWithLabel:firstLabel];
-	SPDictionaryStorage *secondStorage = [[SPDictionaryStorage alloc] initWithLabel:secondLabel];
+	SPPersistentMutableDictionary *firstStorage = [SPPersistentMutableDictionary loadDictionaryWithLabel:firstLabel];
+	SPPersistentMutableDictionary *secondStorage = [SPPersistentMutableDictionary loadDictionaryWithLabel:secondLabel];
 		
 	// Insert in the first storage
 	NSMutableSet *allKeys = [NSMutableSet set];
@@ -134,6 +134,8 @@ static NSUInteger const SPMetadataIterations = 100;
 		[allKeys addObject:key];
 	}
 	
+	[firstStorage save];
+	
 	// Verify that the second storage doesn't return anything for those keys
 	for (NSString *key in allKeys) {
 		id object = [secondStorage objectForKey:key];
@@ -142,8 +144,10 @@ static NSUInteger const SPMetadataIterations = 100;
 	
 	// Cleanup
 	[firstStorage removeAllObjects];
+	[firstStorage save];
+	
 	[secondStorage removeAllObjects];
-	[allKeys removeAllObjects];
+	[secondStorage save];
 }
 
 

@@ -74,17 +74,27 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)awakeFromInsert {
     [super awakeFromInsert];
-    [self configureBucket];   
+    [self configureBucket];
+	
+	// Determine if it was a local // remote insert, and call the right 'awake...' method
+	NSManagedObjectContext *currentMOC	= self.managedObjectContext;
+	NSManagedObjectContext *parentMOC	= currentMOC.parentContext;
+	NSManagedObjectContext *grandpaMOC	= parentMOC.parentContext;
+	
+	if (currentMOC.concurrencyType == NSConfinementConcurrencyType &&
+		parentMOC.concurrencyType == NSPrivateQueueConcurrencyType &&
+		grandpaMOC.parentContext == nil)
+	{
+		[self awakeFromRemoteInsert];
+	} else {
+		[self awakeFromLocalInsert];
+	}
 }
 
 - (void)didTurnIntoFault {
     ghost = nil;
     [super didTurnIntoFault];
 }
-
-//-(void)prepareForDeletion
-//{
-//}
 
 - (void)willSave {
     // When the entity is saved, check to see if its ghost has changed, in which case its data needs to be converted
@@ -95,11 +105,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         ghost.needsSave = NO;
     }
 }
-
-//- (void)setGhost:(SPGhost *)aGhost {
-//    ghost = aGhost;
-//    ghostData = [[[aGhost dictionary] JSONRepresentation] copy];    
-//}
 
 - (void)setGhostData:(NSString *)aString {
     // Core Data compliant way to update members
@@ -122,8 +127,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (NSString *)localID {
     NSManagedObjectID *key = [self objectID];
-    if ([key isTemporaryID])
+    if ([key isTemporaryID]) {
         return nil;
+	}
     return [[key URIRepresentation] absoluteString];
 }
 
@@ -142,8 +148,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)willBeRead {
     // Bit of a hack to force fire the fault
-    if ([self isFault])
+    if ([self isFault]) {
         [self simperiumKey];
+	}
 }
 
 - (NSDictionary *)dictionary {
@@ -169,6 +176,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (id)object {
     return self;
+}
+
+
+- (void)awakeFromLocalInsert {
+	// Override me if needed!
+}
+
+- (void)awakeFromRemoteInsert {
+	// Override me if needed!
 }
 
 @end

@@ -14,39 +14,36 @@
 #import "NSString+Simperium.h"
 #import "DDLog.h"
 #import "DDLogDebug.h"
-#import "SRWebSocket.h"
+#import "SPWebSocket.h"
 #import "SPWebSocketChannel.h"
 #import "SPSimperiumLogger.h"
 #import "SPEnvironment.h"
 
 
 
-#define INDEX_PAGE_SIZE				500
-#define INDEX_BATCH_SIZE			10
-#define HEARTBEAT					30
+NSTimeInterval const SPWebSocketHeartbeatInterval	= 30;
 
-
-NSString * const COM_AUTH			= @"auth";
-NSString * const COM_INDEX			= @"i";
-NSString * const COM_CHANGE			= @"c";
-NSString * const COM_CHANGE_VERSION = @"cv";
-NSString * const COM_ENTITY			= @"e";
-NSString * const COM_ERROR			= @"?";
-NSString * const COM_LOG			= @"log";
-NSString * const COM_INDEX_STATE	= @"index";
-NSString * const COM_HEARTBEAT		= @"h";
+NSString * const COM_AUTH							= @"auth";
+NSString * const COM_INDEX							= @"i";
+NSString * const COM_CHANGE							= @"c";
+NSString * const COM_CHANGE_VERSION					= @"cv";
+NSString * const COM_ENTITY							= @"e";
+NSString * const COM_ERROR							= @"?";
+NSString * const COM_LOG							= @"log";
+NSString * const COM_INDEX_STATE					= @"index";
+NSString * const COM_HEARTBEAT						= @"h";
 
 
 static int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface SPWebSocketInterface() <SRWebSocketDelegate>
-@property (nonatomic, strong, readwrite) SRWebSocket *webSocket;
-@property (nonatomic, weak,   readwrite) Simperium *simperium;
-@property (nonatomic, strong, readwrite) NSMutableDictionary *channels;
-@property (nonatomic, copy,   readwrite) NSString *clientID;
-@property (nonatomic, strong, readwrite) NSDictionary *bucketNameOverrides;
-@property (nonatomic, strong, readwrite) NSTimer *heartbeatTimer;
-@property (nonatomic, assign, readwrite) BOOL open;
+@property (nonatomic, strong, readwrite) SPWebSocket			*webSocket;
+@property (nonatomic, weak,   readwrite) Simperium				*simperium;
+@property (nonatomic, strong, readwrite) NSMutableDictionary	*channels;
+@property (nonatomic, copy,   readwrite) NSString				*clientID;
+@property (nonatomic, strong, readwrite) NSTimer				*heartbeatTimer;
+@property (nonatomic, strong, readwrite) NSTimer				*timeoutTimer;
+@property (nonatomic, assign, readwrite) BOOL					open;
 @end
 
 @implementation SPWebSocketInterface
@@ -87,14 +84,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     SPWebSocketChannel *channel = [SPWebSocketChannel channelWithSimperium:self.simperium clientID:self.clientID];
     channel.number = channelNumber;
     channel.name = bucket.name;
+	channel.remoteName = bucket.remoteName;
     [self.channels setObject:channel forKey:bucket.name];
     
     return [self.channels objectForKey:bucket.name];
 }
 
-- (void)loadChannelsForBuckets:(NSDictionary *)bucketList overrides:(NSDictionary *)overrides {
-    self.bucketNameOverrides = overrides;
-    
+- (void)loadChannelsForBuckets:(NSDictionary *)bucketList {
     for (SPBucket *bucket in [bucketList allValues]) {
         [self loadChannelForBucket:bucket];
 	}
@@ -136,20 +132,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)authenticateChannel:(SPWebSocketChannel *)channel {
     //    NSString *message = @"1:command:parameters";
-    NSString *remoteBucketName = [self.bucketNameOverrides objectForKey:channel.name];
-    if (!remoteBucketName || remoteBucketName.length == 0) {
-        remoteBucketName = channel.name;
-	}
 
     NSDictionary *jsonData = @{
-                               @"api"		: @(SPAPIVersion.floatValue),
-                               @"clientid"	: self.simperium.clientID,
-                               @"app_id"	: self.simperium.appID,
-                               @"token"		: self.simperium.user.authToken,
-                               @"name"		: remoteBucketName,
-                               @"library"	: SPLibraryID,
-                               @"version"	: SPLibraryVersion
-                               };
+		@"api"		: @(SPAPIVersion.floatValue),
+		@"clientid"	: self.simperium.clientID,
+		@"app_id"	: self.simperium.appID,
+		@"token"	: self.simperium.user.authToken,
+		@"name"		: channel.remoteName,
+		@"library"	: SPLibraryID,
+		@"version"	: SPLibraryVersion
+	};
     
     DDLogVerbose(@"Simperium initializing websocket channel %d:%@", channel.number, jsonData);
     NSString *message = [NSString stringWithFormat:@"%d:init:%@", channel.number, [jsonData sp_JSONString]];
@@ -163,7 +155,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	
 	// Open the socket!
     NSString *urlString = [NSString stringWithFormat:@"%@/%@/websocket", SPWebsocketURL, self.simperium.appID];
-    SRWebSocket *newWebSocket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
+    SPWebSocket *newWebSocket = [[SPWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
     self.webSocket = newWebSocket;
     self.webSocket.delegate = self;
     self.open = NO;
@@ -172,13 +164,12 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self.webSocket open];
 }
 
-- (void)start:(SPBucket *)bucket name:(NSString *)name {
-    //[self resetRetryDelay];
-    
+- (void)start:(SPBucket *)bucket {
     SPWebSocketChannel *channel = [self channelForName:bucket.name];
-    if (!channel)
+    if (!channel) {
         channel = [self loadChannelForBucket:bucket];
-    
+    }
+	
     if (channel.started) {
         return;
     }
@@ -204,16 +195,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // Mark it closed so it doesn't reopen
     self.open = NO;
     [self.webSocket close];
+	self.webSocket.delegate = nil;
     self.webSocket = nil;
     
     // TODO: Consider ensuring threads are done their work and sending a notification
-}
-
-- (void)resetHeartbeatTimer {
-    if (self.heartbeatTimer != nil) {
-		[self.heartbeatTimer invalidate];
-	}
-	self.heartbeatTimer = [NSTimer scheduledTimerWithTimeInterval:HEARTBEAT target:self selector:@selector(sendHeartbeat:) userInfo:nil repeats:NO];
 }
 
 - (void)send:(NSString *)message {
@@ -224,12 +209,22 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self resetHeartbeatTimer];
 }
 
+
+#pragma mark - Heatbeat Helpers
+
+- (void)resetHeartbeatTimer {
+	[self.heartbeatTimer invalidate];
+	self.heartbeatTimer = [NSTimer scheduledTimerWithTimeInterval:SPWebSocketHeartbeatInterval target:self selector:@selector(sendHeartbeat:) userInfo:nil repeats:NO];
+}
+
 - (void)sendHeartbeat:(NSTimer *)timer {
-    if (self.webSocket.readyState == SR_OPEN) {
-        // Send it (will also schedule another one)
-        //NSLog(@"Simperium sending heartbeat");
-        [self send:@"h:1"];
-    }
+    if (self.webSocket.readyState != SR_OPEN) {
+		return;
+	}
+	
+	// Send it (will also schedule another one)
+	// NSLog(@">> Simperium sending heartbeat");
+	[self send:@"h:1"];
 }
 
 
@@ -237,7 +232,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
 	// Reconnection failsafe
-	if (theWebSocket != self.webSocket) {
+	if ( theWebSocket != (SRWebSocket*)self.webSocket) {
 		return;
 	}
 	
@@ -248,6 +243,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
 	[self stopChannels];
+	self.webSocket.delegate = nil;
     self.webSocket = nil;
     self.open = NO;
 	
@@ -262,7 +258,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-	
+			
+	// Parse!
     NSRange range = [message rangeOfString:@":"];
     
     if (range.location == NSNotFound) {
@@ -359,9 +356,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 
 	[self stopChannels];
+	self.webSocket.delegate = nil;
     self.webSocket = nil;
     self.open = NO;
 }
+
 
 #pragma mark - Public Methods
 

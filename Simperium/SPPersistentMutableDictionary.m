@@ -1,12 +1,12 @@
 //
-//  SPDictionaryStorage.m
+//  SPPersistentMutableDictionary.m
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 9/12/13.
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
-#import "SPDictionaryStorage.h"
+#import "SPPersistentMutableDictionary.h"
 #import <CoreData/CoreData.h>
 #import "DDLog.h"
 #import "DDLogDebug.h"
@@ -28,7 +28,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 #pragma mark Private Methods
 #pragma mark ====================================================================================
 
-@interface SPDictionaryStorage ()
+@interface SPPersistentMutableDictionary ()
 @property (nonatomic, strong, readwrite) NSString *label;
 @property (nonatomic, strong, readwrite) NSCache *cache;
 @property (nonatomic, strong, readwrite) NSManagedObjectContext* managedObjectContext;
@@ -39,10 +39,10 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 
 
 #pragma mark ====================================================================================
-#pragma mark SPDictionaryStorage
+#pragma mark SPMutableDictionaryStorage
 #pragma mark ====================================================================================
 
-@implementation SPDictionaryStorage
+@implementation SPPersistentMutableDictionary
 
 + (int)ddLogLevel {
     return ddLogLevel;
@@ -236,6 +236,10 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 	[self.cache removeAllObjects];
 }
 
+
++ (instancetype)loadDictionaryWithLabel:(NSString *)label {
+	return [[SPPersistentMutableDictionary alloc] initWithLabel:label];
+}
 
 #pragma mark ====================================================================================
 #pragma mark Core Data Stack

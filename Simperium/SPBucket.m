@@ -34,10 +34,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
-relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
+relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label remoteName:(NSString *)remoteName
 {
     if ((self = [super init])) {
         self.name = aSchema.bucketName;
+		self.remoteName = remoteName;
         self.storage = aStorage;
         self.network = netInterface;
         self.relationshipResolver = resolver;

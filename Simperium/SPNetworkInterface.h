@@ -12,15 +12,15 @@
 @class SPBucket;
 
 @protocol SPNetworkInterface <NSObject>
-- (void)start:(SPBucket *)bucket name:(NSString *)name;
+- (void)start:(SPBucket *)bucket;
 - (void)stop:(SPBucket *)bucket;
 - (void)resetBucketAndWait:(SPBucket *)bucket;
 - (void)requestLatestVersionsForBucket:(SPBucket *)bucket;
 - (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
 - (void)sendObjectDeletion:(id<SPDiffable>)object;
 - (void)sendObjectChanges:(id<SPDiffable>)object;
-- (void)removeAllBucketObjects:(SPBucket *)bucket;
 - (void)sendLogMessage:(NSString*)logMessage;
+- (void)removeAllBucketObjects:(SPBucket *)bucket;
 - (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
 - (void)forceSyncBucket:(SPBucket *)bucket;
 @end
