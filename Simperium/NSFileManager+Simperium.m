@@ -10,13 +10,13 @@
 
 @implementation NSFileManager (Simperium)
 
-+(NSString*)userDocumentDirectory
++ (NSString*)userDocumentDirectory
 {
 	NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 	return paths[0];
 }
 
-+(NSString *)binaryDirectory
++ (NSString *)binaryDirectory
 {
 	static NSString *path = nil;
 	static dispatch_once_t _once;
