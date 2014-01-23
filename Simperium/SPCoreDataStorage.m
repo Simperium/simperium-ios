@@ -18,17 +18,19 @@
 
 NSString* const SPCoreDataBucketListKey = @"SPCoreDataBucketListKey";
 static int ddLogLevel					= LOG_LEVEL_INFO;
-static NSUInteger _workers				= 0;
+
+static NSInteger const SPWorkersDone	= 0;
 
 
 @interface SPCoreDataStorage ()
-@property (nonatomic, strong, readwrite) NSManagedObjectContext *writerManagedObjectContext;
-@property (nonatomic, strong, readwrite) NSManagedObjectContext	*mainManagedObjectContext;
-@property (nonatomic, strong, readwrite) NSManagedObjectModel *managedObjectModel;
-@property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator *persistentStoreCoordinator;
-@property (nonatomic, strong, readwrite) NSMutableDictionary *classMappings;
-@property (nonatomic, strong, readwrite) SPThreadsafeMutableSet *remotelyDeletedKeys;
-@property (nonatomic, weak,   readwrite) SPCoreDataStorage *sibling;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext			*writerManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext			*mainManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectModel			*managedObjectModel;
+@property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator	*persistentStoreCoordinator;
+@property (nonatomic, strong, readwrite) NSMutableDictionary			*classMappings;
+@property (nonatomic, strong, readwrite) SPThreadsafeMutableSet			*remotelyDeletedKeys;
+@property (nonatomic, weak,   readwrite) SPCoreDataStorage				*sibling;
+@property (nonatomic, strong, readwrite) NSConditionLock				*mutex;
 - (void)addObserversForMainContext:(NSManagedObjectContext *)context;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
@@ -59,6 +61,9 @@ static NSUInteger _workers				= 0;
 		
         [self.mainManagedObjectContext setMergePolicy:NSMergeByPropertyStoreTrumpMergePolicy];
 		
+		// Just one mutex for this Simperium stack
+		self.mutex = [[NSConditionLock alloc] initWithCondition:SPWorkersDone];
+		
 		// The new writer MOC will be the only one with direct access to the persistentStoreCoordinator
 		self.writerManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
 		self.mainManagedObjectContext.parentContext = self.writerManagedObjectContext;
@@ -86,6 +91,9 @@ static NSUInteger _workers				= 0;
         // For efficiency
         [self.mainManagedObjectContext setUndoManager:nil];
         
+		// Shared mutex
+		self.mutex = aSibling.mutex;
+		
         // An observer is expected to handle merges for otherContext when the threaded context is saved
 		[self addObserversForChildrenContext:self.mainManagedObjectContext];
     }
@@ -531,47 +539,29 @@ static NSUInteger _workers				= 0;
 
 #pragma mark - Sincronization
 
-+ (NSCondition *)sharedMutex {
-	static NSCondition *mutex;
-	static dispatch_once_t onceToken;
-	
-	dispatch_once(&onceToken, ^{
-		mutex = [[NSCondition alloc] init];
-	});
-	
-	return mutex;
-}
-
 - (void)beginSafeSection {
 	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-	NSCondition *mutex = [[self class] sharedMutex];
-	
-	[mutex lock];
-	++_workers;
-	[mutex unlock];
+
+	[_mutex lock];
+	NSInteger workers = _mutex.condition + 1;
+	[_mutex unlockWithCondition:workers];
 }
 
 - (void)finishSafeSection {
-	NSCondition *mutex = [[self class] sharedMutex];
 	
-	[mutex lock];
-	--_workers;
-	[mutex signal];
-	[mutex unlock];
+	[_mutex lock];
+	NSInteger workers = _mutex.condition - 1;
+	[_mutex unlockWithCondition:workers];
 }
 
 - (void)beginCriticalSection {
 	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-	NSCondition *mutex = [[self class] sharedMutex];
-	
-	[mutex lock];
-	while (_workers > 0) {
-		[mutex wait];
-	}
+
+	[_mutex lockWhenCondition:SPWorkersDone];
 }
 
 - (void)finishCriticalSection {
-	[[[self class] sharedMutex] unlock];
+	[_mutex unlock];
 }
 
 
