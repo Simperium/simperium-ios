@@ -77,14 +77,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     [self configureBucket];
 	
 	// Determine if it was a local // remote insert, and call the right 'awake...' method
-	NSManagedObjectContext *currentMOC	= self.managedObjectContext;
-	NSManagedObjectContext *parentMOC	= currentMOC.parentContext;
-	NSManagedObjectContext *grandpaMOC	= parentMOC.parentContext;
-	
-	if (currentMOC.concurrencyType == NSConfinementConcurrencyType &&
-		parentMOC.concurrencyType == NSPrivateQueueConcurrencyType &&
-		grandpaMOC.parentContext == nil)
-	{
+	if ([self.managedObjectContext.userInfo[SPCoreDataWorkerContext] boolValue]) {
 		[self awakeFromRemoteInsert];
 	} else {
 		[self awakeFromLocalInsert];

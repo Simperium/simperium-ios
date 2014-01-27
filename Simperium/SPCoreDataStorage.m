@@ -17,6 +17,7 @@
 
 
 NSString* const SPCoreDataBucketListKey = @"SPCoreDataBucketListKey";
+NSString* const SPCoreDataWorkerContext	= @"SPCoreDataWorkerContext";
 static int ddLogLevel					= LOG_LEVEL_INFO;
 
 static NSInteger const SPWorkersDone	= 0;
@@ -80,6 +81,8 @@ static NSInteger const SPWorkersDone	= 0;
         // Create an ephemeral, thread-safe context that will push its changes directly to the writer MOC,
 		// and will also post the changes to the MainQueue
         self.mainManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
+		self.mainManagedObjectContext.userInfo[SPCoreDataWorkerContext] = @(true);
+		
 		self.writerManagedObjectContext = aSibling.writerManagedObjectContext;
 		
 		// Wire the Thread Confined Context, directly to the writer MOC
