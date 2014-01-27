@@ -220,7 +220,10 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 -(void)loadLocalMetadata
 {
-	self.localMetadata = [NSMutableDictionary dictionaryWithContentsOfFile:self.localMetadataPath];
+	self.localMetadata = [[NSDictionary dictionaryWithContentsOfFile:self.localMetadataPath] mutableCopy];
+	if (!self.localMetadata) {
+		self.localMetadata = [NSMutableDictionary dictionary];
+	}
 }
 
 -(void)saveLocalMetadata

@@ -56,14 +56,4 @@ static char const * const SimperiumKey = "simperiumKey";
     objc_setAssociatedObject(self, SimperiumKey, key, OBJC_ASSOCIATION_COPY);    
 }
 
-+(NSMutableDictionary *)dictionaryWithContentsOfFile:(NSString *)path
-{
-	NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-	NSDictionary *persisted = [[NSDictionary alloc] initWithContentsOfFile:path];
-	if (persisted.count) {
-		[dictionary setValuesForKeysWithDictionary:persisted];
-	}
-	
-	return dictionary;
-}
 @end

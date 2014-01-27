@@ -17,6 +17,4 @@
 -(void)associateObject:(SPObject *)object;
 -(void)associateSimperiumKey:(NSString *)key;
 
-+(NSMutableDictionary *)dictionaryWithContentsOfFile:(NSString *)path;
-
 @end
