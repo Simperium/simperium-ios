@@ -64,6 +64,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *localMetadata;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *activeUploads;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *activeDownloads;
+@property (nonatomic, strong, readwrite) NSString *binaryDirectory;
 @property (nonatomic, assign, readwrite) BOOL didResumeSyncs;
 
 -(NSString *)pendingSyncsPath;
@@ -97,7 +98,15 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 		// We'll have our own Http Queue: Multiple Simperium instances shouldn't interfere with each other
 		self.httpRequestsQueue = [[SPHttpRequestQueue alloc] init];
 		self.httpRequestsQueue.enabled = NO;
+
+		// Helper Directory
+		NSString *path = [[NSFileManager sp_userDocumentDirectory] stringByAppendingPathComponent:NSStringFromClass([self class])];
+		if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+			[[NSFileManager defaultManager] createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
+		}
 		
+		self.binaryDirectory = path;
+
 		// Active Upload/Download: simperiumKey >> hash
 		self.activeUploads = [NSMutableDictionary dictionary];
 		self.activeDownloads = [NSMutableDictionary dictionary];
@@ -146,7 +155,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 -(NSString *)pendingSyncsPath
 {
 	NSString *filename = [NSString stringWithFormat:@"%@%@", self.simperium.label, SPBinaryManagerPendingSyncsFilename];
-	return [[NSFileManager binaryDirectory] stringByAppendingPathComponent:filename];
+	return [self.binaryDirectory stringByAppendingPathComponent:filename];
 }
 
 -(void)resumePendingSyncs
@@ -215,7 +224,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 -(NSString *)localMetadataPath
 {
 	NSString *filename = [NSString stringWithFormat:@"%@%@", self.simperium.label, SPBinaryManagerMetadataFilename];
-	return [[NSFileManager binaryDirectory] stringByAppendingPathComponent:filename];
+	return [self.binaryDirectory stringByAppendingPathComponent:filename];
 }
 
 -(void)loadLocalMetadata

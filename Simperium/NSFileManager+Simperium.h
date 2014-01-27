@@ -9,6 +9,5 @@
 #import <Foundation/Foundation.h>
 
 @interface NSFileManager (Simperium)
-+ (NSString *)userDocumentDirectory;
-+ (NSString *)binaryDirectory;
++ (NSString *)sp_userDocumentDirectory;
 @end
