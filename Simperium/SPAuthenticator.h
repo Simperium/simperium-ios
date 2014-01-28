@@ -14,9 +14,9 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 
 @protocol SPAuthenticatorDelegate <NSObject>
 @optional
--(void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token;
--(void)authenticationDidFail;
--(void)authenticationDidCancel;
+- (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token;
+- (void)authenticationDidFail;
+- (void)authenticationDidCancel;
 @end
 
 @interface SPAuthenticator : NSObject {

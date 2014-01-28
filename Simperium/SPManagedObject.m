@@ -35,11 +35,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     ddLogLevel = logLevel;
 }
 
--(void)simperiumSetValue:(id)value forKey:(NSString *)key {
+- (void)simperiumSetValue:(id)value forKey:(NSString *)key {
     [self setValue:value forKey:key];
 }
 
--(id)simperiumValueForKey:(NSString *)key {
+- (id)simperiumValueForKey:(NSString *)key {
     return [self valueForKey:key];
 }
 

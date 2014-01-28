@@ -19,7 +19,7 @@
 
 @implementation SimperiumOfflineTests
 
--(void)testSingleOfflineStringChange
+- (void)testSingleOfflineStringChange
 {
     NSLog(@"%@ start", self.name);
 
@@ -68,7 +68,7 @@
 }
 
 
--(void)testSimultaneousOfflineStringChange
+- (void)testSimultaneousOfflineStringChange
 {
     NSLog(@"%@ start", self.name);
     
@@ -119,7 +119,7 @@
     NSLog(@"%@ end", self.name); 
 }
 
--(void)testOfflineCreationAndEditing
+- (void)testOfflineCreationAndEditing
 {
     NSLog(@"%@ start", self.name);
         

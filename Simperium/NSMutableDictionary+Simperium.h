@@ -14,6 +14,7 @@
 
 @property (nonatomic, copy) NSString *simperiumKey;
 
--(void)associateObject:(SPObject *)object;
--(void)associateSimperiumKey:(NSString *)key;
+- (void)associateObject:(SPObject *)object;
+- (void)associateSimperiumKey:(NSString *)key;
+
 @end

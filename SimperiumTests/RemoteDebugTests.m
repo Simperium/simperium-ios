@@ -84,7 +84,7 @@
 	//	Index Response
 	//		0:index:{ current: <cv>, index: { {id: <eid>, v: <version>}, ... }, pending: { { id: <eid>, sv: <version>, ccid: <ccid> }, ... }, extra: { ? } }
 	BOOL responseSent = NO;
-	for(id sent in s.mockWebSocketInterface.mockSentMessages) {
+	for (id sent in s.mockWebSocketInterface.mockSentMessages) {
 		NSRange range			= [sent rangeOfString:@":"];
 		NSString *msgChannel	= [sent substringToIndex:range.location];
 		NSString *msgCommand	= [sent substringFromIndex:range.location+range.length];

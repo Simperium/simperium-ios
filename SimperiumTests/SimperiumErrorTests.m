@@ -19,7 +19,7 @@
 
 @implementation SimperiumErrorTests
 
--(void)testDeletion404
+- (void)testDeletion404
 {
     // Leader sends an object to a follower, follower goes offline, both make changes, follower reconnects
     Farm *leader = [self createFarm:@"leader"];

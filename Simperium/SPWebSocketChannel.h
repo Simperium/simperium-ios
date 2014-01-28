@@ -38,6 +38,6 @@
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket;
 
-+(instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID;
++ (instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID;
 
 @end

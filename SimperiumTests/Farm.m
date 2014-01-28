@@ -79,7 +79,7 @@
     
 	do {
 		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:timeoutDate];
-		if([timeoutDate timeIntervalSinceNow] < 0.0) {
+		if ([timeoutDate timeIntervalSinceNow] < 0.0) {
 			break;
 		}
 	} while (!self.done);

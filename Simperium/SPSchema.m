@@ -27,8 +27,7 @@
 @synthesize dynamic;
 
 // Maps primitive type strings to base member classes
--(Class)memberClassForType:(NSString *)type
-{
+- (Class)memberClassForType:(NSString *)type {
 	if ([type isEqualToString:@"text"])
 		return [SPMemberText class];
 	else if ([type isEqualToString:@"int"] || [type isEqualToString:@"bool"])
@@ -53,8 +52,7 @@
 }
 
 // Loads an entity's definition (name, members, their types, etc.) from a plist dictionary
--(id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition
-{
+- (id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition {
     if (self = [super init]) {
         bucketName = [name copy];
         NSArray *memberList = [definition valueForKey:@"members"];
@@ -64,7 +62,7 @@
             NSString *typeStr = [memberDict valueForKey:@"type"];
             SPMember *member = [[[self memberClassForType:typeStr] alloc] initFromDictionary:memberDict];
 			
-			if(member) {
+			if (member) {
 				[members setObject:member forKey:member.keyName];
 			}
 			
@@ -77,11 +75,11 @@
 }
 
 
--(NSString *)bucketName {
+- (NSString *)bucketName {
 	return bucketName;
 }
 
--(void)addMemberForObject:(id)object key:(NSString *)key {
+- (void)addMemberForObject:(id)object key:(NSString *)key {
     if (!dynamic)
         return;
     
@@ -98,18 +96,17 @@
                                 type, @"type",
                                 key, @"name", nil];
     SPMember *member = [[[self memberClassForType:type] alloc] initFromDictionary:memberDict];
-	if(member) {
+	if (member) {
 		[members setObject:member forKey:member.keyName];
 	}
     
 }
 
--(SPMember *)memberForKey:(NSString *)memberName {
+- (SPMember *)memberForKey:(NSString *)memberName {
     return [members objectForKey:memberName];
 }
 
--(void)setDefaults:(id<SPDiffable>)object
-{
+- (void)setDefaults:(id<SPDiffable>)object {
     // Set default values for all members that don't already have them
     // This now gets called after some data might already have been set, so be careful
     // not to overwrite it

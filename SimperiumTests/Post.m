@@ -16,7 +16,7 @@
 @dynamic comments;
 
 
--(NSString *)description {
+- (NSString *)description {
     return [NSString stringWithFormat:@"Post\n\ttitle: %@, numComments: %luu", self.title,(unsigned long)[self.comments count]];
 }
 

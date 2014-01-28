@@ -106,7 +106,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[threadSafeStorage finishSafeSection];
 }
 
--(void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket {
+- (void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket {
 	
 	id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
 	[threadSafeStorage beginCriticalSection];
@@ -145,7 +145,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 // Process actual version data from the Simperium service for a particular bucket
--(void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket firstSync:(BOOL)firstSync changeHandler:(void(^)(NSString *key))changeHandler
+- (void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket firstSync:(BOOL)firstSync changeHandler:(void(^)(NSString *key))changeHandler
 {
     @autoreleasepool {
         id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];

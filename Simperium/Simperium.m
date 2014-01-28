@@ -239,8 +239,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (void)startNetworkManagers {
-    if (!self.networkEnabled || self.networkManagersStarted)
+    if (!self.networkEnabled || self.networkManagersStarted) {
         return;
+	}
     
     DDLogInfo(@"Simperium starting network managers...");
     // Finally, start the network managers to start syncing data
@@ -468,7 +469,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	__block BOOL notified = NO;
 	
 	// Sync every bucket
-	for(SPBucket* bucket in self.buckets.allValues) {
+	for (SPBucket* bucket in self.buckets.allValues) {
 		dispatch_group_enter(group);
 		[bucket forceSyncWithCompletion:^() {
 			dispatch_group_leave(group);
@@ -511,7 +512,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	
 	// Dispatch a NO-OP on the processorQueue's: we need to wait until they're empty
 	dispatch_group_t group = dispatch_group_create();
-	for(SPBucket* bucket in self.buckets.allValues) {
+	for (SPBucket* bucket in self.buckets.allValues) {
 		dispatch_group_async(group, bucket.processorQueue, ^{ });
 	}
 	
@@ -558,7 +559,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	self.shouldSignIn = YES;
 	
 	// Hit the delegate
-	if([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
+	if ([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
 		[self.delegate simperiumDidLogout:self];
 	}
 }
@@ -588,7 +589,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         
     [self closeAuthViewControllerAnimated:YES];
 	
-	if([self.delegate respondsToSelector:@selector(simperiumDidLogin:)]) {
+	if ([self.delegate respondsToSelector:@selector(simperiumDidLogin:)]) {
 		[self.delegate simperiumDidLogin:self];
 	}
 }
@@ -616,8 +617,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 - (BOOL)authenticateIfNecessary {
-    if (!self.networkEnabled || !self.authenticationEnabled)
+    if (!self.networkEnabled || !self.authenticationEnabled) {
         return NO;
+	}
     
     [self stopNetworking];
     

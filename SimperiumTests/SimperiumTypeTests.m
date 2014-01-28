@@ -18,7 +18,7 @@
 
 @implementation SimperiumTypeTests
 
--(void)testDate
+- (void)testDate
 {
     NSLog(@"%@ start", self.name);
 

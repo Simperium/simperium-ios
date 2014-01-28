@@ -9,9 +9,8 @@
 #import <Foundation/Foundation.h>
 
 
-@interface SPCoreDataExporter : NSObject {
-}
+@interface SPCoreDataExporter : NSObject
 
--(NSDictionary *)exportModel:(NSManagedObjectModel *)model classMappings:(NSMutableDictionary *)classMappings;
+- (NSDictionary *)exportModel:(NSManagedObjectModel *)model classMappings:(NSMutableDictionary *)classMappings;
 
 @end

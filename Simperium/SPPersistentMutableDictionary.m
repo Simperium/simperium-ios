@@ -227,7 +227,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		DDLogOnError(error);
 		
 		// Delete Everything
-		for(NSManagedObject *object in allObjects) {
+		for (NSManagedObject *object in allObjects) {
 			[self.managedObjectContext deleteObject:object];
 		}
 	}];
@@ -379,13 +379,13 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		DDLogOnError(error);
 		
 		// Load properties
-		for(NSManagedObject *change in allObjects) {
+		for (NSManagedObject *change in allObjects) {
 			id value = [change valueForKey:property];
 			if (!value) {
 				continue;
 			}
 			
-			if(unarchive) {
+			if (unarchive) {
 				[keys addObject:[NSKeyedUnarchiver unarchiveObjectWithData:value]];
 			} else {
 				[keys addObject:value];

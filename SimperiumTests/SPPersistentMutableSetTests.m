@@ -55,7 +55,7 @@ static NSUInteger const SPDeleteCount = 500;
 	for (NSNumber *num in first) {
 		[deletions addObject:num];
 		deletedSum += num.intValue;
-		if(deletions.count == SPDeleteCount) {
+		if (deletions.count == SPDeleteCount) {
 			break;
 		}
 	}

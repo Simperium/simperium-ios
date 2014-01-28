@@ -104,7 +104,7 @@ static NSInteger const SPWorkersDone	= 0;
     return self;
 }
 
--(void)dealloc {
+- (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -299,7 +299,7 @@ static NSInteger const SPWorkersDone	= 0;
 	// NOTE:
 	// 'mergeChangesFromContextDidSaveNotification' calls 'deleteObject' in the receiver context. As a result,
 	// remote deletions will be posted as local deletions. Let's prevent that!
-	if(self.sibling) {
+	if (self.sibling) {
 		[self.sibling.remotelyDeletedKeys addObject:managedObject.simperiumKey];
 	}
 }
@@ -453,7 +453,7 @@ static NSInteger const SPWorkersDone	= 0;
 	// Filter remotely deleted objects
 	NSDictionary *userInfo	= notification.userInfo;
 	NSMutableSet *locallyDeleted = [NSMutableSet set];
-	for(SPManagedObject* mainMO in userInfo[NSDeletedObjectsKey]) {
+	for (SPManagedObject* mainMO in userInfo[NSDeletedObjectsKey]) {
 		
 		if ([self.remotelyDeletedKeys containsObject:mainMO.simperiumKey] == NO) {
 			// We'll need to post it

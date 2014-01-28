@@ -19,7 +19,7 @@
 
 @implementation SimperiumRelationshipTests
 
--(void)testSingleRelationship
+- (void)testSingleRelationship
 {
     NSLog(@"%@ start", self.name);
     
@@ -59,7 +59,7 @@
     NSLog(@"%@ end", self.name); 
 }
 
--(void)testSingleRelationshipVariant
+- (void)testSingleRelationshipVariant
 {
     NSLog(@"%@ start", self.name);
     

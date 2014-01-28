@@ -336,7 +336,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	
     DDLogVerbose(@"Simperium received index (%@): %@", self.name, responseString);
 	
-	if(self.indexing == false) {
+	if (self.indexing == false) {
 		DDLogError(@"ERROR: Index response was NOT expected!");
 	}
 		

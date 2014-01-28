@@ -20,18 +20,18 @@
 @property (nonatomic, copy)   NSString			*token;
 @property (nonatomic, assign) BOOL				done;
 
--(void)waitFor:(NSTimeInterval)seconds;
--(BOOL)farmsDone:(NSArray *)farmArray;
--(BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs farmArray:(NSArray *)farmArray;
--(BOOL)waitForCompletion;
--(Farm *)createFarm:(NSString *)label;
--(void)ensureFarmsEqual: (NSArray *)farmArray entityName:(NSString *)entityName;
--(void)createFarms;
--(void)startFarms;
--(void)createAndStartFarms;
--(void)connectFarms;
--(void)disconnectFarms;
--(void)expectAdditions:(int)additions deletions:(int)deletions changes:(int)changes fromLeader:(Farm *)leader expectAcks:(BOOL)expectAcks;
--(void)resetExpectations:(NSArray *)farmArray;
+- (void)waitFor:(NSTimeInterval)seconds;
+- (BOOL)farmsDone:(NSArray *)farmArray;
+- (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs farmArray:(NSArray *)farmArray;
+- (BOOL)waitForCompletion;
+- (Farm *)createFarm:(NSString *)label;
+- (void)ensureFarmsEqual: (NSArray *)farmArray entityName:(NSString *)entityName;
+- (void)createFarms;
+- (void)startFarms;
+- (void)createAndStartFarms;
+- (void)connectFarms;
+- (void)disconnectFarms;
+- (void)expectAdditions:(int)additions deletions:(int)deletions changes:(int)changes fromLeader:(Farm *)leader expectAcks:(BOOL)expectAcks;
+- (void)resetExpectations:(NSArray *)farmArray;
 
 @end

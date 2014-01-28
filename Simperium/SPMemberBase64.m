@@ -12,11 +12,11 @@
 
 @implementation SPMemberBase64
 
--(id)defaultValue {
+- (id)defaultValue {
 	return nil;
 }
 
--(NSString *)stringValueFromTransformable:(id)value {
+- (NSString *)stringValueFromTransformable:(id)value {
     if (value == nil)
         return @"";
     
@@ -30,7 +30,7 @@
 	return base64;
 }
 
--(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
+- (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
     id value = [dict objectForKey: key];
 	if (![value isKindOfClass:[NSString class]])
 		return value;
@@ -52,12 +52,12 @@
     return obj;
 }
 
--(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
+- (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
     id convertedValue = [self stringValueFromTransformable: value];
     [dict setValue:convertedValue forKey:key];
 }
 
--(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {	
+- (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {	
     
     if ([thisValue isEqual: otherValue])
         return [NSDictionary dictionary];
@@ -76,7 +76,7 @@
 			[self stringValueFromTransformable: otherValue], OP_VALUE, nil];
 }
 
--(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
 	
 	return otherValue;
 }
