@@ -203,11 +203,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             // Create and start a network manager for it
             SPSchema *schema = [[SPSchema alloc] initWithBucketName:name data:nil];
             schema.dynamic = YES;
-			
-			// For websockets, one network manager for all buckets
-			if (!self.network) {
-				self.network = [SPWebSocketInterface interfaceWithSimperium:self appURL:self.appURL clientID:self.clientID];
-			}
 						
 			// New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
 			NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
@@ -298,11 +293,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     NSMutableDictionary *bucketList = [NSMutableDictionary dictionaryWithCapacity:[schemas count]];
     SPBucket *bucket;
 
-	// For websockets, one network manager for all buckets
-	if (!self.network) {
-		self.network = [SPWebSocketInterface interfaceWithSimperium:self appURL:self.appURL clientID:self.clientID];
-	}
-	
     for (SPSchema *schema in schemas) {
 //        Class entityClass = NSClassFromString(schema.bucketName);
 //        NSAssert1(entityClass != nil, @"Simperium error: couldn't find a class mapping for: ", schema.bucketName);
@@ -351,6 +341,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     self.APIKey = key;
     self.rootURL = SPBaseURL;
     
+	// Setup the Network
+	SPWebSocketInterface *websocket = [SPWebSocketInterface interfaceWithSimperium:self appURL:self.appURL clientID:self.clientID];;
+	self.network = websocket;
+	
     // Setup JSON storage
     SPJSONStorage *storage = [[SPJSONStorage alloc] initWithDelegate:self];
     self.JSONStorage = storage;
@@ -384,6 +378,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     self.APIKey = key;
     self.rootURL = SPBaseURL;
     
+	// Setup the Network
+	SPWebSocketInterface *websocket = [SPWebSocketInterface interfaceWithSimperium:self appURL:self.appURL clientID:self.clientID];;
+	self.network = websocket;
+	
     // Setup Core Data storage
     SPCoreDataStorage *storage = [[SPCoreDataStorage alloc] initWithModel:model mainContext:context coordinator:coordinator];
     self.coreDataStorage = storage;
