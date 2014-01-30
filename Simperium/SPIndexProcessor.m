@@ -134,11 +134,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         DDLogVerbose(@"Simperium deleting %ld objects after re-indexing", (long)[keysForDeletedObjects count]);
         [threadSafeStorage save];
         
-        NSDictionary *userInfo = @{
-								   @"bucketName"	: bucket.name,
-								   @"keys"			: keysForDeletedObjects
-								 };
-        [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			NSDictionary *userInfo = @{
+			   @"bucketName"	: bucket.name,
+			   @"keys"			: keysForDeletedObjects
+			 };
+			[[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
+		});
     }
 	
 	[threadSafeStorage finishCriticalSection];
