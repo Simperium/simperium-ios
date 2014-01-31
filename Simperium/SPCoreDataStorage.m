@@ -491,9 +491,6 @@ static NSInteger const SPWorkersDone	= 0;
 # pragma mark Children MOC Notification Handlers
 
 - (void)childrenContextDidSave:(NSNotification*)notification {
-	// Persist to "disk"!
-	[self saveWriterContext];
-	
 	// Move the changes to the main MOC. This will NOT trigger main MOC's hasChanges flag.
 	// NOTE: setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
 	// Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
@@ -514,6 +511,9 @@ static NSInteger const SPWorkersDone	= 0;
 		
 		// Proceed with the regular merge. This should trigger a contextDidChange note
 		[mainMOC mergeChangesFromContextDidSaveNotification:notification];
+		
+		// Note: Once the changes have been merged to the mainMOC, let's persist to "disk"!
+		[self saveWriterContext];
 	}];
 }
 
