@@ -513,6 +513,17 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 #endif
 
+
+#pragma mark ====================================================================================
+#pragma mark Manual Authentication
+#pragma mark ====================================================================================
+
+- (void)authenticateWithEmail:(NSString *)email token:(NSString *)token {
+
+	self.user = [[SPUser alloc] initWithEmail:email token:token];
+    [self startNetworkManagers];
+}
+
 - (void)signOutAndRemoveLocalData:(BOOL)remove {
     DDLogInfo(@"Simperium clearing local data...");
     
