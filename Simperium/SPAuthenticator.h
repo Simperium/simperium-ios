@@ -7,6 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+
+
 typedef void(^SucceededBlockType)(void);
 typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 
@@ -19,19 +21,8 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 - (void)authenticationDidCancel;
 @end
 
-@interface SPAuthenticator : NSObject {
-    Simperium *__weak simperium;
-    id<SPAuthenticatorDelegate> __weak delegate;
-    SucceededBlockType succeededBlock;
-    FailedBlockType failedBlock;
-    BOOL connected;
-}
 
-@property(nonatomic, weak) Simperium *simperium;
-@property(nonatomic, copy) SucceededBlockType succeededBlock;
-@property(nonatomic, copy) FailedBlockType failedBlock;
-@property(nonatomic, copy) NSString *providerString;
-@property(assign) BOOL connected;
+@interface SPAuthenticator : NSObject
 
 - (id)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s;
 - (BOOL)authenticateIfNecessary;
