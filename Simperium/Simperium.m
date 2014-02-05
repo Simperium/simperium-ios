@@ -17,14 +17,14 @@
 #import "SPGhost.h"
 #import "SPEnvironment.h"
 #import "SPWebSocketInterface.h"
+#import "SPBucket+Internals.h"
+#import "SPRelationshipResolver.h"
 #import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "DDLog.h"
 #import "DDASLLogger.h"
 #import "DDTTYLogger.h"
 #import "DDFileLogger+Simperium.h"
-#import "SPBucket+Internals.h"
-#import "SPRelationshipResolver.h"
 
 
 
@@ -34,7 +34,6 @@
 
 NSString * const UUID_KEY						= @"SPUUIDKey";
 NSString * const SimperiumWillSaveNotification	= @"SimperiumWillSaveNotification";
-
 
 
 #pragma mark ====================================================================================
@@ -68,6 +67,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	});
 }
 
+- (void)dealloc {
+    [self stopNetworking];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+	
+#if !TARGET_OS_IPHONE
+	[[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
+#endif
+}
 
 #pragma mark - Constructors
 - (id)init {
@@ -102,8 +110,8 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		[wc addObserver:self selector:@selector(handleWakeNote:) name:NSWorkspaceDidWakeNotification object: NULL];
 #endif
 		
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(authenticationDidFail)
-                                                     name:SPAuthenticationDidFail object:nil];
+		NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+        [nc addObserver:self selector:@selector(authenticationDidFail) name:SPAuthenticationDidFail object:nil];
     }
 
 	return self;
@@ -130,39 +138,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 #endif
 
-- (void)dealloc {
-    [self stopNetworking];
-    self.rootURL = nil;
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-	
-#if !TARGET_OS_IPHONE
-	[[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
-#endif
-}
-
-- (NSString *)clientID {
-    if (!_clientID || _clientID.length == 0) {
-        // Unique client ID; persist it so changes sent between sessions come from the same client ID
-        NSString *uuid = [[NSUserDefaults standardUserDefaults] objectForKey:UUID_KEY];
-        if (!uuid) {
-            uuid = [NSString sp_makeUUID];
-            [[NSUserDefaults standardUserDefaults] setObject:uuid forKey:UUID_KEY];
-            [[NSUserDefaults standardUserDefaults] synchronize];
-        }
-        _clientID = [[NSString stringWithFormat:@"%@-%@", SPLibraryID, uuid] copy];
-    }
-    return _clientID;
-}
-
-
-- (void)setLabel:(NSString *)aLabel {
-    _label = [aLabel copy];
-    
-    // Set the clientID as well, otherwise certain change operations won't work (since they'll appear to come from
-    // the same Simperium instance)
-    self.clientID = _label;
-}
 
 - (void)configureBinaryManager:(SPBinaryManager *)manager {    
     // Binary members need to know about the manager (ugly but avoids singleton/global)
@@ -217,21 +192,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return bucket;
 }
 
-- (void)shareObject:(SPManagedObject *)object withEmail:(NSString *)email {
-    SPBucket *bucket = [self.buckets objectForKey:object.bucket.name];
-    [bucket.network shareObject: object withEmail:email];
-}
-
-- (void)setVerboseLoggingEnabled:(BOOL)on {
-    _verboseLoggingEnabled = on;
-    for (Class cls in [DDLog registeredClasses]) {
-        [DDLog setLogLevel:on ? LOG_LEVEL_VERBOSE : LOG_LEVEL_INFO forClass:cls];
-    }
-}
-
 - (NSData*)exportLogfiles {
 	return [[DDFileLogger sharedInstance] exportLogfiles];
 }
+
+
+#pragma mark ====================================================================================
+#pragma mark Networking
+#pragma mark ====================================================================================
 
 - (void)startNetworkManagers {
     if (!self.networkEnabled || self.networkManagersStarted) {
@@ -254,13 +222,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     for (SPBucket *bucket in [self.buckets allValues]) {
         [bucket.network stop:bucket];
     }
+	
     self.networkManagersStarted = NO;
 }
 
 - (void)startNetworking {
     // Create a new one each time to make sure it fires (and causes networking to start)
-    self.reachability = [SPReachability reachabilityWithHostName:@"api.simperium.com"];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kReachabilityChangedNotification object:nil];
+    self.reachability = [SPReachability reachabilityWithHostName:SPReachabilityURL];
     [self.reachability startNotifier];
 }
 
@@ -288,6 +257,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [self stopNetworking];
 	}
 }
+
+
+#pragma mark ====================================================================================
+#pragma mark Buckets
+#pragma mark ====================================================================================
 
 - (NSMutableDictionary *)loadBuckets:(NSArray *)schemas {
     NSMutableDictionary *bucketList = [NSMutableDictionary dictionaryWithCapacity:[schemas count]];
@@ -323,12 +297,17 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 }
 
-- (void)setRootURL:(NSString *)url {
-    _rootURL = [url copy];
-    
-    self.appURL = [_rootURL stringByAppendingFormat:@"%@/", self.appID];
+- (void)shareObject:(SPManagedObject *)object withEmail:(NSString *)email {
+    SPBucket *bucket = [self.buckets objectForKey:object.bucket.name];
+    [bucket.network shareObject: object withEmail:email];
 }
 
+
+#pragma mark ====================================================================================
+#pragma mark Initialization
+#pragma mark ====================================================================================
+
+/*
 - (void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key {
     DDLogInfo(@"Simperium starting... %@", self.label);
 	
@@ -359,6 +338,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         [self authenticateIfNecessary];
     }
 }
+*/
 
 - (void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key model:(NSManagedObjectModel *)model context:(NSManagedObjectContext *)context coordinator:(NSPersistentStoreCoordinator *)coordinator {
 	DDLogInfo(@"Simperium starting... %@", self.label);
@@ -412,12 +392,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }    
 }
 
-#pragma mark SPStorageObserver
-
-- (BOOL)objectsShouldSync {
-    // TODO: rename or possibly (re)move this
-    return !self.skipContextProcessing;
+- (void)shutdown {
+	
 }
+
+
+#pragma mark ====================================================================================
+#pragma mark SPStorageObserver
+#pragma mark ====================================================================================
 
 - (void)storage:(id<SPStorageProvider>)storage updatedObjects:(NSSet *)updatedObjects insertedObjects:(NSSet *)insertedObjects deletedObjects:(NSSet *)deletedObjects {
     // This is automatically called by an SPStorage instance when data is locally changed and then saved
@@ -436,13 +418,15 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // The changes will automatically get batched and synced in the next tick
     
     for (id<SPDiffable>insertedObject in insertedObjects) {
-        if ([[insertedObject class] conformsToProtocol:@protocol(SPDiffable)])
+        if ([[insertedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
             [insertedObject.bucket.network sendObjectChanges: insertedObject];
+		}
     }
     
     for (id<SPDiffable>updatedObject in updatedObjects) {
-        if ([[updatedObject class] conformsToProtocol:@protocol(SPDiffable)])
+        if ([[updatedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
             [updatedObject.bucket.network sendObjectChanges: updatedObject];
+		}
     }
     
     // Send changes for all deleted objects
@@ -454,12 +438,22 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }
 }
 
+
+#pragma mark ====================================================================================
 #pragma mark Core Data
+#pragma mark ====================================================================================
 
 - (BOOL)save {
     [self.JSONStorage save];
     [self.coreDataStorage save];
     return YES;
+}
+
+- (BOOL)saveWithoutSyncing {
+    self.skipContextProcessing = YES;
+    BOOL result = [self save];
+    self.skipContextProcessing = NO;
+    return result;
 }
 
 - (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumForceSyncCompletion)completion {
@@ -489,13 +483,6 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 			notified = YES;
 		}
     });
-}
-
-- (BOOL)saveWithoutSyncing {
-    self.skipContextProcessing = YES;
-    BOOL result = [self save];
-    self.skipContextProcessing = NO;
-    return result;
 }
 
 #if !TARGET_OS_IPHONE
@@ -562,6 +549,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	}
 }
 
+
+#pragma mark ====================================================================================
+#pragma mark Properties
+#pragma mark ====================================================================================
+
 - (NSManagedObjectContext *)managedObjectContext {
     return self.coreDataStorage.mainManagedObjectContext;
 }
@@ -578,13 +570,56 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return self.coreDataStorage.persistentStoreCoordinator;
 }
 
+- (NSString *)clientID {
+    if (!_clientID || _clientID.length == 0) {
+        // Unique client ID; persist it so changes sent between sessions come from the same client ID
+        NSString *uuid = [[NSUserDefaults standardUserDefaults] objectForKey:UUID_KEY];
+        if (!uuid) {
+            uuid = [NSString sp_makeUUID];
+            [[NSUserDefaults standardUserDefaults] setObject:uuid forKey:UUID_KEY];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+        }
+        _clientID = [[NSString stringWithFormat:@"%@-%@", SPLibraryID, uuid] copy];
+    }
+    return _clientID;
+}
+
+- (void)setLabel:(NSString *)aLabel {
+    _label = [aLabel copy];
+    
+    // Set the clientID as well, otherwise certain change operations won't work (since they'll appear to come from
+    // the same Simperium instance)
+    self.clientID = _label;
+}
+
+- (void)setRootURL:(NSString *)url {
+    _rootURL = [url copy];
+    self.appURL = [_rootURL stringByAppendingFormat:@"%@/", self.appID];
+}
+
+- (void)setVerboseLoggingEnabled:(BOOL)on {
+    _verboseLoggingEnabled = on;
+    for (Class cls in [DDLog registeredClasses]) {
+        [DDLog setLogLevel:on ? LOG_LEVEL_VERBOSE : LOG_LEVEL_INFO forClass:cls];
+    }
+}
+
+- (BOOL)objectsShouldSync {
+    // TODO: rename or possibly (re)move this
+    return !self.skipContextProcessing;
+}
+
+
+#pragma mark ====================================================================================
+#pragma mark Authentication
+#pragma mark ====================================================================================
 
 - (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token {
     [self.binaryManager setupAuth:self.user];
     
     // It's now safe to start the network managers
     [self startNetworking];
-        
+    
     [self closeAuthViewControllerAnimated:YES];
 	
 	if ([self.delegate respondsToSelector:@selector(simperiumDidLogin:)]) {
@@ -648,10 +683,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         return;
 	}
 	
-    SPAuthenticationViewController *loginController =  [[self.authenticationViewControllerClass alloc] init];
-    self.authenticationViewController = loginController;
-    self.authenticationViewController.authenticator = self.authenticator;
-    self.authenticationViewController.signingIn = self.shouldSignIn;
+    SPAuthenticationViewController *loginController		= [[self.authenticationViewControllerClass alloc] init];
+    self.authenticationViewController					= loginController;
+    self.authenticationViewController.authenticator		= self.authenticator;
+    self.authenticationViewController.signingIn			= self.shouldSignIn;
 	
     if (!self.rootViewController) {
         UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
@@ -672,10 +707,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	[self.rootViewController presentViewController:controller animated:animated completion:nil];
 #else
     if (!self.authenticationWindowController) {
-        self.authenticationWindowController = [[self.authenticationWindowControllerClass alloc] init];
-        self.authenticationWindowController.authenticator = self.authenticator;
-        self.authenticationWindowController.optional = self.authenticationOptional;
-        self.authenticationWindowController.signingIn = self.shouldSignIn;
+        self.authenticationWindowController					= [[self.authenticationWindowControllerClass alloc] init];
+        self.authenticationWindowController.authenticator	= self.authenticator;
+        self.authenticationWindowController.optional		= self.authenticationOptional;
+        self.authenticationWindowController.signingIn		= self.shouldSignIn;
     }
     
     // Hide the main window and show the auth window instead
@@ -700,13 +735,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 
-- (void)shutdown {
-	
-}
-
-
-
-#pragma mark - OSX System Wake/Sleep Handlers
+#pragma mark ====================================================================================
+#pragma mark OSX System Wake/Sleep Handlers
+#pragma mark ====================================================================================
 
 #if !TARGET_OS_IPHONE
 - (void)handleSleepNote:(NSNotification *)note {
@@ -725,8 +756,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 #endif
 
 
-
+#pragma mark ====================================================================================
 #pragma mark SPSimperiumLoggerDelegate
+#pragma mark ====================================================================================
 
 - (void)handleLogMessage:(NSString*)logMessage {
 	if (!self.remoteLoggingEnabled) {
@@ -739,7 +771,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 
+#pragma mark ====================================================================================
 #pragma mark Private Methods
+#pragma mark ====================================================================================
 
 - (void)removeRemoteData {
 	// Note: this method should only be used by the Integration Tests. Will only delete the remote data
