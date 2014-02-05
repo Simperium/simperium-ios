@@ -9,13 +9,10 @@
 #import <Foundation/Foundation.h>
 
 
-@interface SPUser : NSObject {
-    NSString *email;
-    NSString *authToken;
-}
+@interface SPUser : NSObject
 
-@property (copy, nonatomic, readonly) NSString *email;
-@property (copy, nonatomic) NSString *authToken;
+@property (copy, nonatomic, readonly)  NSString *email;
+@property (copy, nonatomic, readwrite) NSString *authToken;
 
 - (id)initWithEmail:(NSString *)username token:(NSString *)token;
 - (NSString *)hashedEmail;
