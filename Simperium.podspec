@@ -13,11 +13,18 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '6.0'
   s.osx.deployment_target = '10.8'
 
-  s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*', 'External/STKeychain/*'
+  s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*'
   s.osx.source_files = 'Simperium-OSX/**/*.{h,m}'
 
   s.exclude_files = 'Simperium/SPS3Manager.{h,m}'
   s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}'
+
+  # Importing non-arc files
+  
+  s.subspec 'STKeychain' do |stkeychain|
+    keychain.source_files = 'External/STKeychain/*'
+    keychain.requires_arc = false
+  end
 
   # If you do not explicitly set the list of public header files,
   # all headers of source_files will be made public.
