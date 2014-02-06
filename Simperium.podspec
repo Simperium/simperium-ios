@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
 
   # Importing non-arc files
 
-  s.subspec 'STKeychain' do |stkeychain|
+  s.subspec 'STKeychain' do |keychain|
     keychain.source_files = 'External/STKeychain/*'
     keychain.requires_arc = false
   end
