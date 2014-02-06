@@ -7,7 +7,8 @@ Pod::Spec.new do |s|
   s.license      = { :type => 'MIT', :file => 'LICENSE' }
   s.author       = { "Simperium" => "contact@simperium.com" }
 
-  s.source       = { :git => "https://github.com/Simperium/simperium-ios.git", :tag => "v{s.version}" }
+  # s.source     = { :git => "https://github.com/Simperium/simperium-ios.git", :tag => "v{s.version}" }
+  s.source       = { :git => "https://github.com/Simperium/simperium-ios.git", :branch => "develop" }
 
   s.ios.deployment_target = '6.0'
   s.osx.deployment_target = '10.8'
