@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '6.0'
   s.osx.deployment_target = '10.8'
 
-  s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*', 'External/SFHFKeychainUtils/*'
+  s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*', 'External/STKeychain/*'
   s.osx.source_files = 'Simperium-OSX/**/*.{h,m}'
 
   s.exclude_files = 'Simperium/SPS3Manager.{h,m}'
