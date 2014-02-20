@@ -64,6 +64,10 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
 // Open a UI to handle authentication if necessary
 - (BOOL)authenticateIfNecessary {
+	
+	NSAssert(self.simperium.APIKey, @"Simperium APIKey must be initialized before attempting authentication");
+	NSAssert(self.simperium.appID, @"Simperium AppID must be initialized before attempting authentication");
+	
     // Look up a stored token (if it exists) and try authenticating
     NSString *username = [[NSUserDefaults standardUserDefaults] objectForKey:USERNAME_KEY];
     NSString *token = nil;
@@ -106,7 +110,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]];
     SPLogInfo(@"Simperium authenticating: %@", [NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]);
     SPLogVerbose(@"Simperium username is %@", username);
-	
+		
 	SPHttpRequest *request = [SPHttpRequest requestWithURL:tokenURL];
 	request.headers = @{
 		@"X-Simperium-API-Key"	: self.simperium.APIKey,
