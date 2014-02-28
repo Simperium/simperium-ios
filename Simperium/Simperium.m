@@ -543,8 +543,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 }
 
 - (void)signOutAndRemoveLocalData:(BOOL)remove {
-    SPLogInfo(@"Simperium clearing local data...");
-    
+    SPLogInfo(@"Simperium logging out...");
     // Reset Simperium: Don't start network managers again; expect app to handle that
     [self stopNetworking];
     
@@ -558,11 +557,14 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     
     // Now delete all local content; no more changes will be coming in at this point
     if (remove) {
+        SPLogInfo(@"Simperium clearing local data...");
         self.skipContextProcessing = YES;
         for (SPBucket *bucket in [self.buckets allValues]) {
             [bucket deleteAllObjects];
         }
         self.skipContextProcessing = NO;
+    } else {
+        SPLogInfo(@"Simperium not clearing local data...");
     }
     
     // Clear the token and user
