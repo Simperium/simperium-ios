@@ -92,7 +92,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
 	
 	// No need to go further
-	if(pendingJSON == nil) {
+	if (pendingJSON == nil) {
 		return;
 	}
 	
@@ -101,9 +101,9 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     
     NSDictionary *pendingDict = [pendingJSON sp_objectFromJSONString];
 
-	for(NSString *key in pendingDict.allKeys) {
+	for (NSString *key in pendingDict.allKeys) {
 		id change = pendingDict[key];
-		if(change) {
+		if (change) {
 			[self.changesPending setObject:change forKey:key];
 		}
 	}
@@ -179,7 +179,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		
 		id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
 		
-		if(object) {
+		if (object) {
 			[threadSafeStorage deleteObject:object];
 			[threadSafeStorage save];
 		}
@@ -439,7 +439,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 			
 			[self.changesPending save];
 			
-			if(self.changesPending.count == 0) {
+			if (self.changesPending.count == 0) {
 				[bucket bucketDidSync];
 			}
         });
@@ -560,7 +560,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	}
 	
 	// Create changes for any objects that have more changes
-	for(NSString* key in queuedKeys) {
+	for (NSString* key in queuedKeys) {
 		NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
 		
 		if (change) {
@@ -578,7 +578,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		
 	for(NSString *key in changesPendingKeys) {
 		NSDictionary* change = [self.changesPending objectForKey:key];
-		if(change) {
+		if (change) {
 			block(change);
 		}
 	}
@@ -638,7 +638,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	
 	// This routine shall be used for debugging purposes!
 	NSMutableArray* pendings = [NSMutableArray array];
-	for(NSDictionary* change in self.changesPending.allValues) {
+	for (NSDictionary* change in self.changesPending.allValues) {
 				
 		NSMutableDictionary* export = [NSMutableDictionary dictionary];
 		
@@ -647,7 +647,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		
 		// Start Version is not available for newly inserted objects
 		NSString* startVersion = change[CH_START_VERSION];
-		if(startVersion) {
+		if (startVersion) {
 			[export setObject:[startVersion copy] forKey:CH_START_VERSION];
 		}
 		
