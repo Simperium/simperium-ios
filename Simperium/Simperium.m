@@ -283,9 +283,21 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 #if TARGET_OS_IPHONE
 - (void)authenticateWithAppID:(NSString *)identifier APIKey:(NSString *)key rootViewController:(UIViewController *)controller {
 
-	NSParameterAssert(identifier);
-	NSParameterAssert(key);
-	NSParameterAssert(controller);
+	// Validate!
+	if (!identifier) {
+		[self failWithErrorCode:SPSimperiumErrorsMissingAppID];
+		return;
+	}
+	
+	if (!key) {
+		[self failWithErrorCode:SPSimperiumErrorsMissingAPIKey];
+		return;
+	}
+	
+	if (!controller) {
+		[self failWithErrorCode:SPSimperiumErrorsMissingWindow];
+		return;
+	}
 	
 	self.rootViewController = controller;
 	[self startWithAppID:identifier APIKey:key];
@@ -293,9 +305,21 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 #else
 - (void)authenticateWithAppID:(NSString *)identifier APIKey:(NSString *)key window:(NSWindow *)aWindow {
 	
-	NSParameterAssert(identifier);
-	NSParameterAssert(key);
-	NSParameterAssert(aWindow);
+	// Validate!
+	if (!identifier) {
+		[self failWithErrorCode:SPSimperiumErrorsMissingAppID];
+		return;
+	}
+	
+	if (!key) {
+		[self failWithErrorCode:SPSimperiumErrorsMissingAPIKey];
+		return;
+	}
+	
+	if (!aWindow) {
+		[self failWithErrorCode:SPSimperiumErrorsMissingWindow];
+		return;
+	}
 	
 	// Hide the window right away
 	self.window = aWindow;
@@ -308,8 +332,16 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 
 - (void)authenticateWithAppID:(NSString *)identifier token:(NSString *)token {
 	
-	NSParameterAssert(identifier);
-	NSParameterAssert(token);
+	// Validate!
+	if (!identifier) {
+		[self failWithErrorCode:SPSimperiumErrorsMissingAppID];
+		return;
+	}
+		
+	if (!token) {
+		[self failWithErrorCode:SPSimperiumErrorsMissingToken];
+		return;
+	}
 	
 	// Authentication Disabled by default!
 	self.authenticationEnabled = NO;
@@ -809,6 +841,15 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     for (SPBucket *bucket in [self.buckets allValues]) {
 		[bucket.network removeAllBucketObjects:bucket];
 	}
+}
+
+- (void)failWithErrorCode:(SPSimperiumErrors)code {
+	if (![self.delegate respondsToSelector:@selector(simperium:didFailWithError:)]) {
+		return;
+	}
+	
+	NSError* error = [NSError errorWithDomain:NSStringFromClass([self class]) code:code userInfo:nil];
+	[self.delegate simperium:self didFailWithError:error];
 }
 
 @end

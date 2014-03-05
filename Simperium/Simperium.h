@@ -25,7 +25,19 @@
 @class NSWindow;
 #endif
 
+
+#pragma mark ====================================================================================
+#pragma mark Simperium Constants
+#pragma mark ====================================================================================
+
 extern NSString * const SimperiumWillSaveNotification;
+
+typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
+	SPSimperiumErrorsMissingAppID,
+	SPSimperiumErrorsMissingAPIKey,
+	SPSimperiumErrorsMissingToken,
+	SPSimperiumErrorsMissingWindow
+};
 
 
 #pragma mark ====================================================================================
