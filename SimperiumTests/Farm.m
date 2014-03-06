@@ -16,6 +16,9 @@
 #import "Post.h"
 #import "PostComment.h"
 
+#import "XCTestCase+Simperium.h"
+
+
 @implementation Farm
 @synthesize managedObjectContext		= __managedObjectContext;
 @synthesize managedObjectModel			= __managedObjectModel;
@@ -58,20 +61,21 @@
     
     self.simperium.user = [[SPUser alloc] initWithEmail:USERNAME token:self.token];
 	
+	
     for (NSString *bucketName in [self bucketNames]) {
         SPBucket *bucket = [self.simperium bucketForName:bucketName];
         bucket.notifyWhileIndexing = YES;
         
         // Clear data from previous tests if necessary
-        [bucket.network resetBucketAndWait:bucket];
+        [bucket.network reset:bucket completion:nil];
     }
 }
 
 - (void)stop {
 	[self.simperium removeRemoteData];
 	[self waitForCompletion:1.0f];
-	[self.simperium signOutAndRemoveLocalData:YES];
-	[self waitForCompletion:1.0f];
+	
+	[self.simperium signOutAndRemoveLocalData:YES completion:nil];
 }
 
 - (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs {
