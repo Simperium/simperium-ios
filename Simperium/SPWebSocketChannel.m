@@ -273,8 +273,12 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 			return;
 		}
 		
-		BOOL needsRepost = [bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket];
-		[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID];
+		BOOL needsRepost = NO;
+		
+		@autoreleasepool {
+			needsRepost = [bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket];
+			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID];
+		}
 		
 		dispatch_async(dispatch_get_main_queue(), ^{
 			

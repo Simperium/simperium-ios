@@ -432,20 +432,22 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		
         // The above notification needs to give the main thread a chance to react before we continue
         dispatch_async(bucket.processorQueue, ^{
-            for (NSDictionary *change in changes) {
-                // Process the change (this is necessary even if it's an ack, so the ghost data gets set accordingly)
-                if (![self processRemoteChange:change bucket:bucket clientID:clientID]) {
-                    continue;
-                }
-                
-                // Remember the last version
-                // This persists...do it inside the loop in case something happens to abort the loop
-                NSString *changeVersion = change[CH_CHANGE_VERSION];
-                
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [bucket setLastChangeSignature: changeVersion];
-                });        
-            }
+			@autoreleasepool {				
+				for (NSDictionary *change in changes) {
+					// Process the change (this is necessary even if it's an ack, so the ghost data gets set accordingly)
+					if (![self processRemoteChange:change bucket:bucket clientID:clientID]) {
+						continue;
+					}
+					
+					// Remember the last version
+					// This persists...do it inside the loop in case something happens to abort the loop
+					NSString *changeVersion = change[CH_CHANGE_VERSION];
+					
+					dispatch_async(dispatch_get_main_queue(), ^{
+						[bucket setLastChangeSignature: changeVersion];
+					});        
+				}
+			}
 			
 			[self.changesPending save];
 			
