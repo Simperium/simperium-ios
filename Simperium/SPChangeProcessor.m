@@ -575,8 +575,8 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	//	pendingKeys: Queued + previously pending
 	//	queuedKeys: Only queued objects
 	NSSet *changesPendingKeys = (onlyQueuedChanges ? queuedKeys : pendingKeys);
-		
-	for(NSString *key in changesPendingKeys) {
+	
+	for (NSString *key in changesPendingKeys) {
 		NSDictionary* change = [self.changesPending objectForKey:key];
 		if (change) {
 			block(change);
