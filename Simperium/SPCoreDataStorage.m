@@ -478,10 +478,15 @@ static NSInteger const SPWorkersDone	= 0;
     NSSet *insertedObjects = [notification.userInfo objectForKey:NSInsertedObjectsKey];
 
     for (NSManagedObject *insertedObject in insertedObjects) {
-        if ([insertedObject isKindOfClass:[SPManagedObject class]]) {
-            SPManagedObject *object = (SPManagedObject *)insertedObject;
-            [self configureInsertedObject: object];
-        }
+        if ([insertedObject isKindOfClass:[SPManagedObject class]] == NO) {
+			continue;
+		}
+		
+		// Make sure the object still exits before proceeding!
+		SPManagedObject *object = (SPManagedObject *)[self.mainManagedObjectContext existingObjectWithID:insertedObject.objectID error:nil];
+		if (object) {
+			[self configureInsertedObject: object];
+		}
     }
 }
 
