@@ -8,26 +8,17 @@
 
 #import "SPCoreDataExporter.h"
 #import "SPManagedObject.h"
-#import "DDLog.h"
 #import "SPMemberBinaryInfo.h"
 
 
 
-static int ddLogLevel = LOG_LEVEL_INFO;
+#pragma mark ====================================================================================
+#pragma mark SPCoreDataExporter
+#pragma mark ====================================================================================
 
 @implementation SPCoreDataExporter
 
-+(int)ddLogLevel
-{
-    return ddLogLevel;
-}
-
-+(void)ddSetLogLevel:(int)logLevel
-{
-    ddLogLevel = logLevel;
-}
-
--(NSString *)simperiumTypeForAttribute:(NSAttributeDescription *)attribute
+- (NSString *)simperiumTypeForAttribute:(NSAttributeDescription *)attribute
 {
     // Check for overrides first
     NSString *override = [[attribute userInfo] objectForKey:@"spOverride"];
@@ -50,8 +41,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return nil;
 }
 
--(BOOL)attributeAddedBySimperium:(NSAttributeDescription *) attr
-{
+- (BOOL)attributeAddedBySimperium:(NSAttributeDescription *) attr {
     return [[attr name] compare:@"simperiumKey"] == NSOrderedSame ||
         [[attr name] compare:@"ghostData"] == NSOrderedSame;
 }
@@ -86,8 +76,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	}
 }
 
--(void)addMembersFrom:(NSEntityDescription *)entityDesc to:(NSMutableArray *)members
-{
+- (void)addMembersFrom:(NSEntityDescription *)entityDesc to:(NSMutableArray *)members {
     // Don't add members from SPManagedObject
     if ([[entityDesc name] compare:NSStringFromClass([SPManagedObject class])] == NSOrderedSame) {
         return;
@@ -162,8 +151,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 //        [self addMembersFrom:[entityDesc superentity] to:members];
 }
 
--(NSDictionary *)exportModel:(NSManagedObjectModel *)model classMappings:(NSMutableDictionary *)classMappings
-{
+- (NSDictionary *)exportModel:(NSManagedObjectModel *)model classMappings:(NSMutableDictionary *)classMappings {
     // Construct a dictionary
     NSMutableDictionary *definitions = [NSMutableDictionary dictionaryWithCapacity:[[model entities] count]];
     for (NSEntityDescription *entityDesc in model.entities) {
@@ -211,7 +199,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     // For now, just print to log to make sure the export worked
     // Also freeze; copy/paste the log to a file, then comment out the export line so
     // this doesn't run again (hacky)
-    DDLogVerbose(@"Simperium result of Core Data export: %@", definitions);
+    NSLog(@"Simperium result of Core Data export: %@", definitions);
     NSAssert(0, @"Asserting to look at export log (hack)");
 #endif
 	

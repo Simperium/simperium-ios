@@ -17,13 +17,13 @@
 @synthesize ghostData;
 @synthesize version;
 
--(id)init {
+- (id)init {
     if ((self = [self initWithDictionary:[NSMutableDictionary dictionary]])) {
     }
     return self;
 }
 
--(id)initWithDictionary:(NSMutableDictionary *)dictionary {
+- (id)initWithDictionary:(NSMutableDictionary *)dictionary {
     if ((self = [super init])) {
         self.dict = dictionary;
         [self.dict associateObject:self];
@@ -33,11 +33,11 @@
     return self;    
 }
 
--(NSString *)simperiumKey {
+- (NSString *)simperiumKey {
     return simperiumKey;
 }
 
--(void)setSimperiumKey:(NSString *)key {
+- (void)setSimperiumKey:(NSString *)key {
     simperiumKey = [key copy];
     
     [self.dict associateSimperiumKey:simperiumKey];
@@ -49,13 +49,13 @@
 // TODO: getters and setters for ghost, ghostData, simperiumKey and version should probably be locked
 
 // These are needed to compose a dict
--(void)simperiumSetValue:(id)value forKey:(NSString *)key {
+- (void)simperiumSetValue:(id)value forKey:(NSString *)key {
     dispatch_barrier_async(dispatch_get_main_queue(), ^{
         [dict setObject:value forKey:key];
     });
 }
 
--(id)simperiumValueForKey:(NSString *)key {
+- (id)simperiumValueForKey:(NSString *)key {
     __block id obj;
     dispatch_sync(dispatch_get_main_queue(), ^{
         obj = [dict objectForKey: key];
@@ -63,21 +63,21 @@
     return obj;
 }
 
--(void)loadMemberData:(NSDictionary *)data {
+- (void)loadMemberData:(NSDictionary *)data {
     dispatch_barrier_async(dispatch_get_main_queue(), ^{
         [dict setValuesForKeysWithDictionary:data];
     });
 }
 
--(void)willBeRead {
+- (void)willBeRead {
     
 }
 
--(NSDictionary *)dictionary {
+- (NSDictionary *)dictionary {
     return dict;
 }
 
--(id)object {
+- (id)object {
     return dict;
 }
 

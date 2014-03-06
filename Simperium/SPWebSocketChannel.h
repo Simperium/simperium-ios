@@ -13,6 +13,11 @@
 @class SPWebSocketInterface;
 @protocol SPDiffable;
 
+
+#pragma mark ====================================================================================
+#pragma mark SPWebSocketChannel
+#pragma mark ====================================================================================
+
 @interface SPWebSocketChannel : NSObject
 
 @property (nonatomic, weak) SPWebSocketInterface *webSocketManager;
@@ -33,11 +38,13 @@
 - (void)sendBucketStatus:(SPBucket *)bucket;
 - (void)removeAllBucketObjects:(SPBucket *)bucket;
 - (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
+- (void)handleAuthResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
+- (void)handleOptions:(NSString *)options bucket:(SPBucket *)bucket;
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket;
 
-+(instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID;
++ (instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID;
 
 @end

@@ -12,37 +12,43 @@
 #import "SPCoreDataExporter.h"
 #import "SPSchema.h"
 #import "SPThreadsafeMutableSet.h"
-#import "DDLog.h"
+#import "SPLogger.h"
 
 
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
 
 NSString* const SPCoreDataBucketListKey = @"SPCoreDataBucketListKey";
-static int ddLogLevel					= LOG_LEVEL_INFO;
-static NSUInteger _workers				= 0;
+NSString* const SPCoreDataWorkerContext	= @"SPCoreDataWorkerContext";
+static SPLogLevels logLevel				= SPLogLevelsInfo;
+static NSInteger const SPWorkersDone	= 0;
 
+
+#pragma mark ====================================================================================
+#pragma mark Private
+#pragma mark ====================================================================================
 
 @interface SPCoreDataStorage ()
-@property (nonatomic, strong, readwrite) NSManagedObjectContext *writerManagedObjectContext;
-@property (nonatomic, strong, readwrite) NSManagedObjectContext	*mainManagedObjectContext;
-@property (nonatomic, strong, readwrite) NSManagedObjectModel *managedObjectModel;
-@property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator *persistentStoreCoordinator;
-@property (nonatomic, strong, readwrite) NSMutableDictionary *classMappings;
-@property (nonatomic, strong, readwrite) SPThreadsafeMutableSet *remotelyDeletedKeys;
-@property (nonatomic, weak,   readwrite) SPCoreDataStorage *sibling;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext			*writerManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext			*mainManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectModel			*managedObjectModel;
+@property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator	*persistentStoreCoordinator;
+@property (nonatomic, strong, readwrite) NSMutableDictionary			*classMappings;
+@property (nonatomic, strong, readwrite) SPThreadsafeMutableSet			*remotelyDeletedKeys;
+@property (nonatomic, weak,   readwrite) SPCoreDataStorage				*sibling;
+@property (nonatomic, strong, readwrite) NSConditionLock				*mutex;
 - (void)addObserversForMainContext:(NSManagedObjectContext *)context;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
 
 
+#pragma mark ====================================================================================
+#pragma mark SPCoreDataStorage
+#pragma mark ====================================================================================
+
 @implementation SPCoreDataStorage
-
-+ (int)ddLogLevel {
-    return ddLogLevel;
-}
-
-+ (void)ddSetLogLevel:(int)logLevel {
-    ddLogLevel = logLevel;
-}
 
 - (id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator {
     if (self = [super init]) {
@@ -58,6 +64,9 @@ static NSUInteger _workers				= 0;
         self.mainManagedObjectContext = mainContext;
 		
         [self.mainManagedObjectContext setMergePolicy:NSMergeByPropertyStoreTrumpMergePolicy];
+		
+		// Just one mutex for this Simperium stack
+		self.mutex = [[NSConditionLock alloc] initWithCondition:SPWorkersDone];
 		
 		// The new writer MOC will be the only one with direct access to the persistentStoreCoordinator
 		self.writerManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
@@ -75,6 +84,8 @@ static NSUInteger _workers				= 0;
         // Create an ephemeral, thread-safe context that will push its changes directly to the writer MOC,
 		// and will also post the changes to the MainQueue
         self.mainManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
+		self.mainManagedObjectContext.userInfo[SPCoreDataWorkerContext] = @(true);
+		
 		self.writerManagedObjectContext = aSibling.writerManagedObjectContext;
 		
 		// Wire the Thread Confined Context, directly to the writer MOC
@@ -86,6 +97,9 @@ static NSUInteger _workers				= 0;
         // For efficiency
         [self.mainManagedObjectContext setUndoManager:nil];
         
+		// Shared mutex
+		self.mutex = aSibling.mutex;
+		
         // An observer is expected to handle merges for otherContext when the threaded context is saved
 		[self addObserversForChildrenContext:self.mainManagedObjectContext];
     }
@@ -93,7 +107,7 @@ static NSUInteger _workers				= 0;
     return self;
 }
 
--(void)dealloc {
+- (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -113,7 +127,7 @@ static NSUInteger _workers				= 0;
     SPCoreDataExporter *exporter = [[SPCoreDataExporter alloc] init];
     NSDictionary *definitionDict = [exporter exportModel:self.managedObjectModel classMappings:self.classMappings];
     
-    DDLogInfo(@"Simperium loaded %lu entity definitions", (unsigned long)[definitionDict count]);
+    SPLogInfo(@"Simperium loaded %lu entity definitions", (unsigned long)[definitionDict count]);
     
     NSUInteger numEntities = [[definitionDict allKeys] count];
     NSMutableArray *schemas = [NSMutableArray arrayWithCapacity:numEntities];
@@ -174,7 +188,7 @@ static NSUInteger _workers				= 0;
 - (NSArray *)objectKeysAndIdsForBucketName:(NSString *)bucketName {
     NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     if (entity == nil) {
-        //DDLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
+        //SPLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
         return nil;
     }
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
@@ -288,7 +302,7 @@ static NSUInteger _workers				= 0;
 	// NOTE:
 	// 'mergeChangesFromContextDidSaveNotification' calls 'deleteObject' in the receiver context. As a result,
 	// remote deletions will be posted as local deletions. Let's prevent that!
-	if(self.sibling) {
+	if (self.sibling) {
 		[self.sibling.remotelyDeletedKeys addObject:managedObject.simperiumKey];
 	}
 }
@@ -326,13 +340,13 @@ static NSUInteger _workers				= 0;
             if ([object respondsToSelector:@selector(getSimperiumKeyFromLegacyKey)]) {
                 key = [object performSelector:@selector(getSimperiumKeyFromLegacyKey)];
                 if (key && key.length > 0)
-                    DDLogVerbose(@"Simperium local entity found without key (%@), porting legacy key: %@", bucketName, key);
+                    SPLogVerbose(@"Simperium local entity found without key (%@), porting legacy key: %@", bucketName, key);
             }
             
             // If it's still nil (unsynced local change in legacy system), treat it like a newly inserted object:
             // generate a UUID and mark it for sycing
             if (key == nil || key.length == 0) {
-                DDLogVerbose(@"Simperium local entity found with no legacy key (created offline?); generating one now");
+                SPLogVerbose(@"Simperium local entity found with no legacy key (created offline?); generating one now");
                 key = [NSString sp_makeUUID];
             }
             object.simperiumKey = key;
@@ -397,7 +411,7 @@ static NSUInteger _workers				= 0;
     NSArray *entitiesToStash = [self allUpdatedAndInsertedObjects];
     
     if ([entitiesToStash count] > 0) {
-        DDLogVerbose(@"Simperium stashing changes for %lu entities", (unsigned long)[entitiesToStash count]);
+        SPLogVerbose(@"Simperium stashing changes for %lu entities", (unsigned long)[entitiesToStash count]);
         [stashedObjects addObjectsFromArray: entitiesToStash];
     }
 }
@@ -422,7 +436,7 @@ static NSUInteger _workers				= 0;
 	// Obtain permanentID's for newly inserted objects
 	NSError *error = nil;
 	if (![context obtainPermanentIDsForObjects:temporaryObjects.allObjects error:&error]) {
-        DDLogVerbose(@"Unable to obtain permanent IDs for objects newly inserted into the main context: %@", error);
+        SPLogVerbose(@"Unable to obtain permanent IDs for objects newly inserted into the main context: %@", error);
     }
 }
 
@@ -442,8 +456,10 @@ static NSUInteger _workers				= 0;
 	// Filter remotely deleted objects
 	NSDictionary *userInfo	= notification.userInfo;
 	NSMutableSet *locallyDeleted = [NSMutableSet set];
-	for(SPManagedObject* mainMO in userInfo[NSDeletedObjectsKey]) {
-		
+	for (SPManagedObject* mainMO in userInfo[NSDeletedObjectsKey]) {
+		if ([mainMO isKindOfClass:[SPManagedObject class]] == NO) {
+			continue;
+		}
 		if ([self.remotelyDeletedKeys containsObject:mainMO.simperiumKey] == NO) {
 			// We'll need to post it
 			[locallyDeleted addObject:mainMO];
@@ -480,9 +496,6 @@ static NSUInteger _workers				= 0;
 # pragma mark Children MOC Notification Handlers
 
 - (void)childrenContextDidSave:(NSNotification*)notification {
-	// Persist to "disk"!
-	[self saveWriterContext];
-	
 	// Move the changes to the main MOC. This will NOT trigger main MOC's hasChanges flag.
 	// NOTE: setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
 	// Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
@@ -503,6 +516,9 @@ static NSUInteger _workers				= 0;
 		
 		// Proceed with the regular merge. This should trigger a contextDidChange note
 		[mainMOC mergeChangesFromContextDidSaveNotification:notification];
+		
+		// Note: Once the changes have been merged to the mainMOC, let's persist to "disk"!
+		[self saveWriterContext];
 	}];
 }
 
@@ -531,47 +547,29 @@ static NSUInteger _workers				= 0;
 
 #pragma mark - Sincronization
 
-+ (NSCondition *)sharedMutex {
-	static NSCondition *mutex;
-	static dispatch_once_t onceToken;
-	
-	dispatch_once(&onceToken, ^{
-		mutex = [[NSCondition alloc] init];
-	});
-	
-	return mutex;
-}
-
 - (void)beginSafeSection {
 	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-	NSCondition *mutex = [[self class] sharedMutex];
-	
-	[mutex lock];
-	++_workers;
-	[mutex unlock];
+
+	[_mutex lock];
+	NSInteger workers = _mutex.condition + 1;
+	[_mutex unlockWithCondition:workers];
 }
 
 - (void)finishSafeSection {
-	NSCondition *mutex = [[self class] sharedMutex];
 	
-	[mutex lock];
-	--_workers;
-	[mutex signal];
-	[mutex unlock];
+	[_mutex lock];
+	NSInteger workers = _mutex.condition - 1;
+	[_mutex unlockWithCondition:workers];
 }
 
 - (void)beginCriticalSection {
 	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-	NSCondition *mutex = [[self class] sharedMutex];
-	
-	[mutex lock];
-	while (_workers > 0) {
-		[mutex wait];
-	}
+
+	[_mutex lockWhenCondition:SPWorkersDone];
 }
 
 - (void)finishCriticalSection {
-	[[[self class] sharedMutex] unlock];
+	[_mutex unlock];
 }
 
 

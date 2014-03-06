@@ -19,7 +19,7 @@
 
 @implementation SimperiumComplexTests
 
--(void)testChangesToMultipleObjects
+- (void)testChangesToMultipleObjects
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
@@ -66,7 +66,7 @@
 }
 
 
--(void)testMultiplePendingChanges
+- (void)testMultiplePendingChanges
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
@@ -121,7 +121,7 @@
 }
 
 
--(void)testRepeatedStringChanges
+- (void)testRepeatedStringChanges
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];

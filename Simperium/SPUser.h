@@ -9,20 +9,17 @@
 #import <Foundation/Foundation.h>
 
 
-@interface SPUser : NSObject {
-    NSString *email;
-    NSString *authToken;
-}
+@interface SPUser : NSObject
 
-@property (copy, nonatomic, readonly) NSString *email;
-@property (copy, nonatomic) NSString *authToken;
+@property (copy, nonatomic, readwrite) NSString *email;
+@property (copy, nonatomic, readwrite) NSString *authToken;
 
--(id)initWithEmail:(NSString *)username token:(NSString *)token;
--(NSString *)hashedEmail;
--(BOOL)authenticated;
+- (id)initWithEmail:(NSString *)username token:(NSString *)token;
+- (NSString *)hashedEmail;
+- (BOOL)authenticated;
 
 // Stubs that will eventually allow you to store/retrieve custom user data
--(void)setCustomObject:(id)object forKey:(NSString *)key;
--(id)getCustomObjectForKey:(NSString *)key;
+- (void)setCustomObject:(id)object forKey:(NSString *)key;
+- (id)getCustomObjectForKey:(NSString *)key;
 
 @end

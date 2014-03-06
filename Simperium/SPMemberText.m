@@ -10,7 +10,8 @@
 #import "DiffMatchPatch.h"
 
 @implementation SPMemberText
--(id)initFromDictionary:(NSDictionary *)dict
+
+- (id)initFromDictionary:(NSDictionary *)dict
 {
     if (self = [super initFromDictionary:dict]) {
         dmp = [[DiffMatchPatch alloc] init];
@@ -19,11 +20,11 @@
 }
 
 
--(id)defaultValue {
+- (id)defaultValue {
 	return @"";
 }
 
--(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
+- (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
 	NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
 			 @"Simperium error: couldn't diff strings because their classes weren't NSString");
 	
@@ -47,7 +48,7 @@
 	return [NSDictionary dictionary];
 }
 
--(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
 	// DMP stuff, TODO: error handling
 	NSError *error;
     
@@ -63,7 +64,7 @@
 	return [result objectAtIndex:0];
 }
 
--(NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue {
+- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue {
 	// Assorted hocus pocus ported from JS code
 	NSError *error;
 	NSMutableArray *thisDiffs = [dmp diff_fromDeltaWithText:oldValue andDelta:thisValue error:&error];

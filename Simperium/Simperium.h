@@ -25,7 +25,19 @@
 @class NSWindow;
 #endif
 
+
+#pragma mark ====================================================================================
+#pragma mark Simperium Constants
+#pragma mark ====================================================================================
+
 extern NSString * const SimperiumWillSaveNotification;
+
+typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
+	SPSimperiumErrorsMissingAppID,
+	SPSimperiumErrorsMissingAPIKey,
+	SPSimperiumErrorsMissingToken,
+	SPSimperiumErrorsMissingWindow
+};
 
 
 #pragma mark ====================================================================================
@@ -66,6 +78,33 @@ extern NSString * const SimperiumWillSaveNotification;
                context:(NSManagedObjectContext *)context
 		   coordinator:(NSPersistentStoreCoordinator *)coordinator;
 
+
+#pragma mark ====================================================================================
+#pragma mark New Initialization Methods
+#pragma mark ====================================================================================
+
+// Initializes Simperium: After executing this method, your CoreData Stack will be fully initialized
+- (id)initWithModel:(NSManagedObjectModel *)model
+			context:(NSManagedObjectContext *)context
+		coordinator:(NSPersistentStoreCoordinator *)coordinator;
+
+
+#if TARGET_OS_IPHONE
+// Starts Simperium and displays the auth interface, if needed.
+- (void)authenticateWithAppID:(NSString *)identifier APIKey:(NSString *)key rootViewController:(UIViewController *)controller;
+#else
+// Starts Simperium and displays the auth interface, if needed.
+- (void)authenticateWithAppID:(NSString *)identifier APIKey:(NSString *)key window:(NSWindow *)aWindow;
+#endif
+
+// Starts Simperium with a given token, with no UI interaction required.
+- (void)authenticateWithAppID:(NSString *)identifier token:(NSString *)token;
+
+
+#pragma mark ====================================================================================
+#pragma mark Public Methods
+#pragma mark ====================================================================================
+
 // Save and sync all changed objects. If you're using Core Data, this is just a convenience method
 // (you can also just save your context and Simperium will see the changes).
 - (BOOL)save;
@@ -96,7 +135,9 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 #endif
 
 // Clears all locally stored data from the device. Can be used to perform a manual sign out.
-- (void)signOutAndRemoveLocalData:(BOOL)remove;
+// Note: This method is now asynchronous. Please, listen to signout delegate calls, or implement a completion callback block.
+typedef void (^SimperiumSignoutCompletion)(void);
+- (void)signOutAndRemoveLocalData:(BOOL)remove completion:(SimperiumSignoutCompletion)completion;
 
 // Shares an object with a particular user's email address (forthcoming).
 //- (void)shareObject:(SPManagedObject *)object withEmail:(NSString *)email;
@@ -107,10 +148,6 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 
 // Opens an authentication interface if necessary.
 - (BOOL)authenticateIfNecessary;
-
-// Exports Simperium Internal logfiles. Note: you should enable verboseLogging before!
-- (NSData*)exportLogfiles;
-
 
 // Set this to true if you need to be able to cancel the authentication dialog.
 @property (nonatomic) BOOL authenticationOptional;

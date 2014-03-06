@@ -10,11 +10,11 @@
 
 @implementation SPMemberDouble
 
--(id)defaultValue {
+- (id)defaultValue {
 	return [NSNumber numberWithDouble:0];
 }
 
--(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
+- (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
 	NSAssert([thisValue isKindOfClass:[NSNumber class]] && [otherValue isKindOfClass:[NSNumber class]],
 			 @"Simperium error: couldn't diff doubles because their classes weren't NSNumber");
 	
@@ -31,7 +31,7 @@
 			otherValue, OP_VALUE, nil];
 }
 
--(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
 	NSAssert([thisValue isKindOfClass:[NSNumber class]] && [otherValue isKindOfClass:[NSNumber class]],
 			 @"Simperium error: couldn't apply diff to ints because their classes weren't NSNumber");
 	

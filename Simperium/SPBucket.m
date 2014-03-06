@@ -14,25 +14,16 @@
 #import "SPNetworkInterface.h"
 #import "SPChangeProcessor.h"
 #import "SPIndexProcessor.h"
-#import "DDLog.h"
 #import "SPGhost.h"
 #import "JSONKit+Simperium.h"
 #import "SPRelationshipResolver.h"
 #import "SPBinaryManager.h"
 
-static int ddLogLevel = LOG_LEVEL_INFO;
+
 
 @implementation SPBucket
 
 @synthesize lastChangeSignature = _lastChangeSignature;
-
-+ (int)ddLogLevel {
-    return ddLogLevel;
-}
-
-+ (void)ddSetLogLevel:(int)logLevel {
-    ddLogLevel = logLevel;
-}
 
 - (id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
 	   binaryManager:(SPBinaryManager *)binaryManager relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label

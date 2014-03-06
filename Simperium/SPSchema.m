@@ -15,6 +15,7 @@
 #import "SPMemberFloat.h"
 #import "SPMemberDouble.h"
 #import "SPMemberEntity.h"
+#import "SPMemberJSON.h"
 #import "SPMemberJSONList.h"
 #import "SPMemberList.h"
 #import "SPMemberBase64.h"
@@ -27,34 +28,34 @@
 @synthesize dynamic;
 
 // Maps primitive type strings to base member classes
--(Class)memberClassForType:(NSString *)type
-{
-	if ([type isEqualToString:@"text"])
-		return [SPMemberText class];
-	else if ([type isEqualToString:@"int"] || [type isEqualToString:@"bool"])
-		return [SPMemberInt class];
-	else if ([type isEqualToString:@"date"])
-		return [SPMemberDate class];
-    else if ([type isEqualToString:@"entity"])
-        return [SPMemberEntity class];
-    else if ([type isEqualToString:@"double"])
-        return [SPMemberDouble class];
-    else if ([type isEqualToString:@"binaryInfo"])
-        return [SPMemberBinaryInfo class];
-    else if ([type isEqualToString:@"list"])
-        return [SPMemberList class];
-    else if ([type isEqualToString:@"jsonlist"])
-        return [SPMemberJSONList class];
-    else if ([type isEqualToString:@"base64"])
-        return [SPMemberBase64 class];
+
+- (Class)memberClassForType:(NSString *)type {
 	
-	// error
-	return nil;
+	static NSDictionary *memberMap = nil;
+	static dispatch_once_t onceToken;
+	
+	dispatch_once(&onceToken, ^{
+		memberMap = @{
+			@"text"			: NSStringFromClass([SPMemberText class]),
+			@"int"			: NSStringFromClass([SPMemberInt class]),
+			@"bool"			: NSStringFromClass([SPMemberInt class]),
+			@"date"			: NSStringFromClass([SPMemberDate class]),
+			@"entity"		: NSStringFromClass([SPMemberEntity class]),
+			@"double"		: NSStringFromClass([SPMemberDouble class]),
+			@"binaryInfo"	: NSStringFromClass([SPMemberBinaryInfo class]),
+			@"list"			: NSStringFromClass([SPMemberList class]),
+			@"json"			: NSStringFromClass([SPMemberJSON class]),
+			@"jsonlist"		: NSStringFromClass([SPMemberJSONList class]),
+			@"base64"		: NSStringFromClass([SPMemberBase64 class])
+		};
+	});
+	
+	NSString *name = memberMap[type];
+	return name ? NSClassFromString(name) : nil;
 }
 
 // Loads an entity's definition (name, members, their types, etc.) from a plist dictionary
--(id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition
-{
+- (id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition {
     if (self = [super init]) {
         bucketName = [name copy];
         NSArray *memberList = [definition valueForKey:@"members"];
@@ -64,7 +65,7 @@
             NSString *typeStr = [memberDict valueForKey:@"type"];
             SPMember *member = [[[self memberClassForType:typeStr] alloc] initFromDictionary:memberDict];
 			
-			if(member) {
+			if (member) {
 				[members setObject:member forKey:member.keyName];
 			}
 			
@@ -77,14 +78,11 @@
     return self;
 }
 
-
--(NSString *)bucketName
-{
+- (NSString *)bucketName {
 	return bucketName;
 }
 
--(void)addMemberForObject:(id)object key:(NSString *)key
-{
+- (void)addMemberForObject:(id)object key:(NSString *)key {
     if (!dynamic) {
         return;
 	}
@@ -103,25 +101,24 @@
                                 type, @"type",
                                 key, @"name", nil];
     SPMember *member = [[[self memberClassForType:type] alloc] initFromDictionary:memberDict];
-	if(member) {
+	if (member) {
 		[members setObject:member forKey:member.keyName];
 	}
     
 }
 
--(SPMember *)memberForKey:(NSString *)memberName
-{
+- (SPMember *)memberForKey:(NSString *)memberName {
     return [members objectForKey:memberName];
 }
 
--(void)setDefaults:(id<SPDiffable>)object
-{
+- (void)setDefaults:(id<SPDiffable>)object {
     // Set default values for all members that don't already have them
     // This now gets called after some data might already have been set, so be careful
     // not to overwrite it
     for (SPMember *member in [members allValues]) {
-        if (member.modelDefaultValue == nil && [object simperiumValueForKey:member.keyName] == nil)
+        if (member.modelDefaultValue == nil && [object simperiumValueForKey:member.keyName] == nil) {
             [object simperiumSetValue:[member defaultValue] forKey:member.keyName];
+		}
     }
 }
 

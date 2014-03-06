@@ -14,7 +14,7 @@
 @implementation SPMemberEntity
 @synthesize entityName;
 
--(id)initFromDictionary:(NSDictionary *)dict
+- (id)initFromDictionary:(NSDictionary *)dict
 {
     if (self = [super initFromDictionary:dict]) {
         self.entityName = [dict objectForKey:@"entityName"];
@@ -24,16 +24,16 @@
 }
 
 
--(id)defaultValue {
+- (id)defaultValue {
 	return nil;
 }
 
--(id)simperiumKeyForObject:(id)value {
+- (id)simperiumKeyForObject:(id)value {
     NSString *simperiumKey = [value simperiumKey];
 	return simperiumKey == nil ? @"" : simperiumKey;
 }
 
--(SPManagedObject *)objectForKey:(NSString *)key context:(NSManagedObjectContext *)context {
+- (SPManagedObject *)objectForKey:(NSString *)key context:(NSManagedObjectContext *)context {
     // TODO: could possibly just request a fault?
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     NSEntityDescription *entityDescription = [NSEntityDescription entityForName:entityName inManagedObjectContext:context];
@@ -51,7 +51,7 @@
     return [items objectAtIndex:0];
 }
 
--(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
+- (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
     NSString *simperiumKey = [dict objectForKey: key];
     
     // With optional 1 to 1 relationships, there might not be an object
@@ -76,12 +76,12 @@
     return value;
 }
 
--(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
+- (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
     id convertedValue = [self simperiumKeyForObject: value];
     [dict setValue:convertedValue forKey:key];
 }
 
--(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
+- (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
     NSString *otherKey = [self simperiumKeyForObject:otherValue];
     
 	NSAssert([thisValue isKindOfClass:[SPManagedObject class]] && [otherValue isKindOfClass:[SPManagedObject class]],
@@ -99,7 +99,7 @@
 			otherKey, OP_VALUE, nil];
 }
 
--(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
 	return otherValue;
 }
 

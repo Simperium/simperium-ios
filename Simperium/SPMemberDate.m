@@ -10,11 +10,11 @@
 
 @implementation SPMemberDate
 
--(id)defaultValue {
+- (id)defaultValue {
 	return [NSDate date];
 }
 
--(id)dateValueFromNumber:(id)value {
+- (id)dateValueFromNumber:(id)value {
 	if ([value isKindOfClass:[NSNumber class]])
 		return value;
 	
@@ -23,7 +23,7 @@
 	return [NSNumber numberWithDouble:[value timeIntervalSince1970]];//+gmtOffset];
 }
 
--(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
+- (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
     id value = [dict objectForKey: key];
     if (!value)
         return nil;
@@ -36,12 +36,12 @@
 	return [NSDate dateWithTimeIntervalSince1970:[(NSString *)value doubleValue]];//-gmtOffset];
 }
 
--(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
+- (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
     id convertedValue = [self dateValueFromNumber: value];
     [dict setValue:convertedValue forKey:key];
 }
 
--(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
+- (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
 	NSAssert([thisValue isKindOfClass:[NSDate class]] && [otherValue isKindOfClass:[NSDate class]],
 			 @"Simperium error: couldn't diff dates because their classes weren't NSDate");
     
@@ -58,7 +58,7 @@
 			[self dateValueFromNumber: otherValue], OP_VALUE, nil];
 }
 
--(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
 	// Expect dates in Number format
 	//NSAssert([thisValue isKindOfClass:[NSNumber class]] && [otherValue isKindOfClass:[NSNumber class]],
 	//		 @"Simperium error: couldn't diff dates because their classes weren't NSNumber (NSDate not supported directly)");

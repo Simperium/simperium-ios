@@ -11,27 +11,27 @@
 
 @implementation SPMemberJSONList
 
--(id)defaultValue {
+- (id)defaultValue {
 	return @"[]";
 }
 
--(id)stringValueFromArray:(id)value {
+- (id)stringValueFromArray:(id)value {
     if ([value length] == 0)
         return [[self defaultValue] sp_objectFromJSONString];
 	return [value sp_objectFromJSONString];
 }
 
--(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
+- (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
     id value = [dict objectForKey: key];
 	return [value sp_JSONString];
 }
 
--(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
+- (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
     id convertedValue = [self stringValueFromArray: value];
     [dict setValue:convertedValue forKey:key];
 }
 
--(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
+- (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
 	NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
 			 @"Simperium error: couldn't diff JSON lists because their classes weren't NSString");
     
@@ -46,7 +46,7 @@
 			[self stringValueFromArray: otherValue], OP_VALUE, nil];
 }
 
--(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
     // TODO: proper list diff, including transform
 
 	return otherValue;

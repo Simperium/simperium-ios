@@ -12,7 +12,7 @@
 #import "SPEnvironment.h"
 #import "SPManagedObject.h"
 #import "JSONKit+Simperium.h"
-#import "DDLog.h"
+#import "SPLogger.h"
 #import "NSFileManager+Simperium.h"
 #import "NSString+Simperium.h"
 #import "SPBucket+Internals.h"
@@ -48,7 +48,8 @@ NS_ENUM(NSInteger, SPBinaryManagerOperations) {
 	SPBinaryManagerOperationsUpload
 };
 
-static int ddLogLevel = LOG_LEVEL_VERBOSE;
+static SPLogLevels logLevel	= SPLogLevelsVerbose;
+
 //#define DEBUG_MD5_INTEGRITY 1
 
 
@@ -322,7 +323,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 -(void)downloadStarted:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium starting binary download from URL: %@", request.url);
+	SPLogWarn(@"Simperium starting binary download from URL: %@", request.url);
 	
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadStarted:)] ) {
 		[self.delegate binaryDownloadStarted:request.userInfo];
@@ -331,7 +332,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 -(void)downloadProgress:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium downloaded [%.1f%%] of [%@]", request.downloadProgress, request.url);
+	SPLogWarn(@"Simperium downloaded [%.1f%%] of [%@]", request.downloadProgress, request.url);
 	
 	if( [self.delegate respondsToSelector:@selector(binaryDownloadProgress:progress:)] ) {
 		[self.delegate binaryDownloadProgress:request.userInfo progress:request.downloadProgress];
@@ -340,7 +341,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 -(void)downloadFailed:(SPHttpRequest *)request
 {
-	DDLogError(@"Simperium error [%@] while downloading binary at URL: %@", request.responseError, request.url);
+	SPLogError(@"Simperium error [%@] while downloading binary at URL: %@", request.responseError, request.url);
 	
 	// Update: Active + Pendings Syncs
 	NSString *simperiumKey = request.userInfo[SPBinaryManagerSimperiumKey];
@@ -355,7 +356,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 -(void)downloadSuccess:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium successfully downloaded binary at URL: %@", request.url);
+	SPLogWarn(@"Simperium successfully downloaded binary at URL: %@", request.url);
 	
 	// Unwrap Params
 	NSDictionary *metadata  = request.userInfo;
@@ -466,7 +467,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 -(void)uploadStarted:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium starting binary upload to URL: %@", request.url);
+	SPLogWarn(@"Simperium starting binary upload to URL: %@", request.url);
 
 	if( [self.delegate respondsToSelector:@selector(binaryUploadStarted:)] ) {
 		[self.delegate binaryUploadStarted:request.userInfo];
@@ -475,7 +476,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 -(void)uploadProgress:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium uploaded [%.1f%%] of [%@]", request.uploadProgress, request.url);
+	SPLogWarn(@"Simperium uploaded [%.1f%%] of [%@]", request.uploadProgress, request.url);
 	
 	if( [self.delegate respondsToSelector:@selector(binaryUploadProgress:progress:)] ) {
 		[self.delegate binaryUploadProgress:request.userInfo progress:request.uploadProgress];
@@ -484,7 +485,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 -(void)uploadFailed:(SPHttpRequest *)request
 {
-	DDLogError(@"Simperium error [%@] while uploading binary to URL: %@", request.responseError, request.url);
+	SPLogError(@"Simperium error [%@] while uploading binary to URL: %@", request.responseError, request.url);
 
 	// Update: Active + Pendings Syncs
 	NSString *simperiumKey = request.userInfo[SPBinaryManagerSimperiumKey];
@@ -499,7 +500,7 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 
 -(void)uploadSuccess:(SPHttpRequest *)request
 {
-	DDLogWarn(@"Simperium successfully uploaded binary to URL: %@", request.url);
+	SPLogWarn(@"Simperium successfully uploaded binary to URL: %@", request.url);
 			
 	// Unwrap Parameters
 	NSDictionary *metadata	= [request.responseString sp_objectFromJSONString];
@@ -540,21 +541,6 @@ static int ddLogLevel = LOG_LEVEL_VERBOSE;
 	request.headers = @{ SPBinaryManagerTokenKey : self.simperium.user.authToken };
 	
 	return request;
-}
-
-
-#pragma mark ====================================================================================
-#pragma mark Static Helpers
-#pragma mark ====================================================================================
-
-+(int)ddLogLevel
-{
-    return ddLogLevel;
-}
-
-+(void)ddSetLogLevel:(int)logLevel
-{
-    ddLogLevel = logLevel;
 }
 
 @end

@@ -131,8 +131,8 @@ NSTimeInterval const SPTestSmallFileTimeout	= 20;
 	[self waitFor:5.0f];
 	
 	// Delete local data
-	[self.leader.simperium signOutAndRemoveLocalData:YES];
-	[self.follower.simperium signOutAndRemoveLocalData:YES];
+	[self.leader.simperium signOutAndRemoveLocalData:YES completion:nil];
+	[self.follower.simperium signOutAndRemoveLocalData:YES completion:nil];
 	
 	// And...
 	self.leader = nil;

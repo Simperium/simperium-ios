@@ -220,7 +220,7 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 - (void)layoutViewsForInterfaceOrientation:(UIInterfaceOrientation)orientation {
 	
     CGFloat viewWidth;
-	if(UIInterfaceOrientationIsPortrait(orientation)) {
+	if (UIInterfaceOrientationIsPortrait(orientation)) {
 		viewWidth = MIN(self.view.frame.size.width, self.view.frame.size.height);
 	} else {
 		viewWidth = MAX(self.view.frame.size.width, self.view.frame.size.height);
@@ -576,7 +576,7 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 		// Advance to next field and don't dismiss keyboard
 		[self.passwordField becomeFirstResponder];
 		return NO;
-	} else if(theTextField == self.passwordField) {
+	} else if (theTextField == self.passwordField) {
 		if ([self validatePassword]) {
 			if (_signingIn) {
 				[self performLogin];

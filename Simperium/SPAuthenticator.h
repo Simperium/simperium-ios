@@ -7,31 +7,34 @@
 //
 
 #import <Foundation/Foundation.h>
+
+
 typedef void(^SucceededBlockType)(void);
 typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 
 @class Simperium;
 
+
+#pragma mark ====================================================================================
+#pragma mark SPAuthenticatorDelegate
+#pragma mark ====================================================================================
+
 @protocol SPAuthenticatorDelegate <NSObject>
 @optional
--(void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token;
--(void)authenticationDidFail;
--(void)authenticationDidCancel;
+- (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token;
+- (void)authenticationDidFail;
+- (void)authenticationDidCancel;
 @end
 
-@interface SPAuthenticator : NSObject {
-    Simperium *__weak simperium;
-    id<SPAuthenticatorDelegate> __weak delegate;
-    SucceededBlockType succeededBlock;
-    FailedBlockType failedBlock;
-    BOOL connected;
-}
 
-@property(nonatomic, weak) Simperium *simperium;
-@property(nonatomic, copy) SucceededBlockType succeededBlock;
-@property(nonatomic, copy) FailedBlockType failedBlock;
-@property(nonatomic, copy) NSString *providerString;
-@property(assign) BOOL connected;
+#pragma mark ====================================================================================
+#pragma mark SPAuthenticator
+#pragma mark ====================================================================================
+
+@interface SPAuthenticator : NSObject
+
+@property (nonatomic, copy,   readwrite) NSString	*providerString;
+@property (nonatomic, assign,  readonly) BOOL		connected;
 
 - (id)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s;
 - (BOOL)authenticateIfNecessary;

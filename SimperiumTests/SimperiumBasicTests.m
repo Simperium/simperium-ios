@@ -19,7 +19,7 @@
 
 @implementation SimperiumBasicTests
 
--(void)testAuth
+- (void)testAuth
 {
     NSLog(@"%@ start", self.name);
     XCTAssertTrue(self.token.length > 0, @"");
@@ -27,7 +27,7 @@
     NSLog(@"%@ end", self.name);
 }
 
--(void)testAddingSingleObject
+- (void)testAddingSingleObject
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
@@ -58,7 +58,7 @@
     NSLog(@"%@ end", self.name); 
 }
 
--(void)testDeletingSingleObject
+- (void)testDeletingSingleObject
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
@@ -94,7 +94,7 @@
     NSLog(@"%@ end", self.name);
 }
 
--(void)testChangesToSingleObject
+- (void)testChangesToSingleObject
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
@@ -135,7 +135,7 @@
     NSLog(@"%@ end", self.name); 
 }
 
--(void)testPendingChange
+- (void)testPendingChange
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
@@ -176,7 +176,7 @@
     NSLog(@"%@ end", self.name);
 }
 
--(void)testObjectVersions
+- (void)testObjectVersions
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];

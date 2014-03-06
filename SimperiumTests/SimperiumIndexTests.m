@@ -19,7 +19,7 @@
 
 @implementation SimperiumIndexTests
 
--(void)testIndex
+- (void)testIndex
 {
     NSLog(@"%@ start", self.name);
 
@@ -63,7 +63,7 @@
     NSLog(@"%@ end", self.name);     
 }
 
--(void)testLargerIndex
+- (void)testLargerIndex
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
@@ -106,7 +106,7 @@
 // directly for acknowledgments. Instead, the response from a subsequent GET is used for acks. The problem
 // is this subsequent GET uses the last known cv, which this test purposely breaks by exceeding the 50 change
 // limit. The GET will 404, triggering a re-index before changes have even been acknowledged.
--(void)testReindex
+- (void)testReindex
 {
     NSLog(@"%@ start", self.name);
     // Leader sends an object to a follower, follower goes offline, both make changes, follower reconnects
@@ -163,7 +163,7 @@
 // (max 50 versions in Simperium). A reindex should be triggered, and that reindex should cross-check with
 // local objects, and delete any that exist locally but not remotely. Any objects created locally but
 // not yet synced should be preserved.
--(void)testDeletionReindex
+- (void)testDeletionReindex
 {
     NSLog(@"%@ start", self.name);
     // Leader sends an object to a follower, follower goes offline, both make changes, follower reconnects

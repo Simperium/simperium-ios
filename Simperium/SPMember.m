@@ -29,7 +29,7 @@ NSString * const OP_LIST_DMP		= @"dL";
 NSString * const OP_OBJECT			= @"O";
 NSString * const OP_STRING			= @"d";
 
--(id)initFromDictionary:(NSDictionary *)dict
+- (id)initFromDictionary:(NSDictionary *)dict
 {
 	if ((self = [self init])) {			
 		keyName = [[dict objectForKey:@"name"] copy];
@@ -45,7 +45,7 @@ NSString * const OP_STRING			= @"d";
 	return [NSString stringWithFormat:@"%@ of type %@", keyName, type];
 }
 
--(NSDictionary *)diffForAddition:(id)data {
+- (NSDictionary *)diffForAddition:(id)data {
     NSMutableDictionary *diff = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                  OP_OBJECT_ADD, OP_OP,
                                  nil];    
@@ -54,7 +54,7 @@ NSString * const OP_STRING			= @"d";
     return diff;
 }
 
--(NSDictionary *)diffForReplacement:(id)data {
+- (NSDictionary *)diffForReplacement:(id)data {
     NSMutableDictionary *diff = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                  OP_REPLACE, OP_OP,
                                  nil];
@@ -64,7 +64,7 @@ NSString * const OP_STRING			= @"d";
 }
 
 
--(NSDictionary *)diffForRemoval {
+- (NSDictionary *)diffForRemoval {
     NSMutableDictionary *diff = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                  OP_OBJECT_REMOVE, OP_OP,
                                  nil];    
@@ -72,29 +72,29 @@ NSString * const OP_STRING			= @"d";
     return diff;
 }
 
--(id)defaultValue {
+- (id)defaultValue {
 	return nil;
 }
 
--(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
+- (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
     id value = [dict objectForKey: key];
     return value;
 }
 
--(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
+- (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
     [dict setValue:value forKey:key];
 }
 
--(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
+- (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
 	return nil;
 }
 
--(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
 	return otherValue;
 }
 
 
--(NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue {
+- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue {
 	// By default, don't perform any transformation
 	return nil;
 }
@@ -104,7 +104,7 @@ NSString * const OP_STRING			= @"d";
 
 /* Could make SPEntity itself a supported member class, and perform diff this way:
  
--(NSDictionary *)diff: (SPEntity *)otherEntity
+- (NSDictionary *)diff: (SPEntity *)otherEntity
 {
 	// changes contains the operations for every key that is different
 	NSMutableDictionary *changes = [NSMutableDictionary dictionary];
