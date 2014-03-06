@@ -12,6 +12,8 @@
 
 
 @class SPBucket;
+typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change);
+
 
 #pragma mark ====================================================================================
 #pragma mark SPChangeProcessor
@@ -41,7 +43,8 @@ extern NSString * const CH_LOCAL_ID;
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
 - (int)numChangesPending;
 - (int)numKeysForObjectsWithMoreChanges;
-- (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(void (^)(NSDictionary *change))block;
+- (void)enumerateReEnqueuedChanges:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
+- (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(SPChangeEnumerationBlockType)block;
 - (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket;
 - (NSArray*)exportPendingChanges;
 @end

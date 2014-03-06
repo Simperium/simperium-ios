@@ -240,6 +240,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	// Everything looks good!
 	} else {
 		self.started = YES;
+		self.indexing = NO;
 		self.simperium.user.email = responseString;
 		
 		if (bucket.lastChangeSignature == nil) {
