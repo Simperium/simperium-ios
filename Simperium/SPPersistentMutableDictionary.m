@@ -335,7 +335,7 @@ static SPLogLevels logLevel					= SPLogLevelsError;
 	// This will cause, as a side effect, SPDictionaryStorage test-database's to get spread in the AppSupport folder.
 	// As a workaround (until we figure out a better way of handling this), let's detect XCTestCase class, and append the Simperium-OSX name to the path.
 	// That will generate an URL like this:
-	//		- //Users/[USER]/Library/Application 0Support/Simperium-OSX/SPDictionaryStorage/
+	//		- //Users/[USER]/Library/Application Support/Simperium-OSX/SPDictionaryStorage/
 	//
 	if (NSClassFromString(@"XCTestCase") != nil) {
 		NSBundle *bundle = [NSBundle bundleForClass:[self class]];
