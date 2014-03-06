@@ -211,6 +211,18 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
     // TODO: Consider ensuring threads are done their work and sending a notification
 }
 
+- (void)reset:(SPBucket *)bucket completion:(SPNetworkInterfaceResetCompletion)completion {
+	// Note: Let's prevent any death lock scenarios. This call should be sync, and we'll hit the callback when appropiate
+    dispatch_async(bucket.processorQueue, ^{
+        [bucket.changeProcessor reset];
+		[bucket setLastChangeSignature:nil];
+		
+		if (completion) {
+			completion();
+		}
+    });
+}
+
 - (void)send:(NSString *)message {
 	if (!self.open) {
 		return;
@@ -359,15 +371,6 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 
 
 #pragma mark - Public Methods
-
-- (void)resetBucketAndWait:(SPBucket *)bucket {
-    // Careful, this will block if the queue has work on it; however, enqueued tasks should empty quickly if the
-    // started flag is set to false
-    dispatch_sync(bucket.processorQueue, ^{
-        [bucket.changeProcessor reset];
-    });
-    [bucket setLastChangeSignature:nil];
-}
 
 - (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object {
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];

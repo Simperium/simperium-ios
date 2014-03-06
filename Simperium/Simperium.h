@@ -135,7 +135,9 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 #endif
 
 // Clears all locally stored data from the device. Can be used to perform a manual sign out.
-- (void)signOutAndRemoveLocalData:(BOOL)remove;
+// Note: This method is now asynchronous. Please, listen to signout delegate calls, or implement a completion callback block.
+typedef void (^SimperiumSignoutCompletion)(void);
+- (void)signOutAndRemoveLocalData:(BOOL)remove completion:(SimperiumSignoutCompletion)completion;
 
 // Shares an object with a particular user's email address (forthcoming).
 //- (void)shareObject:(SPManagedObject *)object withEmail:(NSString *)email;

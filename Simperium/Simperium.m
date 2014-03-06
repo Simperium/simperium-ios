@@ -562,45 +562,50 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 
 
 #pragma mark ====================================================================================
-#pragma mark Manual Authentication
+#pragma mark Signout Helpers
 #pragma mark ====================================================================================
 
-- (void)signOutAndRemoveLocalData:(BOOL)remove {
+- (void)signOutAndRemoveLocalData:(BOOL)remove completion:(SimperiumSignoutCompletion)completion {
+	
     SPLogInfo(@"Simperium logging out...");
     // Reset Simperium: Don't start network managers again; expect app to handle that
     [self stopNetworking];
     
     // Reset the network manager and processors; any enqueued tasks will get skipped
-    for (SPBucket *bucket in [self.buckets allValues]) {
-        [bucket unloadAllObjects];
-        
-        // This will block until everything is all clear
-        [bucket.network resetBucketAndWait:bucket];
-    }
-    
-    // Now delete all local content; no more changes will be coming in at this point
-    if (remove) {
-        SPLogInfo(@"Simperium clearing local data...");
-        self.skipContextProcessing = YES;
-        for (SPBucket *bucket in [self.buckets allValues]) {
-            [bucket deleteAllObjects];
-        }
-        self.skipContextProcessing = NO;
-    } else {
-        SPLogInfo(@"Simperium not clearing local data...");
-    }
-    
-    // Clear the token and user
-    [self.authenticator reset];
-    self.user = nil;
-
-	// We just logged out. Let's display SignIn fields next time!
-	self.shouldSignIn = YES;
+	dispatch_group_t group = dispatch_group_create();
 	
-	// Hit the delegate
-	if ([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
-		[self.delegate simperiumDidLogout:self];
+    for (SPBucket *bucket in self.buckets.allValues) {
+		
+		dispatch_group_enter(group);
+        [bucket unloadAllObjects];
+        [bucket.network reset:bucket completion:^(void) {
+			dispatch_group_leave(group);
+		}];
 	}
+		
+	// Once every changeProcessor queue has been effectively, hit the completion callback
+	dispatch_group_notify(group, dispatch_get_main_queue(), ^(void) {
+		
+		// Now delete all local content; no more changes will be coming in at this point
+		if (remove) {
+			SPLogInfo(@"Simperium clearing local data...");
+			self.skipContextProcessing = YES;
+			[self.buckets.allValues makeObjectsPerformSelector:@selector(deleteAllObjects)];
+			self.skipContextProcessing = NO;
+		}
+
+		// Clear the token and user
+		[self.authenticator reset];
+		self.user = nil;
+
+		// We just logged out. Let's display SignIn fields next time!
+		self.shouldSignIn = YES;
+
+		// Hit the delegate
+		if ([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
+			[self.delegate simperiumDidLogout:self];
+		}
+	});
 }
 
 

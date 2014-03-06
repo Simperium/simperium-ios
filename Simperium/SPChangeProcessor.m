@@ -120,9 +120,12 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
 - (void)reset {
     [self.changesPending removeAllObjects];
-	[self.changesPending save];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
+	[self.keysForObjectsReEnqueued removeAllObjects];
+	
+	[self.changesPending save];
     [self.keysForObjectsWithMoreChanges save];
+	[self.keysForObjectsReEnqueued save];
 }
 
 
