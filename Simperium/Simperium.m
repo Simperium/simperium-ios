@@ -601,9 +601,13 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 		// We just logged out. Let's display SignIn fields next time!
 		self.shouldSignIn = YES;
 
-		// Hit the delegate
+		// Hit the delegate + callback
 		if ([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
 			[self.delegate simperiumDidLogout:self];
+		}
+		
+		if (completion) {
+			completion();
 		}
 	});
 }
