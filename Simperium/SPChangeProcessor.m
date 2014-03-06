@@ -45,7 +45,8 @@ NSString * const CH_DATA            = @"d";
 
 typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	CH_ERRORS_EXPECTATION_FAILED	= 417,		// (e.g. foreign key doesn't exist just yet)
-    CH_ERRORS_INVALID_DIFF			= 440
+    CH_ERRORS_INVALID_DIFF			= 440,
+	CH_ERRORS_THRESHOLD				= 503
 };
 
 
@@ -57,6 +58,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 @property (nonatomic, strong, readwrite) NSString						*instanceLabel;
 @property (nonatomic, strong, readwrite) SPPersistentMutableDictionary	*changesPending;
 @property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsWithMoreChanges;
+@property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsReEnqueued;
 @end
 
 
@@ -73,6 +75,9 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		
 		NSString *moreKey = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", self.instanceLabel];
         self.keysForObjectsWithMoreChanges = [SPPersistentMutableSet loadSetWithLabel:moreKey];
+
+		NSString *reEnqueuedKey = [NSString stringWithFormat:@"keysForObjectsReEnqueued-%@", self.instanceLabel];
+        self.keysForObjectsReEnqueued = [SPPersistentMutableSet loadSetWithLabel:reEnqueuedKey];
 		
 		[self migratePendingChangesIfNeeded];
     }
@@ -135,7 +140,13 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		
 		SPLogError(@"Simperium POST returned error %ld for change %@", errorCode, change);
 		
-		if (errorCode == CH_ERRORS_EXPECTATION_FAILED || errorCode == CH_ERRORS_INVALID_DIFF) {
+		if (errorCode == CH_ERRORS_THRESHOLD) {
+
+			// Re-enqueue failed changes
+			[self.keysForObjectsReEnqueued addObject:key];
+			[self.keysForObjectsReEnqueued save];
+			
+		} else if (errorCode == CH_ERRORS_EXPECTATION_FAILED || errorCode == CH_ERRORS_INVALID_DIFF) {
 			// Resubmit with all data
 			// Create a new context (to be thread-safe) and fetch the entity from it
 			id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
@@ -163,7 +174,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     }
 	
 	[self.changesPending save];
-    
+	
     return repostNeeded;
 }
 
@@ -351,8 +362,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     NSString *key	= [self keyWithoutNamespaces:change bucket:bucket];
 	NSString *error = change[CH_ERROR];
     if (error) {
-        SPLogVerbose(@"Simperium error received (%@) for %@, should reload the object here to be safe", bucket.name, key);
-        [self.changesPending removeObjectForKey:key];
+		// Note: Error handling is performed by 'processRemoteResponseForChanges:' method. Just don't process the change
         return NO;
     }
 	
@@ -539,7 +549,27 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     return change;
 }
 
-- (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(void (^)(NSDictionary *change))block {
+- (void)enumerateReEnqueuedChanges:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
+
+	NSArray *changes = self.keysForObjectsReEnqueued.allObjects;
+	if (changes.count == 0) {
+		return;
+	}
+	
+	SPLogVerbose(@"Simperium found %lu objects with re-enqueued changes to send (%@)", (unsigned long)self.keysForObjectsWithMoreChanges.count, bucket.name);
+		
+	for (NSString *key in changes) {
+		NSDictionary* change = [self.changesPending objectForKey:key];
+		if (change) {
+			block(change);
+		}
+	}
+	
+	[self.keysForObjectsReEnqueued minusSet:[NSSet setWithArray:changes]];
+	[self.keysForObjectsReEnqueued save];
+}
+
+- (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(SPChangeEnumerationBlockType)block {
 
     if (self.keysForObjectsWithMoreChanges.count == 0 && (onlyQueuedChanges || self.changesPending.count == 0)) {
 		return;
