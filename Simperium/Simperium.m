@@ -253,8 +253,6 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 }
 
 
-
-
 #pragma mark ====================================================================================
 #pragma mark New Initialization Methods
 #pragma mark ====================================================================================
@@ -566,13 +564,6 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 #pragma mark ====================================================================================
 #pragma mark Manual Authentication
 #pragma mark ====================================================================================
-
-- (void)authenticateWithToken:(NSString *)token {
-
-	// User's email will be loaded during auth mechanism, if successful
-	self.user = [[SPUser alloc] initWithEmail:@"" token:token];
-    [self startNetworkManagers];
-}
 
 - (void)signOutAndRemoveLocalData:(BOOL)remove {
     SPLogInfo(@"Simperium logging out...");

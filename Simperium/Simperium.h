@@ -134,9 +134,6 @@ typedef void (^SimperiumForceSyncCompletion)(BOOL success);
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
 #endif
 
-// Manual Authentication Mechanism
-- (void)authenticateWithToken:(NSString *)token;
-
 // Clears all locally stored data from the device. Can be used to perform a manual sign out.
 - (void)signOutAndRemoveLocalData:(BOOL)remove;
 
