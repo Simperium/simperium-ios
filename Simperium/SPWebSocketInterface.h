@@ -20,8 +20,6 @@
 
 @interface SPWebSocketInterface : NSObject <SPNetworkInterface>
 
-@property (nonatomic, strong, readonly) SPWebSocket *webSocket;
-
 - (void)loadChannelsForBuckets:(NSDictionary *)bucketList;
 - (void)send:(NSString *)message;
 

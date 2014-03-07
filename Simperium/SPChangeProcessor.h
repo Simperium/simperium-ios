@@ -10,18 +10,13 @@
 #import "SPProcessorNotificationNames.h"
 
 
-
 @class SPBucket;
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
 typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change);
-
-
-#pragma mark ====================================================================================
-#pragma mark SPChangeProcessor
-#pragma mark ====================================================================================
-
-@interface SPChangeProcessor : NSObject
-
-@property (nonatomic, strong, readonly) NSString *label;
 
 extern NSString * const CH_KEY;
 extern NSString * const CH_ADD;
@@ -34,15 +29,26 @@ extern NSString * const CH_END_VERSION;
 extern NSString * const CH_LOCAL_ID;
 
 
+#pragma mark ====================================================================================
+#pragma mark SPChangeProcessor
+#pragma mark ====================================================================================
+
+@interface SPChangeProcessor : NSObject
+
+@property (nonatomic, strong, readonly) NSString	*label;
+@property (nonatomic, assign, readonly) int			numChangesPending;
+@property (nonatomic, assign, readonly) int			numKeysForObjectsWithMoreChanges;
+
 - (id)initWithLabel:(NSString *)label;
+
 - (void)reset;
-- (BOOL)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
+
+- (void)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket repostNeeded:(BOOL *)repostNeeded;
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
 - (void)processLocalChange:(NSDictionary *)change key:(NSString *)key;
+
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later;
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
-- (int)numChangesPending;
-- (int)numKeysForObjectsWithMoreChanges;
 
 - (void)processLocalPendingChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block;
 - (void)processLocalQueuedChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block;

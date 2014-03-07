@@ -131,8 +131,10 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
 #pragma mark Remote changes
 
-- (BOOL)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
-    BOOL repostNeeded = NO;
+- (void)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket repostNeeded:(BOOL *)repostNeeded {
+
+	NSAssert(repostNeeded != nil, @"RepostNeeded is not optional");
+	
     for (NSDictionary *change in changes) {
         if (change[CH_ERROR] == nil) {
 			continue;
@@ -167,7 +169,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 			[object simperiumKey]; // fire fault
 			[newChange setObject:[object dictionary] forKey:CH_DATA];
 			[self.changesPending setObject:newChange forKey:key];
-			repostNeeded = YES;
+			*repostNeeded = YES;
 			
 			[threadSafeStorage finishSafeSection];
 		} else {
@@ -177,8 +179,6 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     }
 	
 	[self.changesPending save];
-	
-    return repostNeeded;
 }
 
 - (BOOL)processRemoteDeleteWithKey:(NSString*)simperiumKey bucket:(SPBucket *)bucket acknowledged:(BOOL)acknowledged {

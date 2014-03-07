@@ -30,18 +30,25 @@
 @property (nonatomic, assign) int					number;
 @property (nonatomic, assign) BOOL					started;
 
+// Object Versions
 - (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
 - (void)requestLatestVersionsForBucket:(SPBucket *)bucket;
+
+// Sending Object Changes
 - (void)sendObjectDeletion:(id<SPDiffable>)object;
 - (void)sendObjectChanges:(id<SPDiffable>)object;
 - (void)sendBucketStatus:(SPBucket *)bucket;
 - (void)removeAllBucketObjects:(SPBucket *)bucket;
 - (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
+
+// Response Handlers
 - (void)handleAuthResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)handleOptions:(NSString *)options bucket:(SPBucket *)bucket;
+
+// Initialization
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket;
 
 + (instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID;
