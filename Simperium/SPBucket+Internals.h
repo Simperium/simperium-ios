@@ -31,12 +31,14 @@ typedef void (^SPBucketForceSyncCompletion)(void);
 @property (nonatomic, strong) SPRelationshipResolver		*relationshipResolver;
 @property (nonatomic, strong) SPChangeProcessor				*changeProcessor;
 @property (nonatomic, strong) SPIndexProcessor				*indexProcessor;
+@property (nonatomic, strong) SPBinaryManager				*binaryManager;
 @property (nonatomic, strong) dispatch_queue_t				processorQueue;
 @property (nonatomic,   copy) SPBucketForceSyncCompletion	forceSyncCompletion;
 
 - (id)initWithSchema:(SPSchema *)aSchema
-             storage:(id<SPStorageProvider>)aStorage
+			 storage:(id<SPStorageProvider>)aStorage
 	networkInterface:(id<SPNetworkInterface>)netInterface
+	   binaryManager:(SPBinaryManager *)binaryManager
 relationshipResolver:(SPRelationshipResolver *)resolver
                label:(NSString *)label
 		  remoteName:(NSString *)remoteName;

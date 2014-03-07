@@ -10,8 +10,8 @@
 
 
 @implementation Config
+
 @dynamic warpSpeed;
-@dynamic binaryFile;
 @dynamic captainsLog;
 @dynamic shieldsUp;
 @dynamic shieldPercent;

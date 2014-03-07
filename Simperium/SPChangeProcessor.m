@@ -12,7 +12,6 @@
 #import "SPManagedObject.h"
 #import "NSString+Simperium.h"
 #import "SPDiffer.h"
-#import "SPBinaryManager.h"
 #import "SPStorage.h"
 #import "SPMember.h"
 #import "JSONKit+Simperium.h"
@@ -20,6 +19,10 @@
 #import "SPLogger.h"
 #import "SPBucket+Internals.h"
 #import "SPDiffer.h"
+#import "SPSchema.h"
+#import "SPBinaryManager+Internals.h"
+#import "SPMemberBinaryInfo.h"
+
 
 
 
@@ -498,12 +501,19 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 }
 
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later {
+		
     // Create a new context (to be thread-safe) and fetch the entity from it
     id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
 	[storage beginSafeSection];
 	
     id<SPDiffable> object = [storage objectForKey:key bucketName:bucket.name];
     
+    // Handle Binary Members!
+	for(SPMemberBinaryInfo* member in bucket.differ.schema.binaryMembers) {
+		NSData *binaryData = [[object simperiumValueForKey:member.dataKey] copy];
+		[bucket.binaryManager uploadIfNeeded:bucket.name simperiumKey:key dataKey:member.dataKey infoKey:member.infoKey binaryData:binaryData];
+	}
+	
     // If the object no longer exists, it was likely previously deleted, in which case this change is no longer
     // relevant
     if (!object) {

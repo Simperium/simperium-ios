@@ -20,6 +20,7 @@
 
 
 @implementation Farm
+
 @synthesize managedObjectContext		= __managedObjectContext;
 @synthesize managedObjectModel			= __managedObjectModel;
 @synthesize persistentStoreCoordinator	= __persistentStoreCoordinator;
@@ -30,6 +31,9 @@
         self.done = NO;
         
         self.simperium = [[Simperium alloc] initWithRootViewController:nil];
+
+        // Some stuff is stored in user prefs / keychain, so be sure to remove it
+        [self.simperium signOutAndRemoveLocalData:YES];
         
         // Setting a label allows each Simperium instance to store user prefs under a different key
         // (be sure to do this before the call to clearLocalData)
@@ -37,6 +41,7 @@
         
         [self.simperium setAuthenticationEnabled:NO];
         [self.simperium setVerboseLoggingEnabled:YES];
+
         self.token = aToken;
     }
     return self;
@@ -59,6 +64,8 @@
     
     [self.simperium setAllBucketDelegates: self];
     
+	[self.simperium.binaryManager setDelegate:self];
+	
     self.simperium.user = [[SPUser alloc] initWithEmail:USERNAME token:self.token];
 	
 	
@@ -93,7 +100,7 @@
 
 - (BOOL)isDone {
     return self.expectedAcknowledgments == 0 && self.expectedChanges == 0 && self.expectedAdditions == 0 && self.expectedDeletions == 0
-        && self.expectedVersions == 0 && self.expectedIndexCompletions == 0;
+        && self.expectedVersions == 0 && self.expectedIndexCompletions == 0 && self.expectedBinaryUploads == 0 && self.expectedBinaryDownloads == 0;
 }
 
 - (void)resetExpectations {
@@ -103,12 +110,15 @@
     self.expectedDeletions = 0;
     self.expectedVersions = 0;
     self.expectedIndexCompletions = 0;
+	self.expectedBinaryDownloads = 0;
+	self.expectedBinaryUploads = 0;
 }
 
 - (void)logUnfulfilledExpectations {
     if (![self isDone]) {
-        NSLog(@"[%@] %@ acks: %d changes: %d adds: %d dels: %d idxs: %d", NSStringFromClass([self class]), self.simperium.label, self.expectedAcknowledgments,
-			  self.expectedChanges, self.expectedAdditions, self.expectedDeletions, self.expectedIndexCompletions);
+        NSLog(@"[%@] %@ acks: %d changes: %d adds: %d dels: %d idxs: %d uploads: %d downloads: %d",
+			  NSStringFromClass([self class]), self.simperium.label, self.expectedAcknowledgments, self.expectedChanges, self.expectedAdditions,
+			  self.expectedDeletions, self.expectedIndexCompletions, self.expectedBinaryUploads, self.expectedBinaryDownloads);
 	}
 }
 
@@ -120,6 +130,20 @@
 - (void)disconnect {
     [self.simperium performSelector:@selector(stopNetworkManagers)];
 }
+
+
+#pragma mark - SPBinaryManager Delegate Methods
+
+- (void)binaryUploadSuccessful:(NSDictionary *)uploadInfo {
+	self.expectedBinaryUploads -= 1;
+}
+
+- (void)binaryDownloadSuccessful:(NSDictionary *)downloadInfo {
+	self.expectedBinaryDownloads -= 1;
+}
+
+
+#pragma mark - SPBucket Delegate Methods
 
 - (void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)change memberNames:(NSArray *)memberNames {
     switch(change) {

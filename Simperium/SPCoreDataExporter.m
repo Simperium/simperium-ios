@@ -8,15 +8,8 @@
 
 #import "SPCoreDataExporter.h"
 #import "SPManagedObject.h"
-#import "SPLogger.h"
+#import "SPMemberBinaryInfo.h"
 
-
-
-#pragma mark ====================================================================================
-#pragma mark Constants
-#pragma mark ====================================================================================
-
-static SPLogLevels logLevel = SPLogLevelsInfo;
 
 
 #pragma mark ====================================================================================
@@ -25,18 +18,13 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
 @implementation SPCoreDataExporter
 
-- (id)init {
-    if ((self = [super init])) {
-    }
-    return self;
-}
-
 - (NSString *)simperiumTypeForAttribute:(NSAttributeDescription *)attribute
 {
     // Check for overrides first
     NSString *override = [[attribute userInfo] objectForKey:@"spOverride"];
-    if (override)
+    if (override) {
         return override;
+	}
     
     switch ([attribute attributeType]) {
         case NSStringAttributeType: return @"text";
@@ -56,43 +44,82 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 - (BOOL)attributeAddedBySimperium:(NSAttributeDescription *) attr {
     return [[attr name] compare:@"simperiumKey"] == NSOrderedSame ||
         [[attr name] compare:@"ghostData"] == NSOrderedSame;
-    
-    // The below doesn't seem to work in iOS 5
-    //NSEntityDescription *ownerEntity = [attr entity];
-    //return [[ownerEntity name] compare: @"SPEntity"] == NSOrderedSame;
+}
+
+-(void)prepareBinaryAttributesFrom:(NSEntityDescription *)entityDesc
+{
+	/**		
+		Notes:
+		======
+		Binary Sync needs two attributes:
+			- [name]	 :: NSBinaryDataAttributeType
+			- [name]Info :: NSStringAttributeType
+	
+		The Info attribute needs an 'spOverride' with 'binaryInfo' in it.
+		In this method we'll enforce that if the 'Data' attribute is present, an 'Info' counterpart should be present as well.
+		Plus, we'll inject the binaryInfo override, so the metadata can be handled by SPMemberBinaryInfo
+	 */
+	
+    for (NSAttributeDescription *attr in [entityDesc.attributesByName allValues]) {
+		if(attr.attributeType != NSBinaryDataAttributeType) {
+			continue;
+		}
+		
+		NSString *infoKey = [attr.name stringByAppendingString:SPMemberBinaryInfoSuffix];
+		NSAttributeDescription *infoAttr = [[entityDesc attributesByName] objectForKey:infoKey];
+		NSAssert(infoAttr, @"Simperium: Missing metadata attribute [%@] for Binary Member [%@]", infoKey, attr.name);
+		
+		// Inject the binaryInfo override: The Binary Metadata attribute needs to be handled by SPMemberBinaryInfo
+		NSMutableDictionary *userInfo = [infoAttr.userInfo mutableCopy];
+		userInfo[@"spOverride"] = @"binaryInfo";
+		infoAttr.userInfo = userInfo;
+	}
 }
 
 - (void)addMembersFrom:(NSEntityDescription *)entityDesc to:(NSMutableArray *)members {
     // Don't add members from SPManagedObject
-    if ([[entityDesc name] compare:@"SPManagedObject"] == NSOrderedSame)
+    if ([[entityDesc name] compare:NSStringFromClass([SPManagedObject class])] == NSOrderedSame) {
         return;
-        
+	}
+    
     for (NSAttributeDescription *attr in [[entityDesc attributesByName] allValues]) {
         // Don't sync certain attributes
-        if ([self attributeAddedBySimperium:attr])
+        if ([self attributeAddedBySimperium:attr]) {
             continue;
+		}
         
-        if ([attr isTransient])
+        if ([attr isTransient]) {
             continue;
+		}
+		
+		// Don't export binaryData attributes. Those fields will be handled by SPBinaryManager
+		if (attr.attributeType == NSBinaryDataAttributeType) {
+			continue;
+		}
         
         // Attributes can be manually excluded from syncing
-        if ([[attr userInfo] objectForKey:@"spDisableSync"])
+        if ([[attr userInfo] objectForKey:@"spDisableSync"]) {
             continue;
+		}
         
         NSMutableDictionary *member = [NSMutableDictionary dictionaryWithCapacity:4];
 
         id defaultValue = [attr defaultValue];
-        if (defaultValue)
+        if (defaultValue) {
             [member setObject:defaultValue forKey:@"defaultValue"];
-
-        [member setObject:[attr name] forKey:@"name"];
-        [member setObject:@"default" forKey:@"resolutionPolicy"];
+		}
+		
         NSString *type = [self simperiumTypeForAttribute: attr];
         NSAssert1(type != nil, @"Simperium couldn't load member %@ (unsupported type)", [attr name]);
-        [member setObject: type forKey:@"type"];
+		
+        [member setObject:type forKey:@"type"];
+        [member setObject:attr.name forKey:@"name"];
+        [member setObject:@"default" forKey:@"resolutionPolicy"];
+		
         if (attr.attributeType == NSTransformableAttributeType && attr.valueTransformerName != nil) {
             [member setObject:attr.valueTransformerName forKey:@"valueTransformerName"];
         }
+		
         [members addObject: member];
     }
     
@@ -100,13 +127,15 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
         NSRelationshipDescription *rel = [[entityDesc relationshipsByName] objectForKey:relationshipName];
         
         // Relationships can be manually excluded from syncing
-        if ([[rel userInfo] objectForKey:@"spDisableSync"])
+        if ([[rel userInfo] objectForKey:@"spDisableSync"]) {
             continue;
+		}
         
         // For now, we're only syncing relationships from many-to-one, not one-to-many, unless there's no inverse
         // (in which case the many-to-one won't exist)
-        if ([rel isToMany] && [rel inverseRelationship] != nil)
+        if ([rel isToMany] && [rel inverseRelationship] != nil) {
             continue;
+		}
         
         NSMutableDictionary *member = [NSMutableDictionary dictionaryWithCapacity:4];
         [member setObject:[rel name] forKey:@"name"];
@@ -125,22 +154,25 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 - (NSDictionary *)exportModel:(NSManagedObjectModel *)model classMappings:(NSMutableDictionary *)classMappings {
     // Construct a dictionary
     NSMutableDictionary *definitions = [NSMutableDictionary dictionaryWithCapacity:[[model entities] count]];
-    for (NSEntityDescription *entityDesc in [model entities])
-    {
+    for (NSEntityDescription *entityDesc in model.entities) {
         // Certain entities don't need to be synced
-        if ([entityDesc isAbstract])
+        if ([entityDesc isAbstract]) {
             continue;
+		}
         
-        if ([[entityDesc userInfo] objectForKey:@"spDisableSync"])
+        if ([[entityDesc userInfo] objectForKey:@"spDisableSync"]) {
             continue;
+		}
         
-        if ([[entityDesc name] compare:@"SPManagedObject"] == NSOrderedSame)
+        if ([[entityDesc name] compare:NSStringFromClass([SPManagedObject class])] == NSOrderedSame) {
             continue;
+		}
         
         NSString *className = [entityDesc managedObjectClassName];
         Class cls = NSClassFromString(className);
-        if (![cls isSubclassOfClass:[SPManagedObject class]])
+        if (![cls isSubclassOfClass:[SPManagedObject class]]) {
             continue;
+		}
         
         // Load the entity data
         NSMutableDictionary *data = [NSMutableDictionary dictionaryWithCapacity: 3];
@@ -154,19 +186,24 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
         NSMutableArray *members = [NSMutableArray arrayWithCapacity:[[entityDesc properties] count]];
         [data setObject: members forKey:@"members"];
         
+		// Validate & Wire Binary Attributes!
+		[self prepareBinaryAttributesFrom:entityDesc];
+		
         // Add all this entity's attributes and relationships
         [self addMembersFrom:entityDesc to:members];
         
         [classMappings setObject:className forKey: [entityDesc name]];
     }
     
-    return definitions;
-    
+#ifdef DEBUG_EXPORT_OUTPUT
     // For now, just print to log to make sure the export worked
     // Also freeze; copy/paste the log to a file, then comment out the export line so
     // this doesn't run again (hacky)
-    SPLogVerbose(@"Simperium result of Core Data export: %@", definitions);
-    //NSAssert(0, @"Asserting to look at export log (hack)");
+    NSLog(@"Simperium result of Core Data export: %@", definitions);
+    NSAssert(0, @"Asserting to look at export log (hack)");
+#endif
+	
+    return definitions;
 }
 
 @end

@@ -10,8 +10,11 @@
 #import "Simperium.h"
 #import "Config.h"
 #import "SPBucket.h"
+#import "SPBinaryManager.h"
 
-@interface Farm : NSObject <SimperiumDelegate, SPBucketDelegate>
+
+
+@interface Farm : NSObject <SimperiumDelegate, SPBucketDelegate, SPBinaryManagerDelegate>
 
 @property (nonatomic, strong, readwrite) Simperium						*simperium;
 @property (nonatomic, strong, readwrite) Config							*config;
@@ -23,6 +26,8 @@
 @property (nonatomic, assign, readwrite) int							expectedChanges;
 @property (nonatomic, assign, readwrite) int							expectedVersions;
 @property (nonatomic, assign, readwrite) int							expectedIndexCompletions;
+@property (nonatomic, assign, readwrite) int							expectedBinaryUploads;
+@property (nonatomic, assign, readwrite) int							expectedBinaryDownloads;
 @property (nonatomic, strong, readonly)  NSManagedObjectContext			*managedObjectContext;
 @property (nonatomic, strong, readonly)  NSManagedObjectModel			*managedObjectModel;
 @property (nonatomic, strong, readonly)  NSPersistentStoreCoordinator	*persistentStoreCoordinator;

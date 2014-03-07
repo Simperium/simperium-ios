@@ -7,64 +7,37 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SPBinaryTransportDelegate.h"
 
-#define BIN_KEY @"SPPathKey"
-#define BIN_BUCKET @"SPPathBucket"
-#define BIN_ATTRIBUTE @"SPPathAttribute"
 
-@class Simperium;
-@class SPUser;
-@class SPManagedObject;
+#pragma mark ====================================================================================
+#pragma mark SPBinaryManagerDelegate
+#pragma mark ====================================================================================
 
-@interface SPBinaryManager : NSObject <SPBinaryTransportDelegate> {
-    NSMutableDictionary *pendingBinaryDownloads;
-    NSMutableDictionary *pendingBinaryUploads;
-    NSMutableDictionary *transmissionProgress;
-    Simperium *simperium;
-    NSMutableSet *delegates;
-    NSString *binaryAuthURL;
-    NSString *directory;
-    NSString *keyPrefix;
-}
+extern NSString* const SPBinaryManagerBucketNameKey;
+extern NSString* const SPBinaryManagerSimperiumKey;
+extern NSString* const SPBinaryManagerAttributeDataKey;
+extern NSString* const SPBinaryManagerAttributeInfoKey;
+extern NSString* const SPBinaryManagerHashKey;
 
-@property (nonatomic, copy) NSString *binaryAuthURL;
-@property (nonatomic, copy) NSString *directory;
-@property (nonatomic, copy) NSString *keyPrefix;
-@property(nonatomic, strong, readonly) NSMutableDictionary *pendingBinaryDownloads;
-@property(nonatomic, strong, readonly) NSMutableDictionary *pendingBinaryUploads;
-@property(nonatomic, strong, readonly) NSMutableDictionary *transmissionProgress;
 
-@property (nonatomic, readonly, strong) NSMutableSet *delegates;
+@protocol SPBinaryManagerDelegate <NSObject>
+@optional
+-(void)binaryUploadStarted:(NSDictionary *)uploadInfo;
+-(void)binaryUploadSuccessful:(NSDictionary *)uploadInfo;
+-(void)binaryUploadFailed:(NSDictionary *)uploadInfo error:(NSError *)error;
+-(void)binaryUploadProgress:(NSDictionary *)uploadInfo progress:(float)progress;
 
--(id)initWithSimperium:(Simperium *)aSimperium;
--(void)setupAuth:(SPUser *)user;
--(BOOL)checkOrGetBinaryAuthentication;
+-(void)binaryDownloadStarted:(NSDictionary *)downloadInfo;
+-(void)binaryDownloadSuccessful:(NSDictionary *)downloadInfo;
+-(void)binaryDownloadFailed:(NSDictionary *)downloadInfo error:(NSError *)error;
+-(void)binaryDownloadProgress:(NSDictionary *)downloadInfo progress:(float)progress;
+@end
 
--(BOOL)binaryExists:(NSString *)filename;
--(void)addPendingReferenceToFile:(NSString *)filename fromKey:(NSString *)fromKey bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
--(void)resolvePendingReferencesToFile:(NSString *)filename;
 
--(void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
--(NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
--(NSData *)dataForFilename:(NSString *)filename;
--(NSString *)pathForFilename:(NSString *)filename;
+#pragma mark ====================================================================================
+#pragma mark SPBinaryManager
+#pragma mark ====================================================================================
 
--(void)startDownloading:(NSString *)filename;
--(void)startUploading:(NSString *)filename;
-
--(void)finishedDownloading:(NSString *)filename;
--(void)finishedUploading:(NSString *)filename;
-
--(int)sizeOfLocalFile:(NSString *)filename;
--(int)sizeOfRemoteFile:(NSString *)filename;
-
--(BOOL)createLocalDirectoryForPrefix: (NSString *)prefixString;
--(NSString *)prefixFilename:(NSString *)filename;
-
--(int)sizeRemainingToTransmit:(NSString *)filename;
-
--(void)addDelegate:(id)delegate;
--(void)removeDelegate:(id)delegate;
-
+@interface SPBinaryManager : NSObject
+@property (nonatomic, weak, readwrite) id<SPBinaryManagerDelegate> delegate;
 @end

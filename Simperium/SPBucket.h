@@ -17,6 +17,7 @@
 @class SPChangeProcessor;
 @class SPIndexProcessor;
 @class SPRelationshipResolver;
+@class SPBinaryManager;
 
 /** SPBucketChangeType is used in the bucket:didChangeObjectForKey:forChangeType: method of SPBucketDelegate. It's similar to NSFetchedResultsChangeType, which is used with an NSFetchedResultsControllerDelegate.
  */

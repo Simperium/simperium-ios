@@ -19,7 +19,7 @@
 #import "SPMemberJSONList.h"
 #import "SPMemberList.h"
 #import "SPMemberBase64.h"
-#import "SPMemberBinary.h"
+#import "SPMemberBinaryInfo.h"
 
 @implementation SPSchema
 @synthesize bucketName;
@@ -28,6 +28,7 @@
 @synthesize dynamic;
 
 // Maps primitive type strings to base member classes
+
 - (Class)memberClassForType:(NSString *)type {
 	
 	static NSDictionary *memberMap = nil;
@@ -35,17 +36,17 @@
 	
 	dispatch_once(&onceToken, ^{
 		memberMap = @{
-			@"text"		: NSStringFromClass([SPMemberText class]),
-			@"int"		: NSStringFromClass([SPMemberInt class]),
-			@"bool"		: NSStringFromClass([SPMemberInt class]),
-			@"date"		: NSStringFromClass([SPMemberDate class]),
-			@"entity"	: NSStringFromClass([SPMemberEntity class]),
-			@"double"	: NSStringFromClass([SPMemberDouble class]),
-			@"binary"	: NSStringFromClass([SPMemberBinary class]),
-			@"list"		: NSStringFromClass([SPMemberList class]),
-			@"json"		: NSStringFromClass([SPMemberJSON class]),
-			@"jsonlist" : NSStringFromClass([SPMemberJSONList class]),
-			@"base64"	: NSStringFromClass([SPMemberBase64 class])
+			@"text"			: NSStringFromClass([SPMemberText class]),
+			@"int"			: NSStringFromClass([SPMemberInt class]),
+			@"bool"			: NSStringFromClass([SPMemberInt class]),
+			@"date"			: NSStringFromClass([SPMemberDate class]),
+			@"entity"		: NSStringFromClass([SPMemberEntity class]),
+			@"double"		: NSStringFromClass([SPMemberDouble class]),
+			@"binaryInfo"	: NSStringFromClass([SPMemberBinaryInfo class]),
+			@"list"			: NSStringFromClass([SPMemberList class]),
+			@"json"			: NSStringFromClass([SPMemberJSON class]),
+			@"jsonlist"		: NSStringFromClass([SPMemberJSONList class]),
+			@"base64"		: NSStringFromClass([SPMemberBase64 class])
 		};
 	});
 	
@@ -68,25 +69,27 @@
 				[members setObject:member forKey:member.keyName];
 			}
 			
-            if ([member isKindOfClass:[SPMemberBinary class]])
+            if ([member isKindOfClass:[SPMemberBinaryInfo class]]) {
                 [binaryMembers addObject: member];
-        }        
+			}
+        }
     }
     
     return self;
 }
-
 
 - (NSString *)bucketName {
 	return bucketName;
 }
 
 - (void)addMemberForObject:(id)object key:(NSString *)key {
-    if (!dynamic)
+    if (!dynamic) {
         return;
+	}
     
-    if ([self memberForKey:key])
+    if ([self memberForKey:key]) {
         return;
+	}
     
     NSString *type = @"unsupported";
     if ([object isKindOfClass:[NSString class]])
@@ -113,8 +116,9 @@
     // This now gets called after some data might already have been set, so be careful
     // not to overwrite it
     for (SPMember *member in [members allValues]) {
-        if (member.modelDefaultValue == nil && [object simperiumValueForKey:member.keyName] == nil)
+        if (member.modelDefaultValue == nil && [object simperiumValueForKey:member.keyName] == nil) {
             [object simperiumSetValue:[member defaultValue] forKey:member.keyName];
+		}
     }
 }
 

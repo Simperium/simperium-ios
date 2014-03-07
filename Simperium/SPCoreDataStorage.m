@@ -478,10 +478,15 @@ static NSInteger const SPWorkersDone	= 0;
     NSSet *insertedObjects = [notification.userInfo objectForKey:NSInsertedObjectsKey];
 
     for (NSManagedObject *insertedObject in insertedObjects) {
-        if ([insertedObject isKindOfClass:[SPManagedObject class]]) {
-            SPManagedObject *object = (SPManagedObject *)insertedObject;
-            [self configureInsertedObject: object];
-        }
+        if ([insertedObject isKindOfClass:[SPManagedObject class]] == NO) {
+			continue;
+		}
+		
+		// Make sure the object still exits before proceeding!
+		SPManagedObject *object = (SPManagedObject *)[self.mainManagedObjectContext existingObjectWithID:insertedObject.objectID error:nil];
+		if (object) {
+			[self configureInsertedObject: object];
+		}
     }
 }
 
@@ -508,7 +513,7 @@ static NSInteger const SPWorkersDone	= 0;
 		for (NSManagedObject* childMO in updated) {
 			
 			// Do not use 'objectWithId': might return an object that already got deleted
-			NSManagedObject* localMO = [self.mainManagedObjectContext existingObjectWithID:childMO.objectID error:nil];
+			NSManagedObject* localMO = [mainMOC existingObjectWithID:childMO.objectID error:nil];
 			if (localMO.isFault) {
 				[localMO willAccessValueForKey:nil];
 			}

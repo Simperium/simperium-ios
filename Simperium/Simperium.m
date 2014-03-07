@@ -9,10 +9,11 @@
 #import "SPUser.h"
 #import "SPSchema.h"
 #import "SPManagedObject.h"
-#import "SPBinaryManager.h"
+#import "SPBinaryManager+Internals.h"
+#import "SPJSONStorage.h"
 #import "SPStorageObserver.h"
 #import "SPMember.h"
-#import "SPMemberBinary.h"
+#import "SPMemberBinaryInfo.h"
 #import "SPDiffer.h"
 #import "SPGhost.h"
 #import "SPEnvironment.h"
@@ -93,32 +94,9 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 	return self;
 }
 
-- (void)configureBinaryManager:(SPBinaryManager *)manager {    
-    // Binary members need to know about the manager (ugly but avoids singleton/global)
-    for (SPBucket *bucket in [self.buckets allValues]) {
-        for (SPMemberBinary *binaryMember in bucket.differ.schema.binaryMembers) {
-            binaryMember.binaryManager = manager;
-        }
-    }
-}
-
-- (NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName {
-    return [self.binaryManager addBinary:binaryData toObject:object bucketName:bucketName attributeName:attributeName];
-}
-
-- (void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName {
-    // Make sure the object has a simperiumKey (it might not if it was just created)
-    if (!object.simperiumKey)
-        object.simperiumKey = [NSString sp_makeUUID];
-    return [self.binaryManager addBinaryWithFilename:filename toObject:object bucketName:bucketName attributeName:attributeName];
-}
-
-- (NSData *)dataForFilename:(NSString *)filename {
-    return [self.binaryManager dataForFilename:filename];
-}
-
-- (SPBucket *)bucketForName:(NSString *)name { 
+- (SPBucket *)bucketForName:(NSString *)name {
     SPBucket *bucket = [self.buckets objectForKey:name];
+
     if (!bucket) {
         // First check for an override
         for (SPBucket *someBucket in self.buckets.allValues) {
@@ -135,7 +113,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 						
 			// New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
 			NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
-			bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkInterface:self.network
+			bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkInterface:self.network binaryManager:self.binaryManager
 								 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName];
 
 			[self.buckets setObject:bucket forKey:name];
@@ -161,6 +139,9 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     for (SPBucket *bucket in [self.buckets allValues]) {
         [bucket.network start:bucket];
 	}
+	
+	[self.binaryManager start];
+	
     self.networkManagersStarted = YES;
 }
 
@@ -172,6 +153,8 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     for (SPBucket *bucket in [self.buckets allValues]) {
         [bucket.network stop:bucket];
     }
+	
+	[self.binaryManager stop];
 	
     self.networkManagersStarted = NO;
 }
@@ -220,9 +203,9 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     for (SPSchema *schema in schemas) {
 //        Class entityClass = NSClassFromString(schema.bucketName);
 //        NSAssert1(entityClass != nil, @"Simperium error: couldn't find a class mapping for: ", schema.bucketName);
-        
+
 		NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
-		bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
+		bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network binaryManager:self.binaryManager
 							 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName];
         
         [bucketList setObject:bucket forKey:schema.bucketName];
@@ -367,7 +350,11 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 	SPWebSocketInterface *websocket = [SPWebSocketInterface interfaceWithSimperium:self appURL:self.appURL clientID:self.clientID];;
 	self.network = websocket;
     
-    // Get the schemas from Core Data
+	// Setup BinaryManager
+	SPBinaryManager *binary = [[SPBinaryManager alloc] initWithSimperium:self];
+	self.binaryManager = binary;
+	
+    // Get the schema from Core Data
     NSArray *schemas = [self.coreDataStorage exportSchemas];
     
     // Load but don't start yet
@@ -378,10 +365,6 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     
     // Load metadata for pending references among objects
     [self.relationshipResolver loadPendingRelationships:self.coreDataStorage];
-    
-    if (self.binaryManager) {
-        [self configureBinaryManager:self.binaryManager];
-	}
     
     // With everything configured, all objects can now be validated. This will pick up any objects that aren't yet
     // known to Simperium (for the case where you're adding Simperium to an existing app).
@@ -594,6 +577,9 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 			self.skipContextProcessing = NO;
 		}
 
+		// Reset the binary manager!
+		[self.binaryManager reset];
+		
 		// Clear the token and user
 		[self.authenticator reset];
 		self.user = nil;
@@ -676,7 +662,6 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 - (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token {
-    [self.binaryManager setupAuth:self.user];
     
     // It's now safe to start the network managers
     [self startNetworking];

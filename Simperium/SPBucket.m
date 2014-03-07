@@ -17,6 +17,7 @@
 #import "SPGhost.h"
 #import "JSONKit+Simperium.h"
 #import "SPRelationshipResolver.h"
+#import "SPBinaryManager.h"
 
 
 
@@ -25,7 +26,8 @@
 @synthesize lastChangeSignature = _lastChangeSignature;
 
 - (id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
-relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label remoteName:(NSString *)remoteName
+	   binaryManager:(SPBinaryManager *)binaryManager relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label
+		  remoteName:(NSString *)remoteName
 {
     if ((self = [super init])) {
         self.name = aSchema.bucketName;
@@ -33,7 +35,8 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
         self.storage = aStorage;
         self.network = netInterface;
         self.relationshipResolver = resolver;
-
+		self.binaryManager = binaryManager;
+		
         SPDiffer *aDiffer = [[SPDiffer alloc] initWithSchema:aSchema];
         self.differ = aDiffer;
 

@@ -9,10 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "SPManagedObject.h"
 
+
 @interface TestObject : SPManagedObject
-
 - (BOOL)isEqualToObject:(TestObject *)other;
-
 + (NSString *)entityName;
-
 @end
