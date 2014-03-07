@@ -88,12 +88,14 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 #pragma mark ====================================================================================
 
 - (void)save {
-    NSString *json = [[self.contents allObjects] sp_JSONString];
-	
-	NSError *error = nil;
-	BOOL success = [json writeToURL:self.mutableSetURL atomically:NO encoding:NSUTF8StringEncoding error:&error];
-	if (!success) {
-		SPLogError(@"<> %@ :: %@", NSStringFromClass([self class]), error);
+	@autoreleasepool {		
+		NSString *json = [[self.contents allObjects] sp_JSONString];
+		
+		NSError *error = nil;
+		BOOL success = [json writeToURL:self.mutableSetURL atomically:NO encoding:NSUTF8StringEncoding error:&error];
+		if (!success) {
+			SPLogError(@"<> %@ :: %@", NSStringFromClass([self class]), error);
+		}
 	}
 }
 
