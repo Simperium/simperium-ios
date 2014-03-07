@@ -8,7 +8,6 @@
 
 #import "SPWebSocketChannel.h"
 
-#define DEBUG_REQUEST_STATUS
 #import "SPEnvironment.h"
 #import "Simperium.h"
 #import "SPDiffer.h"
@@ -270,7 +269,10 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	});
 }
 
+
+#pragma mark ====================================================================================
 #pragma mark Index handling
+#pragma mark ====================================================================================
 
 - (void)requestLatestVersionsForBucket:(SPBucket *)bucket mark:(NSString *)mark {
     if (!self.simperium.user) {
@@ -494,7 +496,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
 - (void)allVersionsFinishedForBucket:(SPBucket *)bucket {
     [self processBatchForBucket:bucket];
-    [self resetRetryDelay];
 
     SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
 
@@ -544,7 +545,9 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 }
 
 
+#pragma mark ====================================================================================
 #pragma mark Object Versions
+#pragma mark ====================================================================================
 
 - (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object {
     // If already retrieving versions on this channel, don't do it again
@@ -565,15 +568,19 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 }
 
 
+#pragma mark ====================================================================================
 #pragma mark Sharing
+#pragma mark ====================================================================================
 
 - (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email {
     // Not yet implemented with WebSockets
 }
 
 
-#pragma mark Static Helpers: 
+#pragma mark ====================================================================================
+#pragma mark Static Helpers:
 #pragma mark MockWebSocketChannel relies on this mechanism to register itself, while running the Unit Testing target
+#pragma mark ====================================================================================
 
 static Class _class;
 
