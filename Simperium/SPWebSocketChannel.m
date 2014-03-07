@@ -86,10 +86,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	
 	SPChangeEnumerationBlockType block = ^(NSDictionary *change) {
 		dispatch_async(dispatch_get_main_queue(), ^{
-			if (!self.started) {
-				return;
-			}
-			
 			NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [change sp_JSONString]];
 			SPLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
 			[self.webSocketManager send:message];
@@ -99,8 +95,15 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
     dispatch_async(bucket.processorQueue, ^{
 		
-		[bucket.changeProcessor enumerateReEnqueuedChanges:bucket block:block];
-		[bucket.changeProcessor enumeratePendingChanges:bucket onlyQueuedChanges:onlyQueuedChanges block:block];
+		if (onlyQueuedChanges) {
+			[bucket.changeProcessor processLocalRetryChanges:bucket enumerateUsingBlock:block];
+		} else {
+			// Pending changes include those flagged for retry as well
+			[bucket.changeProcessor processLocalPendingChanges:bucket enumerateUsingBlock:block];
+		}
+		
+		// Let's always process queued changes
+		[bucket.changeProcessor processLocalQueuedChanges:bucket enumerateUsingBlock:block];
 		
 		if (completionBlock) {
 			dispatch_async(dispatch_get_main_queue(), ^{
@@ -115,8 +118,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     
     [bucket.changeProcessor processLocalChange:change key:key];
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSString *jsonStr = [change sp_JSONString];
-        NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, jsonStr];
+        NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [change sp_JSONString]];
         SPLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
         [self.webSocketManager send:message];
     });

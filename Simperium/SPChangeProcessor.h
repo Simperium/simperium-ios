@@ -21,7 +21,7 @@ typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change);
 
 @interface SPChangeProcessor : NSObject
 
-@property (nonatomic, strong, readonly) NSString *instanceLabel;
+@property (nonatomic, strong, readonly) NSString *label;
 
 extern NSString * const CH_KEY;
 extern NSString * const CH_ADD;
@@ -43,8 +43,11 @@ extern NSString * const CH_LOCAL_ID;
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
 - (int)numChangesPending;
 - (int)numKeysForObjectsWithMoreChanges;
-- (void)enumerateReEnqueuedChanges:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
-- (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(SPChangeEnumerationBlockType)block;
-- (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket;
+
+- (void)processLocalPendingChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block;
+- (void)processLocalQueuedChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block;
+- (void)processLocalRetryChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block;
+
 - (NSArray*)exportPendingChanges;
+
 @end

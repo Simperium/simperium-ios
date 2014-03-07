@@ -55,10 +55,10 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 #pragma mark ====================================================================================
 
 @interface SPChangeProcessor()
-@property (nonatomic, strong, readwrite) NSString						*instanceLabel;
+@property (nonatomic, strong, readwrite) NSString						*label;
 @property (nonatomic, strong, readwrite) SPPersistentMutableDictionary	*changesPending;
 @property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsWithMoreChanges;
-@property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsReEnqueued;
+@property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsWithPendingRetry;
 @end
 
 
@@ -70,14 +70,14 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 
 - (id)initWithLabel:(NSString *)label {
     if (self = [super init]) {
-        self.instanceLabel	= label;
+        self.label			= label;
 		self.changesPending = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
 		
-		NSString *moreKey = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", self.instanceLabel];
+		NSString *moreKey = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", label];
         self.keysForObjectsWithMoreChanges = [SPPersistentMutableSet loadSetWithLabel:moreKey];
-
-		NSString *reEnqueuedKey = [NSString stringWithFormat:@"keysForObjectsReEnqueued-%@", self.instanceLabel];
-        self.keysForObjectsReEnqueued = [SPPersistentMutableSet loadSetWithLabel:reEnqueuedKey];
+		
+		NSString *retryKey = [NSString stringWithFormat:@"keysForObjectsWithPendingRetry-%@", label];
+        self.keysForObjectsWithPendingRetry = [SPPersistentMutableSet loadSetWithLabel:retryKey];
 		
 		[self migratePendingChangesIfNeeded];
     }
@@ -93,7 +93,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 // Note: We've moved changesPending collection to SPDictionaryStorage class, which will help to lower memory requirements.
 // This method will migrate any pending changes, from UserDefaults over to SPDictionaryStorage
 - (void)migratePendingChangesIfNeeded {
-    NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", self.instanceLabel];
+    NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", self.label];
 	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
 	
 	// No need to go further
@@ -121,11 +121,11 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 - (void)reset {
     [self.changesPending removeAllObjects];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
-	[self.keysForObjectsReEnqueued removeAllObjects];
+	[self.keysForObjectsWithPendingRetry removeAllObjects];
 	
 	[self.changesPending save];
     [self.keysForObjectsWithMoreChanges save];
-	[self.keysForObjectsReEnqueued save];
+	[self.keysForObjectsWithPendingRetry save];
 }
 
 
@@ -146,8 +146,8 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		if (errorCode == CH_ERRORS_THRESHOLD) {
 
 			// Re-enqueue failed changes
-			[self.keysForObjectsReEnqueued addObject:key];
-			[self.keysForObjectsReEnqueued save];
+			[self.keysForObjectsWithPendingRetry addObject:key];
+			[self.keysForObjectsWithPendingRetry save];
 			
 		} else if (errorCode == CH_ERRORS_EXPECTATION_FAILED || errorCode == CH_ERRORS_INVALID_DIFF) {
 			// Resubmit with all data
@@ -301,7 +301,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
         NSString *ghostDataCopy = [[[object.ghost dictionary] sp_JSONString] copy];
         object.ghostData = ghostDataCopy;
         
-        SPLogVerbose(@"Simperium MODIFIED ghost version %@ (%@-%@)", endVersion, bucket.name, self.instanceLabel);
+        SPLogVerbose(@"Simperium MODIFIED ghost version %@ (%@-%@)", endVersion, bucket.name, self.label);
         
         // If it wasn't an ack, then local data needs to be updated and the app needs to be notified
         if (!acknowledged && !newlyAdded) {
@@ -554,119 +554,91 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     return change;
 }
 
-- (void)enumerateReEnqueuedChanges:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
-
-	NSArray *changes = self.keysForObjectsReEnqueued.allObjects;
-	if (changes.count == 0) {
+- (void)processLocalPendingChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block {
+	
+	NSArray *pendingKeys = self.changesPending.allKeys;
+    if (pendingKeys.count == 0) {
 		return;
 	}
 	
-	SPLogVerbose(@"Simperium found %lu objects with re-enqueued changes to send (%@)", (unsigned long)self.keysForObjectsWithMoreChanges.count, bucket.name);
-		
-	for (NSString *key in changes) {
+	SPLogVerbose(@"Simperium found %lu objects with pending changes to send (%@)", (unsigned long)pendingKeys.count, bucket.name);
+	
+	for (NSString *key in pendingKeys) {
 		NSDictionary* change = [self.changesPending objectForKey:key];
 		if (change) {
 			block(change);
 		}
 	}
-	
-	[self.keysForObjectsReEnqueued minusSet:[NSSet setWithArray:changes]];
-	[self.keysForObjectsReEnqueued save];
 }
 
-- (void)enumeratePendingChanges:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges block:(SPChangeEnumerationBlockType)block {
-
-    if (self.keysForObjectsWithMoreChanges.count == 0 && (onlyQueuedChanges || self.changesPending.count == 0)) {
+- (void)processLocalQueuedChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block {
+	
+	NSArray *pendingKeys = self.keysForObjectsWithMoreChanges.allObjects;
+    if (pendingKeys.count == 0) {
 		return;
 	}
 	
-	SPLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)self.keysForObjectsWithMoreChanges.count, bucket.name);
+	SPLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)pendingKeys.count, bucket.name);
 	
-    NSMutableSet *queuedKeys = [NSMutableSet setWithCapacity:self.keysForObjectsWithMoreChanges.count];
-	NSMutableSet *pendingKeys = [NSMutableSet setWithArray:self.changesPending.allKeys];
+	NSMutableSet *processedKeys	= [NSMutableSet setWithCapacity:pendingKeys.count];
 	
-	// Create a list of the keys to be processed
-	for (NSString *key in self.keysForObjectsWithMoreChanges) {
+	for (NSString *key in pendingKeys) {
 		// If there are already changes pending, don't add any more
 		// Importantly, this prevents a potential mutation of keysForObjectsWithMoreChanges in processLocalObjectWithKey:later:
-		if ([pendingKeys containsObject:key] == NO) {
-			[queuedKeys addObject:key];
+		if ([self.changesPending containsObjectForKey:key]) {
+			continue;
 		}
-	}
-	
-	// Create changes for any objects that have more changes
-	for (NSString* key in queuedKeys) {
-		NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
 		
+		// Create changes for any objects that has more changes
+		NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
 		if (change) {
 			[self.changesPending setObject:change forKey:key];
-			[pendingKeys addObject:key];
-		} else {
-			[self.keysForObjectsWithMoreChanges removeObject:key];
 		}
+		
+		[processedKeys addObject:key];
 	}
 	
-	// Enumerate:
-	//	pendingKeys: Queued + previously pending
-	//	queuedKeys: Only queued objects
-	NSSet *changesPendingKeys = (onlyQueuedChanges ? queuedKeys : pendingKeys);
-	
-	for (NSString *key in changesPendingKeys) {
+	for (NSString *key in processedKeys) {
 		NSDictionary* change = [self.changesPending objectForKey:key];
 		if (change) {
 			block(change);
 		}
 	}
-
-	// Clear any keys that were processed into pending changes & Persist
+	
+	// Clear any keys that were processed into pending changes
+	[self.keysForObjectsWithMoreChanges minusSet:processedKeys];
+    [self.keysForObjectsWithMoreChanges save];
+	
+	// Persist pending changes
 	[self.changesPending save];
-	[self.keysForObjectsWithMoreChanges minusSet:queuedKeys];
-    [self.keysForObjectsWithMoreChanges save];
 }
 
-- (NSArray *)processKeysForObjectsWithMoreChanges:(SPBucket *)bucket {
-    // Check if there are more changes that need to be sent
-    NSMutableArray *newChangesPending = [NSMutableArray arrayWithCapacity:3];
-    if ([self.keysForObjectsWithMoreChanges count] > 0) {
-        SPLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)[self.keysForObjectsWithMoreChanges count], bucket.name);
-        
-        NSMutableSet *keysProcessed = [NSMutableSet setWithCapacity:self.keysForObjectsWithMoreChanges.count];
-        // Create changes for any objects that have more changes
-        for (NSString *key in self.keysForObjectsWithMoreChanges) {
-            // If there are already changes pending, don't add any more
-            // Importantly, this prevents a potential mutation of keysForObjectsWithMoreChanges in processLocalObjectWithKey:later:
-            if ([self.changesPending objectForKey: key] != nil)
-                continue;
-            
-            NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
-            
-            if (change) {
-                [self.changesPending setObject:change forKey:key];
-                [newChangesPending addObject:change];
-            }
-            [keysProcessed addObject:key];
-        }
-		
-        // Clear any keys that were processed into pending changes
-        [self.keysForObjectsWithMoreChanges minusSet:keysProcessed];
-
-		// Persist pending changes
-		[self.changesPending save];
-    }
-    
-    [self.keysForObjectsWithMoreChanges save];
-    
-    // TODO: to fix duplicate send, make this return only changes for keysProcessed?
-    return newChangesPending;
+- (void)processLocalRetryChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block {
+	
+	NSArray *retryKeys = self.keysForObjectsWithPendingRetry.allObjects;
+	if (retryKeys.count == 0) {
+		return;
+	}
+	
+	SPLogVerbose(@"Simperium found %lu objects in the retry queue (%@)", (unsigned long)retryKeys.count, bucket.name);
+	
+	for (NSString *key in retryKeys) {
+		NSDictionary* change = [self.changesPending objectForKey:key];
+		if (change) {
+			block(change);
+		}
+	}
+	
+	[self.keysForObjectsWithPendingRetry minusSet:[NSSet setWithArray:retryKeys]];
+	[self.keysForObjectsWithPendingRetry save];
 }
-
 
 - (int)numChangesPending {
-    return (int)[self.changesPending count];
+    return (int)self.changesPending.count;
 }
 
 - (int)numKeysForObjectsWithMoreChanges {
-    return (int)[self.keysForObjectsWithMoreChanges count];
+    return (int)self.keysForObjectsWithMoreChanges.count;
 }
 
 - (NSArray*)exportPendingChanges {
