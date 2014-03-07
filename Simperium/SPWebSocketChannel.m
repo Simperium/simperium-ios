@@ -37,7 +37,6 @@ static int const SPWebsocketErrorAuthFailed			= 401;
 static NSString* const SPWebsocketErrorMark			= @"{";
 static NSString* const SPWebsocketErrorKey			= @"code";
 
-static BOOL useNetworkActivityIndicator				= 0;
 static SPLogLevels logLevel							= SPLogLevelsInfo;
 
 
@@ -62,14 +61,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 @implementation SPWebSocketChannel
-
-+ (void)updateNetworkActivityIndictator {
-    // For now at least, don't display the indicator when using WebSockets
-}
-
-+ (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled {
-    useNetworkActivityIndicator = enabled;
-}
 
 - (id)initWithSimperium:(Simperium *)s clientID:(NSString *)cid {
 	if ((self = [super init])) {
@@ -211,20 +202,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 			}
 		});
     });
-}
-
-- (int)nextRetryDelay {
-//    int currentDelay = retryDelay;
-//    retryDelay *= 2;
-//    if (retryDelay > 24)
-//        retryDelay = 24;
-    
-//    return currentDelay;
-    return 2;
-}
-
-- (void)resetRetryDelay {
-    self.retryDelay = 2;
 }
 
 - (void)handleAuthResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
@@ -509,7 +486,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 }
 
 - (void)handleOptions:(NSString *)options bucket:(SPBucket *)bucket {
-	
     NSDictionary *optionsDict = [options sp_objectFromJSONString];
 	
 	bucket.localNamespace	= optionsDict[@"namespace"];
@@ -566,17 +542,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
         }
     });
 }
-
-//- (void)getIndexFailed:(ASIHTTPRequest *)request
-//{
-//    gettingVersions = NO;
-//    int retry = [self nextRetryDelay];
-//    SPLogWarn(@"Simperium warning: couldn't get index, will retry in %d seconds (%@): %d - %@", retry, bucket.name, [request responseStatusCode], [request responseString]);
-//    numTransfers--;
-//    [[self class] updateNetworkActivityIndictator];
-//
-//    [self performSelector:@selector(requestLatestVersions) withObject:nil afterDelay:retry];
-//}
 
 
 #pragma mark Object Versions

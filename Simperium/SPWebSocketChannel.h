@@ -8,11 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
+
+
 @class Simperium;
 @class SPBucket;
 @class SPWebSocketInterface;
 @protocol SPDiffable;
-
 
 #pragma mark ====================================================================================
 #pragma mark SPWebSocketChannel
@@ -20,16 +21,14 @@
 
 @interface SPWebSocketChannel : NSObject
 
-@property (nonatomic, weak) SPWebSocketInterface *webSocketManager;
-@property (nonatomic, strong) NSMutableArray *indexArray;
-@property (nonatomic, copy) NSString *nextMark;
-@property (nonatomic, copy) NSString *pendingLastChangeSignature;
-@property (nonatomic, copy) NSString *name;
-@property (nonatomic, copy) NSString *remoteName;
-@property (nonatomic, assign) int number;
-@property (nonatomic, assign) BOOL started;
-
-+ (void)setNetworkActivityIndicatorEnabled:(BOOL)enabled;
+@property (nonatomic,   weak) SPWebSocketInterface	*webSocketManager;
+@property (nonatomic, strong) NSMutableArray		*indexArray;
+@property (nonatomic,   copy) NSString				*nextMark;
+@property (nonatomic,   copy) NSString				*pendingLastChangeSignature;
+@property (nonatomic,   copy) NSString				*name;
+@property (nonatomic,   copy) NSString				*remoteName;
+@property (nonatomic, assign) int					number;
+@property (nonatomic, assign) BOOL					started;
 
 - (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
 - (void)requestLatestVersionsForBucket:(SPBucket *)bucket;
