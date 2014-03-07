@@ -16,7 +16,7 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change);
+typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change, BOOL *stop);
 
 extern NSString * const CH_KEY;
 extern NSString * const CH_ADD;
@@ -50,10 +50,11 @@ extern NSString * const CH_LOCAL_ID;
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
 - (NSDictionary *)processLocalBucketDeletion:(SPBucket *)bucket;
 
-- (void)processLocalPendingChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block;
-- (void)processLocalQueuedChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block;
-- (void)processLocalRetryChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block;
+- (void)enumeratePendingChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
+- (void)enumerateQueuedChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
+- (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
 
+- (BOOL)hasReachedMaxPendings;
 - (NSArray*)exportPendingChanges;
 
 @end

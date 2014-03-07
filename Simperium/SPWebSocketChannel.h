@@ -37,8 +37,8 @@
 // Sending Object Changes
 - (void)sendObjectDeletion:(id<SPDiffable>)object;
 - (void)sendObjectChanges:(id<SPDiffable>)object;
-- (void)removeAllBucketObjects:(SPBucket *)bucket;
 - (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
+- (void)removeAllBucketObjects:(SPBucket *)bucket;
 
 // Response Handlers
 - (void)handleAuthResponse:(NSString *)responseString bucket:(SPBucket *)bucket;

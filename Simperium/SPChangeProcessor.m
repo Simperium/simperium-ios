@@ -50,6 +50,8 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	CH_ERRORS_THRESHOLD				= 503
 };
 
+static int const SPChangeProcessorMaxPendingChanges	= 200;
+
 
 #pragma mark ====================================================================================
 #pragma mark Private
@@ -507,7 +509,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	return [self createChangeForKey:bucket.name operation:CH_EMPTY version:nil data:nil];
 }
 
-- (void)processLocalPendingChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block {
+- (void)enumeratePendingChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
 	
 	NSArray *pendingKeys = self.changesPending.allKeys;
     if (pendingKeys.count == 0) {
@@ -515,16 +517,21 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	}
 	
 	SPLogVerbose(@"Simperium found %lu objects with pending changes to send (%@)", (unsigned long)pendingKeys.count, bucket.name);
+	BOOL stop = NO;
 	
 	for (NSString *key in pendingKeys) {
 		NSDictionary* change = [self.changesPending objectForKey:key];
 		if (change) {
-			block(change);
+			block(change, &stop);
+		}
+		
+		if (stop) {
+			break;
 		}
 	}
 }
 
-- (void)processLocalQueuedChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block {
+- (void)enumerateQueuedChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
 	
 	NSArray *pendingKeys = self.keysForObjectsWithMoreChanges.allObjects;
     if (pendingKeys.count == 0) {
@@ -534,6 +541,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	SPLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)pendingKeys.count, bucket.name);
 	
 	NSMutableSet *processedKeys	= [NSMutableSet setWithCapacity:pendingKeys.count];
+	BOOL stop = NO;
 	
 	for (NSString *key in pendingKeys) {
 		// If there are already changes pending, don't add any more
@@ -546,15 +554,13 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 		NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket later:NO];
 		if (change) {
 			[self.changesPending setObject:change forKey:key];
+			block(change, &stop);
 		}
-		
+
 		[processedKeys addObject:key];
-	}
-	
-	for (NSString *key in processedKeys) {
-		NSDictionary* change = [self.changesPending objectForKey:key];
-		if (change) {
-			block(change);
+		
+		if (stop) {
+			break;
 		}
 	}
 	
@@ -566,7 +572,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	[self.changesPending save];
 }
 
-- (void)processLocalRetryChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block {
+- (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
 	
 	NSArray *retryKeys = self.keysForObjectsWithPendingRetry.allObjects;
 	if (retryKeys.count == 0) {
@@ -574,16 +580,28 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	}
 	
 	SPLogVerbose(@"Simperium found %lu objects in the retry queue (%@)", (unsigned long)retryKeys.count, bucket.name);
+	NSMutableSet *processedKeys = [NSMutableSet set];
+	BOOL stop = NO;
 	
 	for (NSString *key in retryKeys) {
 		NSDictionary* change = [self.changesPending objectForKey:key];
 		if (change) {
-			block(change);
+			block(change, &stop);
+		}
+		
+		[processedKeys addObject:key];
+		
+		if (stop) {
+			break;
 		}
 	}
 	
-	[self.keysForObjectsWithPendingRetry minusSet:[NSSet setWithArray:retryKeys]];
+	[self.keysForObjectsWithPendingRetry minusSet:processedKeys];
 	[self.keysForObjectsWithPendingRetry save];
+}
+
+- (BOOL)hasReachedMaxPendings {
+	return (self.changesPending.count >= SPChangeProcessorMaxPendingChanges);
 }
 
 
@@ -626,6 +644,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 - (int)numKeysForObjectsWithMoreChanges {
     return (int)self.keysForObjectsWithMoreChanges.count;
 }
+
 
 #pragma mark ====================================================================================
 #pragma mark Private Helpers

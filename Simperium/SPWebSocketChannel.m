@@ -128,7 +128,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	//
     dispatch_async(object.bucket.processorQueue, ^{
 		@autoreleasepool {
-			NSDictionary *change = [object.bucket.changeProcessor processLocalDeletionWithKey: key];
+			NSDictionary *change = [object.bucket.changeProcessor processLocalDeletionWithKey:key];
 			[self sendChange:change];
 		}
     });
@@ -143,11 +143,16 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     
     dispatch_async(object.bucket.processorQueue, ^{
 		@autoreleasepool {
-			BOOL later = (_indexing || !_started);
-			NSDictionary *change = [object.bucket.changeProcessor processLocalObjectWithKey:key bucket:object.bucket later:later];
+			SPChangeProcessor *processor = object.bucket.changeProcessor;
+			BOOL later = (_indexing || !_started || [processor hasReachedMaxPendings]);
+			NSDictionary *change = [processor processLocalObjectWithKey:key bucket:object.bucket later:later];
 			[self sendChange:change];
 		}
     });
+}
+
+- (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email {
+    // Not yet implemented with WebSockets
 }
 
 - (void)removeAllBucketObjects:(SPBucket *)bucket {
@@ -156,10 +161,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	SPLogVerbose(@"Simperium deleting all Bucket Objects (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
 	
 	[self.webSocketManager send:message];
-}
-
-- (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email {
-    // Not yet implemented with WebSockets
 }
 
 
@@ -221,7 +222,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 			[bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket repostNeeded:&repostNeeded];
 			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID];
 		}
-		
+
 		dispatch_async(dispatch_get_main_queue(), ^{
 			
 			// Note #1: After remote changes have been processed, check to see if any local changes were attempted (and
@@ -394,28 +395,34 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
 - (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(void(^)())completionBlock {
 	
-	SPChangeEnumerationBlockType block = ^(NSDictionary *change) {
+	SPChangeProcessor *processor		= bucket.changeProcessor;
+	SPChangeEnumerationBlockType block	= ^(NSDictionary *change, BOOL *stop) {
 		[self sendChange:change];
 	};
 	
     // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
     dispatch_async(bucket.processorQueue, ^{
-		
-		// Only queued: re-send failed changes
-		if (onlyQueuedChanges) {
-			[bucket.changeProcessor processLocalRetryChanges:bucket enumerateUsingBlock:block];
-		// Pending changes include those flagged for retry as well
-		} else {
-			[bucket.changeProcessor processLocalPendingChanges:bucket enumerateUsingBlock:block];
-		}
-		
-		// Let's always process queued changes
-		[bucket.changeProcessor processLocalQueuedChanges:bucket enumerateUsingBlock:block];
-		
-		if (completionBlock) {
-			dispatch_async(dispatch_get_main_queue(), ^{
-				completionBlock();
-			});
+		@autoreleasepool {
+			
+			// Only queued: re-send failed changes
+			if (onlyQueuedChanges) {
+				[processor enumerateRetryChangesForBucket:bucket block:block];
+			// Pending changes include those flagged for retry as well
+			} else {
+				[processor enumeratePendingChangesForBucket:bucket block:block];
+			}
+			
+			// Process Queued Changes: let's consider the SPWebsocketMaxPendingChanges limit
+			[processor enumerateQueuedChangesForBucket:bucket block:^(NSDictionary *change, BOOL *stop) {
+				[self sendChange:change];
+				*stop = [processor hasReachedMaxPendings];
+			}];
+			
+			if (completionBlock) {
+				dispatch_async(dispatch_get_main_queue(), ^{
+					completionBlock();
+				});
+			}
 		}
     });
 }
