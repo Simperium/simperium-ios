@@ -125,12 +125,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
     // Send the deletion change (which will also overwrite any previous unsent local changes)
     // This could cause an ACK to fail if the deletion is registered before a previous change was ACK'd, but that should be OK since the object will be deleted anyway.
-	
+	//
     dispatch_async(object.bucket.processorQueue, ^{
 		@autoreleasepool {
 			NSDictionary *change = [object.bucket.changeProcessor processLocalDeletionWithKey: key];
-			SPLogVerbose(@"Simperium sending entity DELETION change: %@/%@", self.name, key);
-			[self sendChange:change forKey:key bucket:object.bucket];
+			[self sendChange:change];
 		}
     });
 }
@@ -144,21 +143,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     
     dispatch_async(object.bucket.processorQueue, ^{
 		@autoreleasepool {
-			NSDictionary *change = [object.bucket.changeProcessor processLocalObjectWithKey:key bucket:object.bucket later:_indexing || !_started];
-			if (change) {
-				[self sendChange:change forKey:key bucket:object.bucket];
-			}
+			BOOL later = (_indexing || !_started);
+			NSDictionary *change = [object.bucket.changeProcessor processLocalObjectWithKey:key bucket:object.bucket later:later];
+			[self sendChange:change];
 		}
     });
-}
-
-- (void)sendBucketStatus:(SPBucket *)bucket {
-
-	NSDictionary *response = [bucket exportStatus];
-	NSString *message = [NSString stringWithFormat:@"%d:index:%@", self.number, [response sp_JSONString]];
-	
-	SPLogVerbose(@"Simperium sending Bucket Internal State (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
-	[self.webSocketManager send:message];
 }
 
 - (void)removeAllBucketObjects:(SPBucket *)bucket {
@@ -363,6 +352,15 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	bucket.exposeNamespace	= [optionsDict[@"expose_namespace"] boolValue];
 }
 
+- (void)handleIndexStatusRequest:(SPBucket *)bucket {
+	
+	NSDictionary *response = [bucket exportStatus];
+	NSString *message = [NSString stringWithFormat:@"%d:index:%@", self.number, [response sp_JSONString]];
+	
+	SPLogVerbose(@"Simperium sending Bucket Internal State (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
+	[self.webSocketManager send:message];
+}
+
 
 #pragma mark ====================================================================================
 #pragma mark Initialization
@@ -404,20 +402,17 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 - (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(void(^)())completionBlock {
 	
 	SPChangeEnumerationBlockType block = ^(NSDictionary *change) {
-		dispatch_async(dispatch_get_main_queue(), ^{
-			NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [change sp_JSONString]];
-			SPLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
-			[self.webSocketManager send:message];
-		});
+		[self sendChange:change];
 	};
 	
     // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
     dispatch_async(bucket.processorQueue, ^{
 		
+		// Only queued: re-send failed changes
 		if (onlyQueuedChanges) {
 			[bucket.changeProcessor processLocalRetryChanges:bucket enumerateUsingBlock:block];
+		// Pending changes include those flagged for retry as well
 		} else {
-			// Pending changes include those flagged for retry as well
 			[bucket.changeProcessor processLocalPendingChanges:bucket enumerateUsingBlock:block];
 		}
 		
@@ -432,13 +427,14 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     });
 }
 
-- (void)sendChange:(NSDictionary *)change forKey:(NSString *)key bucket:(SPBucket *)bucket {
-    SPLogVerbose(@"Simperium adding pending change (%@): %@", self.name, key);
-    
-    [bucket.changeProcessor processLocalChange:change key:key];
+- (void)sendChange:(NSDictionary *)change {
+	if (!change) {
+		return;
+	}
+	
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [change sp_JSONString]];
-        SPLogVerbose(@"Simperium sending change (%@-%@) %@",bucket.name, bucket.instanceLabel, message);
+        SPLogVerbose(@"Simperium sending change (%@-%@) %@", self.name, self.simperium.label, message);
         [self.webSocketManager send:message];
     });
 }

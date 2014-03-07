@@ -37,7 +37,6 @@
 // Sending Object Changes
 - (void)sendObjectDeletion:(id<SPDiffable>)object;
 - (void)sendObjectChanges:(id<SPDiffable>)object;
-- (void)sendBucketStatus:(SPBucket *)bucket;
 - (void)removeAllBucketObjects:(SPBucket *)bucket;
 - (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
 
@@ -47,6 +46,7 @@
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket;
 - (void)handleOptions:(NSString *)options bucket:(SPBucket *)bucket;
+- (void)handleIndexStatusRequest:(SPBucket *)bucket;
 
 // Initialization
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket;

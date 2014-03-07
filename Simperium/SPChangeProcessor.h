@@ -45,7 +45,6 @@ extern NSString * const CH_LOCAL_ID;
 
 - (void)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket repostNeeded:(BOOL *)repostNeeded;
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
-- (void)processLocalChange:(NSDictionary *)change key:(NSString *)key;
 
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later;
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;

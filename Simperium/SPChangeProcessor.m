@@ -85,39 +85,6 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     return self;
 }
 
-
-- (BOOL)awaitingAcknowledgementForKey:(NSString *)key {
-	return [self.changesPending containsObjectForKey:key];
-}
-
-// Note: We've moved changesPending collection to SPDictionaryStorage class, which will help to lower memory requirements.
-// This method will migrate any pending changes, from UserDefaults over to SPDictionaryStorage
-- (void)migratePendingChangesIfNeeded {
-    NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", self.label];
-	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
-	
-	// No need to go further
-	if (pendingJSON == nil) {
-		return;
-	}
-	
-	// Proceed migrating!
-    SPLogInfo(@"Migrating changesPending collection to SPDictionaryStorage");
-    
-    NSDictionary *pendingDict = [pendingJSON sp_objectFromJSONString];
-
-	for (NSString *key in pendingDict.allKeys) {
-		id change = pendingDict[key];
-		if (change) {
-			[self.changesPending setObject:change forKey:key];
-		}
-	}
-	
-	[self.changesPending save];
-	[[NSUserDefaults standardUserDefaults] removeObjectForKey:pendingKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
 - (void)reset {
     [self.changesPending removeAllObjects];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
@@ -129,7 +96,9 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 }
 
 
+#pragma mark ====================================================================================
 #pragma mark Remote changes
+#pragma mark ====================================================================================
 
 - (void)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket repostNeeded:(BOOL *)repostNeeded {
 
@@ -462,39 +431,14 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 }
 
 
+#pragma mark ====================================================================================
 #pragma mark Local changes
-
-- (NSMutableDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version data:(NSDictionary *)data {
-	// The change applies to this particular entity instance, so use its unique key as an identifier
-	NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:key forKey:CH_KEY];
-	
-	// Every change must be marked with a unique ID
-	NSString *uuid = [NSString sp_makeUUID];
-	[change setObject:uuid forKey: CH_LOCAL_ID];
-	
-	// Set the change's operation
-	[change setObject:operation forKey:CH_OPERATION];
-    
-	// Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
-    if (data) {
-        [change setObject:data forKey:CH_VALUE];
-	}
-	
-	// If it's a modify operation, also include the object's version as the last known version
-	if (operation == CH_MODIFY && version != nil && [version intValue] != 0) {
-        [change setObject: version forKey: CH_START_VERSION];
-	}
-	
-	return change;
-}
-
-- (void)processLocalChange:(NSDictionary *)change key:(NSString *)key {
-    [self.changesPending setObject:change forKey:key];
-	[self.changesPending save];
-}
+#pragma mark ====================================================================================
 
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key {
-	return [self createChangeForKey:key operation:CH_REMOVE version:nil data:nil];
+	NSDictionary *change = [self createChangeForKey:key operation:CH_REMOVE version:nil data:nil];
+	[self addPendingChange:change key:key];
+	return change;
 }
 
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later {
@@ -551,6 +495,10 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     
 	[storage finishSafeSection];
 	
+	// Persist the change
+	[self addPendingChange:change key:key];
+	
+	// And return!
     return change;
 }
 
@@ -633,13 +581,10 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	[self.keysForObjectsWithPendingRetry save];
 }
 
-- (int)numChangesPending {
-    return (int)self.changesPending.count;
-}
 
-- (int)numKeysForObjectsWithMoreChanges {
-    return (int)self.keysForObjectsWithMoreChanges.count;
-}
+#pragma mark ====================================================================================
+#pragma mark Remote Logging
+#pragma mark ====================================================================================
 
 - (NSArray*)exportPendingChanges {
 	
@@ -664,6 +609,32 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	return pendings;
 }
 
+
+#pragma mark ====================================================================================
+#pragma mark Properties
+#pragma mark ====================================================================================
+
+- (int)numChangesPending {
+    return (int)self.changesPending.count;
+}
+
+- (int)numKeysForObjectsWithMoreChanges {
+    return (int)self.keysForObjectsWithMoreChanges.count;
+}
+
+#pragma mark ====================================================================================
+#pragma mark Private Helpers
+#pragma mark ====================================================================================
+
+- (void)addPendingChange:(NSDictionary *)change key:(NSString *)key {
+	if (!key || !change) {
+		return;
+	}
+		
+    [self.changesPending setObject:change forKey:key];
+	[self.changesPending save];
+}
+
 - (NSString *)keyWithoutNamespaces:(NSDictionary *)change bucket:(SPBucket *)bucket {
 	
 	NSString *changeKey = change[CH_KEY];
@@ -674,6 +645,63 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	// Proceed removing our local namespace
 	NSString *namespace = [bucket.localNamespace stringByAppendingString:@"/"];
 	return [changeKey stringByReplacingOccurrencesOfString:namespace withString:@""];
+}
+
+- (NSMutableDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version data:(NSDictionary *)data {
+	// The change applies to this particular entity instance, so use its unique key as an identifier
+	NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:key forKey:CH_KEY];
+	
+	// Every change must be marked with a unique ID
+	NSString *uuid = [NSString sp_makeUUID];
+	[change setObject:uuid forKey: CH_LOCAL_ID];
+	
+	// Set the change's operation
+	[change setObject:operation forKey:CH_OPERATION];
+    
+	// Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
+    if (data) {
+        [change setObject:data forKey:CH_VALUE];
+	}
+	
+	// If it's a modify operation, also include the object's version as the last known version
+	if (operation == CH_MODIFY && version != nil && [version intValue] != 0) {
+        [change setObject: version forKey: CH_START_VERSION];
+	}
+	
+	return change;
+}
+
+- (BOOL)awaitingAcknowledgementForKey:(NSString *)key {
+	return [self.changesPending containsObjectForKey:key];
+}
+
+// Note: We've moved changesPending collection to SPDictionaryStorage class, which will help to lower memory requirements.
+// This method will migrate any pending changes, from UserDefaults over to SPDictionaryStorage
+//
+- (void)migratePendingChangesIfNeeded {
+    NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", self.label];
+	NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
+	
+	// No need to go further
+	if (pendingJSON == nil) {
+		return;
+	}
+	
+	// Proceed migrating!
+    SPLogInfo(@"Migrating changesPending collection to SPDictionaryStorage");
+    
+    NSDictionary *pendingDict = [pendingJSON sp_objectFromJSONString];
+	
+	for (NSString *key in pendingDict.allKeys) {
+		id change = pendingDict[key];
+		if (change) {
+			[self.changesPending setObject:change forKey:key];
+		}
+	}
+	
+	[self.changesPending save];
+	[[NSUserDefaults standardUserDefaults] removeObjectForKey:pendingKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 @end

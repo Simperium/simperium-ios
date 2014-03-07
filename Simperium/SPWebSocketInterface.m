@@ -318,7 +318,7 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
     
 	// Message: Remote Index Request
 	if ([commandStr isEqualToString:COM_INDEX_STATE]) {
-		[channel sendBucketStatus:bucket];
+		[channel handleIndexStatusRequest:bucket];
 		return;
 	}
 	
