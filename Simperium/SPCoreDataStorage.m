@@ -513,7 +513,7 @@ static NSInteger const SPWorkersDone	= 0;
 		for (NSManagedObject* childMO in updated) {
 			
 			// Do not use 'objectWithId': might return an object that already got deleted
-			NSManagedObject* localMO = [self.mainManagedObjectContext existingObjectWithID:childMO.objectID error:nil];
+			NSManagedObject* localMO = [mainMOC existingObjectWithID:childMO.objectID error:nil];
 			if (localMO.isFault) {
 				[localMO willAccessValueForKey:nil];
 			}
