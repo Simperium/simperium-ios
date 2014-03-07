@@ -42,6 +42,7 @@ NSString * const CH_LOCAL_ID		= @"ccid";
 NSString * const CH_CLIENT_ID		= @"clientid";
 NSString * const CH_ERROR           = @"error";
 NSString * const CH_DATA            = @"d";
+NSString * const CH_EMPTY			= @"EMPTY";
 
 typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	CH_ERRORS_EXPECTATION_FAILED	= 417,		// (e.g. foreign key doesn't exist just yet)
@@ -500,6 +501,10 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	
 	// And return!
     return change;
+}
+
+- (NSDictionary *)processLocalBucketDeletion:(SPBucket *)bucket {
+	return [self createChangeForKey:bucket.name operation:CH_EMPTY version:nil data:nil];
 }
 
 - (void)processLocalPendingChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block {

@@ -48,6 +48,7 @@ extern NSString * const CH_LOCAL_ID;
 
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket later:(BOOL)later;
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
+- (NSDictionary *)processLocalBucketDeletion:(SPBucket *)bucket;
 
 - (void)processLocalPendingChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block;
 - (void)processLocalQueuedChanges:(SPBucket *)bucket enumerateUsingBlock:(SPChangeEnumerationBlockType)block;
