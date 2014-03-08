@@ -24,9 +24,10 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 #pragma mark ====================================================================================
 
 @interface SPPersistentMutableSet ()
-@property (nonatomic, strong, readwrite) NSString		*label;
-@property (nonatomic, strong, readwrite) NSURL			*mutableSetURL;
-@property (nonatomic, strong, readwrite) NSMutableSet	*contents;
+@property (nonatomic, strong, readwrite) NSString			*label;
+@property (nonatomic, strong, readwrite) NSURL				*mutableSetURL;
+@property (nonatomic, strong, readwrite) NSMutableSet		*contents;
+@property (nonatomic, strong, readwrite) dispatch_queue_t	queue;
 @end
 
 
@@ -40,6 +41,7 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 	if ((self = [super init])) {
 		self.label		= label;
 		self.contents	= [NSMutableSet setWithCapacity:3];
+        self.queue		= dispatch_queue_create("com.simperium.SPPersistentMutableSet", NULL);
 	}
 	
 	return self;
@@ -88,14 +90,19 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 #pragma mark ====================================================================================
 
 - (void)save {
-	@autoreleasepool {		
-		NSString *json = [[self.contents allObjects] sp_JSONString];
+	@autoreleasepool {
+		NSArray *allObjects = [self.contents allObjects];
 		
-		NSError *error = nil;
-		BOOL success = [json writeToURL:self.mutableSetURL atomically:NO encoding:NSUTF8StringEncoding error:&error];
-		if (!success) {
-			SPLogError(@"<> %@ :: %@", NSStringFromClass([self class]), error);
-		}
+		dispatch_async(self.queue, ^{
+			
+			NSString *json = [allObjects sp_JSONString];
+			
+			NSError *error = nil;
+			BOOL success = [json writeToURL:self.mutableSetURL atomically:NO encoding:NSUTF8StringEncoding error:&error];
+			if (!success) {
+				SPLogError(@"<> %@ :: %@", NSStringFromClass([self class]), error);
+			}
+		});
 	}
 }
 
