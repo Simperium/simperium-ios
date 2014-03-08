@@ -90,11 +90,10 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 #pragma mark ====================================================================================
 
 - (void)save {
-	@autoreleasepool {
-		NSArray *allObjects = [self.contents allObjects];
-		
-		dispatch_async(self.queue, ^{
-			
+	NSArray *allObjects = [self.contents allObjects];
+	
+	dispatch_async(self.queue, ^{
+		@autoreleasepool {
 			NSString *json = [allObjects sp_JSONString];
 			
 			NSError *error = nil;
@@ -102,8 +101,8 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 			if (!success) {
 				SPLogError(@"<> %@ :: %@", NSStringFromClass([self class]), error);
 			}
-		});
-	}
+		}
+	});
 }
 
 + (instancetype)loadSetWithLabel:(NSString *)label {
