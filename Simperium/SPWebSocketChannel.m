@@ -144,9 +144,13 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     dispatch_async(object.bucket.processorQueue, ^{
 		@autoreleasepool {
 			SPChangeProcessor *processor = object.bucket.changeProcessor;
-			BOOL later = (_indexing || !_started || [processor hasReachedMaxPendings]);
-			NSDictionary *change = [processor processLocalObjectWithKey:key bucket:object.bucket later:later];
-			[self sendChange:change];
+			
+			if (_indexing || !_started || processor.hasReachedMaxPendings) {
+				[processor markObjectWithPendingChanges:key bucket:object.bucket];
+			} else {
+				NSDictionary *change = [processor processLocalObjectWithKey:key bucket:object.bucket];
+				[self sendChange:change];
+			}
 		}
     });
 }
@@ -469,7 +473,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
         if (self.started) {
             [bucket.indexProcessor processVersions: batch bucket:bucket firstSync: firstSync changeHandler:^(NSString *key) {
                 // Local version was different, so process it as a local change
-                [bucket.changeProcessor processLocalObjectWithKey:key bucket:bucket later:YES];
+				[bucket.changeProcessor markObjectWithPendingChanges:key bucket:bucket];
             }];
             
             // Now check if indexing is complete
