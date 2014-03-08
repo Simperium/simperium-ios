@@ -476,9 +476,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
     // If there are already changes pending for this entity, mark this entity and come back to it later to get the changes
     if ([self.changesPending containsObjectForKey:key]) {
-        SPLogVerbose(@"Simperium marking object for sending more changes when ready (%@): %@. Pendings: %d", bucket.name, key, self.keysForObjectsWithMoreChanges.count);
-        [self.keysForObjectsWithMoreChanges addObject:key];
-        [self.keysForObjectsWithMoreChanges save];
+		[self markObjectWithPendingChanges:key bucket:bucket];
 		[storage finishSafeSection];
         return nil;
     }
