@@ -23,11 +23,6 @@
 - (void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket firstSync:(BOOL)firstSync changeHandler:(void(^)(NSString *key))changeHandler;
 - (NSArray*)exportIndexStatus:(SPBucket *)bucket;
 
-@end
-
-
-@interface SPIndexProcessor (HappyInspector)
-
 @property (atomic, assign, readonly, getter = isProcessingChanges) BOOL processingChanges;
 @property (nonatomic, copy, readwrite) void (^isProcessingChangesUpdated)(BOOL isProcessingChanges);
 

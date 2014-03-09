@@ -42,9 +42,7 @@ static NSInteger const SPWorkersDone	= 0;
 @property (nonatomic, strong, readwrite) NSConditionLock				*mutex;
 - (void)addObserversForMainContext:(NSManagedObjectContext *)context;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
-@end
 
-@interface SPCoreDataStorage (HappyInspector)
 // This is a dictionary with entity names as keys and values that are an array of keypaths.
 @property (nonatomic, strong) NSDictionary *keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName;
 @property (nonatomic, strong) NSSet *entityNamesOfEmbeddedObjects;

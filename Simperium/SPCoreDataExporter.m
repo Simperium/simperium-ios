@@ -30,7 +30,7 @@ static NSString * const EmbeddedRelationshipUserInfoKey = @"spEmbed";
 #pragma mark SPCoreDataExporter
 #pragma mark ====================================================================================
 
-@interface SPCoreDataExporter (HappyInspector)
+@interface SPCoreDataExporter ()
 @property (nonatomic) NSUInteger exporterRecursiveCall;
 @end
 

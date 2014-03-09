@@ -58,11 +58,6 @@ extern NSString * const CH_LOCAL_ID;
 - (BOOL)hasReachedMaxPendings;
 - (NSArray*)exportPendingChanges;
 
-@end
-
-
-@interface SPChangeProcessor (HappyInspector)
-
 @property (atomic, assign, readonly, getter = isProcessingChanges) BOOL processingChanges;
 @property (nonatomic, copy, readwrite) void (^isProcessingChangesUpdated)(BOOL isProcessingChanges);
 

@@ -65,9 +65,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 @property (nonatomic, strong, readwrite) SPPersistentMutableDictionary	*changesPending;
 @property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsWithMoreChanges;
 @property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsWithPendingRetry;
-@end
 
-@interface SPChangeProcessor (HappyInspectorPrivate)
 @property (atomic, assign, readwrite, getter = isProcessingChanges) BOOL processingChanges;
 @end
 

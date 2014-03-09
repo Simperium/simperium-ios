@@ -36,9 +36,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 @interface SPIndexProcessor () {
     NSUInteger _inFlightProcessCount;
 }
-@end
 
-@interface SPIndexProcessor (HappyInspectorPrivate)
 @property (atomic, assign, readwrite, getter = isProcessingChanges) BOOL processingChanges;
 @end
 

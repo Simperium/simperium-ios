@@ -214,11 +214,6 @@ typedef void (^SimperiumSignoutCompletion)(void);
 @property (nonatomic, weak) NSWindow *window;
 #endif
 
-@end
-
-
-@interface Simperium (HappyInspector)
-
 @property (nonatomic, strong) NSMutableDictionary *buckets;
 
 // This method sends any object with changes. Its performance heavy so don't
