@@ -95,3 +95,10 @@ typedef NS_ENUM(NSUInteger, SPBucketChangeType) {
 - (NSInteger)numObjectsForPredicate:(NSPredicate *)predicate;
 
 @end
+
+
+@interface SPBucket (HappyInspector)
+
+@property (atomic, assign, readonly, getter = isWorking) BOOL working;
+
+@end
