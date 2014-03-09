@@ -126,15 +126,7 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 
 - (void)sendObjectChanges:(id<SPDiffable>)object {
     SPWebSocketChannel *channel = [self channelForName:object.bucket.name];
-    // Consider being more careful about faulting here (since only the simperiumKey is needed)
-    NSString *key = [object simperiumKey];
-    SPBucket *bucket = object.bucket;
-    [self sendObjectChangesForKey:key bucket:bucket];
-}
-
-- (void)sendObjectChangesForKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket {
-    SPWebSocketChannel *channel = [self channelForName:bucket.name];
-    [channel sendObjectChangesForKey:simperiumKey bucket:bucket];
+    [channel sendObjectChanges:object];
 }
 
 - (void)removeAllBucketObjects:(SPBucket *)bucket {

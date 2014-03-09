@@ -25,9 +25,6 @@ typedef void (^SPNetworkInterfaceResetCompletion)(void);
 - (void)removeAllBucketObjects:(SPBucket *)bucket;
 - (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
 - (void)forceSyncBucket:(SPBucket *)bucket;
-
-// Happy Inspector
-- (void)sendObjectChangesForKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket;
 @end
 
 extern NSString * const SPAuthenticationDidFail;

@@ -36,7 +36,7 @@
 
 // Sending Object Changes
 - (void)sendObjectDeletion:(id<SPDiffable>)object;
-- (void)sendObjectChangesForKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket;
+- (void)sendObjectChanges:(id<SPDiffable>)object;
 - (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
 - (void)removeAllBucketObjects:(SPBucket *)bucket;
 
