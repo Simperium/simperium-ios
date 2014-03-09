@@ -1,15 +1,14 @@
 //
-//  SPDictionaryStorage.m
+//  SPPersistentMutableDictionary.m
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 9/12/13.
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
-#import "SPDictionaryStorage.h"
+#import "SPPersistentMutableDictionary.h"
 #import <CoreData/CoreData.h>
-#import "DDLog.h"
-#import "DDLogDebug.h"
+#import "SPLogger.h"
 
 
 
@@ -21,14 +20,14 @@ static NSString *SPDictionaryEntityName		= @"SPDictionaryEntityName";
 static NSString *SPDictionaryEntityValue	= @"value";
 static NSString *SPDictionaryEntityKey		= @"key";
 
-static int ddLogLevel						= LOG_LEVEL_ERROR;
+static SPLogLevels logLevel					= SPLogLevelsError;
 
 
 #pragma mark ====================================================================================
 #pragma mark Private Methods
 #pragma mark ====================================================================================
 
-@interface SPDictionaryStorage ()
+@interface SPPersistentMutableDictionary ()
 @property (nonatomic, strong, readwrite) NSString *label;
 @property (nonatomic, strong, readwrite) NSCache *cache;
 @property (nonatomic, strong, readwrite) NSManagedObjectContext* managedObjectContext;
@@ -39,18 +38,10 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 
 
 #pragma mark ====================================================================================
-#pragma mark SPDictionaryStorage
+#pragma mark SPMutableDictionaryStorage
 #pragma mark ====================================================================================
 
-@implementation SPDictionaryStorage
-
-+ (int)ddLogLevel {
-    return ddLogLevel;
-}
-
-+ (void)ddSetLogLevel:(int)logLevel {
-    ddLogLevel = logLevel;
-}
+@implementation SPPersistentMutableDictionary
 
 - (id)initWithLabel:(NSString *)label {
 	if ((self = [super init])) {
@@ -67,7 +58,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 	[self.managedObjectContext performBlockAndWait:^() {
 		NSError *error;
 		count = [self.managedObjectContext countForFetchRequest:[self requestForEntity] error:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 	}];
 	
 	return count;
@@ -89,7 +80,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 	[self.managedObjectContext performBlockAndWait:^{
 		NSError *error = nil;
 		exists = ([self.managedObjectContext countForFetchRequest:[self requestForEntityWithKey:aKey] error:&error] > 0);
-		DDLogOnError(error);
+		SPLogOnError(error);
 	}];
 	
 	// Done
@@ -112,7 +103,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 	[self.managedObjectContext performBlockAndWait:^{
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:[self requestForEntityWithKey:aKey] error:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 
 		if (results.count)
 		{
@@ -147,7 +138,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:[self requestForEntityWithKey:aKey] error:&error];
 		NSAssert(results.count <= 1, @"ERROR: SPMetadataStorage has multiple entities with the same key");
-		DDLogOnError(error);
+		SPLogOnError(error);
 				
 		// Upsert
 		NSManagedObject *change;
@@ -174,7 +165,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		
 		NSError *error = nil;
 		success = [self.managedObjectContext save:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 	}];
 	
 	return success;
@@ -201,7 +192,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:request error:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 		
 		// Once there, delete
 		if (results.count) {
@@ -224,10 +215,10 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 
 		NSError *error = nil;
 		NSArray *allObjects = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 		
 		// Delete Everything
-		for(NSManagedObject *object in allObjects) {
+		for (NSManagedObject *object in allObjects) {
 			[self.managedObjectContext deleteObject:object];
 		}
 	}];
@@ -236,6 +227,10 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 	[self.cache removeAllObjects];
 }
 
+
++ (instancetype)loadDictionaryWithLabel:(NSString *)label {
+	return [[SPPersistentMutableDictionary alloc] initWithLabel:label];
+}
 
 #pragma mark ====================================================================================
 #pragma mark Core Data Stack
@@ -297,7 +292,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		BOOL success	= [[NSFileManager defaultManager] createDirectoryAtURL:baseURL withIntermediateDirectories:YES attributes:nil error:&error];
 		
 		if (!success) {
-			DDLogError(@"%@ could not create baseURL %@", NSStringFromClass([self class]), baseURL);
+			SPLogError(@"%@ could not create baseURL %@", NSStringFromClass([self class]), baseURL);
 			abort();
 		}
 		
@@ -307,7 +302,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		_persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
 		if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
 		{
-			DDLogError(@"Unresolved error %@, %@", error, [error userInfo]);
+			SPLogError(@"Unresolved error %@, %@", error, [error userInfo]);
 			abort();
 		}
 	}
@@ -340,7 +335,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 	// This will cause, as a side effect, SPDictionaryStorage test-database's to get spread in the AppSupport folder.
 	// As a workaround (until we figure out a better way of handling this), let's detect XCTestCase class, and append the Simperium-OSX name to the path.
 	// That will generate an URL like this:
-	//		- //Users/[USER]/Library/Application 0Support/Simperium-OSX/SPDictionaryStorage/
+	//		- //Users/[USER]/Library/Application Support/Simperium-OSX/SPDictionaryStorage/
 	//
 	if (NSClassFromString(@"XCTestCase") != nil) {
 		NSBundle *bundle = [NSBundle bundleForClass:[self class]];
@@ -372,16 +367,16 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		// Fetch the objects
 		NSError *error = nil;
 		NSArray *allObjects = [self.managedObjectContext executeFetchRequest:[self requestForEntity] error:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 		
 		// Load properties
-		for(NSManagedObject *change in allObjects) {
+		for (NSManagedObject *change in allObjects) {
 			id value = [change valueForKey:property];
 			if (!value) {
 				continue;
 			}
 			
-			if(unarchive) {
+			if (unarchive) {
 				[keys addObject:[NSKeyedUnarchiver unarchiveObjectWithData:value]];
 			} else {
 				[keys addObject:value];

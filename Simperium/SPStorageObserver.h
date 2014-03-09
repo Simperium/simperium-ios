@@ -7,6 +7,6 @@
 //
 
 @protocol SPStorageObserver <NSObject>
--(BOOL)objectsShouldSync;
--(void)storage:(SPStorage *)storage updatedObjects:(NSSet *)updatedObjects insertedObjects:(NSSet *)insertedObjects deletedObjects:(NSSet *)deletedObjects;
+- (BOOL)objectsShouldSync;
+- (void)storage:(SPStorage *)storage updatedObjects:(NSSet *)updatedObjects insertedObjects:(NSSet *)insertedObjects deletedObjects:(NSSet *)deletedObjects;
 @end

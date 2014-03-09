@@ -9,35 +9,32 @@
 #import "SPUser.h"
 #import "NSString+Simperium.h"
 
-@implementation SPUser
-@synthesize email;
-@synthesize authToken;
 
--(id)initWithEmail:(NSString *)username token:(NSString *)token
-{
+
+@implementation SPUser
+
+- (id)initWithEmail:(NSString *)username token:(NSString *)token {
     if ((self = [super init])) {
-        email = [username copy];
-        authToken = [token copy];
+        self.email = username;
+        self.authToken = token;
     }
     return self;
 }
 
-
--(NSString *)hashedEmail
-{
-    return [NSString sp_md5StringFromData:[email dataUsingEncoding:NSUTF8StringEncoding]];
+- (NSString *)hashedEmail {
+    return [NSString sp_md5StringFromData:[self.email dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
--(BOOL)authenticated {
-    return authToken != nil && authToken.length > 0;
+- (BOOL)authenticated {
+    return self.authToken != nil && self.authToken.length > 0;
 }
 
--(void)setCustomObject:(id)object forKey:(NSString *)key {
+- (void)setCustomObject:(id)object forKey:(NSString *)key {
     // Associate any JSON-serializable object with a particular key
     // This will be stored on a per-app basis
 }
 
--(id)getCustomObjectForKey:(NSString *)key {
+- (id)getCustomObjectForKey:(NSString *)key {
     // Return the JSON-deserializable object associated with a particular key
     return nil;
 }

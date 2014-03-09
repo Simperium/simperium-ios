@@ -8,20 +8,22 @@
 
 
 // Adapters to NSJSONSerializer using the JSONKit interface
-@protocol SPJSONKitAdapterSerializing <NSObject>
+@interface NSArray (SPJSONKitAdapterCategories)
 - (NSString *)sp_JSONString;
+- (NSString *)sp_JSONStringWithError:(NSError **)error;
 @end
 
-@interface NSArray (SPJSONKitAdapterCategories) <SPJSONKitAdapterSerializing>
-@end
-@interface NSDictionary (SPJSONKitAdapterCategories) <SPJSONKitAdapterSerializing>
+@interface NSDictionary (SPJSONKitAdapterCategories)
+- (NSString *)sp_JSONString;
+- (NSString *)sp_JSONStringWithError:(NSError **)error;
 @end
 
-@protocol SPJSONKitAdapterDeserializing <NSObject>
+@interface NSString (SPJSONKitAdapterCategories)
 - (id)sp_objectFromJSONString;
+- (id)sp_objectFromJSONStringWithError:(NSError**)error;
 @end
 
-@interface NSString (SPJSONKitAdapterCategories) <SPJSONKitAdapterDeserializing>
-@end
-@interface NSData (SPJSONKitAdapterCategories) <SPJSONKitAdapterDeserializing>
+@interface NSData (SPJSONKitAdapterCategories)
+- (id)sp_objectFromJSONString;
+- (id)sp_objectFromJSONStringWithError:(NSError **)error;
 @end

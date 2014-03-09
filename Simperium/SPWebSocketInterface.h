@@ -9,14 +9,18 @@
 #import <Foundation/Foundation.h>
 #import "SPNetworkInterface.h"
 
+
+
 @class Simperium;
-@class SRWebSocket;
+@class SPWebSocket;
+
+#pragma mark ====================================================================================
+#pragma mark SPWebSocketInterface
+#pragma mark ====================================================================================
 
 @interface SPWebSocketInterface : NSObject <SPNetworkInterface>
 
-@property (nonatomic, strong, readonly) SRWebSocket *webSocket;
-
-- (void)loadChannelsForBuckets:(NSDictionary *)bucketList overrides:(NSDictionary *)overrides;
+- (void)loadChannelsForBuckets:(NSDictionary *)bucketList;
 - (void)send:(NSString *)message;
 
 + (instancetype)interfaceWithSimperium:(Simperium *)s appURL:(NSString *)appURL clientID:(NSString *)clientID;

@@ -19,7 +19,7 @@
 
 @implementation SimperiumOfflineTests
 
--(void)testSingleOfflineStringChange
+- (void)testSingleOfflineStringChange
 {
     NSLog(@"%@ start", self.name);
 
@@ -34,7 +34,7 @@
     [follower connect];
     [self waitFor:1.0];
     
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     leader.config.captainsLog = @"1";
     [leader.simperium save];
     NSString *configKey = leader.config.simperiumKey;
@@ -42,11 +42,11 @@
     follower.expectedAdditions = 1;
     XCTAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
     [self resetExpectations: farmArray];
-    [self ensureFarmsEqual:farmArray entityName:@"Config"];
+    [self ensureFarmsEqual:farmArray entityName:[Config entityName]];
     NSLog(@"****************************DISCONNECT*************************");
     [follower disconnect];
     
-    follower.config = (Config *)[[follower.simperium bucketForName:@"Config"] objectForKey:configKey];
+    follower.config = (Config *)[[follower.simperium bucketForName:[Config entityName]] objectForKey:configKey];
     follower.config.captainsLog = @"12";
     follower.expectedAcknowledgments = 1;
     leader.expectedChanges = 1;
@@ -63,12 +63,12 @@
     NSString *refString = @"12";
     XCTAssertTrue([refString isEqualToString: leader.config.captainsLog],
                  @"leader %@ != ref %@", leader.config.captainsLog, refString);
-    [self ensureFarmsEqual:farmArray entityName:@"Config"];
+    [self ensureFarmsEqual:farmArray entityName:[Config entityName]];
     NSLog(@"%@ end", self.name); 
 }
 
 
--(void)testSimultaneousOfflineStringChange
+- (void)testSimultaneousOfflineStringChange
 {
     NSLog(@"%@ start", self.name);
     
@@ -81,7 +81,7 @@
     [follower connect];
     [self waitFor:1.5];
     
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     leader.config.captainsLog = @"a";
     leader.expectedAcknowledgments = 1;
     follower.expectedAdditions = 1;
@@ -89,7 +89,7 @@
     NSString *configKey = leader.config.simperiumKey;
     XCTAssertTrue([self waitForCompletion: 6.0 farmArray:self.farms], @"timed out (adding)");
     [self resetExpectations:self.farms];
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     [follower disconnect];
     [self waitFor:1.0];
 
@@ -99,7 +99,7 @@
     XCTAssertTrue([self waitForCompletion:6.0 farmArray:self.farms], @"timed out (changing)");
     [self resetExpectations:self.farms];
     
-    follower.config = (Config *)[[follower.simperium bucketForName:@"Config"] objectForKey:configKey];
+    follower.config = (Config *)[[follower.simperium bucketForName:[Config entityName]] objectForKey:configKey];
     follower.config.captainsLog = @"ac";
     follower.expectedAcknowledgments = 1;
     follower.expectedChanges = 1;
@@ -115,11 +115,11 @@
     NSString *refString = @"abc";
     XCTAssertTrue([refString isEqualToString: leader.config.captainsLog],
                  @"leader %@ != ref %@", leader.config.captainsLog, refString);
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name); 
 }
 
--(void)testOfflineCreationAndEditing
+- (void)testOfflineCreationAndEditing
 {
     NSLog(@"%@ start", self.name);
         
@@ -197,7 +197,7 @@
     XCTAssertTrue([refString2 isEqualToString: config2.captainsLog],
                  @"leader %@ != ref %@", config2.captainsLog, refString2);
     
-    [self ensureFarmsEqual:farmArray entityName:@"Config"];
+    [self ensureFarmsEqual:farmArray entityName:[Config entityName]];
     NSLog(@"%@ end", self.name);
 }
 

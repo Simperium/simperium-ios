@@ -11,9 +11,9 @@
 #import "DiffMatchPatch.h"
 #import "SPMember.h"
 #import "JSONKit+Simperium.h"
-#import "DDLog.h"
+#import "SPLogger.h"
 
-static int ddLogLevel = LOG_LEVEL_INFO;
+static int logLevel = SPLogLevelsInfo;
 
 
 static NSString * const SPPolicyItemKey = @"item";
@@ -73,7 +73,7 @@ id SPApplyDiff(id object, SPDiff *diff)
     if ([op isEqual:OP_LIST] && [object isKindOfClass:[NSArray class]] && [value isKindOfClass:[NSDictionary class]]) return [(NSArray *)object sp_arrayByApplyingArrayDiff:value];
     if ([op isEqual:OP_LIST_DMP] && [object isKindOfClass:[NSArray class]] && [value isKindOfClass:[NSString class]]) return [(NSArray *)object sp_arrayByApplyingArrayDMPDiff:value];
     if ([op isEqual:OP_INTEGER] && [object isKindOfClass:[NSNumber class]] && [value isKindOfClass:[NSNumber class]]) return [(NSNumber *)object sp_numberByApplyingNumberDiff:value];
-    DDLogCError(@"Unable to apply diff (%@) to object (%@)",diff, object);
+    SPLogError(@"Unable to apply diff (%@) to object (%@)",diff, object);
     return object;
 }
 

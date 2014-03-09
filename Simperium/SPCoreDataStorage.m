@@ -12,42 +12,50 @@
 #import "SPCoreDataExporter.h"
 #import "SPSchema.h"
 #import "SPMember.h"
-#import "SPMutableSet.h"
-#import "DDLog.h"
+#import "SPThreadsafeMutableSet.h"
+#import "SPLogger.h"
 
 
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
 
 NSString* const SPCoreDataBucketListKey = @"SPCoreDataBucketListKey";
-static int ddLogLevel					= LOG_LEVEL_INFO;
-static NSUInteger _workers				= 0;
+NSString* const SPCoreDataWorkerContext	= @"SPCoreDataWorkerContext";
+static SPLogLevels logLevel				= SPLogLevelsInfo;
+static NSInteger const SPWorkersDone	= 0;
 
-@interface SPCoreDataStorage()
-{
-    // This is a dictionary with entity names as keys and values that are an array of keypaths.
-    NSDictionary *_keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName;
-    NSSet *_entityNamesOfEmbeddedObjects;
-}
-@property (nonatomic, strong, readwrite) NSManagedObjectContext *writerManagedObjectContext;
-@property (nonatomic, strong, readwrite) NSManagedObjectContext	*mainManagedObjectContext;
-@property (nonatomic, strong, readwrite) NSManagedObjectModel *managedObjectModel;
-@property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator *persistentStoreCoordinator;
-@property (nonatomic, strong, readwrite) NSMutableDictionary *classMappings;
-@property (nonatomic, strong, readwrite) SPMutableSet *remotelyDeletedKeys;
-@property (nonatomic, weak,   readwrite) SPCoreDataStorage *sibling;
+
+#pragma mark ====================================================================================
+#pragma mark Private
+#pragma mark ====================================================================================
+
+@interface SPCoreDataStorage ()
+@property (nonatomic, strong, readwrite) NSManagedObjectContext			*writerManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext			*mainManagedObjectContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectModel			*managedObjectModel;
+@property (nonatomic, strong, readwrite) NSPersistentStoreCoordinator	*persistentStoreCoordinator;
+@property (nonatomic, strong, readwrite) NSMutableDictionary			*classMappings;
+@property (nonatomic, strong, readwrite) SPThreadsafeMutableSet			*remotelyDeletedKeys;
+@property (nonatomic, weak,   readwrite) SPCoreDataStorage				*sibling;
+@property (nonatomic, strong, readwrite) NSConditionLock				*mutex;
 - (void)addObserversForMainContext:(NSManagedObjectContext *)context;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
 
+@interface SPCoreDataStorage (HappyInspector)
+// This is a dictionary with entity names as keys and values that are an array of keypaths.
+@property (nonatomic, strong) NSDictionary *keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName;
+@property (nonatomic, strong) NSSet *entityNamesOfEmbeddedObjects;
+@end
+
+
+#pragma mark ====================================================================================
+#pragma mark SPCoreDataStorage
+#pragma mark ====================================================================================
 
 @implementation SPCoreDataStorage
-
-+ (int)ddLogLevel {
-    return ddLogLevel;
-}
-
-+ (void)ddSetLogLevel:(int)logLevel {
-    ddLogLevel = logLevel;
-}
 
 static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
 + (void)registerStoreURLMonitoredBySimperium:(NSURL *)URL
@@ -83,13 +91,16 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
 		
         stashedObjects = [NSMutableSet setWithCapacity:3];
         self.classMappings = [NSMutableDictionary dictionary];
-		self.remotelyDeletedKeys = [SPMutableSet set];
+		self.remotelyDeletedKeys = [SPThreadsafeMutableSet set];
 		
         self.persistentStoreCoordinator = coordinator;
         self.managedObjectModel = model;
         self.mainManagedObjectContext = mainContext;
 		
         [self.mainManagedObjectContext setMergePolicy:NSMergeByPropertyStoreTrumpMergePolicy];
+		
+		// Just one mutex for this Simperium stack
+		self.mutex = [[NSConditionLock alloc] initWithCondition:SPWorkersDone];
 		
 		// The new writer MOC will be the only one with direct access to the persistentStoreCoordinator
 		self.writerManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
@@ -115,6 +126,8 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
         // Create an ephemeral, thread-safe context that will push its changes directly to the writer MOC,
 		// and will also post the changes to the MainQueue
         self.mainManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
+		self.mainManagedObjectContext.userInfo[SPCoreDataWorkerContext] = @(true);
+		
 		self.writerManagedObjectContext = aSibling.writerManagedObjectContext;
 		
 		// Wire the Thread Confined Context, directly to the writer MOC
@@ -126,6 +139,9 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
         // For efficiency
         [self.mainManagedObjectContext setUndoManager:nil];
         
+		// Shared mutex
+		self.mutex = aSibling.mutex;
+		
         // An observer is expected to handle merges for otherContext when the threaded context is saved
 		[self addObserversForChildrenContext:self.mainManagedObjectContext];
     }
@@ -133,7 +149,7 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
     return self;
 }
 
--(void)dealloc {
+- (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     if (!self.sibling) {
         NSURL *storeURL = [(NSPersistentStore *)self.persistentStoreCoordinator.persistentStores.firstObject URL];
@@ -159,7 +175,7 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
     SPCoreDataExporter *exporter = [[SPCoreDataExporter alloc] init];
     NSDictionary *definitionDict = [exporter exportModel:self.managedObjectModel classMappings:self.classMappings];
     
-    DDLogInfo(@"Simperium loaded %lu entity definitions", (unsigned long)[definitionDict count]);
+    SPLogInfo(@"Simperium loaded %lu entity definitions", (unsigned long)[definitionDict count]);
     
     NSUInteger numEntities = [[definitionDict allKeys] count];
     NSMutableArray *schemas = [NSMutableArray arrayWithCapacity:numEntities];
@@ -169,8 +185,8 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
         SPSchema *schema = [[SPSchema alloc] initWithBucketName:entityName data:entityDict];
         [schemas addObject:schema];
     }
-    _keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName = [self generateKeyPathsForEmbeddedObjectsFromSchema:schemas];
-    _entityNamesOfEmbeddedObjects = [NSSet setWithArray:[_keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName allKeys]];
+    self.keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName = [self generateKeyPathsForEmbeddedObjectsFromSchema:schemas];
+    self.entityNamesOfEmbeddedObjects = [NSSet setWithArray:[self.keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName allKeys]];
     return schemas;
 }
 
@@ -253,7 +269,7 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
 - (NSArray *)objectKeysAndIdsForBucketName:(NSString *)bucketName {
     NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     if (entity == nil) {
-        //DDLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
+        //SPLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
         return nil;
     }
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
@@ -367,7 +383,7 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
 	// NOTE:
 	// 'mergeChangesFromContextDidSaveNotification' calls 'deleteObject' in the receiver context. As a result,
 	// remote deletions will be posted as local deletions. Let's prevent that!
-	if(self.sibling) {
+	if (self.sibling) {
 		[self.sibling.remotelyDeletedKeys addObject:managedObject.simperiumKey];
 	}
 }
@@ -405,13 +421,13 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
             if ([object respondsToSelector:@selector(getSimperiumKeyFromLegacyKey)]) {
                 key = [object performSelector:@selector(getSimperiumKeyFromLegacyKey)];
                 if (key && key.length > 0)
-                    DDLogVerbose(@"Simperium local entity found without key (%@), porting legacy key: %@", bucketName, key);
+                    SPLogVerbose(@"Simperium local entity found without key (%@), porting legacy key: %@", bucketName, key);
             }
             
             // If it's still nil (unsynced local change in legacy system), treat it like a newly inserted object:
             // generate a UUID and mark it for sycing
             if (key == nil || key.length == 0) {
-                DDLogVerbose(@"Simperium local entity found with no legacy key (created offline?); generating one now");
+                SPLogVerbose(@"Simperium local entity found with no legacy key (created offline?); generating one now");
                 key = [NSString sp_makeUUID];
             }
             object.simperiumKey = key;
@@ -477,7 +493,7 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
     NSArray *entitiesToStash = [self allUpdatedAndInsertedObjects];
     
     if ([entitiesToStash count] > 0) {
-        DDLogVerbose(@"Simperium stashing changes for %lu entities", (unsigned long)[entitiesToStash count]);
+        SPLogVerbose(@"Simperium stashing changes for %lu entities", (unsigned long)[entitiesToStash count]);
         [stashedObjects addObjectsFromArray: entitiesToStash];
     }
 }
@@ -486,16 +502,24 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
 # pragma mark Main MOC + Children MOC Notification Handlers
 
 - (void)managedContextWillSave:(NSNotification*)notification {
-	NSManagedObjectContext* context = notification.object;
-	if (context.insertedObjects.count == 0) {
+	NSManagedObjectContext *context	= (NSManagedObjectContext *)notification.object;
+	NSMutableSet *temporaryObjects = [NSMutableSet set];
+	
+	for (NSManagedObject *mo in context.insertedObjects) {
+		if (mo.objectID.isTemporaryID) {
+			[temporaryObjects addObject:mo];
+		}
+	}
+	
+	if (temporaryObjects.count == 0) {
 		return;
 	}
 	
 	// Obtain permanentID's for newly inserted objects
 	NSError *error = nil;
-	if (![context obtainPermanentIDsForObjects:context.insertedObjects.allObjects error:&error]) {
-        DDLogError(@"Unable to obtain permanent IDs for objects newly inserted into a Worker Context: %@", error);
-	}
+	if (![context obtainPermanentIDsForObjects:temporaryObjects.allObjects error:&error]) {
+        SPLogVerbose(@"Unable to obtain permanent IDs for objects newly inserted into the main context: %@", error);
+    }
 }
 
 
@@ -507,7 +531,9 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
 	
     // This bypass allows saving to be performed without triggering a sync, as is needed
     // when storing changes that come off the wire
-    if (![self.delegate objectsShouldSync]) return;
+    if (![self.delegate objectsShouldSync]) {
+        return;
+	}
     
     NSSet *insertedObjects = [notification.userInfo objectForKey:NSInsertedObjectsKey];
     NSMutableSet *updatedObjects = [[notification.userInfo objectForKey:NSUpdatedObjectsKey] mutableCopy];
@@ -519,8 +545,13 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
     [updatedObjects addObjectsFromArray:[self updatedBucketObjectsFromEmbeddedObjects:deletedObjects]];
     [updatedObjects minusSet:deletedObjects];
 
+	
+	// Filter remotely deleted objects
     NSMutableSet *locallyDeletedObjects = [NSMutableSet set];
-	for(SPManagedObject* mainMO in deletedObjects) {
+	for (SPManagedObject* mainMO in deletedObjects) {
+		if ([mainMO isKindOfClass:[SPManagedObject class]] == NO) {
+			continue;
+		}
 		if ([self.remotelyDeletedKeys containsObject:mainMO.simperiumKey] == NO) {
 			// We'll need to post it
 			[locallyDeletedObjects addObject:mainMO];
@@ -537,8 +568,8 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
     NSMutableArray *bucketObjects = [[NSMutableArray alloc] init];
 
     for (NSManagedObject *object in set) {
-        if  ([_entityNamesOfEmbeddedObjects containsObject:[[object entity] name]]) {
-            NSArray *keyPaths = _keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName[[[object entity] name]];
+        if  ([self.entityNamesOfEmbeddedObjects containsObject:[[object entity] name]]) {
+            NSArray *keyPaths = self.keyPathsFromEmbeddedObjectsToBucketObjectsByEmbeddedObjectEntityName[[[object entity] name]];
             for (NSString *keyPath in keyPaths) {
                 id objectAtKeyPath = [object valueForKeyPath:keyPath];
                 if (objectAtKeyPath) {
@@ -599,15 +630,15 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
     NSError *error = nil;
     BOOL success = [(NSManagedObjectContext *)notification.object obtainPermanentIDsForObjects:unpersistedObjects error:&error];
     if (!success) {
-        DDLogVerbose(@"Unable to obtain permanent IDs for objects newly inserted into the main context: %@", error);
+        SPLogVerbose(@"Unable to obtain permanent IDs for objects newly inserted into the main context: %@", error);
     }
 }
 
--(void)childrenContextDidSave:(NSNotification*)notification
+- (void)childrenContextDidSave:(NSNotification*)notification
 {
-	// Persist to "disk"!
-	[self saveWriterContext];
-	
+    // Persist to "disk"!
+    [self saveWriterContext];
+
 	// Move the changes to the main MOC. This will NOT trigger main MOC's hasChanges flag.
 	// NOTE: setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
 	// Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
@@ -628,6 +659,9 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
 		
 		// Proceed with the regular merge. This should trigger a contextDidChange note
 		[mainMOC mergeChangesFromContextDidSaveNotification:notification];
+		
+		// Note: Once the changes have been merged to the mainMOC, let's persist to "disk"!
+		[self saveWriterContext];
 	}];
 }
 
@@ -657,47 +691,29 @@ static NSMutableSet *StoreURLsMonitoredBySimperium = nil;
 
 #pragma mark - Sincronization
 
-+ (NSCondition *)sharedMutex {
-	static NSCondition *mutex;
-	static dispatch_once_t onceToken;
-	
-	dispatch_once(&onceToken, ^{
-		mutex = [[NSCondition alloc] init];
-	});
-	
-	return mutex;
-}
-
 - (void)beginSafeSection {
 	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-	NSCondition *mutex = [[self class] sharedMutex];
-	
-	[mutex lock];
-	++_workers;
-	[mutex unlock];
+
+	[_mutex lock];
+	NSInteger workers = _mutex.condition + 1;
+	[_mutex unlockWithCondition:workers];
 }
 
 - (void)finishSafeSection {
-	NSCondition *mutex = [[self class] sharedMutex];
 	
-	[mutex lock];
-	--_workers;
-	[mutex signal];
-	[mutex unlock];
+	[_mutex lock];
+	NSInteger workers = _mutex.condition - 1;
+	[_mutex unlockWithCondition:workers];
 }
 
 - (void)beginCriticalSection {
 	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-	NSCondition *mutex = [[self class] sharedMutex];
-	
-	[mutex lock];
-	while (_workers > 0) {
-		[mutex wait];
-	}
+
+	[_mutex lockWhenCondition:SPWorkersDone];
 }
 
 - (void)finishCriticalSection {
-	[[[self class] sharedMutex] unlock];
+	[_mutex unlock];
 }
 
 

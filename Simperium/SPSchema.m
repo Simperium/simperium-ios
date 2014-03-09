@@ -22,8 +22,7 @@ NSString * const SPSchemaDefinitionMembersKey = @"members";
 
 
 // Loads an entity's definition (name, members, their types, etc.) from a plist dictionary
--(id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition
-{
+- (id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition {
     if (self = [super init]) {
         bucketName = [name copy];
         NSArray *memberList = [definition valueForKey:SPSchemaDefinitionMembersKey];
@@ -33,7 +32,6 @@ NSString * const SPSchemaDefinitionMembersKey = @"members";
 
 			SPMember *member = [[SPMember alloc] initFromDictionary:memberDict];
             [members setObject:member forKey:member.keyName];
-
             if ([member isKindOfClass:[SPMemberBinary class]])
                 [binaryMembers addObject: member];
         }        
@@ -43,11 +41,11 @@ NSString * const SPSchemaDefinitionMembersKey = @"members";
 }
 
 
--(NSString *)bucketName {
+- (NSString *)bucketName {
 	return bucketName;
 }
 
--(void)addMemberForObject:(id)object key:(NSString *)key {
+- (void)addMemberForObject:(id)object key:(NSString *)key {
     if (!dynamic)
         return;
     
@@ -69,9 +67,8 @@ NSString * const SPSchemaDefinitionMembersKey = @"members";
     
 }
 
--(SPMember *)memberForKey:(NSString *)memberName {
+- (SPMember *)memberForKey:(NSString *)memberName {
     return [members objectForKey:memberName];
 }
-
 
 @end

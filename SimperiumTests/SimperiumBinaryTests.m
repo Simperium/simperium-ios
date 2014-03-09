@@ -17,7 +17,7 @@
 
 @implementation SimperiumBinaryTests
 
--(void)setUp
+- (void)setUp
 {
     [super setUp];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -25,7 +25,7 @@
         NSLog(@"Error: Create folder failed %@", NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES));
 }
 
--(NSData *)randomDataWithBytes: (NSUInteger)length
+- (NSData *)randomDataWithBytes: (NSUInteger)length
 {
     NSMutableData *mutableData = [NSMutableData dataWithCapacity: length];
     for (unsigned int i = 0; i < length; i++) {
@@ -34,7 +34,7 @@
     } return mutableData;
 }
 
--(void)testSmallBinaryFile
+- (void)testSmallBinaryFile
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];

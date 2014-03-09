@@ -29,8 +29,8 @@ extern NSString * const SPSchemaDefinitionMembersKey; // Should be the key to an
 @property (nonatomic, strong) NSMutableArray *binaryMembers;
 @property BOOL dynamic;
 
--(id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition;
--(SPMember *)memberForKey:(NSString *)memberName;
--(void)addMemberForObject:(id)object key:(NSString *)key;
+- (id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition;
+- (SPMember *)memberForKey:(NSString *)memberName;
+- (void)addMemberForObject:(id)object key:(NSString *)key;
 
 @end

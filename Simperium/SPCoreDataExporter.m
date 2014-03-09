@@ -8,14 +8,17 @@
 
 #import "SPCoreDataExporter.h"
 #import "SPEmbeddedManagedObject.h"
+#import "SPLogger.h"
 #import "SPManagedObject.h"
-#import "DDLog.h"
-
-#import "SPSchema.h"
 #import "SPMember.h"
+#import "SPSchema.h"
 
 
-static int ddLogLevel = LOG_LEVEL_INFO;
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
 
 static NSString * const DisableSyncUserInfoKey = @"spDisableSync";
 static NSString * const JSONTransformerNameUserInfoKey = @"spJSONTransformerName";
@@ -23,30 +26,23 @@ static NSString * const CustomOperationUserInfoKey = @"spOperationType";
 static NSString * const EmbeddedRelationshipUserInfoKey = @"spEmbed";
 
 
-@interface SPCoreDataExporter ()
-{
-	NSUInteger _exporterRecursiveCall;
-}
+#pragma mark ====================================================================================
+#pragma mark SPCoreDataExporter
+#pragma mark ====================================================================================
+
+@interface SPCoreDataExporter (HappyInspector)
+@property (nonatomic) NSUInteger exporterRecursiveCall;
 @end
 
 @implementation SPCoreDataExporter
 
-+ (int)ddLogLevel {
-    return ddLogLevel;
-}
-
-+ (void)ddSetLogLevel:(int)logLevel {
-    ddLogLevel = logLevel;
-}
-
--(id)init
-{
+- (id)init {
     if ((self = [super init])) {
     }
     return self;
 }
 
--(NSString *)simperiumTypeForAttribute:(NSAttributeDescription *)attribute
+- (NSString *)simperiumTypeForAttribute:(NSAttributeDescription *)attribute
 {
     // Check for overrides first
     NSString *override = [[attribute userInfo] objectForKey:@"spOverride"];
@@ -69,15 +65,76 @@ static NSString * const EmbeddedRelationshipUserInfoKey = @"spEmbed";
 	return nil;
 }
 
--(BOOL)attributeAddedBySimperium:(NSAttributeDescription *) attr
-{
-	return ([@[ @"simperiumKey", @"ghostData" ] indexOfObject:attr.name] != NSNotFound);
+- (BOOL)attributeAddedBySimperium:(NSAttributeDescription *) attr {
+    return [[attr name] compare:@"simperiumKey"] == NSOrderedSame ||
+    [[attr name] compare:@"ghostData"] == NSOrderedSame;
+
+    // The below doesn't seem to work in iOS 5
+    //NSEntityDescription *ownerEntity = [attr entity];
+    //return [[ownerEntity name] compare: @"SPEntity"] == NSOrderedSame;
 }
 
+- (void)addMembersFrom:(NSEntityDescription *)entityDesc to:(NSMutableArray *)members {
+    // Don't add members from SPManagedObject
+    if ([[entityDesc name] compare:@"SPManagedObject"] == NSOrderedSame)
+        return;
+        
+    for (NSAttributeDescription *attr in [[entityDesc attributesByName] allValues]) {
+        // Don't sync certain attributes
+        if ([self attributeAddedBySimperium:attr])
+            continue;
+        
+        if ([attr isTransient])
+            continue;
+        
+        // Attributes can be manually excluded from syncing
+        if ([[attr userInfo] objectForKey:@"spDisableSync"])
+            continue;
+        
+        NSMutableDictionary *member = [NSMutableDictionary dictionaryWithCapacity:4];
 
--(NSDictionary *)exportModel:(NSManagedObjectModel *)model classMappings:(NSMutableDictionary *)classMappings
-{
+        id defaultValue = [attr defaultValue];
+        if (defaultValue)
+            [member setObject:defaultValue forKey:@"defaultValue"];
+
+        [member setObject:[attr name] forKey:@"name"];
+        [member setObject:@"default" forKey:@"resolutionPolicy"];
+        NSString *type = [self simperiumTypeForAttribute: attr];
+        NSAssert1(type != nil, @"Simperium couldn't load member %@ (unsupported type)", [attr name]);
+        [member setObject: type forKey:@"type"];
+        if (attr.attributeType == NSTransformableAttributeType && attr.valueTransformerName != nil) {
+            [member setObject:attr.valueTransformerName forKey:@"valueTransformerName"];
+        }
+        [members addObject: member];
+    }
     
+    for (NSString *relationshipName in [[entityDesc relationshipsByName] allKeys]) {
+        NSRelationshipDescription *rel = [[entityDesc relationshipsByName] objectForKey:relationshipName];
+        
+        // Relationships can be manually excluded from syncing
+        if ([[rel userInfo] objectForKey:@"spDisableSync"])
+            continue;
+        
+        // For now, we're only syncing relationships from many-to-one, not one-to-many, unless there's no inverse
+        // (in which case the many-to-one won't exist)
+        if ([rel isToMany] && [rel inverseRelationship] != nil)
+            continue;
+        
+        NSMutableDictionary *member = [NSMutableDictionary dictionaryWithCapacity:4];
+        [member setObject:[rel name] forKey:@"name"];
+        [member setObject:@"default" forKey:@"resolutionPolicy"];
+        [member setObject:@"entity" forKey:@"type"];
+        [member setObject:[rel destinationEntity].name forKey:@"entityName"];
+        [members addObject: member];
+    }
+    
+    // Now recursively add all parent entity members and relationships
+    // (not needed, looks like they're already included in attributesByName
+//    if ([entityDesc superentity])
+//        [self addMembersFrom:[entityDesc superentity] to:members];
+}
+
+- (NSDictionary *)exportModel:(NSManagedObjectModel *)model classMappings:(NSMutableDictionary *)classMappings {
     // Construct a dictionary
     NSMutableDictionary *schemaDefinitionsByEntityName = [NSMutableDictionary dictionaryWithCapacity:[[model entities] count]];
     for (NSEntityDescription *entity in [model entities])
@@ -95,7 +152,7 @@ static NSString * const EmbeddedRelationshipUserInfoKey = @"spEmbed";
     // For now, just print to log to make sure the export worked
     // Also freeze; copy/paste the log to a file, then comment out the export line so
     // this doesn't run again (hacky)
-    DDLogVerbose(@"Simperium result of Core Data export: %@", schemaDefinitionsByEntityName);
+    SPLogVerbose(@"Simperium result of Core Data export: %@", schemaDefinitionsByEntityName);
     //NSAssert(0, @"Asserting to look at export log (hack)");
 }
 
@@ -113,8 +170,8 @@ static NSString * const EmbeddedRelationshipUserInfoKey = @"spEmbed";
 
 -(NSArray *)exportMemberDefinitionsFromEntity:(NSEntityDescription *)entity skipRelationship:(NSRelationshipDescription *)skipRelationship
 {
-	_exporterRecursiveCall++;
-	if (_exporterRecursiveCall > 500) [NSException raise:NSInternalInconsistencyException format:@"Simperium member definitions set up for more than 500 times, this is probably caused by a object recursive embedding structure with 3 or more objects (%s)",__PRETTY_FUNCTION__];
+	self.exporterRecursiveCall++;
+	if (self.exporterRecursiveCall > 500) [NSException raise:NSInternalInconsistencyException format:@"Simperium member definitions set up for more than 500 times, this is probably caused by a object recursive embedding structure with 3 or more objects (%s)",__PRETTY_FUNCTION__];
 	
 	NSMutableArray *members = [[NSMutableArray alloc] init];
     for (NSAttributeDescription *attribute in [entity.attributesByName allValues]) {

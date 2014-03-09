@@ -11,18 +11,23 @@
 
 @class SPBucket;
 
+typedef void (^SPNetworkInterfaceResetCompletion)(void);
+
 @protocol SPNetworkInterface <NSObject>
--(void)start:(SPBucket *)bucket name:(NSString *)name;
--(void)stop:(SPBucket *)bucket;
--(void)resetBucketAndWait:(SPBucket *)bucket;
--(void)requestLatestVersionsForBucket:(SPBucket *)bucket;
--(void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
--(void)sendObjectDeletion:(id<SPDiffable>)object;
--(void)sendObjectChangesForKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket;
--(void)sendObjectChanges:(id<SPDiffable>)object;
--(void)sendLogMessage:(NSString*)logMessage;
--(void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
--(void)forceSyncBucket:(SPBucket *)bucket;
+- (void)start:(SPBucket *)bucket;
+- (void)stop:(SPBucket *)bucket;
+- (void)reset:(SPBucket *)bucket completion:(SPNetworkInterfaceResetCompletion)completion;
+- (void)requestLatestVersionsForBucket:(SPBucket *)bucket;
+- (void)requestVersions:(int)numVersions object:(id<SPDiffable>)object;
+- (void)sendObjectDeletion:(id<SPDiffable>)object;
+- (void)sendObjectChanges:(id<SPDiffable>)object;
+- (void)sendLogMessage:(NSString*)logMessage;
+- (void)removeAllBucketObjects:(SPBucket *)bucket;
+- (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
+- (void)forceSyncBucket:(SPBucket *)bucket;
+
+// Happy Inspector
+- (void)sendObjectChangesForKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket;
 @end
 
 extern NSString * const SPAuthenticationDidFail;

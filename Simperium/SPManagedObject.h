@@ -34,6 +34,17 @@
 - (NSDictionary *)dictionary;
 - (NSString *)version;
 
+// Note: The following methods are meant to be overriden, if needed.
+// Selector 'awakeFromRemoteInsert' will get called just once, right after a remote insertion is performed.
+// From then on, 'awakeFromLocalInsert' will be called each time the object is inserted in a NSManagedObjectContext.
+- (void)awakeFromLocalInsert;
+- (void)awakeFromRemoteInsert;
+
+@end
+
+
+@interface SPManagedObject (HappyInspector)
+
 + (BOOL)simperiumObjectExistsWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context;
 + (SPManagedObject *)simperiumObjectWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context faults:(BOOL)allowFaults;
 + (SPManagedObject *)simperiumObjectWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context faults:(BOOL)allowFaults prefetchedRelationships:(NSArray *)prefetchedRelationships;

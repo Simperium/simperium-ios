@@ -10,27 +10,25 @@
 #import "Simperium.h"
 #import "SPGhost.h"
 #import "JSONKit+Simperium.h"
-#import "DDLog.h"
+#import "SPLogger.h"
 #import "SPDiffable.h"
 #import "SPSchema.h"
 #import "SPJSONDiff.h"
 
-@interface SPDiffer(Private)
-@end
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
+
+
+#pragma mark ====================================================================================
+#pragma mark SPDiffer
+#pragma mark ====================================================================================
 
 @implementation SPDiffer
-@synthesize schema;
-
-static int ddLogLevel = LOG_LEVEL_INFO;
-
-+ (int)ddLogLevel {
-    return ddLogLevel;
-}
-
-+ (void)ddSetLogLevel:(int)logLevel {
-    ddLogLevel = logLevel;
-}
-
 
 - (id)initWithSchema:(SPSchema *)aSchema {
     if ((self = [super init])) {
@@ -43,9 +41,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 // Construct a diff for newly added entities
 - (NSMutableDictionary *)diffForAddition:(id<SPDiffable>)object {
-    NSMutableDictionary *diff = [NSMutableDictionary dictionaryWithCapacity: [schema.members count]];
-    
-    for (SPMember *member in [schema.members allValues]) {
+    NSMutableDictionary *diff = [NSMutableDictionary dictionaryWithCapacity: [self.schema.members count]];
+
+    for (SPMember *member in [self.schema.members allValues]) {
         id JSONValue = [member JSONValueForMemberOnParentObject:object];
         NSDictionary *memberDiff = SPDiffObjects(nil, JSONValue, member.policy);
         if (memberDiff) {
@@ -73,13 +71,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	// We cycle through all members of the ghost and check their values against the entity
 	// In the JS version, members can be added/removed this way too if a member is present in one entity
 	// but not the other; ignore this functionality for now
-	
-	for (SPMember *member in [schema.members allValues])
+
+	for (SPMember *member in [self.schema.members allValues])
     {
         id dictionaryJSONValue = dict[member.keyName];
         id objectJSONValue = [member JSONValueForMemberOnParentObject:object];
         SPDiff *diff = (toDictionary) ? SPDiffObjects(objectJSONValue, dictionaryJSONValue, member.policy) : SPDiffObjects(dictionaryJSONValue, objectJSONValue, member.policy);
 
+		// If there was no difference, then don't add any changes for this member
 		if (diff == nil || [diff count] == 0)
 			continue;
 		
@@ -95,10 +94,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 	// Process each change in the diff
 	for (NSString *memberKey in [diff allKeys]) {
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *member = [schema memberForKey: memberKey];
+		SPMember *member = [self.schema memberForKey: memberKey];
         NSDictionary *memberDiff = diff[memberKey];
 		if (!member) {
-			DDLogWarn(@"Simperium warning: applyDiff for a member that doesn't exist (%@): %@", memberKey, [memberDiff description]);
+			SPLogWarn(@"Simperium warning: applyDiff for a member that doesn't exist (%@): %@", memberKey, [memberDiff description]);
 			continue;
 		}
         id currentValue = [member JSONValueForMemberOnParentObject:object];
@@ -120,11 +119,11 @@ static int ddLogLevel = LOG_LEVEL_INFO;
         // This should never happen, but it can if a change somehow slips in from a PUT request
         if (memberDiff == nil)
             continue;
-        
-        SPMember *member = [schema memberForKey: key];
+
+        SPMember *member = [self.schema memberForKey: key];
         // Make sure the member exists and is tracked by Simperium
         if (!member) {
-            DDLogWarn(@"Simperium warning: applyGhostDiff for a member that doesn't exist (%@): %@", key, [memberDiff description]);
+            SPLogWarn(@"Simperium warning: applyGhostDiff for a member that doesn't exist (%@): %@", key, [memberDiff description]);
             continue;
         }
 		
@@ -149,14 +148,14 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 		NSDictionary *oldMemberDiff = [oldDiff objectForKey:key];
 		
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *member = [schema memberForKey: key];
+		SPMember *member = [self.schema memberForKey: key];
 		if (!member) {
-			DDLogError(@"Simperium error: transform diff for a member that doesn't exist (%@): %@", key, [memberDiff description]);
+			SPLogError(@"Simperium error: transform diff for a member that doesn't exist (%@): %@", key, [memberDiff description]);
 			continue;
 		}
         id ghostValue = oldGhostMemberData[key];
         if (!ghostValue) {
-			DDLogError(@"Simperium error: transform diff for a ghost member (ghost %@, memberData %@) that doesn't exist (%@): %@", oldGhost, oldGhost.memberData, key, [memberDiff description]);
+			SPLogError(@"Simperium error: transform diff for a ghost member (ghost %@, memberData %@) that doesn't exist (%@): %@", oldGhost, oldGhost.memberData, key, [memberDiff description]);
             continue;
         }
         

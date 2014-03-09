@@ -1,5 +1,5 @@
 //
-//  SPMutableSet.h
+//  SPThreadsafeMutableSet.h
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 11/26/13.
@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 
-@interface SPMutableSet : NSObject
+@interface SPThreadsafeMutableSet : NSObject
 
 - (NSArray *)allObjects;
 - (BOOL)containsObject:(id)anObject;

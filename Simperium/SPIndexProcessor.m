@@ -14,31 +14,35 @@
 #import "SPGhost.h"
 #import "SPStorage.h"
 #import "JSONKit+Simperium.h"
-#import "DDLog.h"
-#import "SPBucket.h"
+#import "SPLogger.h"
+#import "SPBucket+Internals.h"
 #import "SPDiffable.h"
 #import "SPDiffer.h"
 
-static int ddLogLevel = LOG_LEVEL_INFO;
 
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
 #define kBatchSize 30
+
+
+#pragma mark ====================================================================================
+#pragma mark SPIndexProcessor
+#pragma mark ====================================================================================
 
 @interface SPIndexProcessor () {
     NSUInteger _inFlightProcessCount;
 }
-@property (atomic, assign, readwrite, getter = isProcessingChanges) BOOL processingChanges;
+@end
 
+@interface SPIndexProcessor (HappyInspectorPrivate)
+@property (atomic, assign, readwrite, getter = isProcessingChanges) BOOL processingChanges;
 @end
 
 @implementation SPIndexProcessor
-
-+ (int)ddLogLevel {
-    return ddLogLevel;
-}
-
-+ (void)ddSetLogLevel:(int)logLevel {
-    ddLogLevel = logLevel;
-}
 
 - (void)increaseInFlightProcess {
     @synchronized(self) {
@@ -149,7 +153,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     }];
 }
 
--(void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket {
+- (void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket {
 	
 	id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
 	[threadSafeStorage beginCriticalSection];
@@ -168,27 +172,29 @@ static int ddLogLevel = LOG_LEVEL_INFO;
             
             // If the object has never synced, be careful not to delete it (it won't exist in the remote index yet)
             if ([[objectToDelete ghost] memberData] == nil) {
-                DDLogWarn(@"Simperium found local object that doesn't exist remotely yet: %@ (%@)", key, bucket.name);
+                SPLogWarn(@"Simperium found local object that doesn't exist remotely yet: %@ (%@)", key, bucket.name);
                 continue;
             }
             [keysForDeletedObjects addObject:key];
             [threadSafeStorage deleteObject:objectToDelete];
         }
-        DDLogVerbose(@"Simperium deleting %ld objects after re-indexing", (long)[keysForDeletedObjects count]);
+        SPLogVerbose(@"Simperium deleting %ld objects after re-indexing", (long)[keysForDeletedObjects count]);
         [threadSafeStorage save];
         
-        NSDictionary *userInfo = @{
-								   @"bucketName"	: bucket.name,
-								   @"keys"			: keysForDeletedObjects
-								 };
-        [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			NSDictionary *userInfo = @{
+			   @"bucketName"	: bucket.name,
+			   @"keys"			: keysForDeletedObjects
+			 };
+			[[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
+		});
     }
 	
 	[threadSafeStorage finishCriticalSection];
 }
 
 // Process actual version data from the Simperium service for a particular bucket
--(void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket firstSync:(BOOL)firstSync changeHandler:(void(^)(NSString *key))changeHandler
+- (void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket firstSync:(BOOL)firstSync changeHandler:(void(^)(NSString *key))changeHandler
 {
     [self asyncInFlightProcess:^(dispatch_block_t processFinished) {
         @autoreleasepool {
@@ -226,7 +232,7 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
                     NSMutableDictionary *newMemberData = [[object dictionary] mutableCopy];
                     ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData:newMemberData];
-                    DDLogVerbose(@"Simperium added object from index (%@): %@", bucket.name, [object simperiumKey]);
+                    SPLogVerbose(@"Simperium added object from index (%@): %@", bucket.name, [object simperiumKey]);
                 } else {
                     // The object already exists locally; update it if necessary
                     BOOL overwriteLocalData = NO;
@@ -238,10 +244,10 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                     if (firstSync) {
                         NSDictionary *diff = [bucket.differ diff:object fromDictionary:data];
                         if ([diff count] > 0 && [object respondsToSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
-                            DDLogVerbose(@"Simperium object %@ has changes: %@", [object simperiumKey], diff);
+                            SPLogVerbose(@"Simperium object %@ has changes: %@", [object simperiumKey], diff);
                             if ([object performSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
                                 // The app has determined this object's local changes should be taken from index regardless of any local changes
-                                DDLogVerbose(@"Simperium local object found (%@) with local changes, and OVERWRITING those changes", bucket.name);
+                                SPLogVerbose(@"Simperium local object found (%@) with local changes, and OVERWRITING those changes", bucket.name);
                                 overwriteLocalData = YES;
                             } else
                                 // There's a local, unsynced change, which can only happen on first sync when migrating from an earlier version of an app.
@@ -265,14 +271,13 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                         // might have already been allocated above
                         ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData: ghostMemberData];
                         [changedKeys addObject:key];
-                        DDLogVerbose(@"Simperium loaded new data into object %@ (%@)", [object simperiumKey], bucket.name);
+                        SPLogVerbose(@"Simperium loaded new data into object %@ (%@)", [object simperiumKey], bucket.name);
                     }
-
                 }
 
                 // If there is a new/changed ghost, store it
                 if (ghost) {
-                    DDLogVerbose(@"Simperium updating ghost data for object %@ (%@)", [object simperiumKey], bucket.name);
+                    SPLogVerbose(@"Simperium updating ghost data for object %@ (%@)", [object simperiumKey], bucket.name);
                     ghost.version = version;
                     object.ghost = ghost;
                     object.simperiumKey = object.simperiumKey; // ugly hack to force entity to save since ghost isn't transient
@@ -293,15 +298,18 @@ static int ddLogLevel = LOG_LEVEL_INFO;
                 // Revisit the use of NSNotification if there is demand. Currently it's too slow when lots of data is being
                 // indexed across buckets, so it's not done by default
                 if (bucket.notifyWhileIndexing) {
-                    NSDictionary *userInfoAdded = [NSDictionary dictionaryWithObjectsAndKeys:
-                                                   bucket.name, @"bucketName",
-                                                   addedKeys, @"keys", nil];
+                    NSDictionary *userInfoAdded = @{
+                        @"bucketName"	: bucket.name,
+                        @"keys"			: addedKeys
+                    };
+
                     [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidAddObjectsNotification object:bucket userInfo:userInfoAdded];
 
                     for (NSString *key in changedKeys) {
-                        NSDictionary *userInfoChanged = [NSDictionary dictionaryWithObjectsAndKeys:
-                                                         bucket.name, @"bucketName",
-                                                         key, @"key", nil];
+                        NSDictionary *userInfoChanged = @{
+                            @"bucketName"	: bucket.name,
+                            @"keys"			: [NSSet setWithObject:key]
+                        };
                         [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidChangeObjectNotification object:bucket userInfo:userInfoChanged];
                     }
                 }

@@ -10,6 +10,7 @@
 #import "SPMember.h"
 #import "SPEmbeddedManagedObject.h"
 #import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "SPRelationshipResolver.h"
 #import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
@@ -99,7 +100,7 @@ static NSString * const SPOperationTypeKey = @"otype";
     return _policy;
 }
 
--(id)initFromDictionary:(NSDictionary *)dict
+- (id)initFromDictionary:(NSDictionary *)dict
 {
 	if ((self = [self init])) {
         _dictionaryForInitializer = dict;

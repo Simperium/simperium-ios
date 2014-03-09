@@ -12,11 +12,12 @@
 #import "Post.h"
 #import "PostComment.h"
 #import "SPCoreDataStorage.h"
+#import "SPBucket+Internals.h"
 
 
 static NSInteger const kNumberOfPosts		= 10;
 static NSInteger const kCommentsPerPost		= 50;
-static NSInteger const kStressIterations	= 500;
+static NSInteger const kStressIterations	= 100;
 
 @interface DeletionCascadeTest : XCTestCase
 
@@ -24,11 +25,20 @@ static NSInteger const kStressIterations	= 500;
 
 @implementation DeletionCascadeTest
 
+
+static NSInteger const SPWorkersDone = 0;
+
 - (void)testStress {
 	for (NSInteger i = 0; ++i <= kStressIterations; ) {
-		NSLog(@"<> Stress Iteration %d", i);
+		NSLog(@"<> Stress Iteration %ld", (long)i);
+		
+		NSDate *reference = [NSDate date];
 		[self testInsertion];
+		NSLog(@" >> Insertion Delta: %f", reference.timeIntervalSinceNow);
+		
+		reference = [NSDate date];
 		[self testUpdates];
+		NSLog(@" >> Updates Delta: %f", reference.timeIntervalSinceNow);
 	}
 }
 
@@ -49,7 +59,7 @@ static NSInteger const kStressIterations	= 500;
 	// Insert Posts
 	for (NSInteger i = 0; ++i <= kNumberOfPosts; ) {
 		Post* post = [storage insertNewObjectForBucketName:postBucket.name simperiumKey:nil];
-		post.title = [NSString stringWithFormat:@"Post [%d]", i];
+		post.title = [NSString stringWithFormat:@"Post [%ld]", (long)i];
 		[postKeys addObject:post.simperiumKey];
 		
 		[storage save];
@@ -65,7 +75,7 @@ static NSInteger const kStressIterations	= 500;
 			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
 			for (NSInteger j = 0; ++j <= kCommentsPerPost; ) {
 				PostComment* comment = [threadSafeStorage insertNewObjectForBucketName:commentBucket.name simperiumKey:nil];
-				comment.content = [NSString stringWithFormat:@"Comment [%d]", j];
+				comment.content = [NSString stringWithFormat:@"Comment [%ld]", (long)j];
 				[post addCommentsObject:comment];
 				[commentKeys addObject:comment.simperiumKey];
 			}
@@ -100,7 +110,7 @@ static NSInteger const kStressIterations	= 500;
 		EndBlock();
 	});
 	
-	WaitUntilBlockCompletes();
+	WaitUntilBlockCompletes();	
 }
 
 - (void)testUpdates
@@ -114,29 +124,25 @@ static NSInteger const kStressIterations	= 500;
 	
 	NSMutableArray* postKeys		= [NSMutableArray array];
 	NSMutableArray* commentKeys		= [NSMutableArray array];
+	dispatch_group_t group			= dispatch_group_create();
 	
 	// Insert Posts
 	for (NSInteger i = 0; ++i <= kNumberOfPosts; ) {
 		Post* post = [storage insertNewObjectForBucketName:postBucket.name simperiumKey:nil];
-		post.title = [NSString stringWithFormat:@"Post [%d]", i];
+		post.title = [NSString stringWithFormat:@"Post [%ld]", (long)i];
 		[postKeys addObject:post.simperiumKey];
 		
-		[storage save];
-	}
-	
-	// Insert Comments
-	for (NSString* simperiumKey in postKeys) {
-		Post* post = [storage objectForKey:simperiumKey bucketName:postBucket.name];
+		// Insert Comments
 		for (NSInteger j = 0; ++j <= kCommentsPerPost; ) {
 			PostComment* comment = [storage insertNewObjectForBucketName:commentBucket.name simperiumKey:nil];
-			comment.content = [NSString stringWithFormat:@"Comment [%d]", j];
+			comment.content = [NSString stringWithFormat:@"Comment [%ld]", (long)j];
 			[post addCommentsObject:comment];
 			[commentKeys addObject:comment.simperiumKey];
 		}
-		
-		[storage save];
 	}
 
+	[storage save];
+	
 	// Update Comments
 	StartBlock();
 	
@@ -151,7 +157,7 @@ static NSInteger const kStressIterations	= 500;
 			}
 
 			// Delete Posts
-			dispatch_async(postBucket.processorQueue, ^{
+			dispatch_group_async(group, postBucket.processorQueue, ^{
 				id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
 				[threadSafeStorage beginCriticalSection];
 				
@@ -163,9 +169,12 @@ static NSInteger const kStressIterations	= 500;
 			[threadSafeStorage save];
 			[threadSafeStorage finishSafeSection];
 		}
+		
+		dispatch_group_notify(group, dispatch_get_main_queue(), ^ {
+			NSLog(@"Ready");
+			EndBlock();
+		});
 	});
-	
-	EndBlock();
 	
 	WaitUntilBlockCompletes();
 }

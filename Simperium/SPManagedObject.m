@@ -7,39 +7,30 @@
 
 #import "SPManagedObject.h"
 #import "SPCoreDataStorage.h"
-#import "SPBucket.h"
+#import "SPBucket+Internals.h"
 #import "SPSchema.h"
 #import "SPDiffer.h"
 #import "SPMember.h"
 #import "Simperium.h"
 #import "SPGhost.h"
 #import "JSONKit+Simperium.h"
-#import "DDLog.h"
+#import "SPLogger.h"
 
 
 
 @implementation SPManagedObject
+
 @synthesize ghost;
 @synthesize updateWaiting;
 @synthesize bucket = _bucket;
 @dynamic simperiumKey;
 @dynamic ghostData;
 
-static int ddLogLevel = LOG_LEVEL_INFO;
-
-+ (int)ddLogLevel {
-    return ddLogLevel;
-}
-
-+ (void)ddSetLogLevel:(int)logLevel {
-    ddLogLevel = logLevel;
-}
-
--(void)simperiumSetValue:(id)value forKey:(NSString *)key {
+- (void)simperiumSetValue:(id)value forKey:(NSString *)key {
     [self setValue:value forKey:key];
 }
 
--(id)simperiumValueForKey:(NSString *)key {
+- (id)simperiumValueForKey:(NSString *)key {
     return [self valueForKey:key];
 }
 
@@ -83,17 +74,20 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)awakeFromInsert {
     [super awakeFromInsert];
-    [self configureBucket];   
+    [self configureBucket];
+	
+	// Determine if it was a local // remote insert, and call the right 'awake...' method
+	if ([self.managedObjectContext.userInfo[SPCoreDataWorkerContext] boolValue]) {
+		[self awakeFromRemoteInsert];
+	} else {
+		[self awakeFromLocalInsert];
+	}
 }
 
 - (void)didTurnIntoFault {
     ghost = nil;
     [super didTurnIntoFault];
 }
-
-//-(void)prepareForDeletion
-//{
-//}
 
 - (void)willSave {
     // When the entity is saved, check to see if its ghost has changed, in which case its data needs to be converted
@@ -120,11 +114,21 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return ghost;
 }
 
+- (void)setGhostData:(NSString *)aString {
+    // Core Data compliant way to update members
+    [self willChangeValueForKey:@"ghostData"];
+    // NSString implements NSCopying, so copy the attribute value
+    NSString *newStr = [aString copy];
+    [self setPrimitiveValue:newStr forKey:@"ghostData"]; // setPrimitiveContent will make it nil if the string is empty
+    [self didChangeValueForKey:@"ghostData"];
+}
+
 
 - (NSString *)localID {
     NSManagedObjectID *key = [self objectID];
-    if ([key isTemporaryID])
+    if ([key isTemporaryID]) {
         return nil;
+	}
     return [[key URIRepresentation] absoluteString];
 }
 
@@ -141,8 +145,9 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)willBeRead {
     // Bit of a hack to force fire the fault
-    if ([self isFault])
+    if ([self isFault]) {
         [self simperiumKey];
+	}
 }
 
 - (NSDictionary *)dictionary {
@@ -168,6 +173,19 @@ static int ddLogLevel = LOG_LEVEL_INFO;
     return self;
 }
 
+- (void)awakeFromLocalInsert {
+	// Override me if needed!
+}
+
+- (void)awakeFromRemoteInsert {
+	// Override me if needed!
+}
+
+@end
+
+
+@implementation SPManagedObject (HappyInspector)
+
 + (BOOL)simperiumObjectExistsWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context
 {
     if (!simperiumKey || simperiumKey.length == 0) return nil;
@@ -187,16 +205,16 @@ static int ddLogLevel = LOG_LEVEL_INFO;
 
     NSError *error;
     NSArray *items = [context executeFetchRequest:fetchRequest error:&error];
-    
+
     if ([items count] == 0)
         return nil;
-    
+
     return [items objectAtIndex:0];
 
 }
 
 + (NSFetchRequest *)fetchRequestForSimperiumObjectWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context
-{    
+{
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     NSEntityDescription *entityDescription = [NSEntityDescription entityForName:entityName inManagedObjectContext:context];
     [fetchRequest setEntity:entityDescription];

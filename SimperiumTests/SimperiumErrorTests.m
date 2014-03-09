@@ -19,7 +19,7 @@
 
 @implementation SimperiumErrorTests
 
--(void)testDeletion404
+- (void)testDeletion404
 {
     // Leader sends an object to a follower, follower goes offline, both make changes, follower reconnects
     Farm *leader = [self createFarm:@"leader"];
@@ -32,8 +32,8 @@
     [follower connect];
     [self waitFor:1.0];
     
-    SPBucket *leaderBucket = [leader.simperium bucketForName:@"Config"];
-    SPBucket *followerBucket = [follower.simperium bucketForName:@"Config"];
+    SPBucket *leaderBucket = [leader.simperium bucketForName:[Config entityName]];
+    SPBucket *followerBucket = [follower.simperium bucketForName:[Config entityName]];
     
     leader.config = [leaderBucket insertNewObject];
     leader.config.captainsLog = @"1";
@@ -42,7 +42,7 @@
     follower.expectedAdditions = 1;
     XCTAssertTrue([self waitForCompletion: 4.0 farmArray:farmArray], @"timed out (adding)");
     [self resetExpectations: farmArray];
-    [self ensureFarmsEqual:farmArray entityName:@"Config"];
+    [self ensureFarmsEqual:farmArray entityName:[Config entityName]];
     NSLog(@"****************************DISCONNECT*************************");
     [follower disconnect];
     
@@ -55,7 +55,7 @@
     
     // Delete on follower before it syncs to force a 404
     [followerBucket deleteObject:follower.config];
-    follower.expectedAcknowledgments = 1;
+    follower.expectedDeletions = 1;
     [follower.simperium save];
     [self waitFor:0.01];
     NSLog(@"****************************RECONNECT*************************");

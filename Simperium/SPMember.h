@@ -54,7 +54,7 @@ typedef NS_ENUM(NSInteger, SPMemberType)
 
 @property (nonatomic, readonly, strong) NSString *keyName;
 
--(SPMember *)initFromDictionary:(NSDictionary *)dict;
+- (SPMember *)initFromDictionary:(NSDictionary *)dict;
 
 
 // TODO: Implement

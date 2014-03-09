@@ -7,7 +7,7 @@
 //
 
 #import "MockWebSocketInterface.h"
-#import "DDLog.h"
+#import "SRWebSocket.h"
 
 
 

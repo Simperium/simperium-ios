@@ -1,5 +1,5 @@
 //
-//  SPDictionaryStorage.h
+//  SPPersistentMutableDictionary.h
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 9/12/13.
@@ -9,11 +9,14 @@
 #import <Foundation/Foundation.h>
 
 
-@interface SPDictionaryStorage : NSObject
+
+#pragma mark ====================================================================================
+#pragma mark SPPersistentMutableDictionary
+#pragma mark ====================================================================================
+
+@interface SPPersistentMutableDictionary : NSObject
 
 @property (nonatomic, strong, readonly) NSString *label;
-
-- (id)initWithLabel:(NSString *)label;
 
 - (NSInteger)count;
 - (BOOL)containsObjectForKey:(id)aKey;
@@ -27,5 +30,7 @@
 
 - (void)removeObjectForKey:(id)aKey;
 - (void)removeAllObjects;
+
++ (instancetype)loadDictionaryWithLabel:(NSString *)label;
 
 @end

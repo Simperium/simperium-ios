@@ -27,15 +27,15 @@
 @property (nonatomic, strong, readonly)  NSManagedObjectModel			*managedObjectModel;
 @property (nonatomic, strong, readonly)  NSPersistentStoreCoordinator	*persistentStoreCoordinator;
 
--(id)initWithToken:(NSString *)token bucketOverrides:(NSDictionary *)bucketOverrides label:(NSString *)label;
--(void)start;
--(void)stop;
--(void)connect;
--(void)disconnect;
--(BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs;
--(BOOL)isDone;
--(void)resetExpectations;
--(void)logUnfulfilledExpectations;
+- (id)initWithToken:(NSString *)token label:(NSString *)label;
+- (void)start;
+- (void)stop;
+- (void)connect;
+- (void)disconnect;
+- (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs;
+- (BOOL)isDone;
+- (void)resetExpectations;
+- (void)logUnfulfilledExpectations;
 
 @end
 

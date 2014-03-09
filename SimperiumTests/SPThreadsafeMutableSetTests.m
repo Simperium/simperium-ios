@@ -1,5 +1,5 @@
 //
-//  SPMutableSetTests.m
+//  SPThreadsafeMutableSetTests.m
 //  Simperium
 //
 //  Created by Jorge Leandro Perez on 11/26/13.
@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "SPMutableSet.h"
+#import "SPThreadsafeMutableSet.h"
 #import "XCTestCase+Simperium.h"
 
 
@@ -20,20 +20,20 @@ static NSUInteger const SPSetIterations		= 10000;
 static NSUInteger const SPConcurrentWorkers	= 100;
 
 #pragma mark ====================================================================================
-#pragma mark SPMutableSetTests
+#pragma mark SPThreadsafeMutableSetTests
 #pragma mark ====================================================================================
 
-@interface SPMutableSetTests : XCTestCase
+@interface SPThreadsafeMutableSetTests : XCTestCase
 
 @end
 
-@implementation SPMutableSetTests
+@implementation SPThreadsafeMutableSetTests
 
 - (void)testCRUD {
-	SPMutableSet *set = [SPMutableSet set];
+	SPThreadsafeMutableSet *set = [SPThreadsafeMutableSet set];
 	NSMutableSet *helper = [NSMutableSet set];
 	
-	for(NSInteger i = 0; ++i <= SPSetIterations; ) {
+	for (NSInteger i = 0; ++i <= SPSetIterations; ) {
 		[set addObject:@(i)];
 		[helper addObject:@(i)];
 	}
@@ -42,7 +42,7 @@ static NSUInteger const SPConcurrentWorkers	= 100;
 	XCTAssert(set.allObjects.count == SPSetIterations, @"Inconsistent object count");
 	XCTAssert([set.allObjects isEqualToArray:helper.allObjects], @"Data Inconsistency");
 	
-	for(NSNumber* number in set.allObjects) {
+	for (NSNumber* number in set.allObjects) {
 		[set removeObject:number];
 	}
 
@@ -51,18 +51,18 @@ static NSUInteger const SPConcurrentWorkers	= 100;
 
 - (void)testThreading {
 	
-	// If you replace SPMutableSet with the regular NSMutableSet, you should see a nice error: "pointer being freed was not allocated"
-	SPMutableSet *set = [SPMutableSet set];
+	// If you replace SPThreadsafeMutableSet with the regular NSMutableSet, you should see a nice error: "pointer being freed was not allocated"
+	SPThreadsafeMutableSet *set = [SPThreadsafeMutableSet set];
 	dispatch_group_t group = dispatch_group_create();
 	
 	// Launch concurrent workers
-	for(NSInteger i = 0; ++i <= SPConcurrentWorkers; ) {
-		dispatch_queue_t queue = dispatch_queue_create("com.simperium.SPMutableSetTests", NULL);
+	for (NSInteger i = 0; ++i <= SPConcurrentWorkers; ) {
+		dispatch_queue_t queue = dispatch_queue_create("com.simperium.SPThreadsafeMutableSetTests", NULL);
 		
 		dispatch_group_enter(group);
 		dispatch_async(queue, ^{
 
-			for(NSInteger i = 0; ++i <= SPSetIterations; ) {
+			for (NSInteger i = 0; ++i <= SPSetIterations; ) {
 				[set addObject:@(i)];
 			}
 			dispatch_group_leave(group);
@@ -75,7 +75,7 @@ static NSUInteger const SPConcurrentWorkers	= 100;
 	dispatch_group_notify(group, dispatch_get_main_queue(), ^{
 		XCTAssert(set.count == SPSetIterations, @"Thread safety issue");
 		
-		for(NSInteger i = 0; ++i <= SPSetIterations; ) {
+		for (NSInteger i = 0; ++i <= SPSetIterations; ) {
 			XCTAssertTrue([set containsObject:@(i)], @"Missing object");
 			[set removeObject:@(i)];
 			XCTAssertFalse([set containsObject:@(i)], @"Missing object");

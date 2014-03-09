@@ -19,20 +19,20 @@
 
 @implementation SimperiumIndexTests
 
--(void)testIndex
+- (void)testIndex
 {
     NSLog(@"%@ start", self.name);
 
     // Leader sends an object to follower, but make follower get it from the index
     Farm *leader = [self createFarm:@"leader"];
     Farm *follower = [self createFarm:@"follower"];
+    leader.expectedIndexCompletions = 1;
     [leader start];
     [leader connect];
-    leader.expectedIndexCompletions = 1;
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     leader.config.warpSpeed = refWarpSpeed;
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
@@ -56,14 +56,14 @@
     follower.expectedIndexCompletions = 1;
     [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:NO];
     [follower connect];
-    
+	
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name);     
 }
 
--(void)testLargerIndex
+- (void)testLargerIndex
 {
     NSLog(@"%@ start", self.name);
     [self createAndStartFarms];
@@ -76,13 +76,17 @@
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
     int numObjects = 2;
     for (int i=0; i<numObjects; i++) {
-        leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+        leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
         leader.config.warpSpeed = refWarpSpeed;
     }
     [leader.simperium save];
     leader.expectedAcknowledgments = numObjects;
     XCTAssertTrue([self waitForCompletion], @"timed out");
     
+	// Set the new expectations, before connecting
+    [self resetExpectations:self.farms];
+    [self expectAdditions:numObjects deletions:0 changes:0 fromLeader:leader expectAcks:NO];
+	
     // The object was synced, now connect with the followers
     for (Farm *farm in self.farms) {
         if (farm == leader) {
@@ -90,20 +94,19 @@
 		}
         [farm connect];
     }
-    [self resetExpectations:self.farms];
-    [self expectAdditions:numObjects deletions:0 changes:0 fromLeader:leader expectAcks:NO];
     
+	// Now it's safe to wait
     XCTAssertTrue([self waitForCompletion], @"timed out");
-    
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
-    NSLog(@"%@ end", self.name);    
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
+
+    NSLog(@"%@ end", self.name);
 }
 
 // This test is known to break for the HTTP implementation. The reason is that POST responses aren't processed
 // directly for acknowledgments. Instead, the response from a subsequent GET is used for acks. The problem
 // is this subsequent GET uses the last known cv, which this test purposely breaks by exceeding the 50 change
 // limit. The GET will 404, triggering a re-index before changes have even been acknowledged.
--(void)testReindex
+- (void)testReindex
 {
     NSLog(@"%@ start", self.name);
     // Leader sends an object to a follower, follower goes offline, both make changes, follower reconnects
@@ -120,14 +123,14 @@
     
     NSLog(@"****************************ADD ONE*************************");
     // Add one object
-    leader.config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
+    leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
     leader.config.captainsLog = @"a";
     [leader.simperium save];
     leader.expectedAcknowledgments = 1;
     follower.expectedAdditions = 1;
     XCTAssertTrue([self waitForCompletion: 4.0 farmArray:self.farms], @"timed out (adding one)");
     [self resetExpectations:self.farms];
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"*********************FOLLOWER DISCONNECT*********************");
     [follower disconnect];
 
@@ -135,10 +138,10 @@
     int numConfigs = 50;
     NSLog(@"****************************ADD MANY*************************");
     for (int i=0; i<numConfigs; i++) {
-        Config *config = [[leader.simperium bucketForName:@"Config"] insertNewObject];
-        config.warpSpeed = [NSNumber numberWithInt:2];
+        Config *config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
+        config.warpSpeed = @(2);
         config.captainsLog = @"Hi";
-        config.shieldPercent = [NSNumber numberWithFloat:3.14];
+        config.shieldPercent = @(3.14);
     }
     [leader.simperium save];
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
@@ -146,12 +149,12 @@
     
     NSLog(@"**********************FOLLOWER RECONNECT********************");
     [self resetExpectations:self.farms];
+    follower.expectedAdditions = numConfigs;
     [follower connect];
 
     // Expect 404 and reindex?
-    follower.expectedAdditions = numConfigs;
     XCTAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:self.farms], @"timed out (receiving many)");
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     
     NSLog(@"%@ end", self.name);
 }
@@ -160,7 +163,7 @@
 // (max 50 versions in Simperium). A reindex should be triggered, and that reindex should cross-check with
 // local objects, and delete any that exist locally but not remotely. Any objects created locally but
 // not yet synced should be preserved.
--(void)testDeletionReindex
+- (void)testDeletionReindex
 {
     NSLog(@"%@ start", self.name);
     // Leader sends an object to a follower, follower goes offline, both make changes, follower reconnects
@@ -175,17 +178,17 @@
     XCTAssertTrue([self waitForCompletion: 4.0 farmArray:self.farms], @"timed out (initial index)");
     [self resetExpectations:self.farms];
     
-    SPBucket *leaderBucket = [leader.simperium bucketForName:@"Config"];
-    SPBucket *followerBucket = [follower.simperium bucketForName:@"Config"];
+    SPBucket *leaderBucket = [leader.simperium bucketForName:[Config entityName]];
+    SPBucket *followerBucket = [follower.simperium bucketForName:[Config entityName]];
     
     // Add 50 objects
     int numConfigs = 50;
     NSLog(@"****************************ADD MANY*************************");
     for (int i=0; i<numConfigs; i++) {
         Config *config = [leaderBucket insertNewObject];
-        config.warpSpeed = [NSNumber numberWithInt:2];
+        config.warpSpeed = @(2);
         config.captainsLog = @"Hi";
-        config.shieldPercent = [NSNumber numberWithFloat:3.14];
+        config.shieldPercent = @(3.14);
     }
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
     [leader.simperium save];
@@ -193,7 +196,7 @@
     XCTAssertTrue([self waitForCompletion: numConfigs/3.0 farmArray:self.farms], @"timed out (adding many)");
     XCTAssertTrue([[leaderBucket allObjects] count] == numConfigs, @"didn't add correct number (leader)");
     XCTAssertTrue([[followerBucket allObjects] count] == numConfigs, @"didn't add correct number (follower)");
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     [self resetExpectations:self.farms];
     
     // Add 20 more
@@ -201,15 +204,15 @@
     NSLog(@"****************************ADD MORE*************************");
     for (int i=0; i<numConfigs; i++) {
         Config *config = [leaderBucket insertNewObject];
-        config.warpSpeed = [NSNumber numberWithInt:2];
+        config.warpSpeed = @(2);
         config.captainsLog = @"Hi";
-        config.shieldPercent = [NSNumber numberWithFloat:3.14];
+        config.shieldPercent = @(3.14);
     }
     [self expectAdditions:numConfigs deletions:0 changes:0 fromLeader:leader expectAcks:YES];
     [leader.simperium save];
     
     XCTAssertTrue([self waitForCompletion:numConfigs/3.0 farmArray:self.farms], @"timed out (receiving many)");
-    [self ensureFarmsEqual:self.farms entityName:@"Config"];
+    [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     [self resetExpectations:self.farms];
     
     [self waitFor:2.0];

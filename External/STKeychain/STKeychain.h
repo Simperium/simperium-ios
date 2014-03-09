@@ -1,9 +1,8 @@
 //
-//  SFHFKeychainUtils.h
+//  STKeychain.h
 //
-//  Created by Buzz Andersen on 10/20/08.
-//  Based partly on code by Jonathan Wight, Jon Crosby, and Mike Malone.
-//  Copyright 2008 Sci-Fi Hi-Fi. All rights reserved.
+//  Created by Buzz Andersen on 3/7/11.
+//  Copyright 2011 System of Touch. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -27,13 +26,13 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#import <Foundation/Foundation.h>
 
-@interface SFHFKeychainUtils : NSObject {
-    
-}
 
-+ (NSString *) getPasswordForUsername: (NSString *) username andServiceName: (NSString *) serviceName error: (NSError **) error;
-+ (BOOL) storeUsername: (NSString *) username andPassword: (NSString *) password forServiceName: (NSString *) serviceName updateExisting: (BOOL) updateExisting error: (NSError **) error;
-+ (BOOL) deleteItemForUsername: (NSString *) username andServiceName: (NSString *) serviceName error: (NSError **) error;
+@interface STKeychain : NSObject
+
++ (NSString *)getPasswordForUsername:(NSString *)username andServiceName:(NSString *)serviceName error:(NSError **)error;
++ (BOOL)storeUsername:(NSString *)username andPassword:(NSString *)password forServiceName:(NSString *)serviceName updateExisting:(BOOL)updateExisting error:(NSError **)error;
++ (BOOL)deleteItemForUsername:(NSString *)username andServiceName:(NSString *)serviceName error:(NSError **)error;
 
 @end

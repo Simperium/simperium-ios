@@ -13,11 +13,11 @@
     NSMutableSet *stashedObjects;    
 }
 
--(NSArray *)stashedObjects;
--(void)stopManagingObjectWithKey:(NSString *)key;
--(void)stashUnsavedObjects;
--(void)unstashUnsavedObjects;
--(void)unloadAllObjects;
--(void)configureInsertedObject:(id<SPDiffable>)object;
--(void)configureNewGhost:(id<SPDiffable>)object;
+- (NSArray *)stashedObjects;
+- (void)stopManagingObjectWithKey:(NSString *)key;
+- (void)stashUnsavedObjects;
+- (void)unstashUnsavedObjects;
+- (void)unloadAllObjects;
+- (void)configureInsertedObject:(id<SPDiffable>)object;
+- (void)configureNewGhost:(id<SPDiffable>)object;
 @end

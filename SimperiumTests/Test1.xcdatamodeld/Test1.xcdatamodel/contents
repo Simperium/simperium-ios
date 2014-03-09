@@ -9,7 +9,7 @@
         <attribute name="captainsLog" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="cost" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
         <attribute name="date" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="shieldPercent" optional="YES" attributeType="Float" syncable="YES"/>
+        <attribute name="shieldPercent" optional="YES" attributeType="Double" syncable="YES"/>
         <attribute name="shieldsUp" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="warpSpeed" optional="YES" attributeType="Integer 32" syncable="YES"/>
     </entity>

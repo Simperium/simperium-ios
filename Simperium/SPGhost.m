@@ -13,8 +13,7 @@
 @synthesize key, memberData, version;
 @synthesize needsSave;
 
--(id)initFromDictionary:(NSDictionary *)dict
-{
+- (id)initFromDictionary:(NSDictionary *)dict {
 	self.key = [dict objectForKey:@"key"];
 	self.memberData = [dict objectForKey:@"obj"];
     self.version = [dict objectForKey:@"version"];
@@ -26,8 +25,7 @@
 	return self;
 }
 
--(id)initWithKey:(NSString *)k memberData:(NSMutableDictionary *)data
-{
+- (id)initWithKey:(NSString *)k memberData:(NSMutableDictionary *)data {
 	if ((self = [super init])) {
 		self.key = k;
 		self.memberData = data;
@@ -35,7 +33,7 @@
 	return self;
 }
 
--(id)copyWithZone: (NSZone *) zone {
+- (id)copyWithZone: (NSZone *) zone {
     SPGhost *newGhost = [[[self class] allocWithZone:zone] init];
 	newGhost.key = [self key];
 	newGhost.memberData = [self memberData];
@@ -43,7 +41,7 @@
     return newGhost;
 }
 
--(id)mutableCopyWithZone: (NSZone *) zone {
+- (id)mutableCopyWithZone: (NSZone *) zone {
     SPGhost *newGhost = [[[self class] allocWithZone:zone] init];	
 	newGhost.key = [self key];
     newGhost.version = [self version];
@@ -53,26 +51,22 @@
 	return newGhost;
 }
 
--(void)setMemberData:(NSMutableDictionary *)newMemberData
-{
+- (void)setMemberData:(NSMutableDictionary *)newMemberData {
     memberData = [newMemberData mutableCopy];
     needsSave = YES;
 }
 
--(void)setKey:(NSString *)newKey
-{
+- (void)setKey:(NSString *)newKey {
     key = [newKey copy];
     needsSave = YES;
 }
 
--(void)setVersion:(NSString *)newVersion
-{
+- (void)setVersion:(NSString *)newVersion {
     version = [newVersion copy];
     needsSave = YES;
 }
 
--(NSDictionary *)dictionary
-{
+- (NSDictionary *)dictionary {
 	if (version == nil)
 		return [NSDictionary dictionaryWithObjectsAndKeys:
 				self.key, @"key", self.memberData, @"obj", nil];
