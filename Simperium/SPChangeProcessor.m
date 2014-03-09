@@ -512,8 +512,8 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
         // Create a new context (to be thread-safe) and fetch the entity from it
         id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
-        [storage beginSafeSection];
 
+        [storage beginSafeSection];
         id<SPDiffable> object = [storage objectForKey:key bucketName:bucket.name];
 
         // If the object no longer exists, it was likely previously deleted, in which case this change is no longer relevant
@@ -542,6 +542,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             // Get a diff of the object (in dictionary form)
             NSDictionary *newData = [bucket.differ diff:object fromDictionary: [object.ghost memberData]];
             SPLogVerbose(@"Simperium entity diff found %lu changed members", (unsigned long)newData.count);
+
             if (newData.count > 0) {
                 change = [self createChangeForKey: object.simperiumKey operation: CH_MODIFY version:object.ghost.version data: newData];
             } else {
