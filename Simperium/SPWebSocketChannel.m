@@ -47,7 +47,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 @property (nonatomic, weak)   Simperium				*simperium;
 @property (nonatomic, strong) NSMutableArray		*responseBatch;
 @property (nonatomic, strong) NSMutableDictionary	*versionsWithErrors;
-@property (nonatomic, copy)   NSString				*clientID;
 @property (nonatomic, assign) NSInteger				retryDelay;
 @property (nonatomic, assign) NSInteger				objectVersionsPending;
 @property (nonatomic, assign) BOOL					indexing;
@@ -65,7 +64,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	if ((self = [super init])) {
         self.simperium			= s;
         self.indexArray			= [NSMutableArray arrayWithCapacity:200];
-        self.clientID			= s.clientID;
         self.versionsWithErrors = [NSMutableDictionary dictionaryWithCapacity:3];
     }
 	
@@ -224,7 +222,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 		BOOL repostNeeded = NO;
 		@autoreleasepool {
 			[bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket repostNeeded:&repostNeeded];
-			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID];
+			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.simperium.clientID];
 		}
 
 		dispatch_async(dispatch_get_main_queue(), ^{
