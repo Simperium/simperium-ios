@@ -33,6 +33,9 @@
 												  context:self.managedObjectContext
 											  coordinator:self.persistentStoreCoordinator];
         
+        // Some stuff is stored in user prefs / keychain, so be sure to remove it
+		[self signout];
+		
         // Setting a label allows each Simperium instance to store user prefs under a different key
         // (be sure to do this before the call to clearLocalData)
         self.simperium.label = label;
@@ -68,8 +71,16 @@
 - (void)stop {
 	[self.simperium removeRemoteData];
 	[self waitForCompletion:1.0f];
+	[self signout];
+}
+
+- (void)signout {
+	StartBlock();
+	[self.simperium signOutAndRemoveLocalData:YES completion:^() {
+		EndBlock();
+	}];
 	
-	[self.simperium signOutAndRemoveLocalData:YES completion:nil];
+	WaitUntilBlockCompletes();
 }
 
 - (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs {
