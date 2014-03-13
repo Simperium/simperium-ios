@@ -149,10 +149,6 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // Opens an authentication interface if necessary.
 - (BOOL)authenticateIfNecessary;
 
-// Manually adds a binary file to be tracked by Simperium (forthcoming).
-- (NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
-- (void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
-
 // Set this to true if you need to be able to cancel the authentication dialog.
 @property (nonatomic) BOOL authenticationOptional;
 
@@ -202,8 +198,6 @@ typedef void (^SimperiumSignoutCompletion)(void);
 #else
 @property (nonatomic, weak) Class authenticationWindowControllerClass;
 #endif
-
-@property (nonatomic, strong) SPBinaryManager *binaryManager;
 
 @property (nonatomic, strong) SPAuthenticator *authenticator;
 

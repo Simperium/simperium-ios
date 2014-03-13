@@ -9,10 +9,8 @@
 #import "SPUser.h"
 #import "SPSchema.h"
 #import "SPManagedObject.h"
-#import "SPBinaryManager.h"
 #import "SPStorageObserver.h"
 #import "SPMember.h"
-#import "SPMemberBinary.h"
 #import "SPDiffer.h"
 #import "SPGhost.h"
 #import "SPEnvironment.h"
@@ -91,30 +89,6 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     }
 
 	return self;
-}
-
-- (void)configureBinaryManager:(SPBinaryManager *)manager {    
-    // Binary members need to know about the manager (ugly but avoids singleton/global)
-    for (SPBucket *bucket in [self.buckets allValues]) {
-        for (SPMemberBinary *binaryMember in bucket.differ.schema.binaryMembers) {
-            binaryMember.binaryManager = manager;
-        }
-    }
-}
-
-- (NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName {
-    return [self.binaryManager addBinary:binaryData toObject:object bucketName:bucketName attributeName:attributeName];
-}
-
-- (void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName {
-    // Make sure the object has a simperiumKey (it might not if it was just created)
-    if (!object.simperiumKey)
-        object.simperiumKey = [NSString sp_makeUUID];
-    return [self.binaryManager addBinaryWithFilename:filename toObject:object bucketName:bucketName attributeName:attributeName];
-}
-
-- (NSData *)dataForFilename:(NSString *)filename {
-    return [self.binaryManager dataForFilename:filename];
 }
 
 - (SPBucket *)bucketForName:(NSString *)name { 
@@ -378,10 +352,6 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     
     // Load metadata for pending references among objects
     [self.relationshipResolver loadPendingRelationships:self.coreDataStorage];
-    
-    if (self.binaryManager) {
-        [self configureBinaryManager:self.binaryManager];
-	}
     
     // With everything configured, all objects can now be validated. This will pick up any objects that aren't yet
     // known to Simperium (for the case where you're adding Simperium to an existing app).
@@ -676,7 +646,6 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 - (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token {
-    [self.binaryManager setupAuth:self.user];
     
     // It's now safe to start the network managers
     [self startNetworking];

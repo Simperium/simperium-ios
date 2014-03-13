@@ -12,7 +12,6 @@
 #import "SPManagedObject.h"
 #import "NSString+Simperium.h"
 #import "SPDiffer.h"
-#import "SPBinaryManager.h"
 #import "SPStorage.h"
 #import "SPMember.h"
 #import "JSONKit+Simperium.h"
