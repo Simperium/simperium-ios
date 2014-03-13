@@ -63,12 +63,15 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         self.dynamicSchemaEnabled = YES;
         self.buckets = [NSMutableDictionary dictionary];
         
+		SPWebSocketInterface *websocket = [SPWebSocketInterface interfaceWithSimperium:self];
+		self.network = websocket;
+		
         SPAuthenticator *auth = [[SPAuthenticator alloc] initWithDelegate:self simperium:self];
         self.authenticator = auth;
         
         SPRelationshipResolver *resolver = [[SPRelationshipResolver alloc] init];
         self.relationshipResolver = resolver;
-
+		
 		SPLogger *logger = [SPLogger sharedInstance];
 		logger.delegate = self;
 		
@@ -76,12 +79,10 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         self.authenticationViewControllerClass = [SPAuthenticationViewController class];
 #else
         self.authenticationWindowControllerClass = [SPAuthenticationWindowController class];
-#endif
-		
-#if !TARGET_OS_IPHONE
+
 		NSNotificationCenter* wc = [[NSWorkspace sharedWorkspace] notificationCenter];
-		[wc addObserver:self selector:@selector(handleSleepNote:) name:NSWorkspaceWillSleepNotification object: NULL];
-		[wc addObserver:self selector:@selector(handleWakeNote:) name:NSWorkspaceDidWakeNotification object: NULL];
+		[wc addObserver:self selector:@selector(handleSleepNote:) name:NSWorkspaceWillSleepNotification object:NULL];
+		[wc addObserver:self selector:@selector(handleWakeNote:)  name:NSWorkspaceDidWakeNotification   object:NULL];
 #endif
 		
 		NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
@@ -126,7 +127,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 - (void)startNetworkManagers {
-    if (!self.networkEnabled || self.networkManagersStarted) {
+    if (!self.networkEnabled || self.networkManagersStarted || !self.appID) {
         return;
 	}
     
@@ -188,12 +189,15 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 - (NSMutableDictionary *)loadBuckets:(NSArray *)schemas {
+	NSAssert(schemas,				@"No schemas were provided");
+	NSAssert(_network,				@"Network Interface should be initialized");
+	NSAssert(_coreDataStorage,		@"CoreDataStorage should be initialized");
+	NSAssert(_relationshipResolver,	@"CoreDataStorage should be initialized");
+	
     NSMutableDictionary *bucketList = [NSMutableDictionary dictionaryWithCapacity:[schemas count]];
     SPBucket *bucket;
 
     for (SPSchema *schema in schemas) {
-//        Class entityClass = NSClassFromString(schema.bucketName);
-//        NSAssert1(entityClass != nil, @"Simperium error: couldn't find a class mapping for: ", schema.bucketName);
         
 		NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
 		bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
@@ -235,18 +239,9 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 			context:(NSManagedObjectContext *)context
 		coordinator:(NSPersistentStoreCoordinator *)coordinator {
 	
-	NSParameterAssert(model);
-	NSParameterAssert(context);
-	NSParameterAssert(coordinator);
-	
-	NSAssert((context.concurrencyType == NSMainQueueConcurrencyType), NSLocalizedString(@"Error: you must initialize your context with 'NSMainQueueConcurrencyType' concurrency type.", nil));
-	NSAssert((context.persistentStoreCoordinator == nil), NSLocalizedString(@"Error: NSManagedObjectContext's persistentStoreCoordinator must be nil. Simperium will handle CoreData connections for you.", nil));
-	
     if ((self = [self init])) {
 		
-		SPCoreDataStorage* storage = [[SPCoreDataStorage alloc] initWithModel:model mainContext:context coordinator:coordinator];
-		storage.delegate = self;
-		self.coreDataStorage = storage;
+		[self setupCoreDataWithModelModel:model context:context coordinator:coordinator];
     }
     
     return self;
@@ -314,11 +309,9 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 		[self failWithErrorCode:SPSimperiumErrorsMissingToken];
 		return;
 	}
-	
-	// Authentication Disabled by default!
+		
+	// Start Simperium: Manua auth for us
 	self.authenticationEnabled = NO;
-	
-	// Start Simperium
 	[self startWithAppID:identifier APIKey:nil];
 	
 	// Manually initialize the user
@@ -326,46 +319,60 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     [self startNetworkManagers];
 }
 
+- (void)shutdown {
+	
+}
+
+
+// TODO: Nuke when we officially switch to Init API 2.0
+- (void)setupCoreDataWithModelModel:(NSManagedObjectModel *)model
+							context:(NSManagedObjectContext *)context
+						coordinator:(NSPersistentStoreCoordinator *)coordinator {
+	
+	NSParameterAssert(model);
+	NSParameterAssert(context);
+	NSParameterAssert(coordinator);
+	
+	NSAssert((context.concurrencyType == NSMainQueueConcurrencyType), NSLocalizedString(@"Error: you must initialize your context with 'NSMainQueueConcurrencyType' concurrency type.", nil));
+	NSAssert((context.persistentStoreCoordinator == nil), NSLocalizedString(@"Error: NSManagedObjectContext's persistentStoreCoordinator must be nil. Simperium will handle CoreData connections for you.", nil));
+	
+	// Initialize CoreData
+	SPCoreDataStorage* storage = [[SPCoreDataStorage alloc] initWithModel:model mainContext:context coordinator:coordinator];
+	storage.delegate = self;
+	self.coreDataStorage = storage;
+	
+	// Load the Buckets but don't start them yet
+	NSArray *schemas = [storage exportSchemas];
+	NSMutableDictionary *buckets = [self loadBuckets:schemas];
+	self.buckets = buckets;
+	
+	// SPManagedObject's need the bucket list
+	[storage setBucketList:buckets];
+	
+	// Load metadata for pending references among objects
+	[self.relationshipResolver loadPendingRelationships:storage];
+}
+
+// TODO: Nuke when we officially switch to Init API 2.0
 - (void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key {
+	
+	NSParameterAssert(identifier);
+	
 	SPLogInfo(@"Simperium starting... %@", self.label);
-	
-	// Enforce required parameters
-	NSAssert(self.coreDataStorage, NSLocalizedString(@"Error: NSManagedObjectContext's persistentStoreCoordinator must be nil. Simperium will handle CoreData connections for you.", nil));
-	
+		
 	// Keep the keys!
     self.appID = identifier;
     self.APIKey = key;
     self.rootURL = SPBaseURL;
-    
-	// Setup the Network
-	SPWebSocketInterface *websocket = [SPWebSocketInterface interfaceWithSimperium:self appURL:self.appURL clientID:self.clientID];;
-	self.network = websocket;
-    
-    // Get the schemas from Core Data
-    NSArray *schemas = [self.coreDataStorage exportSchemas];
-    
-    // Load but don't start yet
-    self.buckets = [self loadBuckets:schemas];
-    
-    // Each NSManagedObject stores a reference to the bucket in which it's stored
-    [self.coreDataStorage setBucketList: self.buckets];
-    
-    // Load metadata for pending references among objects
-    [self.relationshipResolver loadPendingRelationships:self.coreDataStorage];
-    
+	
     // With everything configured, all objects can now be validated. This will pick up any objects that aren't yet
     // known to Simperium (for the case where you're adding Simperium to an existing app).
     [self validateObjects];
 	
 	// Handle authentication
-	if (self.authenticationEnabled) {
-		[self authenticateIfNecessary];
-	}
+	[self authenticateIfNecessary];
 }
 
-- (void)shutdown {
-	
-}
 
 
 #pragma mark ====================================================================================
@@ -394,20 +401,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 #endif
 
 - (void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key model:(NSManagedObjectModel *)model context:(NSManagedObjectContext *)context coordinator:(NSPersistentStoreCoordinator *)coordinator {
-	SPLogInfo(@"Simperium starting... %@", self.label);
-
-	NSParameterAssert(model);
-	NSParameterAssert(context);
-	NSParameterAssert(coordinator);
-	
-	NSAssert((context.concurrencyType == NSMainQueueConcurrencyType), NSLocalizedString(@"Error: you must initialize your context with 'NSMainQueueConcurrencyType' concurrency type.", nil));
-	NSAssert((context.persistentStoreCoordinator == nil), NSLocalizedString(@"Error: NSManagedObjectContext's persistentStoreCoordinator must be nil. Simperium will handle CoreData connections for you.", nil));
-
-    // Setup Core Data storage
-    SPCoreDataStorage *storage = [[SPCoreDataStorage alloc] initWithModel:model mainContext:context coordinator:coordinator];
-    storage.delegate = self;
-    self.coreDataStorage = storage;
-	
+	[self setupCoreDataWithModelModel:model context:context coordinator:coordinator];
 	[self startWithAppID:identifier APIKey:key];
 }
 
@@ -680,7 +674,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 }
 
 - (BOOL)authenticateIfNecessary {
-    if (!self.networkEnabled || !self.authenticationEnabled) {
+    if (!self.networkEnabled || !self.authenticationEnabled || !self.appID) {
         return NO;
 	}
     
