@@ -9,7 +9,7 @@
 #import "SPWebSocketChannel.h"
 
 #import "SPEnvironment.h"
-#import "Simperium.h"
+#import "Simperium+Internals.h"
 #import "SPDiffer.h"
 #import "SPBucket+Internals.h"
 #import "SPStorage.h"

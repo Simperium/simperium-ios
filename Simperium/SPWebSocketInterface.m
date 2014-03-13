@@ -6,7 +6,7 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 #import "SPWebSocketInterface.h"
-#import "Simperium.h"
+#import "Simperium+Internals.h"
 #import "SPChangeProcessor.h"
 #import "SPUser.h"
 #import "SPBucket+Internals.h"
