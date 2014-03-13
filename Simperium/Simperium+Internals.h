@@ -41,6 +41,7 @@
 @property (nonatomic, assign) BOOL						networkManagersStarted;
 @property (nonatomic, assign) BOOL						dynamicSchemaEnabled;
 @property (nonatomic, assign) BOOL						shouldSignIn;
+@property (nonatomic, assign) BOOL						authenticationEnabled;
 
 #if TARGET_OS_IPHONE
 @property (nonatomic, strong) SPAuthenticationViewController *authenticationViewController;

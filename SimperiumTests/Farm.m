@@ -29,13 +29,14 @@
     if (self = [super init]) {
         self.done = NO;
         
-        self.simperium = [[Simperium alloc] initWithRootViewController:nil];
+		self.simperium = [[Simperium alloc] initWithModel:self.managedObjectModel
+												  context:self.managedObjectContext
+											  coordinator:self.persistentStoreCoordinator];
         
         // Setting a label allows each Simperium instance to store user prefs under a different key
         // (be sure to do this before the call to clearLocalData)
         self.simperium.label = label;
         
-        [self.simperium setAuthenticationEnabled:NO];
         [self.simperium setVerboseLoggingEnabled:YES];
         self.token = aToken;
     }
@@ -51,16 +52,9 @@
     //[simperium startWithAppName:APP_ID APIKey:API_KEY];
     
     // Core Data testing
-    [self.simperium startWithAppID:APP_ID
-							APIKey:API_KEY
-							 model:self.managedObjectModel
-						   context:self.managedObjectContext
-					   coordinator:self.persistentStoreCoordinator];
+	[self.simperium authenticateWithAppID:APP_ID token:self.token];
     
     [self.simperium setAllBucketDelegates: self];
-    
-    self.simperium.user = [[SPUser alloc] initWithEmail:USERNAME token:self.token];
-	
 	
     for (NSString *bucketName in [self bucketNames]) {
         SPBucket *bucket = [self.simperium bucketForName:bucketName];

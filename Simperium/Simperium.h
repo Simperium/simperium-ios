@@ -164,9 +164,6 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // Enables or disables the network.
 @property (nonatomic) BOOL networkEnabled;
 
-// Overrides the built-in authentication flow so you can customize the behavior.
-@property (nonatomic) BOOL authenticationEnabled;
-
 // Returns the currently authenticated Simperium user.
 @property (nonatomic, strong) SPUser *user;
 
