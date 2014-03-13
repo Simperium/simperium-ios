@@ -61,11 +61,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
 @implementation SPWebSocketChannel
 
-- (id)initWithSimperium:(Simperium *)s clientID:(NSString *)cid {
+- (id)initWithSimperium:(Simperium *)s {
 	if ((self = [super init])) {
         self.simperium			= s;
         self.indexArray			= [NSMutableArray arrayWithCapacity:200];
-        self.clientID			= cid;
+        self.clientID			= s.clientID;
         self.versionsWithErrors = [NSMutableDictionary dictionaryWithCapacity:3];
     }
 	
@@ -607,8 +607,8 @@ static Class _class;
 	_class = c;
 }
 
-+ (instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID {
-	return [[_class alloc] initWithSimperium:s clientID:clientID];
++ (instancetype)channelWithSimperium:(Simperium *)s {
+	return [[_class alloc] initWithSimperium:s];
 }
 
 @end
