@@ -322,7 +322,7 @@ static SPLogLevels logLevel					= SPLogLevelsError;
 #if TARGET_OS_IPHONE
 
 - (NSURL *)baseURL {
-	return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+	return [[[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask] lastObject];
 }
 
 #else
