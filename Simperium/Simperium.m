@@ -239,7 +239,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 			context:(NSManagedObjectContext *)context
 		coordinator:(NSPersistentStoreCoordinator *)coordinator {
 	
-	return [self initWithModel:model context:context coordinator:coordinator label:nil];
+	return [self initWithModel:model context:context coordinator:coordinator label:@""];
 }
 
 - (id)initWithModel:(NSManagedObjectModel *)model
