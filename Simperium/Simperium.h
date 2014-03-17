@@ -12,7 +12,6 @@
 #import "SPManagedObject.h"
 #import "SPAuthenticator.h"
 #import "SPUser.h"
-#import "SPAuthenticationConfiguration.h"
 
 
 
