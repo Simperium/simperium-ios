@@ -27,7 +27,9 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 @property (nonatomic, strong, readwrite) NSString			*label;
 @property (nonatomic, strong, readwrite) NSURL				*mutableSetURL;
 @property (nonatomic, strong, readwrite) NSMutableSet		*contents;
-@property (nonatomic, strong, readwrite) dispatch_queue_t	queue;
+@property (nonatomic, strong, readwrite) dispatch_queue_t	setQueue;
+@property (nonatomic, strong, readwrite) dispatch_queue_t	saveQueue;
+@property (nonatomic, assign, readwrite) BOOL				needsSave;
 @end
 
 
@@ -41,47 +43,62 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 	if ((self = [super init])) {
 		self.label		= label;
 		self.contents	= [NSMutableSet setWithCapacity:3];
-        self.queue		= dispatch_queue_create("com.simperium.SPPersistentMutableSet", NULL);
+        self.setQueue	= dispatch_queue_create("com.simperium.SPPersistentMutableSet.SetQueue", NULL);
+        self.saveQueue	= dispatch_queue_create("com.simperium.SPPersistentMutableSet.SaveQueue", NULL);
 	}
 	
 	return self;
 }
 
 - (void)addObject:(id)object {
-	[self.contents addObject:object];
+	dispatch_async(self.setQueue, ^{
+		[self.contents addObject:object];
+		self.needsSave = YES;
+	});
 }
 
 - (void)removeObject:(id)object {
-	[self.contents removeObject:object];
+	dispatch_async(self.setQueue, ^{
+		[self.contents removeObject:object];
+		self.needsSave = YES;
+	});
 }
 
 - (NSArray *)allObjects {
-	return self.contents.allObjects;
+	__block NSArray *objects = nil;
+	dispatch_sync(self.setQueue, ^{
+		objects = self.contents.allObjects;
+	});
+	return objects;
 }
 
 - (NSUInteger)count {
-	return self.contents.count;
+	__block NSUInteger count;
+	dispatch_sync(self.setQueue, ^{
+		count = self.contents.count;
+	});
+	return count;
 }
 
 - (void)addObjectsFromArray:(NSArray *)array {
-	[self.contents addObjectsFromArray:array];
+	dispatch_async(self.setQueue, ^{
+		[self.contents addObjectsFromArray:array];
+		self.needsSave = YES;
+	});
 }
 
 - (void)minusSet:(NSSet *)otherSet {
-	[self.contents minusSet:otherSet];
+	dispatch_async(self.setQueue, ^{
+		[self.contents minusSet:otherSet];
+		self.needsSave = YES;
+	});
 }
 
 - (void)removeAllObjects {
-	return [self.contents removeAllObjects];
-}
-
-
-#pragma mark ====================================================================================
-#pragma mark NSFastEnumeration
-#pragma mark ====================================================================================
-
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id __unsafe_unretained [])buffer count:(NSUInteger)len {
-	return [self.contents countByEnumeratingWithState:state objects:buffer count:len];
+	dispatch_async(self.setQueue, ^{
+		[self.contents removeAllObjects];
+		self.needsSave = YES;
+	});
 }
 
 
@@ -90,19 +107,41 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 #pragma mark ====================================================================================
 
 - (void)save {
-	NSArray *allObjects = [self.contents allObjects];
+	[self saveAndWait:NO];
+}
+
+- (void)saveAndWait:(BOOL)wait {
 	
-	dispatch_async(self.queue, ^{
+	dispatch_block_t block = ^{
 		@autoreleasepool {
-			NSString *json = [allObjects sp_JSONString];
+			__block NSArray *objects	= nil;
+			__block BOOL success		= NO;
 			
-			NSError *error = nil;
-			BOOL success = [json writeToURL:self.mutableSetURL atomically:NO encoding:NSUTF8StringEncoding error:&error];
+			dispatch_sync(self.setQueue, ^{
+				if (self.needsSave) {
+					objects = self.contents.allObjects;
+					success = YES;
+					self.needsSave = NO;
+				}
+			});
+			
+			// Prevent overwork
 			if (!success) {
-				SPLogError(@"<> %@ :: %@", NSStringFromClass([self class]), error);
+				return;
 			}
-		}
-	});
+			
+			// At last: save!
+			if (![[objects sp_JSONData] writeToURL:self.mutableSetURL atomically:NO]) {
+				SPLogError(@"<> %@ :: Error while performing a save operation", NSStringFromClass([self class]));
+			}
+		};
+	};
+	
+	if (wait) {
+		dispatch_sync(self.saveQueue, block);
+	} else {
+		dispatch_async(self.saveQueue, block);
+	}
 }
 
 + (instancetype)loadSetWithLabel:(NSString *)label {
@@ -120,8 +159,8 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 #pragma mark ====================================================================================
 
 - (void)loadFromFilesystem {
-	NSString *rawData	= [NSString stringWithContentsOfURL:self.mutableSetURL encoding:NSUTF8StringEncoding error:nil];
-	NSArray *list		= [rawData sp_objectFromJSONString];
+	NSData *rawData	= [NSData dataWithContentsOfURL:self.mutableSetURL];
+	NSArray *list	= [rawData sp_objectFromJSONString];
     if (list.count > 0) {
         [self addObjectsFromArray:list];
 	}
@@ -170,7 +209,7 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 }
 
 - (NSString *)filename {
-	return [NSString stringWithFormat:@"SPMutableSet-%@.json", self.label];
+	return [NSString stringWithFormat:@"SPMutableSet-%@.dat", self.label];
 }
 
 #if TARGET_OS_IPHONE
