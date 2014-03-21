@@ -506,14 +506,12 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     SPLogInfo(@"Simperium processing %lu objects from index (%@)", (unsigned long)[currentIndexArray count], self.name);
 
     NSArray *indexArrayCopy = [currentIndexArray copy];
-    __block int objectRequests = 0;
     dispatch_async(bucket.processorQueue, ^{
         if (self.started) {
             [bucket.indexProcessor processIndex:indexArrayCopy bucket:bucket versionHandler: ^(NSString *key, NSString *version) {
-                objectRequests++;
-
                 // For each version that is processed, create a network request
                 dispatch_async(dispatch_get_main_queue(), ^{
+					++_objectVersionsPending;
                     NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", self.number, key, version];
                     SPLogVerbose(@"Simperium sending object request (%@): %@", self.name, message);
                     [self.webSocketManager send:message];
@@ -522,18 +520,17 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 // If no requests need to be queued, then all is good; back to processing
-                self.objectVersionsPending = objectRequests;
                 if (self.objectVersionsPending == 0) {
-                    if (self.nextMark.length > 0)
-                    // More index pages to get
+                    if (self.nextMark.length > 0) {
+						// More index pages to get
                         [self requestLatestVersionsForBucket: bucket mark:self.nextMark];
-                    else
-                    // The entire index has been retrieved
+                    } else {
+						// The entire index has been retrieved
                         [self allVersionsFinishedForBucket:bucket];
-                    return;
-                }
-
-                SPLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)self.objectVersionsPending, bucket.name);
+					}
+                } else {
+					SPLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)self.objectVersionsPending, bucket.name);
+				}
             });
         }
     });
