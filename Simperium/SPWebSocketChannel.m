@@ -332,10 +332,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
         // Marshal everything into an array for later processing
         NSArray *responseData = [NSArray arrayWithObjects: key, payloadString, version, nil];
         [self.responseBatch addObject:responseData];
-		
+
         // Batch responses for more efficient processing
-        // (process the last handful individually though)
-        if (self.responseBatch.count < SPWebsocketIndexBatchSize || self.responseBatch.count % SPWebsocketIndexBatchSize == 0) {
+		if ( (self.responseBatch.count == self.objectVersionsPending && self.objectVersionsPending < SPWebsocketIndexBatchSize) ||
+			 self.responseBatch.count % SPWebsocketIndexBatchSize == 0)
+		{
             [self processBatchForBucket:bucket];
 		}
     }
