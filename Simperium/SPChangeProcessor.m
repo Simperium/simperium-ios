@@ -12,7 +12,6 @@
 #import "SPManagedObject.h"
 #import "NSString+Simperium.h"
 #import "SPDiffer.h"
-#import "SPBinaryManager.h"
 #import "SPStorage.h"
 #import "SPMember.h"
 #import "JSONKit+Simperium.h"
@@ -497,7 +496,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 - (void)markObjectWithPendingChanges:(NSString *)key bucket:(SPBucket *)bucket {
     [self syncInFlightProcess:^{
-        SPLogVerbose(@"Simperium marking object for sending more changes when ready (%@): %@. Pendings: %d", bucket.name, key, self.keysForObjectsWithMoreChanges.count);
+        SPLogVerbose(@"Simperium marking object for sending more changes when ready (%@): %@", bucket.name, key);
         [self.keysForObjectsWithMoreChanges addObject:key];
         [self.keysForObjectsWithMoreChanges save];
     }];

@@ -6,7 +6,7 @@
 //  Copyright 2011 Simperium. All rights reserved.
 //
 #import "SPWebSocketInterface.h"
-#import "Simperium.h"
+#import "Simperium+Internals.h"
 #import "SPChangeProcessor.h"
 #import "SPUser.h"
 #import "SPBucket+Internals.h"
@@ -53,7 +53,6 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 @property (nonatomic, strong, readwrite) SPWebSocket			*webSocket;
 @property (nonatomic, weak,   readwrite) Simperium				*simperium;
 @property (nonatomic, strong, readwrite) NSMutableDictionary	*channels;
-@property (nonatomic, copy,   readwrite) NSString				*clientID;
 @property (nonatomic, strong, readwrite) NSTimer				*heartbeatTimer;
 @property (nonatomic, strong, readwrite) NSTimer				*timeoutTimer;
 @property (nonatomic, assign, readwrite) BOOL					open;
@@ -66,10 +65,9 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 
 @implementation SPWebSocketInterface
 
-- (id)initWithSimperium:(Simperium *)s appURL:(NSString *)url clientID:(NSString *)cid {
+- (id)initWithSimperium:(Simperium *)s {
 	if ((self = [super init])) {
         self.simperium = s;
-        self.clientID = cid;
         self.channels = [NSMutableDictionary dictionaryWithCapacity:20];
 	}
 	
@@ -91,7 +89,7 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 
 - (SPWebSocketChannel *)loadChannelForBucket:(SPBucket *)bucket {
     int channelNumber = (int)[self.channels count];
-    SPWebSocketChannel *channel = [SPWebSocketChannel channelWithSimperium:self.simperium clientID:self.clientID];
+    SPWebSocketChannel *channel = [SPWebSocketChannel channelWithSimperium:self.simperium];
     channel.number = channelNumber;
     channel.name = bucket.name;
 	channel.remoteName = bucket.remoteName;
@@ -407,8 +405,8 @@ static Class _class;
 	_class = c;
 }
 
-+ (instancetype)interfaceWithSimperium:(Simperium *)s appURL:(NSString *)appURL clientID:(NSString *)clientID {
-	return [[_class alloc] initWithSimperium:s appURL:clientID clientID:clientID];
++ (instancetype)interfaceWithSimperium:(Simperium *)s {
+	return [[_class alloc] initWithSimperium:s];
 }
 
 @end

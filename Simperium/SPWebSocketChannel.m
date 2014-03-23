@@ -9,7 +9,7 @@
 #import "SPWebSocketChannel.h"
 
 #import "SPEnvironment.h"
-#import "Simperium.h"
+#import "Simperium+Internals.h"
 #import "SPDiffer.h"
 #import "SPBucket+Internals.h"
 #import "SPStorage.h"
@@ -47,7 +47,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 @property (nonatomic, weak)   Simperium				*simperium;
 @property (nonatomic, strong) NSMutableArray		*responseBatch;
 @property (nonatomic, strong) NSMutableDictionary	*versionsWithErrors;
-@property (nonatomic, copy)   NSString				*clientID;
 @property (nonatomic, assign) NSInteger				retryDelay;
 @property (nonatomic, assign) NSInteger				objectVersionsPending;
 @property (nonatomic, assign) BOOL					indexing;
@@ -61,11 +60,10 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
 @implementation SPWebSocketChannel
 
-- (id)initWithSimperium:(Simperium *)s clientID:(NSString *)cid {
+- (id)initWithSimperium:(Simperium *)s {
 	if ((self = [super init])) {
         self.simperium			= s;
         self.indexArray			= [NSMutableArray arrayWithCapacity:200];
-        self.clientID			= cid;
         self.versionsWithErrors = [NSMutableDictionary dictionaryWithCapacity:3];
     }
 	
@@ -224,7 +222,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 		BOOL repostNeeded = NO;
 		@autoreleasepool {
 			[bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket repostNeeded:&repostNeeded];
-			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.clientID];
+			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.simperium.clientID];
 		}
 
 		dispatch_async(dispatch_get_main_queue(), ^{
@@ -334,10 +332,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
         // Marshal everything into an array for later processing
         NSArray *responseData = [NSArray arrayWithObjects: key, payloadString, version, nil];
         [self.responseBatch addObject:responseData];
-		
+
         // Batch responses for more efficient processing
-        // (process the last handful individually though)
-        if (self.responseBatch.count < SPWebsocketIndexBatchSize || self.responseBatch.count % SPWebsocketIndexBatchSize == 0) {
+		if ( (self.responseBatch.count == self.objectVersionsPending && self.objectVersionsPending < SPWebsocketIndexBatchSize) ||
+			 self.responseBatch.count % SPWebsocketIndexBatchSize == 0)
+		{
             [self processBatchForBucket:bucket];
 		}
     }
@@ -463,12 +462,13 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 }
 
 - (void)processBatchForBucket:(SPBucket *)bucket {
-    if ([self.responseBatch count] == 0) {
+    if (self.responseBatch.count == 0) {
         return;
 	}
 	
-    NSMutableArray *batch = [self.responseBatch copy];
-    BOOL firstSync = bucket.lastChangeSignature == nil;
+    NSMutableArray *batch	= [self.responseBatch copy];
+    BOOL firstSync			= bucket.lastChangeSignature == nil;
+
     dispatch_async(bucket.processorQueue, ^{
         if (self.started) {
             [bucket.indexProcessor processVersions: batch bucket:bucket firstSync: firstSync changeHandler:^(NSString *key) {
@@ -478,10 +478,8 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
             
             // Now check if indexing is complete
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (_objectVersionsPending > 0) {
-                    _objectVersionsPending--;
-				}
-                if (_objectVersionsPending == 0) {
+				self.objectVersionsPending	= MAX(0, _objectVersionsPending - batch.count);
+                if (_indexing && _objectVersionsPending == 0) {
                     [self allVersionsFinishedForBucket:bucket];
 				}
             });
@@ -508,14 +506,12 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     SPLogInfo(@"Simperium processing %lu objects from index (%@)", (unsigned long)[currentIndexArray count], self.name);
 
     NSArray *indexArrayCopy = [currentIndexArray copy];
-    __block int objectRequests = 0;
     dispatch_async(bucket.processorQueue, ^{
         if (self.started) {
             [bucket.indexProcessor processIndex:indexArrayCopy bucket:bucket versionHandler: ^(NSString *key, NSString *version) {
-                objectRequests++;
-
                 // For each version that is processed, create a network request
                 dispatch_async(dispatch_get_main_queue(), ^{
+					++_objectVersionsPending;
                     NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", self.number, key, version];
                     SPLogVerbose(@"Simperium sending object request (%@): %@", self.name, message);
                     [self.webSocketManager send:message];
@@ -524,18 +520,17 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 // If no requests need to be queued, then all is good; back to processing
-                self.objectVersionsPending = objectRequests;
                 if (self.objectVersionsPending == 0) {
-                    if (self.nextMark.length > 0)
-                    // More index pages to get
+                    if (self.nextMark.length > 0) {
+						// More index pages to get
                         [self requestLatestVersionsForBucket: bucket mark:self.nextMark];
-                    else
-                    // The entire index has been retrieved
+                    } else {
+						// The entire index has been retrieved
                         [self allVersionsFinishedForBucket:bucket];
-                    return;
-                }
-
-                SPLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)self.objectVersionsPending, bucket.name);
+					}
+                } else {
+					SPLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)self.objectVersionsPending, bucket.name);
+				}
             });
         }
     });
@@ -607,8 +602,8 @@ static Class _class;
 	_class = c;
 }
 
-+ (instancetype)channelWithSimperium:(Simperium *)s clientID:(NSString *)clientID {
-	return [[_class alloc] initWithSimperium:s clientID:clientID];
++ (instancetype)channelWithSimperium:(Simperium *)s {
+	return [[_class alloc] initWithSimperium:s];
 }
 
 @end

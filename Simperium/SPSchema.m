@@ -9,7 +9,6 @@
 #import "Simperium.h"
 #import "SPSchema.h"
 #import "SPMember.h"
-#import "SPMemberBinary.h"
 
 
 NSString * const SPSchemaDefinitionMembersKey = @"members";
@@ -32,8 +31,6 @@ NSString * const SPSchemaDefinitionMembersKey = @"members";
 
 			SPMember *member = [[SPMember alloc] initFromDictionary:memberDict];
             [members setObject:member forKey:member.keyName];
-            if ([member isKindOfClass:[SPMemberBinary class]])
-                [binaryMembers addObject: member];
         }        
     }
     

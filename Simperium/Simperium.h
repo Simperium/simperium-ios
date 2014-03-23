@@ -12,7 +12,6 @@
 #import "SPManagedObject.h"
 #import "SPAuthenticator.h"
 #import "SPUser.h"
-#import "SPAuthenticationConfiguration.h"
 
 
 
@@ -88,7 +87,6 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
 			context:(NSManagedObjectContext *)context
 		coordinator:(NSPersistentStoreCoordinator *)coordinator;
 
-
 #if TARGET_OS_IPHONE
 // Starts Simperium and displays the auth interface, if needed.
 - (void)authenticateWithAppID:(NSString *)identifier APIKey:(NSString *)key rootViewController:(UIViewController *)controller;
@@ -149,30 +147,23 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // Opens an authentication interface if necessary.
 - (BOOL)authenticateIfNecessary;
 
-// Manually adds a binary file to be tracked by Simperium (forthcoming).
-- (NSString *)addBinary:(NSData *)binaryData toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
-- (void)addBinaryWithFilename:(NSString *)filename toObject:(SPManagedObject *)object bucketName:(NSString *)bucketName attributeName:(NSString *)attributeName;
-
-// Set this to true if you need to be able to cancel the authentication dialog.
-@property (nonatomic) BOOL authenticationOptional;
-
 // A SimperiumDelegate for system callbacks.
 @property (nonatomic, weak) id<SimperiumDelegate> delegate;
 
+// Set this to true if you need to be able to cancel the authentication dialog.
+@property (nonatomic, assign) BOOL authenticationOptional;
+
 // Toggle verbose logging.
-@property (nonatomic) BOOL verboseLoggingEnabled;
+@property (nonatomic, assign) BOOL verboseLoggingEnabled;
 
 // Toggle remote logging.
-@property (nonatomic) BOOL remoteLoggingEnabled;
+@property (nonatomic, assign) BOOL remoteLoggingEnabled;
 
 // Enables or disables the network.
-@property (nonatomic) BOOL networkEnabled;
-
-// Overrides the built-in authentication flow so you can customize the behavior.
-@property (nonatomic) BOOL authenticationEnabled;
+@property (nonatomic, assign) BOOL networkEnabled;
 
 // Returns the currently authenticated Simperium user.
-@property (nonatomic, strong) SPUser *user;
+@property (nonatomic, readonly, strong) SPUser *user;
 
 // The full URL used to communicate with Simperium.
 @property (nonatomic, readonly, copy) NSString *appURL;
@@ -189,9 +180,6 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // A hashed, unique ID for this client.
 @property (nonatomic, readonly, copy) NSString *clientID;
 
-// Set this if for some reason you want to use multiple Simperium instances (e.g. unit testing).
-@property (nonatomic, copy) NSString *label;
-
 // Remote Bucket Name Overrides!
 @property (nonatomic, copy) NSDictionary *bucketOverrides;
 
@@ -202,8 +190,6 @@ typedef void (^SimperiumSignoutCompletion)(void);
 #else
 @property (nonatomic, weak) Class authenticationWindowControllerClass;
 #endif
-
-@property (nonatomic, strong) SPBinaryManager *binaryManager;
 
 @property (nonatomic, strong) SPAuthenticator *authenticator;
 
