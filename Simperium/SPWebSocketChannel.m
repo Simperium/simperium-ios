@@ -467,8 +467,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	}
 	
     NSMutableArray *batch	= [self.responseBatch copy];
+	NSInteger newPendings	= MAX(0, _objectVersionsPending - batch.count);
+	
     BOOL firstSync			= bucket.lastChangeSignature == nil;
-
+	BOOL shouldHitFinished	= (_indexing && newPendings == 0);
+	
     dispatch_async(bucket.processorQueue, ^{
         if (self.started) {
             [bucket.indexProcessor processVersions: batch bucket:bucket firstSync: firstSync changeHandler:^(NSString *key) {
@@ -478,14 +481,14 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
             
             // Now check if indexing is complete
             dispatch_async(dispatch_get_main_queue(), ^{
-				self.objectVersionsPending	= MAX(0, _objectVersionsPending - batch.count);
-                if (_indexing && _objectVersionsPending == 0) {
+                if (shouldHitFinished) {
                     [self allVersionsFinishedForBucket:bucket];
 				}
             });
         }
     });
 	
+	self.objectVersionsPending = newPendings;
     [self.responseBatch removeAllObjects];
 }
 
