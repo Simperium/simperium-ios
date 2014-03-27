@@ -125,6 +125,9 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     // This could cause an ACK to fail if the deletion is registered before a previous change was ACK'd, but that should be OK since the object will be deleted anyway.
 	//
     dispatch_async(object.bucket.processorQueue, ^{
+		
+		// AutoreleasePool:
+		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
 		@autoreleasepool {
 			NSDictionary *change = [object.bucket.changeProcessor processLocalDeletionWithKey:key];
 			[self sendChange:change];
@@ -140,6 +143,9 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     }
     
     dispatch_async(object.bucket.processorQueue, ^{
+		
+		// AutoreleasePool:
+		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
 		@autoreleasepool {
 			SPChangeProcessor *processor = object.bucket.changeProcessor;
 			
@@ -220,6 +226,9 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 		}
 		
 		BOOL repostNeeded = NO;
+		
+		// AutoreleasePool:
+		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
 		@autoreleasepool {
 			[bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket repostNeeded:&repostNeeded];
 			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.simperium.clientID];
@@ -405,6 +414,9 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	
     // This gets called after remote changes have been handled in order to pick up any local changes that happened in the meantime
     dispatch_async(bucket.processorQueue, ^{
+		
+		// AutoreleasePool:
+		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
 		@autoreleasepool {
 			
 			// Only queued: re-send failed changes
