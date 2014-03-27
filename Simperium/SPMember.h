@@ -35,15 +35,15 @@ extern NSString * const OP_STRING;
 @property (nonatomic, readonly, strong) NSString *valueTransformerName;
 @property (nonatomic, readonly, strong) id modelDefaultValue;
 
--(id)initFromDictionary:(NSDictionary *)dict;
--(id)defaultValue;
--(NSDictionary *)diffForAddition:(id)data;
--(NSDictionary *)diffForReplacement:(id)data;
--(NSDictionary *)diffForRemoval;
--(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object;
--(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict;
--(NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue;
--(id)applyDiff:(id)thisValue otherValue:(id)otherValue;
--(NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue;
+- (id)initFromDictionary:(NSDictionary *)dict;
+- (id)defaultValue;
+- (NSDictionary *)diffForAddition:(id)data;
+- (NSDictionary *)diffForReplacement:(id)data;
+- (NSDictionary *)diffForRemoval;
+- (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object;
+- (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict;
+- (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue;
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue;
+- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue;
 
 @end

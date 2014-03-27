@@ -85,7 +85,7 @@ static NSString* const kDeletedKey = @"deleted";
     NSLog(@"%@ start", self.name);
 	
 	// Let's insert new objects
-	for(NSInteger i = 0; ++i <= kObjectsCount; ) {
+	for (NSInteger i = 0; ++i <= kObjectsCount; ) {
 		Config* config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:self.mainContext];
 		config.warpSpeed = @( arc4random_uniform(UINT_MAX) );
 	}
@@ -219,7 +219,7 @@ static NSString* const kDeletedKey = @"deleted";
 	//
 	
 	NSMutableSet* objects = [NSMutableSet set];
-	for(NSInteger i = 0; ++i <= kObjectsCount; ) {
+	for (NSInteger i = 0; ++i <= kObjectsCount; ) {
 		Config* config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:self.mainContext];
 		[objects addObject:config];
 	}
@@ -245,7 +245,7 @@ static NSString* const kDeletedKey = @"deleted";
 	// ====================================================================================
 	//
 	
-	for(Config* config in objects) {
+	for (Config* config in objects) {
 		config.warpSpeed = @(31337);
 		config.shieldsUp = @(YES);
 		config.shieldPercent = @(100);
@@ -261,7 +261,7 @@ static NSString* const kDeletedKey = @"deleted";
 	NSArray *mainUpdated = [self changesForContext:followerWriterMOC][kUpdatedKey];
 	XCTAssertTrue( (mainUpdated.count == objects.count), @"Error Updating Objects" );
 	
-	for(Config* config in mainUpdated) {
+	for (Config* config in mainUpdated) {
 		XCTAssertTrue([config.warpSpeed isEqual:@(31337)], @"Update Test Failed");
 		XCTAssertTrue([config.shieldsUp isEqual:@(YES)],	@"Update Test Failed");
 		XCTAssertTrue([config.shieldPercent isEqual:@(100)],	@"Update Test Failed");
@@ -276,8 +276,7 @@ static NSString* const kDeletedKey = @"deleted";
 	// ====================================================================================
 	//
 	
-	for(Config* config in objects)
-	{
+	for (Config* config in objects) {
 		[self.mainContext deleteObject:config];
 	}
 	

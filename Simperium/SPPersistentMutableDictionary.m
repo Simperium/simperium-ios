@@ -8,8 +8,7 @@
 
 #import "SPPersistentMutableDictionary.h"
 #import <CoreData/CoreData.h>
-#import "DDLog.h"
-#import "DDLogDebug.h"
+#import "SPLogger.h"
 
 
 
@@ -21,7 +20,7 @@ static NSString *SPDictionaryEntityName		= @"SPDictionaryEntityName";
 static NSString *SPDictionaryEntityValue	= @"value";
 static NSString *SPDictionaryEntityKey		= @"key";
 
-static int ddLogLevel						= LOG_LEVEL_ERROR;
+static SPLogLevels logLevel					= SPLogLevelsError;
 
 
 #pragma mark ====================================================================================
@@ -44,14 +43,6 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 
 @implementation SPPersistentMutableDictionary
 
-+ (int)ddLogLevel {
-    return ddLogLevel;
-}
-
-+ (void)ddSetLogLevel:(int)logLevel {
-    ddLogLevel = logLevel;
-}
-
 - (id)initWithLabel:(NSString *)label {
 	if ((self = [super init])) {
 		self.label = label;
@@ -67,7 +58,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 	[self.managedObjectContext performBlockAndWait:^() {
 		NSError *error;
 		count = [self.managedObjectContext countForFetchRequest:[self requestForEntity] error:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 	}];
 	
 	return count;
@@ -89,7 +80,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 	[self.managedObjectContext performBlockAndWait:^{
 		NSError *error = nil;
 		exists = ([self.managedObjectContext countForFetchRequest:[self requestForEntityWithKey:aKey] error:&error] > 0);
-		DDLogOnError(error);
+		SPLogOnError(error);
 	}];
 	
 	// Done
@@ -112,7 +103,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 	[self.managedObjectContext performBlockAndWait:^{
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:[self requestForEntityWithKey:aKey] error:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 
 		if (results.count)
 		{
@@ -147,7 +138,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:[self requestForEntityWithKey:aKey] error:&error];
 		NSAssert(results.count <= 1, @"ERROR: SPMetadataStorage has multiple entities with the same key");
-		DDLogOnError(error);
+		SPLogOnError(error);
 				
 		// Upsert
 		NSManagedObject *change;
@@ -174,7 +165,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		
 		NSError *error = nil;
 		success = [self.managedObjectContext save:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 	}];
 	
 	return success;
@@ -201,7 +192,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		
 		NSError *error = nil;
 		NSArray *results = [self.managedObjectContext executeFetchRequest:request error:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 		
 		// Once there, delete
 		if (results.count) {
@@ -224,10 +215,10 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 
 		NSError *error = nil;
 		NSArray *allObjects = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 		
 		// Delete Everything
-		for(NSManagedObject *object in allObjects) {
+		for (NSManagedObject *object in allObjects) {
 			[self.managedObjectContext deleteObject:object];
 		}
 	}];
@@ -301,9 +292,12 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		BOOL success	= [[NSFileManager defaultManager] createDirectoryAtURL:baseURL withIntermediateDirectories:YES attributes:nil error:&error];
 		
 		if (!success) {
-			DDLogError(@"%@ could not create baseURL %@", NSStringFromClass([self class]), baseURL);
+			SPLogError(@"%@ could not create baseURL %@", NSStringFromClass([self class]), baseURL);
 			abort();
 		}
+		
+		// We've moved the store location to NSApplicationSupportDirectory. Let's move old folders, if needed
+		[self migrateIfNeeded];
 		
 		// Finally, load the PSC
 		NSURL *storeURL = [baseURL URLByAppendingPathComponent:self.filename];
@@ -311,7 +305,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		_persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
 		if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
 		{
-			DDLogError(@"Unresolved error %@, %@", error, [error userInfo]);
+			SPLogError(@"Unresolved error %@, %@", error, [error userInfo]);
 			abort();
 		}
 	}
@@ -331,7 +325,31 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 #if TARGET_OS_IPHONE
 
 - (NSURL *)baseURL {
-	return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+	return [[[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
+- (void)migrateIfNeeded {
+	
+	// Prepare the URL's
+	NSFileManager *fileManager	= [NSFileManager defaultManager];
+	NSURL *oldBaseURL			= [[fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+	NSURL *newBaseURL			= self.baseURL;
+	NSArray *contents			= [fileManager contentsOfDirectoryAtURL:oldBaseURL includingPropertiesForKeys:@[NSURLNameKey] options:NSDirectoryEnumerationSkipsSubdirectoryDescendants error:nil];
+	NSString *filename			= self.filename;
+	
+	// CoreData usually generates three files per PSC. Let's move all of them
+	for (NSURL *oldFileURL in contents) {
+		if ([oldFileURL.lastPathComponent hasPrefix:filename] == NO) {
+			continue;
+		}
+		
+		NSError *error		= nil;
+		NSURL *newFileURL	= [newBaseURL URLByAppendingPathComponent:oldFileURL.lastPathComponent];
+		
+		if ( ![fileManager moveItemAtURL:oldFileURL toURL:newFileURL error:&error] ) {
+			SPLogError(@"Error migrating %@ from %@ to %@", NSStringFromClass([self class]), oldFileURL, newFileURL);
+		}
+	}
 }
 
 #else
@@ -344,7 +362,7 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 	// This will cause, as a side effect, SPDictionaryStorage test-database's to get spread in the AppSupport folder.
 	// As a workaround (until we figure out a better way of handling this), let's detect XCTestCase class, and append the Simperium-OSX name to the path.
 	// That will generate an URL like this:
-	//		- //Users/[USER]/Library/Application 0Support/Simperium-OSX/SPDictionaryStorage/
+	//		- //Users/[USER]/Library/Application Support/Simperium-OSX/SPDictionaryStorage/
 	//
 	if (NSClassFromString(@"XCTestCase") != nil) {
 		NSBundle *bundle = [NSBundle bundleForClass:[self class]];
@@ -353,6 +371,11 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		
 	return [appSupportURL URLByAppendingPathComponent:NSStringFromClass([self class])];
 }
+
+- (void)migrateIfNeeded {
+	// No-Op. We're already in the right location
+}
+
 
 #endif
 
@@ -376,16 +399,16 @@ static int ddLogLevel						= LOG_LEVEL_ERROR;
 		// Fetch the objects
 		NSError *error = nil;
 		NSArray *allObjects = [self.managedObjectContext executeFetchRequest:[self requestForEntity] error:&error];
-		DDLogOnError(error);
+		SPLogOnError(error);
 		
 		// Load properties
-		for(NSManagedObject *change in allObjects) {
+		for (NSManagedObject *change in allObjects) {
 			id value = [change valueForKey:property];
 			if (!value) {
 				continue;
 			}
 			
-			if(unarchive) {
+			if (unarchive) {
 				[keys addObject:[NSKeyedUnarchiver unarchiveObjectWithData:value]];
 			} else {
 				[keys addObject:value];

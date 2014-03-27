@@ -10,7 +10,7 @@
 #import "XCTestCase+Simperium.h"
 #import "MockSimperium.h"
 #import "MockWebSocketInterface.h"
-#import "DDLog.h"
+#import "SPLogger.h"
 #import "JSONKit+Simperium.h"
 #import "Config.h"
 
@@ -48,9 +48,9 @@
 	XCTAssertTrue(s.remoteLoggingEnabled,	@"Error enabling remote logging");
 
 	// Simulate an error
-	int ddLogLevel = LOG_LEVEL_VERBOSE;
+	SPLogLevels logLevel = SPLogLevelsVerbose;
 	NSString* error = @"Simulating Error Message";
-	DDLogError(@"%@", error);
+	SPLogError(@"%@", error);
 
 	// Release main thread so the log gets posted. (WebSocket gets called only in the main thread)
 	[self waitFor:0.1];
@@ -84,7 +84,7 @@
 	//	Index Response
 	//		0:index:{ current: <cv>, index: { {id: <eid>, v: <version>}, ... }, pending: { { id: <eid>, sv: <version>, ccid: <ccid> }, ... }, extra: { ? } }
 	BOOL responseSent = NO;
-	for(id sent in s.mockWebSocketInterface.mockSentMessages) {
+	for (id sent in s.mockWebSocketInterface.mockSentMessages) {
 		NSRange range			= [sent rangeOfString:@":"];
 		NSString *msgChannel	= [sent substringToIndex:range.location];
 		NSString *msgCommand	= [sent substringFromIndex:range.location+range.length];

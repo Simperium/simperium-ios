@@ -18,8 +18,8 @@
 
 
 @interface NSMutableDictionary ()
--(void)simperiumSetObject:(id)anObject forKey:(id)aKey;
--(void)simperiumSetValue:(id)anObject forKey:(id)aKey;
+- (void)simperiumSetObject:(id)anObject forKey:(id)aKey;
+- (void)simperiumSetValue:(id)anObject forKey:(id)aKey;
 @end
 
 
@@ -29,7 +29,7 @@
 @synthesize objectList;
 @synthesize ghosts;
 
--(id)initWithDelegate:(id<SPStorageObserver>)aDelegate
+- (id)initWithDelegate:(id<SPStorageObserver>)aDelegate
 {
     if (self = [super init]) {
         delegate = aDelegate;
@@ -51,7 +51,7 @@
 }
 
 
--(void)object:(id)object forKey:(NSString *)simperiumKey didChangeValue:(id)value forKey:(NSString *)key {
+- (void)object:(id)object forKey:(NSString *)simperiumKey didChangeValue:(id)value forKey:(NSString *)key {
     // Update the schema if applicable
     SPObject *spObject = [allObjects objectForKey:simperiumKey];
     [spObject.bucket.differ.schema addMemberForObject:value key:key];
@@ -59,16 +59,16 @@
     // TODO: track the change here so saving can be smart    
 }
 
--(SPStorage *)threadSafeStorage {
+- (SPStorage *)threadSafeStorage {
     // Accessing objects through any instance of this class is thread-safe (on the main thread)
     return self;
 }
 
--(NSMutableDictionary *)objectDictionaryForBucketName:(NSString *)bucketName {
+- (NSMutableDictionary *)objectDictionaryForBucketName:(NSString *)bucketName {
     return [objects objectForKey:bucketName];
 }
 
--(id)objectForKey:(NSString *)key bucketName:(NSString *)bucketName {
+- (id)objectForKey:(NSString *)key bucketName:(NSString *)bucketName {
     __block id<SPDiffable>object = nil;
     
     dispatch_sync(storageQueue, ^{
@@ -80,7 +80,7 @@
     return object;
 }
 
--(NSArray *)objectsForKeys:(NSSet *)keys bucketName:(NSString *)bucketName
+- (NSArray *)objectsForKeys:(NSSet *)keys bucketName:(NSString *)bucketName
 {
     __block NSArray *someObjects = nil;
     dispatch_sync(storageQueue, ^{
@@ -96,11 +96,11 @@
     return someObjects;
 }
 
--(id)objectAtIndex:(NSUInteger)index bucketName:(NSString *)bucketName {
+- (id)objectAtIndex:(NSUInteger)index bucketName:(NSString *)bucketName {
     return nil;
 }
 
--(NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
+- (NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
 { 
     __block NSArray *bucketObjects = nil;
     dispatch_sync(storageQueue, ^{
@@ -118,7 +118,7 @@
     return bucketObjects;
 }
 
--(NSArray *)objectKeysForBucketName:(NSString *)bucketName {
+- (NSArray *)objectKeysForBucketName:(NSString *)bucketName {
     __block NSArray *bucketObjects = [self objectsForBucketName:bucketName predicate:nil];
     
     NSMutableArray *keys = [NSMutableArray arrayWithCapacity:[bucketObjects count]];
@@ -130,7 +130,7 @@
 }
 
 
--(NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
+- (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
 {
     __block NSInteger count = 0;
     dispatch_sync(storageQueue, ^{
@@ -141,7 +141,7 @@
     return count;
 }
 
--(NSDictionary *)faultObjectsForKeys:(NSArray *)keys bucketName:(NSString *)bucketName {
+- (NSDictionary *)faultObjectsForKeys:(NSArray *)keys bucketName:(NSString *)bucketName {
     // Batch fault a bunch of objects for efficiency
     // All objects are already in memory, for now at least...
     NSArray *objectsAsList = [self objectsForKeys:[NSSet setWithArray:keys] bucketName:bucketName];
@@ -151,13 +151,13 @@
     return objectDict;
 }
 
--(void)refaultObjects:(NSArray *)objects {
+- (void)refaultObjects:(NSArray *)objects {
 //    for (SPManagedObject *object in objects) {
 //        [context refreshObject:object mergeChanges:NO];
 //    }
 }
 
--(id<SPDiffable>)insertNewObjectForBucketName:(NSString *)bucketName simperiumKey:(NSString *)key
+- (id<SPDiffable>)insertNewObjectForBucketName:(NSString *)bucketName simperiumKey:(NSString *)key
 {
     id<SPDiffable>object = [[SPObject alloc] init];
     
@@ -178,7 +178,7 @@
     return object;
 }
 
--(void)insertObject:(id)dict bucketName:(NSString *)bucketName {
+- (void)insertObject:(id)dict bucketName:(NSString *)bucketName {
     // object should be a dictionary
     id<SPDiffable>object = [[SPObject alloc] initWithDictionary:dict];
 
@@ -195,24 +195,24 @@
     });
 }
 
--(void)setMetadata:(NSDictionary *)metadata {
+- (void)setMetadata:(NSDictionary *)metadata {
     // TODO: support metadata for JSON store
     // [[NSUserDefaults standardUserDefaults] setObject:json forKey: key];
     // [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
--(NSDictionary *)metadata {
+- (NSDictionary *)metadata {
     return nil;
 }
 
--(void)deleteObject:(id)dict
+- (void)deleteObject:(id)dict
 {
     // TODO: this is where an associative reference to simperiumKey on the dict will be needed
 //    SPManagedObject *managedObject = (SPManagedObject *)object;
 //    [managedObject.managedObjectContext deleteObject:managedObject];
 }
 
--(void)deleteAllObjectsForBucketName:(NSString *)bucketName {
+- (void)deleteAllObjectsForBucketName:(NSString *)bucketName {
 //    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
 //    NSEntityDescription *entity = [NSEntityDescription entityForName:entityName inManagedObjectContext:context];
 //    [fetchRequest setEntity:entity];
@@ -231,11 +231,11 @@
 //    }
 }
 
--(void)validateObjectsForBucketName:(NSString *)bucketName
+- (void)validateObjectsForBucketName:(NSString *)bucketName
 {
 //    NSEntityDescription *entity = [NSEntityDescription entityForName:entityName inManagedObjectContext:context];
 //    if (entity == nil) {
-//        //DDLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
+//        //SPLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
 //        return;
 //    }
 //    NSFetchRequest *request = [[NSFetchRequest alloc] init];
@@ -268,7 +268,7 @@
 //            if ([object respondsToSelector:@selector(getSimperiumKeyFromLegacyKey)]) {
 //                key = [object performSelector:@selector(getSimperiumKeyFromLegacyKey)];
 //                //if (key && key.length > 0)
-//                //    DDLogVerbose(@"Simperium local entity found without key (%@), porting legacy key: %@", entityName, key);
+//                //    SPLogVerbose(@"Simperium local entity found without key (%@), porting legacy key: %@", entityName, key);
 //            }
 //            
 //            // If it's still nil (unsynced local change in legacy system), treat it like a newly inserted object:
@@ -289,7 +289,7 @@
 //    NSLog(@"Simperium managing %u %@ object instances", [results count], entityName); 
 }
 
--(BOOL)save
+- (BOOL)save
 {
     // This needs to write all objects to disk in a thread-safe way, perhaps asynchronously since it can be
     // triggered from the main thread and could take awhile

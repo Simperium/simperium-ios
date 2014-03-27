@@ -13,28 +13,28 @@
 @implementation SPStorage
 
 
--(void)stashUnsavedObjects {
+- (void)stashUnsavedObjects {
     
 }
 
--(NSArray *)stashedObjects {
+- (NSArray *)stashedObjects {
     return [stashedObjects allObjects];
 }
 
--(void)unstashUnsavedObjects {
+- (void)unstashUnsavedObjects {
     [stashedObjects removeAllObjects];
 }
 
--(void)unloadAllObjects {
+- (void)unloadAllObjects {
     [stashedObjects removeAllObjects];
 }
 
--(void)stopManagingObjectWithKey:(NSString *)key
+- (void)stopManagingObjectWithKey:(NSString *)key
 {    
     // TODO: check pendingReferences as well just in case? And the stash...    
 }
 
--(void)configureNewGhost:(id<SPDiffable>)object
+- (void)configureNewGhost:(id<SPDiffable>)object
 {
     // It's new to this client, so create an empty ghost for it with version 0
     // (objects coming off the wire already have a ghost, so be careful not to stomp it)
@@ -45,7 +45,7 @@
     }
 }
 
--(void)configureInsertedObject:(id<SPDiffable>)object
+- (void)configureInsertedObject:(id<SPDiffable>)object
 {
     if (object.simperiumKey == nil || object.simperiumKey.length == 0) {
         object.simperiumKey = [NSString sp_makeUUID];

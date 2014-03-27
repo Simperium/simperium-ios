@@ -26,17 +26,17 @@
 	return _diffMatchPatch;
 }
 
--(id)defaultValue {
+- (id)defaultValue {
 	return @"[]";
 }
 
--(id)arrayFromJSONString:(id)value {
+- (id)arrayFromJSONString:(id)value {
     if ([value length] == 0)
         return [[self defaultValue] sp_objectFromJSONString];
 	return [value sp_objectFromJSONString];
 }
 
--(id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
+- (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
 	return [self getValueFromJSON:dict key:key object:object];
 }
 
@@ -46,12 +46,12 @@
 	return [value sp_JSONString];
 }
 
--(void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
+- (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
     id convertedValue = [self arrayFromJSONString: value];
     [dict setValue:convertedValue forKey:key];
 }
 
--(NSDictionary *)diff:(NSArray *)a otherValue:(NSArray *)b {
+- (NSDictionary *)diff:(NSArray *)a otherValue:(NSArray *)b {
 	NSAssert([a isKindOfClass:[NSArray class]] && [b isKindOfClass:[NSArray class]],
 			 @"Simperium error: couldn't diff list because their classes weren't NSArray");
     
@@ -62,10 +62,7 @@
 	return @{ OP_OP: OP_LIST_DMP, OP_VALUE: [a sp_diffDeltaWithArray:b diffMatchPatch:self.diffMatchPatch] };
 }
 
-
-
--(id)applyDiff:(id)thisValue otherValue:(id)otherValue {
-	
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
 	
 	// Assuming OP_LIST_DMP. This code will have to change when OP_LIST is
 	// implemented and it will have to take the full change diff in order
@@ -76,15 +73,13 @@
 	return [source sp_arrayByApplyingDiffDelta:delta diffMatchPatch:self.diffMatchPatch];
 }
 
-- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue
-{
+- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue {
 	NSArray *source = oldValue;
 	NSString *delta1 = thisValue;
 	NSString *delta2 = otherValue;
 	
 	return @{ OP_OP: OP_LIST_DMP, OP_VALUE: [source sp_transformDelta:delta1 onto:delta2 diffMatchPatch:self.diffMatchPatch] };
 }
-
 
 @end
 

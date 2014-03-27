@@ -8,7 +8,6 @@
 
 #import "SimperiumTests.h"
 #import "SPGhost.h"
-#import "DDLog.h"
 #import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "Config.h"
@@ -27,7 +26,7 @@
     NSLog(@"Waiting for %f seconds...", seconds);
 	do {
 		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:timeoutDate];
-		if([timeoutDate timeIntervalSinceNow] < 0.0)
+		if ([timeoutDate timeIntervalSinceNow] < 0.0)
 			break;
         
 	} while (YES);
@@ -55,8 +54,9 @@
     
 	do {
 		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:timeoutDate];
-		if([timeoutDate timeIntervalSinceNow] < 0.0)
+		if ([timeoutDate timeIntervalSinceNow] < 0.0) {
 			break;
+		}
         
         // We're done when all the farms are done
         self.done = [self farmsDone: farmArray];
@@ -64,7 +64,7 @@
 	} while (!self.done);
     
     // If it timed out, try to log why
-    if([timeoutDate timeIntervalSinceNow] < 0.0) {
+    if ([timeoutDate timeIntervalSinceNow] < 0.0) {
         for (Farm *farm in farmArray) {
             [farm logUnfulfilledExpectations];
         }

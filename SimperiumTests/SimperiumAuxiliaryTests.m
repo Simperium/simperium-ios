@@ -19,8 +19,7 @@
 
 @implementation SimperiumAuxiliaryTests
 
--(void)testDMP
-{
+- (void)testDMP {
     NSString *a = @"a";
     NSString *b = @"ab";
     NSString *c = @"ac";
@@ -56,8 +55,7 @@
     NSLog(@"final: %@", final_text);    
 }
 
--(void)testKeyWithPeriods
-{
+- (void)testKeyWithPeriods {
     NSLog(@"%@ start", self.name);
     
     // Leader sends an object to follower, but make follower get it from the index
@@ -97,7 +95,7 @@
 }
 
 
-//-(void)testSeededData
+//- (void)testSeededData
 //{
 //    NSLog(@"%@ start", self.name);
 //    [self createFarms];
