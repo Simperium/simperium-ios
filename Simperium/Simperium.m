@@ -319,7 +319,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 		return;
 	}
 		
-	// Start Simperium: Manua auth for us
+	// Start Simperium: Manual auth for us
 	self.authenticationEnabled = NO;
 	[self startWithAppID:identifier APIKey:nil];
 	
