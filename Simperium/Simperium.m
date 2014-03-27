@@ -635,7 +635,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 
 - (void)setVerboseLoggingEnabled:(BOOL)on {
     _verboseLoggingEnabled = on;
-	[[SPLogger sharedInstance] setSharedLogLevel:on ? SPLogLevelsVerbose : SPLogLevelsInfo];
+	[[SPLogger sharedInstance] setSharedLogLevel:on ? SPLogLevelsVerbose : SPLogLevelsWarn];
 }
 
 - (BOOL)objectsShouldSync {
