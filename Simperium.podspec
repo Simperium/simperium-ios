@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
   s.osx.source_files = 'Simperium-OSX/**/*.{h,m}'
 
   s.exclude_files = 'External/STKeychain/*'
-  s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}', 'Simperium/SPAuthenticationButton.{h,m}'
+  s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}', 'Simperium/SPTOSViewController.{h,m}', 'Simperium/SPAuthenticationButton.{h,m}'
   
   # Importing non-arc files
 
