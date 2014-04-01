@@ -181,6 +181,11 @@ typedef void (^SimperiumSignoutCompletion)(void);
 
 @property (nonatomic, strong) NSMutableDictionary *buckets;
 
+@end
+
+
+@interface Simperium (HappyInspector)
+
 // This method sends any object with changes. Its performance heavy so don't
 // run it except to troubleshoot sync issues.
 - (void)processAllLocalObjectsForChanges;
