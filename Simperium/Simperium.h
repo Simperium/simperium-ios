@@ -190,4 +190,7 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // run it except to troubleshoot sync issues.
 - (void)processAllLocalObjectsForChanges;
 
+// Expose this private method
+- (void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key;
+
 @end
