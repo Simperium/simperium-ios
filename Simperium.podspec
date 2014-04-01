@@ -16,9 +16,10 @@ Pod::Spec.new do |s|
   s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*'
   s.osx.source_files = 'Simperium-OSX/**/*.{h,m}'
 
-  s.exclude_files = 'Simperium/SPS3Manager.{h,m}', 'External/STKeychain/*'
+  s.exclude_files = 'External/STKeychain/*'
   s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}'
-
+  s.osx.exclude_files = 'Simperium/SPAuthenticationButton.{h,m}'
+  
   # Importing non-arc files
 
   s.subspec 'STKeychain' do |keychain|
