@@ -13,59 +13,53 @@
 
 NSString * const SPSchemaDefinitionMembersKey = @"members";
 
-@implementation SPSchema
-@synthesize bucketName;
-@synthesize members;
-@synthesize binaryMembers;
-@synthesize dynamic;
+@interface SPSchema ()
+@property (nonatomic, strong) NSDictionary *memberMap;
+@end
 
+
+@implementation SPSchema
 
 // Loads an entity's definition (name, members, their types, etc.) from a plist dictionary
 - (id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition {
     if (self = [super init]) {
-        bucketName = [name copy];
+        _bucketName = [name copy];
         NSArray *memberList = [definition valueForKey:SPSchemaDefinitionMembersKey];
-        members = [NSMutableDictionary dictionaryWithCapacity:3];
-        binaryMembers = [NSMutableArray arrayWithCapacity:3];
+        _members = [NSMutableDictionary dictionaryWithCapacity:3];
+        _binaryMembers = [NSMutableArray arrayWithCapacity:3];
         for (NSDictionary *memberDict in memberList) {
-
 			SPMember *member = [[SPMember alloc] initFromDictionary:memberDict];
-            [members setObject:member forKey:member.keyName];
+            [_members setObject:member forKey:member.keyName];
         }        
     }
     
     return self;
 }
 
-
-- (NSString *)bucketName {
-	return bucketName;
-}
-
 - (void)addMemberForObject:(id)object key:(NSString *)key {
-    if (!dynamic)
+    if (!_dynamic) {
         return;
+	}
     
-    if ([self memberForKey:key])
+    if ([self memberForKey:key]) {
         return;
+	}
     
     NSString *type = @"unsupported";
-    if ([object isKindOfClass:[NSString class]])
+    if ([object isKindOfClass:[NSString class]]) {
         type = @"text";
-    else if ([object isKindOfClass:[NSNumber class]])
+	} else if ([object isKindOfClass:[NSNumber class]]) {
         type = @"double";
-    
-    NSDictionary *memberDict = [NSDictionary dictionaryWithObjectsAndKeys:
-                                type, @"type",
-                                key, @"name", nil];
+	}
 
+    NSDictionary *memberDict = @{ @"type" : type,
+								  @"name" : key };
     SPMember *member = [[SPMember alloc] initFromDictionary:memberDict];
-    [members setObject:member forKey:member.keyName];
-    
+    [self.members setObject:member forKey:member.keyName];
 }
 
 - (SPMember *)memberForKey:(NSString *)memberName {
-    return [members objectForKey:memberName];
+    return _members[memberName];
 }
 
 @end

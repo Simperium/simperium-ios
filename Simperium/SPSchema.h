@@ -15,19 +15,12 @@
 
 extern NSString * const SPSchemaDefinitionMembersKey; // Should be the key to an array of SPMemeberDefinitionDictionaries
 
-@interface SPSchema : NSObject {
-    NSString *bucketName;
-    NSMutableDictionary *members; // ALL members
-    NSMutableArray *binaryMembers; // JUST binary members (for optimization)
-    BOOL dynamic;
-}
+@interface SPSchema : NSObject
 
-
-
-@property (nonatomic, copy) NSString *bucketName;
-@property (nonatomic, strong) NSMutableDictionary *members;
-@property (nonatomic, strong) NSMutableArray *binaryMembers;
-@property BOOL dynamic;
+@property (nonatomic, copy)   NSString				*bucketName;
+@property (nonatomic, strong) NSMutableDictionary	*members;
+@property (nonatomic, strong) NSMutableArray		*binaryMembers;
+@property (nonatomic, assign) BOOL					dynamic;
 
 - (id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition;
 - (SPMember *)memberForKey:(NSString *)memberName;

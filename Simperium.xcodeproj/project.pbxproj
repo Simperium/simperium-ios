@@ -41,7 +41,6 @@
 		2618988515D2EC130013CBC9 /* SPWebSocketInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 2618988315D2EC130013CBC9 /* SPWebSocketInterface.h */; };
 		2618988615D2EC130013CBC9 /* SPWebSocketInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 2618988415D2EC130013CBC9 /* SPWebSocketInterface.m */; };
 		2622FD2D147F32A500C8EEB4 /* SPNetworkInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD2B147F32A500C8EEB4 /* SPNetworkInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		264AE50E15D3092200E5E04E /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 264AE50D15D3092200E5E04E /* libicucore.dylib */; };
 		264AE51115D3094D00E5E04E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 264AE51015D3094D00E5E04E /* Security.framework */; };
 		264AE51A15D45E2A00E5E04E /* SPWebSocketChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 264AE51815D45E2A00E5E04E /* SPWebSocketChannel.h */; };
 		264AE51B15D45E2A00E5E04E /* SPWebSocketChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 264AE51915D45E2A00E5E04E /* SPWebSocketChannel.m */; };
@@ -133,7 +132,6 @@
 		26EF3BA6147C6AB500E62AD6 /* SPChangeProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 269A7F3E147355D100CB29EE /* SPChangeProcessor.m */; };
 		26F4BBCC13DCFD9E00B8AC56 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBCB13DCFD9E00B8AC56 /* SystemConfiguration.framework */; };
 		26F4BBCE13DCFDA700B8AC56 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBCD13DCFDA700B8AC56 /* CFNetwork.framework */; };
-		26F4BBD013DCFDB000B8AC56 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBCF13DCFDB000B8AC56 /* libz.dylib */; };
 		26F4BBD413DCFDC100B8AC56 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */; };
 		460A505E17DE96350070F02B /* SPProcessorNotificationNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */; };
 		460A505F17DE96350070F02B /* SPProcessorNotificationNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */; };
@@ -418,9 +416,7 @@
 			files = (
 				466EB41D17BC49DB005F7599 /* QuartzCore.framework in Frameworks */,
 				264AE51115D3094D00E5E04E /* Security.framework in Frameworks */,
-				264AE50E15D3092200E5E04E /* libicucore.dylib in Frameworks */,
 				26F4BBD413DCFDC100B8AC56 /* MobileCoreServices.framework in Frameworks */,
-				26F4BBD013DCFDB000B8AC56 /* libz.dylib in Frameworks */,
 				26F4BBCE13DCFDA700B8AC56 /* CFNetwork.framework in Frameworks */,
 				26F4BBCC13DCFD9E00B8AC56 /* SystemConfiguration.framework in Frameworks */,
 				264CD9B1135DFFFF00C51BAD /* CoreData.framework in Frameworks */,
@@ -1001,7 +997,7 @@
 		264CD8F2135DFD7900C51BAD /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = Simperium;
 			};
 			buildConfigurationList = 264CD8F5135DFD7900C51BAD /* Build configuration list for PBXProject "Simperium" */;
