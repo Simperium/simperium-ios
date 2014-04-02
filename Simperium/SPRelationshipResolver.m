@@ -145,6 +145,10 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
             [faultedObjects addEntriesFromDictionary:fromObjects];
         }
 */
+
+
+        NSMutableArray *resolvedPaths = [[NSMutableArray alloc] initWithCapacity:paths.count];
+
         // Resolve the references but do it in the background
         dispatch_async(queue, ^{
             id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
@@ -165,20 +169,42 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
                 NSString *fromBucketName = [path objectForKey:PATH_BUCKET];
                 NSString *attributeName = [path objectForKey:PATH_ATTRIBUTE];
                 id<SPDiffable> fromObject = [threadSafeStorage objectForKey:fromKey bucketName:fromBucketName];
-                SPLogVerbose(@"Simperium resolving pending reference for %@.%@=%@", fromKey, attributeName, toKey);
-                [fromObject simperiumSetValue:toObject forKey: attributeName];
-                
-                // Get the key reference into the ghost as well
-                [fromObject.ghost.memberData setObject:toKey forKey: attributeName];
-                fromObject.ghost.needsSave = YES;
+
+                // Sometimes this happens, no idea why. See https://github.com/Simperium/simperium-ios/issues/250
+                // Can't fix yet, so just try again later ...
+                if (!fromObject) {
+                    SPLogWarn(@"Simperium warning, tried to resolve reference FROM an object that doesn't exist yet (%@): %@", fromBucketName, fromKey);
+                } else {
+                    SPLogVerbose(@"Simperium resolving pending reference for %@.%@=%@", fromKey, attributeName, toKey);
+                    [fromObject simperiumSetValue:toObject forKey: attributeName];
+
+                    // Get the key reference into the ghost as well
+                    [fromObject.ghost.memberData setObject:toKey forKey: attributeName];
+                    fromObject.ghost.needsSave = YES;
+
+                    [resolvedPaths addObject:path];
+                }
             }
 			
             [threadSafeStorage save];
 			[threadSafeStorage finishSafeSection];
 			
             dispatch_async(dispatch_get_main_queue(), ^{
-                // All references to entity were resolved above, so remove it from the pending array
-                [pendingRelationships removeObjectForKey:toKey];
+                // Hopefully all references to entity were resolved above, so remove it from the pending array
+                NSMutableArray *remainingPaths = [pendingRelationships[toKey] mutableCopy];
+                [remainingPaths removeObjectsInArray:resolvedPaths];
+                if (remainingPaths.count > 0) {
+                    pendingRelationships[toKey] = remainingPaths;
+
+                    // Still some unresolved references, so try again after a delay (10 seconds)
+                    SPLogVerbose(@"Simperium scheduling reattempt to resolve pending references (%@): %@", bucketName, toKey);
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        [self resolvePendingRelationshipsToKey:toKey bucketName:bucketName storage:storage];
+                    });
+                } else {
+                    [pendingRelationships removeObjectForKey:toKey];
+                }
+
                 [self writePendingReferences:storage];
                 
                 // Expect the context to be saved elsewhere
