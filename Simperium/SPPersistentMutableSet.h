@@ -18,6 +18,7 @@
 
 - (NSArray *)allObjects;
 - (NSUInteger)count;
+- (NSSet *)copyInnerSet;
 
 - (void)addObjectsFromArray:(NSArray *)array;
 - (void)minusSet:(NSSet *)otherSet;
