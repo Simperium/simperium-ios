@@ -45,7 +45,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
 @interface SPWebSocketChannel()
 @property (nonatomic, weak)   Simperium				*simperium;
-@property (nonatomic, strong) NSMutableArray		*responseBatch;
+@property (nonatomic, strong) NSMutableArray		*receivedChanges;
 @property (nonatomic, strong) NSMutableDictionary	*versionsWithErrors;
 @property (nonatomic, assign) NSInteger				retryDelay;
 @property (nonatomic, assign) NSInteger				objectVersionsPending;
@@ -350,11 +350,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
         // Otherwise, process the result for indexing
         // Marshal everything into an array for later processing
         NSArray *responseData = @[ key, payloadString, version ];
-        [self.responseBatch addObject:responseData];
+        [self.versionsBatch addObject:responseData];
 
         // Batch responses for more efficient processing
-		if ( (self.responseBatch.count == self.objectVersionsPending && self.objectVersionsPending < SPWebsocketIndexBatchSize) ||
-			 self.responseBatch.count % SPWebsocketIndexBatchSize == 0)
+		if ( (self.versionsBatch.count == self.objectVersionsPending && self.objectVersionsPending < SPWebsocketIndexBatchSize) ||
+			 self.versionsBatch.count % SPWebsocketIndexBatchSize == 0)
 		{
             [self processBatchForBucket:bucket];
 		}
@@ -481,11 +481,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 }
 
 - (void)processBatchForBucket:(SPBucket *)bucket {
-    if (self.responseBatch.count == 0) {
+    if (self.versionsBatch.count == 0) {
         return;
 	}
 	
-    NSMutableArray *batch	= [self.responseBatch copy];
+    NSMutableArray *batch	= [self.versionsBatch copy];
 	NSInteger newPendings	= MAX(0, _objectVersionsPending - batch.count);
 	
     BOOL firstSync			= bucket.lastChangeSignature == nil;
@@ -508,7 +508,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     });
 	
 	self.objectVersionsPending = newPendings;
-    [self.responseBatch removeAllObjects];
+    [self.versionsBatch removeAllObjects];
 }
 
 - (void)requestVersionsForKeys:(NSArray *)currentIndexArray bucket:(SPBucket *)bucket {
@@ -522,7 +522,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
         [bucket.delegate bucketWillStartIndexing:bucket];
 	}
 
-    self.responseBatch = [NSMutableArray arrayWithCapacity:SPWebsocketIndexBatchSize];
+    self.versionsBatch = [NSMutableArray arrayWithCapacity:SPWebsocketIndexBatchSize];
 
     // Get all the latest versions
     SPLogInfo(@"Simperium processing %lu objects from index (%@)", (unsigned long)[currentIndexArray count], self.name);
