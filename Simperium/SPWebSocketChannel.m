@@ -349,7 +349,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     } else {
         // Otherwise, process the result for indexing
         // Marshal everything into an array for later processing
-        NSArray *responseData = [NSArray arrayWithObjects: key, payloadString, version, nil];
+        NSArray *responseData = @[ key, payloadString, version ];
         [self.responseBatch addObject:responseData];
 
         // Batch responses for more efficient processing
