@@ -111,6 +111,20 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 
 
 #pragma mark ====================================================================================
+#pragma mark NSFastEnumeration
+#pragma mark ====================================================================================
+
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id __unsafe_unretained [])buffer count:(NSUInteger)len  {
+    __block NSUInteger count;
+	dispatch_sync(self.setQueue, ^{
+        count = [self.contents countByEnumeratingWithState:state objects:buffer count:len];
+    });
+    
+    return count;
+}
+
+
+#pragma mark ====================================================================================
 #pragma mark Persistance!
 #pragma mark ====================================================================================
 
