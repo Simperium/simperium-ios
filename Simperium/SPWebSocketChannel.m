@@ -33,6 +33,7 @@
 static int const SPWebsocketIndexPageSize			= 500;
 static int const SPWebsocketIndexBatchSize			= 10;
 static int const SPWebsocketErrorAuthFailed			= 401;
+static int const SPWebsocketChangesBatchSize        = 20;
 static NSString* const SPWebsocketErrorMark			= @"{";
 static NSString* const SPWebsocketErrorKey			= @"code";
 
@@ -45,7 +46,8 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
 @interface SPWebSocketChannel()
 @property (nonatomic, weak)   Simperium				*simperium;
-@property (nonatomic, strong) NSMutableArray		*receivedChanges;
+@property (nonatomic, strong) NSMutableArray		*changesBatch;
+@property (nonatomic, strong) NSMutableArray		*versionsBatch;
 @property (nonatomic, strong) NSMutableDictionary	*versionsWithErrors;
 @property (nonatomic, assign) NSInteger				retryDelay;
 @property (nonatomic, assign) NSInteger				objectVersionsPending;
@@ -64,6 +66,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	if ((self = [super init])) {
         self.simperium			= s;
         self.indexArray			= [NSMutableArray arrayWithCapacity:200];
+        self.changesBatch       = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
         self.versionsWithErrors = [NSMutableDictionary dictionaryWithCapacity:3];
     }
 	
@@ -217,13 +220,13 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 }
 
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
-
+    
 	// Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
 	if (changes.count == 0) {
 		[bucket bucketDidSync];
 		return;
 	}
-		
+    
 	SPLogVerbose(@"Simperium handling changes %@", changes);
 	
 	// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
@@ -234,25 +237,38 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 		if (!self.started) {
 			return;
 		}
-		
-		BOOL repostNeeded = NO;
-		
-		// AutoreleasePool:
-		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
-		@autoreleasepool {
-			[bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket repostNeeded:&repostNeeded];
-			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.simperium.clientID];
-		}
+        
+        // Batch-Processing: This will speed up sync'ing of large databases!
+        [self.changesBatch addObjectsFromArray:changes];
 
-		dispatch_async(dispatch_get_main_queue(), ^{
-			
-			// Note #1: After remote changes have been processed, check to see if any local changes were attempted (and
-			//			queued) in the meantime, and send them.
-			
-			// Note #2: If we need to repost, we'll need to re-send everything. Not just the queued changes.
-			[self sendChangesForBucket:bucket onlyQueuedChanges:!repostNeeded completionBlock:nil];
-		});
+        if ( bucket.changeProcessor.numChangesPending < SPWebsocketChangesBatchSize || _changesBatch.count % SPWebsocketChangesBatchSize == 0 ) {
+            [self processBatchChanges:_changesBatch bucket:bucket];
+            self.changesBatch = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
+        }
 	});
+}
+
+- (void)processBatchChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
+	
+    NSAssert( ![NSThread isMainThread], @"This method should run inside a processorQueue");
+    
+    BOOL repostNeeded = NO;
+
+    // AutoreleasePool:
+    //	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
+    @autoreleasepool {
+        [bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket repostNeeded:&repostNeeded];
+        [bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.simperium.clientID];
+    }
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        // Note #1: After remote changes have been processed, check to see if any local changes were attempted (and
+        //			queued) in the meantime, and send them.
+        
+        // Note #2: If we need to repost, we'll need to re-send everything. Not just the queued changes.
+        [self sendChangesForBucket:bucket onlyQueuedChanges:!repostNeeded completionBlock:nil];
+    });
 }
 
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
