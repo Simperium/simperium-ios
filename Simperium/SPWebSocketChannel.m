@@ -129,8 +129,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 		// AutoreleasePool:
 		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
 		@autoreleasepool {
-			NSDictionary *change = [object.bucket.changeProcessor processLocalDeletionWithKey:key];
-			[self sendChange:change];
+            NSSet *wrappedKey   = [NSSet setWithObject:key];
+			NSArray *changes    = [object.bucket.changeProcessor processLocalDeletionsWithKeys:wrappedKey];
+            for (NSDictionary *change in changes) {
+                [self sendChange:change];
+            }
 		}
     });
 }
@@ -152,8 +155,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 			if (_indexing || !_started || processor.hasReachedMaxPendings) {
 				[processor markObjectWithPendingChanges:key bucket:object.bucket];
 			} else {
-				NSDictionary *change = [processor processLocalObjectWithKey:key bucket:object.bucket];
-				[self sendChange:change];
+                NSSet *wrappedKey = [NSSet setWithObject:key];
+				NSArray *changes = [processor processLocalObjectsWithKeys:wrappedKey bucket:object.bucket];
+                for (NSDictionary *change in changes) {
+                    [self sendChange:change];
+                }
 			}
 		}
     });
@@ -164,11 +170,15 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 }
 
 - (void)removeAllBucketObjects:(SPBucket *)bucket {
-	NSDictionary *change = [bucket.changeProcessor processLocalBucketDeletion:bucket];
-	NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [change sp_JSONString]];
-	SPLogVerbose(@"Simperium deleting all Bucket Objects (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
-	
-	[self.webSocketManager send:message];
+    NSSet *wrappedBucket = [NSSet setWithObject:bucket];
+	NSArray *changes = [bucket.changeProcessor processLocalBucketsDeletion:wrappedBucket];
+    
+    for (NSDictionary *change in changes) {
+        NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [change sp_JSONString]];
+        SPLogVerbose(@"Simperium deleting all Bucket Objects (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
+        
+        [self.webSocketManager send:message];
+    }
 }
 
 
@@ -408,7 +418,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 - (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(void(^)())completionBlock {
 	
 	SPChangeProcessor *processor		= bucket.changeProcessor;
-	SPChangeEnumerationBlockType block	= ^(NSDictionary *change, BOOL *stop) {
+	SPChangeEnumerationBlockType block	= ^(NSDictionary *change) {
 		[self sendChange:change];
 	};
 	
@@ -428,10 +438,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 			}
 			
 			// Process Queued Changes: let's consider the SPWebsocketMaxPendingChanges limit
-			[processor enumerateQueuedChangesForBucket:bucket block:^(NSDictionary *change, BOOL *stop) {
-				[self sendChange:change];
-				*stop = [processor hasReachedMaxPendings];
-			}];
+			[processor enumerateQueuedChangesForBucket:bucket block:block];
 			
 			if (completionBlock) {
 				dispatch_async(dispatch_get_main_queue(), ^{

@@ -16,7 +16,7 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change, BOOL *stop);
+typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change);
 
 extern NSString * const CH_KEY;
 extern NSString * const CH_ADD;
@@ -46,16 +46,16 @@ extern NSString * const CH_LOCAL_ID;
 - (void)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket repostNeeded:(BOOL *)repostNeeded;
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
 
-- (void)markObjectWithPendingChanges:(NSString *)key bucket:(SPBucket *)bucket;
-- (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket;
-- (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
-- (NSDictionary *)processLocalBucketDeletion:(SPBucket *)bucket;
+- (void)markObjectWithPendingChanges:(NSString *)keys bucket:(SPBucket *)bucket;
+- (NSArray *)processLocalObjectsWithKeys:(NSSet *)keys bucket:(SPBucket *)bucket;
+- (NSArray *)processLocalDeletionsWithKeys:(NSSet *)keys;
+- (NSArray *)processLocalBucketsDeletion:(NSSet *)buckets;
 
 - (void)enumeratePendingChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
 - (void)enumerateQueuedChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
 - (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
 
 - (BOOL)hasReachedMaxPendings;
-- (NSArray*)exportPendingChanges;
+- (NSArray *)exportPendingChanges;
 
 @end

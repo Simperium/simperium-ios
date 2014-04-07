@@ -437,15 +437,20 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 #pragma mark Local changes
 #pragma mark ====================================================================================
 
-- (NSDictionary *)processLocalDeletionWithKey:(NSString *)key {
-	NSDictionary *change = [self createChangeForKey:key operation:CH_REMOVE version:nil data:nil];
-
-	if (change) {
-		[self.changesPending setObject:change forKey:key];
-		[self.changesPending save];
-	}
+- (NSArray *)processLocalDeletionsWithKeys:(NSSet *)keys {
+    NSMutableArray *changes = [NSMutableArray array];
+    
+    for (NSString *key in keys) {
+        NSAssert([key isKindOfClass:[NSString class]], nil);
+        
+        NSDictionary *change = [self createChangeForKey:key operation:CH_REMOVE version:nil data:nil];
+        [self.changesPending setObject:change forKey:key];
+        [changes addObject:change];
+    }
+    
+    [self.changesPending save];
 	
-	return change;
+	return changes;
 }
 
 - (void)markObjectWithPendingChanges:(NSString *)key bucket:(SPBucket *)bucket {
@@ -454,158 +459,149 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	[self.keysForObjectsWithMoreChanges save];
 }
 
-- (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket {
-	
-    // Create a new context (to be thread-safe) and fetch the entity from it
-    id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
+- (NSArray *)processLocalObjectsWithKeys:(NSSet *)keys bucket:(SPBucket *)bucket {
+    
+    NSMutableArray *changes         = [NSMutableArray arrayWithCapacity:keys.count];
+    NSMutableSet *keysNotFound      = [keys mutableCopy];
+    id<SPStorageProvider> storage   = [bucket.storage threadSafeStorage];
     
 	[storage beginSafeSection];
-    id<SPDiffable> object = [storage objectForKey:key bucketName:bucket.name];
-	
-    // If the object no longer exists, it was likely previously deleted, in which case this change is no longer relevant
-    if (!object) {
-        SPLogWarn(@"Simperium warning: couldn't processLocalObjectWithKey %@ because the object no longer exists", key);
-        [self.changesPending removeObjectForKey:key];
-		[self.changesPending save];
-        [self.keysForObjectsWithMoreChanges removeObject:key];
-        [self.keysForObjectsWithMoreChanges save];
-		[storage finishSafeSection];
-        return nil;
-    }
-
-    // If there are already changes pending for this entity, mark this entity and come back to it later to get the changes
-    if ([self.changesPending containsObjectForKey:key]) {
-		[self markObjectWithPendingChanges:key bucket:bucket];
-		[storage finishSafeSection];
-        return nil;
-    }
-	
-    NSDictionary *change = nil;
-	
-    SPLogVerbose(@"Simperium processing local object changes (%@): %@", bucket.name, object.simperiumKey); 
+    NSArray *objects                = [storage objectsForKeys:keys bucketName:bucket.name];
     
-    if (object.ghost != nil && [object.ghost memberData] != nil) {
-        // This object has already been synced in the past and has a server ghost, so we're modifying the object
+    for (id<SPDiffable> object in objects) {
         
-        // Get a diff of the object (in dictionary form)
-		NSDictionary *newData = [bucket.differ diff:object withDictionary: [object.ghost memberData]];
-        SPLogVerbose(@"Simperium entity diff found %lu changed members", (unsigned long)newData.count);
-		
-        if (newData.count > 0) {
-            change = [self createChangeForKey: object.simperiumKey operation: CH_MODIFY version:object.ghost.version data: newData];
-        } else {
-            // No difference, don't do anything else
-            SPLogVerbose(@"Simperium warning: no difference in call to sendChanges (%@): %@", bucket.name, object.simperiumKey);
+        NSAssert([object conformsToProtocol:@protocol(SPDiffable)], nil);
+        SPLogVerbose(@"Simperium processing local object changes (%@): %@", bucket.name, object.simperiumKey);
+        
+        // Good! this object wasn't nuked
+        [keysNotFound removeObject:object.simperiumKey];
+        
+        // Pending Changes: Let's mark this entity and come back later to get the changes
+        if ([self.changesPending containsObjectForKey:object.simperiumKey]) {
+            [self markObjectWithPendingChanges:object.simperiumKey bucket:bucket];
+            continue;
         }
         
-    } else  {
-        SPLogVerbose(@"Simperium local ADD detected, creating diff...");
+        NSDictionary *newData = nil;
         
-		NSDictionary *newData = [bucket.differ diffForAddition:object];
-        change = [self createChangeForKey: object.simperiumKey operation:CH_MODIFY version: object.ghost.version data: newData];
+        if (object.ghost != nil && [object.ghost memberData] != nil) {
+            // This object has already been synced in the past and has a server ghost, so we're modifying the object
+            newData = [bucket.differ diff:object withDictionary:object.ghost.memberData];
+            SPLogVerbose(@"Simperium entity diff found %lu changed members", (unsigned long)newData.count);
+        } else  {
+            SPLogVerbose(@"Simperium local ADD detected, creating diff...");
+            newData = [bucket.differ diffForAddition:object];
+        }
+        
+        if (newData.count == 0) {
+            SPLogVerbose(@"Simperium warning: no difference in call to sendChanges (%@): %@", bucket.name, object.simperiumKey);
+        } else {
+            NSDictionary *change = [self createChangeForKey:object.simperiumKey operation:CH_MODIFY version:object.ghost.version data:newData];
+            [self.changesPending setObject:change forKey:object.simperiumKey];
+            [changes addObject:change];
+        }
     }
     
+    // Objects Not Found: they were likely previously deleted, in which case the change being processed here is no longer relevant
+    for (NSString *keyNotFound in keysNotFound) {
+        SPLogWarn(@"Simperium warning: couldn't processLocalObjectWithKey %@ because the object no longer exists", keyNotFound);
+        [self.changesPending removeObjectForKey:keyNotFound];
+        [self.keysForObjectsWithMoreChanges removeObject:keyNotFound];
+    }
+    
+    // Persist!
+    if (keysNotFound.count) {
+        [self.keysForObjectsWithMoreChanges save];
+    }
+    
+    [self.changesPending save];
 	[storage finishSafeSection];
-	
-	// Persist the change
-	if (change) {
-		[self.changesPending setObject:change forKey:key];
-		[self.changesPending save];
-	}
-	
-	// And return!
-    return change;
+    
+    return changes;
 }
 
-- (NSDictionary *)processLocalBucketDeletion:(SPBucket *)bucket {
-	return [self createChangeForKey:bucket.name operation:CH_EMPTY version:nil data:nil];
+- (NSArray *)processLocalBucketsDeletion:(NSSet *)buckets {
+    
+    NSMutableArray *changes = [NSMutableArray array];
+    for (SPBucket *bucket in buckets) {
+        NSAssert([bucket isKindOfClass:[SPBucket class]], nil);
+        
+        NSDictionary *change = [self createChangeForKey:bucket.name operation:CH_EMPTY version:nil data:nil];
+        [changes addObject:change];
+    }
+    
+	return changes;
 }
 
 - (void)enumeratePendingChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
-	
-	NSArray *pendingKeys = self.changesPending.allKeys;
-    if (pendingKeys.count == 0) {
+
+	NSInteger pendingCount = self.changesPending.count;
+    if (pendingCount == 0) {
 		return;
 	}
 	
-	SPLogVerbose(@"Simperium found %lu objects with pending changes to send (%@)", (unsigned long)pendingKeys.count, bucket.name);
-	BOOL stop = NO;
-	
-	for (NSString *key in pendingKeys) {
+	SPLogVerbose(@"Simperium found %lu objects with pending changes to send (%@)", (unsigned long)pendingCount, bucket.name);
+
+	for (NSString *key in self.changesPending.allKeys) {
 		NSDictionary* change = [self.changesPending objectForKey:key];
 		if (change) {
-			block(change, &stop);
-		}
-		
-		if (stop) {
-			break;
+			block(change);
 		}
 	}
 }
 
 - (void)enumerateQueuedChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
-	
-	NSArray *pendingKeys = self.keysForObjectsWithMoreChanges.allObjects;
-    if (pendingKeys.count == 0) {
+    
+    NSInteger limit = MAX( SPChangeProcessorMaxPendingChanges - self.changesPending.count, 0);
+    NSUInteger queueCount = self.keysForObjectsWithMoreChanges.count;
+    
+    if (queueCount == 0 || limit <= 0) {
 		return;
 	}
-	
-	SPLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)pendingKeys.count, bucket.name);
-	
-	NSMutableSet *processedKeys	= [NSMutableSet setWithCapacity:pendingKeys.count];
-	BOOL stop = NO;
-	
-	for (NSString *key in pendingKeys) {
-		// If there are already changes pending, don't add any more
-		// Importantly, this prevents a potential mutation of keysForObjectsWithMoreChanges in processLocalObjectWithKey:later:
-		if ([self.changesPending containsObjectForKey:key]) {
-			continue;
-		}
-		
-		// Create changes for any objects that has more changes
-		NSDictionary *change = [self processLocalObjectWithKey:key bucket:bucket];
-		if (change) {
-			[self.changesPending setObject:change forKey:key];
-			block(change, &stop);
-		}
 
-		[processedKeys addObject:key];
-		
-		if (stop) {
-			break;
+	SPLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)queueCount, bucket.name);
+    
+    // Filter out keys with pending changes: prevents a potential mutation of keysForObjectsWithMoreChanges in processLocalObjectWithKey:later:
+	NSMutableSet *processedKeys	= [NSMutableSet setWithCapacity:limit];
+    
+    for (NSString *key in self.keysForObjectsWithMoreChanges) {
+
+        if (processedKeys.count >= limit) {
+            break;
 		}
+        
+        if (![self.changesPending containsObjectForKey:key]) {
+            [processedKeys addObject:key];
+        }
+	}
+    
+    NSArray *changes = [self processLocalObjectsWithKeys:processedKeys bucket:bucket];
+    
+	for (NSDictionary *change in changes) {
+        block(change);
 	}
 	
-	// Clear any keys that were processed into pending changes
 	[self.keysForObjectsWithMoreChanges minusSet:processedKeys];
     [self.keysForObjectsWithMoreChanges save];
-	
-	// Persist pending changes
-	[self.changesPending save];
 }
 
 - (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
 	
-	NSArray *retryKeys = self.keysForObjectsWithPendingRetry.allObjects;
-	if (retryKeys.count == 0) {
+    NSInteger retryCount = self.keysForObjectsWithPendingRetry.count;
+	if (retryCount == 0) {
 		return;
 	}
 	
-	SPLogVerbose(@"Simperium found %lu objects in the retry queue (%@)", (unsigned long)retryKeys.count, bucket.name);
+	SPLogVerbose(@"Simperium found %lu objects in the retry queue (%@)", (unsigned long)retryCount, bucket.name);
 	NSMutableSet *processedKeys = [NSMutableSet set];
-	BOOL stop = NO;
-	
-	for (NSString *key in retryKeys) {
+    
+	for (NSString *key in self.keysForObjectsWithPendingRetry) {
 		NSDictionary* change = [self.changesPending objectForKey:key];
 		if (change) {
-			block(change, &stop);
+			block(change);
 		}
 		
 		[processedKeys addObject:key];
-		
-		if (stop) {
-			break;
-		}
 	}
 	
 	[self.keysForObjectsWithPendingRetry minusSet:processedKeys];
