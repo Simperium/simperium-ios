@@ -54,7 +54,6 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 @property (nonatomic, weak,   readwrite) Simperium				*simperium;
 @property (nonatomic, strong, readwrite) NSMutableDictionary	*channels;
 @property (nonatomic, strong, readwrite) NSTimer				*heartbeatTimer;
-@property (nonatomic, strong, readwrite) NSTimer				*timeoutTimer;
 @property (nonatomic, assign, readwrite) BOOL					open;
 @end
 
@@ -139,8 +138,6 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 }
 
 - (void)authenticateChannel:(SPWebSocketChannel *)channel {
-    //    NSString *message = @"1:command:parameters";
-
     NSDictionary *jsonData = @{
 		@"api"		: @(SPAPIVersion.floatValue),
 		@"clientid"	: self.simperium.clientID,
@@ -243,7 +240,6 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 	}
 	
 	// Send it (will also schedule another one)
-	// NSLog(@">> Simperium sending heartbeat");
 	[self send:@"h:1"];
 }
 
@@ -363,8 +359,8 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 
 	[self stopChannels];
 	self.webSocket.delegate = nil;
-    self.webSocket = nil;
-    self.open = NO;
+    self.webSocket          = nil;
+    self.open               = NO;
 }
 
 
