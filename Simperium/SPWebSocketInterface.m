@@ -73,15 +73,15 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 - (id)initWithSimperium:(Simperium *)s {
 	if ((self = [super init])) {
-        self.simperium = s;
-        self.channels = [NSMutableDictionary dictionaryWithCapacity:20];
+        self.simperium  = s;
+        self.channels   = [NSMutableDictionary dictionaryWithCapacity:20];
 	}
 	
 	return self;
 }
 
 - (SPWebSocketChannel *)channelForName:(NSString *)str {
-    return [self.channels objectForKey:str];
+    return self.channels[str];
 }
 
 - (SPWebSocketChannel *)channelForNumber:(NSNumber *)num {
@@ -94,14 +94,13 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 }
 
 - (SPWebSocketChannel *)loadChannelForBucket:(SPBucket *)bucket {
-    int channelNumber = (int)[self.channels count];
     SPWebSocketChannel *channel = [SPWebSocketChannel channelWithSimperium:self.simperium];
-    channel.number = channelNumber;
-    channel.name = bucket.name;
-	channel.remoteName = bucket.remoteName;
+    channel.number              = (int)[self.channels count];
+    channel.name                = bucket.name;
+	channel.remoteName          = bucket.remoteName;
     [self.channels setObject:channel forKey:bucket.name];
     
-    return [self.channels objectForKey:bucket.name];
+    return channel;
 }
 
 - (void)loadChannelsForBuckets:(NSDictionary *)bucketList {
@@ -139,8 +138,8 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 }
 
 - (void)sendLogMessage:(NSString*)logMessage {
-	NSDictionary *payload = @{ @"log" : logMessage };
-	NSString *message = [NSString stringWithFormat:@"%@:%@", COM_LOG, [payload sp_JSONString]];
+	NSDictionary *payload   = @{ @"log" : logMessage };
+	NSString *message       = [NSString stringWithFormat:@"%@:%@", COM_LOG, [payload sp_JSONString]];
 	[self send:message];
 }
 
@@ -166,11 +165,11 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(openWebSocket) object:nil];
 	
 	// Open the socket!
-    NSString *urlString = [NSString stringWithFormat:@"%@/%@/websocket", SPWebsocketURL, self.simperium.appID];
-    SPWebSocket *newWebSocket = [[SPWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
-    self.webSocket = newWebSocket;
-    self.webSocket.delegate = self;
-    self.open = NO;
+    NSString *urlString         = [NSString stringWithFormat:@"%@/%@/websocket", SPWebsocketURL, self.simperium.appID];
+    SPWebSocket *newWebSocket   = [[SPWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:urlString]]];
+    self.webSocket              = newWebSocket;
+    self.webSocket.delegate     = self;
+    self.open                   = NO;
 	
     SPLogVerbose(@"Simperium opening WebSocket connection...");
     [self.webSocket open];
@@ -196,8 +195,8 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 - (void)stop:(SPBucket *)bucket {
     SPWebSocketChannel *channel = [self channelForName:bucket.name];
-    channel.started = NO;
-    channel.webSocketManager = nil;
+    channel.started             = NO;
+    channel.webSocketManager    = nil;
     
     // Can't remove the channel because it's needed for offline changes; this is weird and should be fixed
     //[channels removeObjectForKey:bucket.name];
@@ -205,10 +204,10 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     SPLogVerbose(@"Simperium stopping network manager (%@)", bucket.name);
     
     // Mark it closed so it doesn't reopen
-    self.open = NO;
+    self.open               = NO;
     [self.webSocket close];
 	self.webSocket.delegate = nil;
-    self.webSocket = nil;
+    self.webSocket          = nil;
     
     // TODO: Consider ensuring threads are done their work and sending a notification
 }
@@ -280,8 +279,8 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     
 	[self stopChannels];
 	self.webSocket.delegate = nil;
-    self.webSocket = nil;
-    self.open = NO;
+    self.webSocket          = nil;
+    self.open               = NO;
 	
 	// Network enabled = YES: There was a networking glitch, yet, reachability flags are OK. We should retry
     if (self.simperium.networkEnabled) {
@@ -336,7 +335,6 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     } else if ([command isEqualToString:COM_INDEX]) {
         [channel handleIndexResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_CHANGE_VERSION]) {
-		SPLogVerbose(@"Simperium change version is out of date (%@), re-indexing", bucket.name);
 		[channel requestLatestVersionsForBucket:bucket];
 	} else if ([command isEqualToString:COM_CHANGE]) {
 		NSArray *changes = [data sp_objectFromJSONString];
