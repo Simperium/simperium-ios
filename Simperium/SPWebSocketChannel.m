@@ -51,6 +51,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 @property (nonatomic, assign) NSInteger				objectVersionsPending;
 @property (nonatomic, assign) BOOL					indexing;
 @property (nonatomic, assign) BOOL					retrievingObjectHistory;
+@property (nonatomic, assign) BOOL					shouldSendPendings;
 @end
 
 
@@ -94,19 +95,17 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 }
 
 - (void)requestLatestVersionsForBucket:(SPBucket *)bucket {
+    
+	SPLogVerbose(@"Simperium change version is out of date (%@), re-indexing", bucket.name);
+    
     // Multiple errors could try to trigger multiple index refreshes
     if (self.indexing) {
         return;
 	}
 	
 	self.indexing = YES;
-    
-    // Send any pending changes first
-    // This could potentially lead to some duplicate changes being sent if there are some that are awaiting
-    // acknowledgment, but the server will safely ignore them
-    [self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock: ^{
-        [self requestLatestVersionsForBucket:bucket mark:nil];
-    }];
+
+    [self requestLatestVersionsForBucket:bucket mark:nil];
 }
 
 
@@ -198,7 +197,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	self.indexing					= NO;
 	self.retrievingObjectHistory	= NO;
 	self.simperium.user.email		= responseString;
-	
+    
 	if (bucket.lastChangeSignature == nil) {
 		[self requestLatestVersionsForBucket:bucket];
 	} else {
@@ -207,13 +206,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 }
 
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
-
-	// Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
-	if (changes.count == 0) {
-		[bucket bucketDidSync];
-		return;
-	}
-		
+    
 	SPLogVerbose(@"Simperium handling changes %@", changes);
 	
 	// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
@@ -236,11 +229,20 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
 		dispatch_async(dispatch_get_main_queue(), ^{
 			
-			// Note #1: After remote changes have been processed, check to see if any local changes were attempted (and
-			//			queued) in the meantime, and send them.
+			// Note #1:
+            // After remote changes have been processed, check to see if any local changes were attempted (and queued)
+            // in the meantime, and send them.
 			
-			// Note #2: If we need to repost, we'll need to re-send everything. Not just the queued changes.
-			[self sendChangesForBucket:bucket onlyQueuedChanges:!repostNeeded completionBlock:nil];
+			// Note #2:
+            // If we need to repost, we'll need to re-send everything. Not just the queued changes.
+            
+            // Note #3:
+            // Whenever the flag 'shouldSendPendings' is set, it means that the lib was just started, we've successfully
+            // retrieved either the latest change (or reindexed), and we should upload everything that was pending
+            
+            BOOL onlyQueuedChanges = !repostNeeded || !_shouldSendPendings;
+			[self sendChangesForBucket:bucket onlyQueuedChanges:onlyQueuedChanges];
+            self.shouldSendPendings = NO;
 		});
 	});
 }
@@ -373,31 +375,19 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
-    __block int numChangesPending;
-    __block int numKeysForObjectsWithMoreChanges;
-    dispatch_async(bucket.processorQueue, ^{
-		numChangesPending = [bucket.changeProcessor numChangesPending];
-		numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
-		
-		dispatch_async(dispatch_get_main_queue(), ^{
-			if (!self.started) {
-				return;
-			}
-			
-			// Start getting changes from the last cv
-			NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", self.number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
-			SPLogVerbose(@"Simperium client %@ sending cv %@", self.simperium.clientID, getMessage);
-			[self.webSocketManager send:getMessage];
-			
-			if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
-				// There are also offline changes; send them right away
-				// This needs to happen after the above cv is sent, otherwise acks will arrive prematurely if there
-				// have been remote changes that need to be processed first
-				SPLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
-				[self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:nil];
-			}
-		});
-    });
+    NSAssert([NSThread isMainThread], @"Threading issue!");
+    
+    if (!self.started) {
+        return;
+    }
+
+    // Start getting changes from the last cv
+    NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", self.number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
+    SPLogVerbose(@"Simperium client %@ sending cv %@", self.simperium.clientID, getMessage);
+    [self.webSocketManager send:getMessage];
+    
+    // After we got the last cv, let's upload any pendings we might have
+    self.shouldSendPendings = YES;
 }
 
 
@@ -405,7 +395,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 #pragma mark Private Methods: Sending Changes
 #pragma mark ====================================================================================
 
-- (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(void(^)())completionBlock {
+- (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges {
 	
 	SPChangeProcessor *processor		= bucket.changeProcessor;
 	SPChangeEnumerationBlockType block	= ^(NSDictionary *change, BOOL *stop) {
@@ -418,12 +408,17 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 		// AutoreleasePool:
 		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
 		@autoreleasepool {
-			
+
 			// Only queued: re-send failed changes
 			if (onlyQueuedChanges) {
 				[processor enumerateRetryChangesForBucket:bucket block:block];
 			// Pending changes include those flagged for retry as well
 			} else {
+                NSInteger numChangesPending = [bucket.changeProcessor numChangesPending];
+                NSInteger numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
+                
+                SPLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
+                
 				[processor enumeratePendingChangesForBucket:bucket block:block];
 			}
 			
@@ -432,12 +427,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 				[self sendChange:change];
 				*stop = [processor hasReachedMaxPendings];
 			}];
-			
-			if (completionBlock) {
-				dispatch_async(dispatch_get_main_queue(), ^{
-					completionBlock();
-				});
-			}
 		}
     });
 }
