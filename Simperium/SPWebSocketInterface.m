@@ -44,6 +44,13 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 	SPRemoteLoggingVerbose	= 2
 };
 
+typedef NS_ENUM(NSInteger, SPMessageIndex) {
+    SPMessageIndexChannel   = 0,
+    SPMessageIndexCommand   = 1,
+    SPMessageIndexData      = 2,
+    SPMessageIndexLast      = 3
+};
+
 
 #pragma mark ====================================================================================
 #pragma mark Private
@@ -244,9 +251,21 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 }
 
 
+#pragma mark - Remote Logging Helpers
+
+- (void)handleRemoteLogLevel:(SPRemoteLogging)logLevel {
+    
+    SPLogVerbose(@"Simperium (%@) Received Remote LogLevel %d", self.simperium.label, logLevel);
+    
+    self.simperium.remoteLoggingEnabled	 = (logLevel != SPRemoteLoggingOff);
+    self.simperium.verboseLoggingEnabled = (logLevel == SPRemoteLoggingVerbose);
+}
+
+
 #pragma mark - SRWebSocketDelegate Methods
 
 - (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
+    
 	// Reconnection failsafe
 	if ( theWebSocket != (SRWebSocket*)self.webSocket) {
 		return;
@@ -258,6 +277,7 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
+    
 	[self stopChannels];
 	self.webSocket.delegate = nil;
     self.webSocket = nil;
@@ -275,73 +295,58 @@ typedef NS_ENUM(NSInteger, SPRemoteLogging) {
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
 			
-	// Parse!
-    NSRange range = [message rangeOfString:@":"];
+    NSArray *components = [message sp_componentsSeparatedByString:@":" limit:SPMessageIndexLast];
     
-    if (range.location == NSNotFound) {
+    // Shortest messages have the form: [CHANNEL:COMMAND]
+    if ( components.count < (SPMessageIndexCommand + 1) ) {
         SPLogError(@"Simperium websocket received invalid message: %@", message);
         return;
     }
     
-	// Handle Messages:
-	//		- [CHANNEL:COMMAND]
-    NSString *channelStr = [message substringToIndex:range.location];
-    NSString *commandStr = [message substringFromIndex:range.location+range.length];
-	
+	// Parse!
+    NSString *channelStr    = components[SPMessageIndexChannel];
+    NSString *command       = components[SPMessageIndexCommand];
+	NSString *data          = (components.count > SPMessageIndexData) ? components[SPMessageIndexData] : nil;
+    
     // Message: Heartbeat
     if ([channelStr isEqualToString:COM_HEARTBEAT]) {
-        //SPLogVerbose(@"Simperium heartbeat acknowledged");
         return;
     }
     
 	// Message: LogLevel
 	if ([channelStr isEqualToString:COM_LOG]) {
-		SPLogVerbose(@"Simperium (%@) Received Remote LogLevel %@", self.simperium.label, commandStr);
-		NSInteger logLevel = commandStr.intValue;
-		self.simperium.remoteLoggingEnabled	 = (logLevel != SPRemoteLoggingOff);
-		self.simperium.verboseLoggingEnabled = (logLevel == SPRemoteLoggingVerbose);
+        [self handleRemoteLogLevel:command.intValue];
 		return;
 	}
 			
     SPLogVerbose(@"Simperium (%@) received \"%@\"", self.simperium.label, message);
     
     // Load the WebsocketChannel + Bucket
-    NSNumber *channelNumber		= @(channelStr.intValue);
-    SPWebSocketChannel *channel = [self channelForNumber:channelNumber];
+    SPWebSocketChannel *channel = [self channelForNumber:@(channelStr.intValue)];
     SPBucket *bucket			= [self.simperium bucketForName:channel.name];
-    
-	// Message: Remote Index Request
-	if ([commandStr isEqualToString:COM_INDEX_STATE]) {
-		[channel handleIndexStatusRequest:bucket];
-		return;
-	}
-	
-	// Handle Messages:
-	//		- [CHANNEL:COMMAND:DATA]
-    range = [commandStr rangeOfString:@":"];
-    if (range.location == NSNotFound) {
+    	
+    // Data: Is it empty?
+    if (!data) {
         SPLogWarn(@"Simperium received unrecognized websocket message: %@", message);
     }
-	
-    NSString *command	= [commandStr substringToIndex:range.location];
-    NSString *data		= [commandStr substringFromIndex:range.location+range.length];
     
-    if ([command isEqualToString:COM_AUTH]) {
+	// Messages: [CHANNEL:COMMAND:DATA]
+	if ([command isEqualToString:COM_AUTH]) {
 		[channel handleAuthResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_INDEX]) {
         [channel handleIndexResponse:data bucket:bucket];
     } else if ([command isEqualToString:COM_CHANGE_VERSION]) {
-		// Handle cv:? message: the requested change version didn't exist, so re-index
 		SPLogVerbose(@"Simperium change version is out of date (%@), re-indexing", bucket.name);
 		[channel requestLatestVersionsForBucket:bucket];
 	} else if ([command isEqualToString:COM_CHANGE]) {
-		// Incoming changes, handle them
 		NSArray *changes = [data sp_objectFromJSONString];
-		[channel handleRemoteChanges: changes bucket:bucket];
+		[channel handleRemoteChanges:changes bucket:bucket];
     } else if ([command isEqualToString:COM_ENTITY]) {
         [channel handleVersionResponse:data bucket:bucket];
 	} else if ([command isEqualToString:COM_OPTIONS]) {
 		[channel handleOptions:data bucket:bucket];
+    } else if ([command isEqualToString:COM_INDEX_STATE]) {
+		[channel handleIndexStatusRequest:bucket];
     } else if ([command isEqualToString:COM_ERROR]) {
         SPLogVerbose(@"Simperium returned a command error (?) for bucket %@", bucket.name);
     }
