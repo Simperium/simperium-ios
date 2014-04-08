@@ -106,4 +106,23 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
                                                                                   CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding)));
 }  
 
+- (NSArray *)sp_componentsSeparatedByString:(NSString *)separator limit:(NSInteger)limit
+{
+    NSMutableArray *components  = [NSMutableArray array];
+    NSString *pending           = self;
+    NSRange range               = [pending rangeOfString:separator];
+
+    while ( (range.location != NSNotFound) && (components.count < limit - 1) ) {
+        NSString *left  = [pending substringToIndex:range.location];
+        [components addObject:left];
+        
+        pending = [pending substringFromIndex:range.location+range.length];
+        range   = [pending rangeOfString:separator];
+    }
+    
+    [components addObject:pending];
+    
+    return components;
+}
+
 @end
