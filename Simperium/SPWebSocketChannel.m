@@ -240,7 +240,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
             // Whenever the flag 'shouldSendPendings' is set, it means that the lib was just started, we've successfully
             // retrieved either the latest change (or reindexed), and we should upload everything that was pending
             
-            BOOL onlyQueuedChanges = !repostNeeded || !_shouldSendPendings;
+            BOOL onlyQueuedChanges = !repostNeeded && !_shouldSendPendings;
 			[self sendChangesForBucket:bucket onlyQueuedChanges:onlyQueuedChanges];
             self.shouldSendPendings = NO;
 		});
