@@ -25,7 +25,7 @@
 @synthesize lastChangeSignature = _lastChangeSignature;
 
 - (id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
-relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label remoteName:(NSString *)remoteName
+relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label remoteName:(NSString *)remoteName clientID:(NSString *)clientID
 {
     if ((self = [super init])) {
         self.name = aSchema.bucketName;
@@ -40,7 +40,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
         // Label is used to support multiple simperium instances (e.g. unit testing)
         self.instanceLabel = [NSString stringWithFormat:@"%@%@", self.name, label];
 
-        SPChangeProcessor *cp = [[SPChangeProcessor alloc] initWithLabel:self.instanceLabel];
+        SPChangeProcessor *cp = [[SPChangeProcessor alloc] initWithLabel:self.instanceLabel clientID:clientID];
         self.changeProcessor = cp;
 
         SPIndexProcessor *ip = [[SPIndexProcessor alloc] init];

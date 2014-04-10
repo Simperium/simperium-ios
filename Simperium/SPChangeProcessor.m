@@ -59,6 +59,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 @interface SPChangeProcessor()
 @property (nonatomic, strong, readwrite) NSString						*label;
+@property (nonatomic, strong, readwrite) NSString                       *clientID;
 @property (nonatomic, strong, readwrite) SPPersistentMutableDictionary	*changesPending;
 @property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsWithMoreChanges;
 @property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsWithPendingRetry;
@@ -71,9 +72,14 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 @implementation SPChangeProcessor
 
-- (id)initWithLabel:(NSString *)label {
+- (id)initWithLabel:(NSString *)label clientID:(NSString *)clientID {
+    
+    NSAssert(clientID, @"ChangeProcessor should be initialized with a valid clientID");
+    
     if (self = [super init]) {
         self.label			= label;
+        self.clientID       = clientID;
+        
 		self.changesPending = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
 		
 		NSString *moreKey = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", label];
@@ -344,9 +350,10 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     return YES;
 }
 
-- (BOOL)processRemoteChange:(NSDictionary *)change bucket:(SPBucket *)bucket clientID:(NSString *)clientID {
+- (BOOL)processRemoteChange:(NSDictionary *)change bucket:(SPBucket *)bucket {
 	
-    NSAssert( [NSThread isMainThread] == NO, @"This should not get called on the main thread");
+    NSAssert( [NSThread isMainThread] == NO, @"This should not get called on the main thread" );
+    NSAssert( self.clientID, @"Missing clientID" );
     
     // Errors should be handled by ’processRemoteError:' method
     if (!change[CH_ERROR]) {
@@ -364,10 +371,10 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     NSString *changeClientID	= change[CH_CLIENT_ID];
     id<SPDiffable> object		= [threadSafeStorage objectForKey:key bucketName:bucket.name];
     
-    SPLogVerbose(@"Simperium client %@ received change (%@) %@: %@", clientID, bucket.name, changeClientID, change);
+    SPLogVerbose(@"Simperium client %@ received change (%@) %@: %@", self.clientID, bucket.name, changeClientID, change);
 	
 	// Process
-    BOOL clientMatches			= [changeClientID compare:clientID] == NSOrderedSame;
+    BOOL clientMatches			= [changeClientID compare:self.clientID] == NSOrderedSame;
     BOOL remove					= operation && [operation compare: CH_REMOVE] == NSOrderedSame;
     BOOL acknowledged			= [self awaitingAcknowledgementForKey:key] && clientMatches;
     
@@ -428,7 +435,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorWillChangeObjectsNotification object:bucket userInfo:userInfo];
 }
 
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID {
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
 
     NSAssert([NSThread isMainThread] == NO, @"This should get called on the processor's queue!");
     
@@ -441,7 +448,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             }
             
             // Process the change: this is necessary even if it's an ack, so the ghost data gets set accordingly
-            if (![self processRemoteChange:change bucket:bucket clientID:clientID]) {
+            if (![self processRemoteChange:change bucket:bucket]) {
                 continue;
             }
             

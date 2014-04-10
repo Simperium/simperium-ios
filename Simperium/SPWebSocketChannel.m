@@ -240,7 +240,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 			return;
 		}
 
-        [processor processRemoteChanges:changes bucket:bucket clientID:self.simperium.clientID];
+        [processor processRemoteChanges:changes bucket:bucket];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [self sendChangesForBucket:bucket onlyQueuedChanges:YES];

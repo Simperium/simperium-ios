@@ -171,7 +171,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 			// New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
 			NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
 			bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkInterface:self.network
-								 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName];
+								 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName clientID:self.clientID];
 
 			[self.buckets setObject:bucket forKey:name];
             [self.network start:bucket];
@@ -261,7 +261,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         
 		NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
 		bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
-							 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName];
+							 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName clientID:self.clientID];
         
         [bucketList setObject:bucket forKey:schema.bucketName];
     }

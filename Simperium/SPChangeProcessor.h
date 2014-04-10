@@ -36,17 +36,18 @@ extern NSString * const CH_LOCAL_ID;
 @interface SPChangeProcessor : NSObject
 
 @property (nonatomic, strong, readonly) NSString	*label;
+@property (nonatomic, strong, readonly) NSString	*clientID;
 @property (nonatomic, assign, readonly) int			numChangesPending;
 @property (nonatomic, assign, readonly) int			numKeysForObjectsWithMoreChanges;
 @property (nonatomic, assign, readonly) int			numKeysForObjectsWithPendingRetry;
 @property (nonatomic, assign, readonly) BOOL        reachedMaxPendings;
 
-- (id)initWithLabel:(NSString *)label;
+- (id)initWithLabel:(NSString *)label clientID:(NSString *)clientID;
 
 - (void)reset;
 
 - (void)notifyRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
 
 - (void)markObjectWithPendingChanges:(NSString *)key bucket:(SPBucket *)bucket;
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket;
