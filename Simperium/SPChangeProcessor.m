@@ -721,7 +721,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     return (int)self.keysForObjectsWithPendingRetry.count;
 }
 
-- (BOOL)hasReachedMaxPendings {
+- (BOOL)reachedMaxPendings {
 	return (self.changesPending.count >= SPChangeProcessorMaxPendingChanges);
 }
 
