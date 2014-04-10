@@ -44,12 +44,20 @@ NSString * const CH_DATA            = @"d";
 NSString * const CH_EMPTY			= @"EMPTY";
 
 typedef NS_ENUM(NSUInteger, CH_ERRORS) {
-	CH_ERRORS_DUPLICATE             = 409,
+    CH_ERRORS_INVALID_SCHEMA        = 400,
+    CH_ERRORS_INVALID_PERMISSION    = 401,
+    CH_ERRORS_NOT_FOUND             = 404,
 	CH_ERRORS_BAD_VERSION           = 405,
+	CH_ERRORS_DUPLICATE             = 409,
+    CH_ERRORS_EMPTY_CHANGE          = 412,
+    CH_ERRORS_DOCUMENT_TOO_lARGE    = 413,
 	CH_ERRORS_EXPECTATION_FAILED	= 417,		// (e.g. foreign key doesn't exist just yet)
     CH_ERRORS_INVALID_DIFF			= 440,
 	CH_ERRORS_THRESHOLD				= 503
 };
+
+// Internal Server Errors: [500-599]
+static NSRange const CH_SERVER_ERROR_RANGE = {500, 99};
 
 static int const SPChangeProcessorMaxPendingChanges	= 200;
 
@@ -119,55 +127,73 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     NSString *simperiumKey  = [self keyWithoutNamespaces:change bucket:bucket];
     long errorCode          = [change[CH_ERROR] integerValue];
     
-    if (errorCode == CH_ERRORS_DUPLICATE) {
+    switch (errorCode) {
+        case CH_ERRORS_DUPLICATE:
+            {
+                SPLogError(@"Simperium received Duplicate Error (Code %ld) for change %@. Requesting resync!", errorCode, change);
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsResyncNotification object:bucket];
+                });
+            }
+            break;
+            
+        case CH_ERRORS_BAD_VERSION:
+        case CH_ERRORS_EXPECTATION_FAILED:
+        case CH_ERRORS_INVALID_DIFF:
+            {
+                
+                // Resubmit with all data
+                id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
+                [threadSafeStorage beginSafeSection];
+                
+                id<SPDiffable>object = [threadSafeStorage objectForKey:simperiumKey bucketName :bucket.name];
+                
+                if (!object) {
+                    [self.changesPending removeObjectForKey:simperiumKey];
+                    [threadSafeStorage finishSafeSection];
+                    return YES;
+                }
+                
+                NSMutableDictionary *newChange = [[self.changesPending objectForKey:simperiumKey] mutableCopy];
+                
+                [object simperiumKey]; // fire fault
+                [newChange setObject:[object dictionary] forKey:CH_DATA];
+                [self.changesPending setObject:newChange forKey:simperiumKey];
+                
+                [threadSafeStorage finishSafeSection];
+                
+                SPLogError(@"Simperium received InvalidDiff (Code %ld) for change %@. Resending all pendings!", errorCode, change);
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsResendPendingsNotification object:bucket];
+                });
+            }
+            break;
+            
+        case CH_ERRORS_THRESHOLD:
+        case CH_ERRORS_INVALID_SCHEMA:
+        case CH_ERRORS_INVALID_PERMISSION:
+        case CH_ERRORS_NOT_FOUND:
+        case CH_ERRORS_EMPTY_CHANGE:
+        case CH_ERRORS_DOCUMENT_TOO_lARGE:
+        default:
+            {
+                // Retry Internal Server Errors
+                if (errorCode >= CH_SERVER_ERROR_RANGE.location && errorCode < (CH_SERVER_ERROR_RANGE.location + CH_SERVER_ERROR_RANGE.length))
+                {
+                    SPLogError(@"Simperium received Internal Server Error (Code %ld) for change %@. Re-enqueuing change!", errorCode, change);
+                    [self.keysForObjectsWithPendingRetry addObject:simperiumKey];
+                    [self.keysForObjectsWithPendingRetry save];
+                    
+                // Catch all, don't resubmit
+                } else {
+                    SPLogError(@"Simperium received unhandled error %ld for change %@", errorCode, change);
+                    [self.changesPending removeObjectForKey:simperiumKey];
+                }
 
-        SPLogError(@"Simperium received Duplicate Error (Code %ld) for change %@. Requesting resync!", errorCode, change);
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsResyncNotification object:bucket];
-        });
-        
-    } else if (errorCode == CH_ERRORS_THRESHOLD) {
-
-        SPLogError(@"Simperium received Threshold Error (Code %ld) for change %@. Re-enqueuing change!", errorCode, change);
-        
-        // Re-enqueue failed changes
-        [self.keysForObjectsWithPendingRetry addObject:simperiumKey];
-        [self.keysForObjectsWithPendingRetry save];
-        
-    } else if (errorCode == CH_ERRORS_EXPECTATION_FAILED || errorCode == CH_ERRORS_INVALID_DIFF || errorCode == CH_ERRORS_BAD_VERSION) {
-        
-        // Resubmit with all data
-        id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
-        [threadSafeStorage beginSafeSection];
-
-        id<SPDiffable>object = [threadSafeStorage objectForKey:simperiumKey bucketName :bucket.name];
-        
-        if (!object) {
-            [self.changesPending removeObjectForKey:simperiumKey];
-            [threadSafeStorage finishSafeSection];
-            return YES;
-        }
-        
-        NSMutableDictionary *newChange = [[self.changesPending objectForKey:simperiumKey] mutableCopy];
-
-        [object simperiumKey]; // fire fault
-        [newChange setObject:[object dictionary] forKey:CH_DATA];
-        [self.changesPending setObject:newChange forKey:simperiumKey];
-        
-        [threadSafeStorage finishSafeSection];
-        
-        SPLogError(@"Simperium received InvalidDiff (Code %ld) for change %@. Resending all pendings!", errorCode, change);
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsResendPendingsNotification object:bucket];
-        });
-        
-    } else {
-        // Catch all, don't resubmit
-        
-        SPLogError(@"Simperium received unhandled error %ld for change %@", errorCode, change);
-        [self.changesPending removeObjectForKey:simperiumKey];
+            }
+            break;
     }
     
     return YES;
