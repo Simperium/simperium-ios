@@ -102,6 +102,32 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 #pragma mark Remote changes
 #pragma mark ====================================================================================
 
+- (void)notifyWillProcessRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
+    
+    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
+    
+    NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:changes.count];
+    
+    // Ignore Acks please!
+    for (NSDictionary *change in changes) {
+        NSString *key = [self keyWithoutNamespaces:change bucket:bucket];
+        if (![self awaitingAcknowledgementForKey:key]) {
+            [changedKeys addObject:key];
+		}
+    }
+    
+    if (changedKeys.count == 0) {
+        return;
+    }
+    
+    NSDictionary *userInfo = @{
+                               @"bucketName"	: bucket.name,
+                               @"keys"			: changedKeys
+                               };
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorWillChangeObjectsNotification object:bucket userInfo:userInfo];
+}
+
 - (void)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket repostNeeded:(BOOL *)repostNeeded {
 
 	NSAssert(repostNeeded != nil, @"RepostNeeded is not optional");
@@ -383,54 +409,32 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 }
 
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID {
-    NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:[changes count]];
-    
-    // Construct a list of keys for a willChange notification (and ignore acks)
-    for (NSDictionary *change in changes) {
-        NSString *key = [self keyWithoutNamespaces:change bucket:bucket];
-        if (![self awaitingAcknowledgementForKey:key]) {
-            [changedKeys addObject:key];
-		}
-    }
 
-	dispatch_async(dispatch_get_main_queue(), ^{
-			
-		if (changedKeys.count > 0) {
-			NSDictionary *userInfo = @{
-										@"bucketName"	: bucket.name,
-										@"keys"			: changedKeys
-									 };
-			
-			[[NSNotificationCenter defaultCenter] postNotificationName:ProcessorWillChangeObjectsNotification object:bucket userInfo:userInfo];
-		}
-		
-        // The above notification needs to give the main thread a chance to react before we continue
-        dispatch_async(bucket.processorQueue, ^{
-			@autoreleasepool {				
-				for (NSDictionary *change in changes) {
-					// Process the change (this is necessary even if it's an ack, so the ghost data gets set accordingly)
-					if (![self processRemoteChange:change bucket:bucket clientID:clientID]) {
-						continue;
-					}
-					
-					// Remember the last version
-					// This persists...do it inside the loop in case something happens to abort the loop
-					NSString *changeVersion = change[CH_CHANGE_VERSION];
-					
-					dispatch_async(dispatch_get_main_queue(), ^{
-						[bucket setLastChangeSignature: changeVersion];
-					});        
-				}
-			}
-			
-			[self.changesPending save];
-			
-            // Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
-			if (self.changesPending.count == 0) {
-				[bucket bucketDidSync];
-			}
-        });
-    });
+    NSAssert([NSThread isMainThread] == NO, @"This should get called on the processor's queue!");
+    
+    @autoreleasepool {
+        for (NSDictionary *change in changes) {
+            // Process the change (this is necessary even if it's an ack, so the ghost data gets set accordingly)
+            if (![self processRemoteChange:change bucket:bucket clientID:clientID]) {
+                continue;
+            }
+            
+            // Remember the last version
+            // This persists...do it inside the loop in case something happens to abort the loop
+            NSString *changeVersion = change[CH_CHANGE_VERSION];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [bucket setLastChangeSignature: changeVersion];
+            });        
+        }
+    }
+    
+    [self.changesPending save];
+    
+    // Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
+    if (self.changesPending.count == 0) {
+        [bucket bucketDidSync];
+    }
 }
 
 

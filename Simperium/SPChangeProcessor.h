@@ -43,6 +43,7 @@ extern NSString * const CH_LOCAL_ID;
 
 - (void)reset;
 
+- (void)notifyWillProcessRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
 - (void)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket repostNeeded:(BOOL *)repostNeeded;
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
 

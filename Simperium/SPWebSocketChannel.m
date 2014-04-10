@@ -207,8 +207,13 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
     
+    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
+    
 	SPLogVerbose(@"Simperium handling changes %@", changes);
-	
+	   
+    // Before going on, let's notify the delegates on the main thread that we're about to apply remote changes
+    [bucket.changeProcessor notifyWillProcessRemoteChanges:changes bucket:bucket];
+    
 	// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
 	// sync will still work for any unsaved changes.
 	[bucket.storage stashUnsavedObjects];
