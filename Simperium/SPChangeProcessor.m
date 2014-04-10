@@ -138,7 +138,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             }
             break;
             
-        case CH_ERRORS_BAD_VERSION:
+//        case CH_ERRORS_BAD_VERSION:
         case CH_ERRORS_EXPECTATION_FAILED:
         case CH_ERRORS_INVALID_DIFF:
             {
