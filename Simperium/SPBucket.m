@@ -49,27 +49,19 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
         NSString *queueLabel = [@"com.simperium.processor." stringByAppendingString:self.name];
         self.processorQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
 
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectDidChange:)
-                                                     name:ProcessorDidChangeObjectNotification object:self];
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsAdded:)
-                                                     name:ProcessorDidAddObjectsNotification object:self];
+        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
         
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectKeysDeleted:)
-                                                     name:ProcessorDidDeleteObjectKeysNotification object:self];        
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsAcknowledged:)
-                                                     name:ProcessorDidAcknowledgeObjectsNotification object:self];        
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsWillChange:)
-                                                     name:ProcessorWillChangeObjectsNotification object:self];        
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acknowledgedObjectDeletion:)
-                                                     name:ProcessorDidAcknowledgeDeleteNotification object:self];        
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(requestLatestVersions)
-                                                     name:ProcessorRequestsReindexing object:self];
+        [nc addObserver:self selector:@selector(objectDidChange:)               name:ProcessorDidChangeObjectNotification       object:self];
+        [nc addObserver:self selector:@selector(objectsAdded:)                  name:ProcessorDidAddObjectsNotification         object:self];
+        [nc addObserver:self selector:@selector(objectKeysDeleted:)             name:ProcessorDidDeleteObjectKeysNotification   object:self];
+        [nc addObserver:self selector:@selector(objectsAcknowledged:)           name:ProcessorDidAcknowledgeObjectsNotification object:self];
+        [nc addObserver:self selector:@selector(objectsWillChange:)             name:ProcessorWillChangeObjectsNotification     object:self];
+        [nc addObserver:self selector:@selector(acknowledgedObjectDeletion:)    name:ProcessorDidAcknowledgeDeleteNotification  object:self];
+        [nc addObserver:self selector:@selector(requestLatestVersions)          name:ProcessorRequestsReindexing                object:self];
+        [nc addObserver:self selector:@selector(requestResync)                  name:ProcessorRequestsResync                    object:self];
+        [nc addObserver:self selector:@selector(repostPendings)                 name:ProcessorRequestsRepost                    object:self];
     }
+    
     return self;
 }
 
@@ -249,6 +241,14 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
 
 - (void)requestLatestVersions {
     [self.network requestLatestVersionsForBucket:self];
+}
+
+- (void)requestResync {
+#warning TODO: WIRE ME
+}
+
+- (void)repostPendings {
+#warning TODO: WIRE ME
 }
 
 - (SPSchema *)schema {
