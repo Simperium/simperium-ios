@@ -383,7 +383,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     NSAssert( self.clientID, @"Missing clientID" );
     
     // Errors should be handled by ’processRemoteError:' method
-    if (!change[CH_ERROR]) {
+    if (change[CH_ERROR]) {
         return NO;
     }
 	
