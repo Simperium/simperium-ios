@@ -457,17 +457,6 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 #pragma mark Local changes
 #pragma mark ====================================================================================
 
-- (NSDictionary *)processLocalDeletionWithKey:(NSString *)key {
-	NSDictionary *change = [self createChangeForKey:key operation:CH_REMOVE version:nil data:nil];
-
-	if (change) {
-		[self.changesPending setObject:change forKey:key];
-		[self.changesPending save];
-	}
-	
-	return change;
-}
-
 - (void)markObjectWithPendingChanges:(NSString *)key bucket:(SPBucket *)bucket {
 	SPLogVerbose(@"Simperium marking object for sending more changes when ready (%@): %@", bucket.name, key);
 	[self.keysForObjectsWithMoreChanges addObject:key];
@@ -535,6 +524,17 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	
 	// And return!
     return change;
+}
+
+- (NSDictionary *)processLocalDeletionWithKey:(NSString *)key {
+	NSDictionary *change = [self createChangeForKey:key operation:CH_REMOVE version:nil data:nil];
+    
+	if (change) {
+		[self.changesPending setObject:change forKey:key];
+		[self.changesPending save];
+	}
+	
+	return change;
 }
 
 - (NSDictionary *)processLocalBucketDeletion:(SPBucket *)bucket {
