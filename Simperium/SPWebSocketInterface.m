@@ -252,12 +252,12 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 #pragma mark - Remote Logging Helpers
 
-- (void)handleRemoteLogLevel:(SPRemoteLogging)logLevel {
+- (void)handleRemoteLogLevel:(SPRemoteLogging)level {
     
-    SPLogVerbose(@"Simperium (%@) Received Remote LogLevel %d", self.simperium.label, logLevel);
+    SPLogVerbose(@"Simperium (%@) Received Remote LogLevel %d", self.simperium.label, level);
     
-    self.simperium.remoteLoggingEnabled	 = (logLevel != SPRemoteLoggingOff);
-    self.simperium.verboseLoggingEnabled = (logLevel == SPRemoteLoggingVerbose);
+    self.simperium.remoteLoggingEnabled	 = (level != SPRemoteLoggingOff);
+    self.simperium.verboseLoggingEnabled = (level == SPRemoteLoggingVerbose);
 }
 
 
