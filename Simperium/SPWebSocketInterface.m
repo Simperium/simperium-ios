@@ -118,7 +118,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 - (void)stopChannels {
     for (SPWebSocketChannel *channel in [self.channels allValues]) {
-        channel.started = NO;
+        channel.authenticated = NO;
     }
 }
 
@@ -181,7 +181,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
         channel = [self loadChannelForBucket:bucket];
     }
 	
-    if (channel.started) {
+    if (channel.authenticated) {
         return;
     }
 	
@@ -195,7 +195,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 - (void)stop:(SPBucket *)bucket {
     SPWebSocketChannel *channel = [self channelForName:bucket.name];
-    channel.started             = NO;
+    channel.authenticated       = NO;
     channel.webSocketManager    = nil;
     
     // Can't remove the channel because it's needed for offline changes; this is weird and should be fixed
