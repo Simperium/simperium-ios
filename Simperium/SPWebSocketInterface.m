@@ -144,6 +144,10 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 }
 
 - (void)authenticateChannel:(SPWebSocketChannel *)channel {
+    NSAssert(self.simperium.clientID,       @"Missing clientID");
+    NSAssert(self.simperium.appID,          @"Missing appID");
+    NSAssert(self.simperium.user.authToken, @"Missing authToken");
+    
     NSDictionary *jsonData = @{
 		@"api"		: @(SPAPIVersion.floatValue),
 		@"clientid"	: self.simperium.clientID,
