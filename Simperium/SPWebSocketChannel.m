@@ -257,15 +257,15 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	}
 	
     NSDictionary *responseDict = [responseString sp_objectFromJSONString];
-    NSArray *currentIndexArray = [responseDict objectForKey:@"index"];
-    id current = [responseDict objectForKey:@"current"];
+    NSArray *currentIndexArray = responseDict[@"index"];
+    id current = responseDict[@"current"];
 	
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
     if ([current isKindOfClass:[NSNumber class]]) {
         current = [NSString stringWithFormat:@"%ld", (long)[current integerValue]];
 	}
     self.pendingLastChangeSignature = [current length] > 0 ? [NSString stringWithFormat:@"%@", current] : nil;
-    self.nextMark = [responseDict objectForKey:@"mark"];
+    self.nextMark = responseDict[@"mark"];
     
     // Remember all the retrieved data in case there's more to get
     [self.indexArray addObjectsFromArray:currentIndexArray];
