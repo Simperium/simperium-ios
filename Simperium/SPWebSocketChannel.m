@@ -173,7 +173,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
 - (void)resyncChangesForBucket:(SPBucket *)bucket {
 #warning TODO: WIRE ME    
-#warning TODO: What happens if this is called during the init sequence
+#warning TODO: What happens if this is called during the init sequence (409 received while posting all pendings)
 }
 
 - (void)removeAllBucketObjects:(SPBucket *)bucket {
@@ -411,7 +411,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     }
     
 #warning TODO: Don't proceed if [ReSync'ing]
-#warning TODO: What happens with overlapped calls
+#warning TODO: What happens with reentrant calls
     
     // Note #1:
     //  After remote changes have been processed, check to see if any local changes were attempted (and queued)

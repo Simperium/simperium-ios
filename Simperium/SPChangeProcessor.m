@@ -45,6 +45,7 @@ NSString * const CH_EMPTY			= @"EMPTY";
 
 typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 	CH_ERRORS_DUPLICATE             = 409,
+	CH_ERRORS_BAD_VERSION           = 405,
 	CH_ERRORS_EXPECTATION_FAILED	= 417,		// (e.g. foreign key doesn't exist just yet)
     CH_ERRORS_INVALID_DIFF			= 440,
 	CH_ERRORS_THRESHOLD				= 503
@@ -134,7 +135,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         [self.keysForObjectsWithPendingRetry addObject:simperiumKey];
         [self.keysForObjectsWithPendingRetry save];
         
-    } else if (errorCode == CH_ERRORS_EXPECTATION_FAILED || errorCode == CH_ERRORS_INVALID_DIFF) {
+    } else if (errorCode == CH_ERRORS_EXPECTATION_FAILED || errorCode == CH_ERRORS_INVALID_DIFF || errorCode == CH_ERRORS_BAD_VERSION) {
         
         // Resubmit with all data
         id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
