@@ -162,6 +162,19 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     // Not yet implemented with WebSockets
 }
 
+
+#pragma mark ====================================================================================
+#pragma mark Bucket Helpers
+#pragma mark ====================================================================================
+
+- (void)sendAllPendingChangesForBucket:(SPBucket *)bucket {
+#warning TODO: WIRE ME
+}
+
+- (void)resyncChangesForBucket:(SPBucket *)bucket {
+#warning TODO: WIRE ME    
+}
+
 - (void)removeAllBucketObjects:(SPBucket *)bucket {
 	NSDictionary *change = [bucket.changeProcessor processLocalBucketDeletion:bucket];
 	NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [change sp_JSONString]];

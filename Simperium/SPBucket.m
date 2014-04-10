@@ -51,15 +51,15 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
 
         NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
         
-        [nc addObserver:self selector:@selector(objectDidChange:)               name:ProcessorDidChangeObjectNotification       object:self];
-        [nc addObserver:self selector:@selector(objectsAdded:)                  name:ProcessorDidAddObjectsNotification         object:self];
-        [nc addObserver:self selector:@selector(objectKeysDeleted:)             name:ProcessorDidDeleteObjectKeysNotification   object:self];
-        [nc addObserver:self selector:@selector(objectsAcknowledged:)           name:ProcessorDidAcknowledgeObjectsNotification object:self];
-        [nc addObserver:self selector:@selector(objectsWillChange:)             name:ProcessorWillChangeObjectsNotification     object:self];
-        [nc addObserver:self selector:@selector(acknowledgedObjectDeletion:)    name:ProcessorDidAcknowledgeDeleteNotification  object:self];
-        [nc addObserver:self selector:@selector(requestLatestVersions)          name:ProcessorRequestsReindexing                object:self];
-        [nc addObserver:self selector:@selector(requestResync)                  name:ProcessorRequestsResync                    object:self];
-        [nc addObserver:self selector:@selector(repostPendings)                 name:ProcessorRequestsRepost                    object:self];
+        [nc addObserver:self selector:@selector(objectDidChange:)            name:ProcessorDidChangeObjectNotification          object:self];
+        [nc addObserver:self selector:@selector(objectsAdded:)               name:ProcessorDidAddObjectsNotification            object:self];
+        [nc addObserver:self selector:@selector(objectKeysDeleted:)          name:ProcessorDidDeleteObjectKeysNotification      object:self];
+        [nc addObserver:self selector:@selector(objectsAcknowledged:)        name:ProcessorDidAcknowledgeObjectsNotification    object:self];
+        [nc addObserver:self selector:@selector(objectsWillChange:)          name:ProcessorWillChangeObjectsNotification        object:self];
+        [nc addObserver:self selector:@selector(acknowledgedObjectDeletion:) name:ProcessorDidAcknowledgeDeleteNotification     object:self];
+        [nc addObserver:self selector:@selector(requestLatestVersions)       name:ProcessorRequestsReindexingNotification       object:self];
+        [nc addObserver:self selector:@selector(requestResync)               name:ProcessorRequestsResyncNotification           object:self];
+        [nc addObserver:self selector:@selector(resendAllPendings)           name:ProcessorRequestsResendPendingsNotification   object:self];
     }
     
     return self;
@@ -244,11 +244,11 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
 }
 
 - (void)requestResync {
-#warning TODO: WIRE ME
+    [self.network requestResyncForBucket:self];
 }
 
-- (void)repostPendings {
-#warning TODO: WIRE ME
+- (void)resendAllPendings {
+    [self.network sendAllPendingChangesForBucket:self];
 }
 
 - (SPSchema *)schema {

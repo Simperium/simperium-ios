@@ -111,15 +111,19 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     
     NSString *simperiumKey  = [self keyWithoutNamespaces:change bucket:bucket];
     long errorCode          = [change[CH_ERROR] integerValue];
-
-    SPLogError(@"Simperium POST returned error %ld for change %@", errorCode, change);
     
     if (errorCode == CH_ERRORS_DUPLICATE) {
 
-#warning TODO: Request Resync
+        SPLogError(@"Simperium received Duplicate Error (Code %ld) for change %@. Requesting resync!", errorCode, change);
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsResyncNotification object:bucket];
+        });
         
     } else if (errorCode == CH_ERRORS_THRESHOLD) {
 
+        SPLogError(@"Simperium received Threshold Error (Code %ld) for change %@. Re-enqueuing change!", errorCode, change);
+        
         // Re-enqueue failed changes
         [self.keysForObjectsWithPendingRetry addObject:simperiumKey];
         [self.keysForObjectsWithPendingRetry save];
@@ -146,10 +150,16 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         
         [threadSafeStorage finishSafeSection];
         
-#warning TODO: Request Repost
+        SPLogError(@"Simperium received InvalidDiff (Code %ld) for change %@. Resending all pendings!", errorCode, change);
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsResendPendingsNotification object:bucket];
+        });
         
     } else {
         // Catch all, don't resubmit
+        
+        SPLogError(@"Simperium received unhandled error %ld for change %@", errorCode, change);
         [self.changesPending removeObjectForKey:simperiumKey];
     }
     
@@ -325,7 +335,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     } else {
         SPLogWarn(@"Simperium warning: couldn't apply change due to version mismatch (duplicate? start %@, old %@): change %@", startVersion, oldVersion, change);
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsReindexing object:bucket];
+            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsReindexingNotification object:bucket];
         });
     }
 	
@@ -336,6 +346,8 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 - (BOOL)processRemoteChange:(NSDictionary *)change bucket:(SPBucket *)bucket clientID:(NSString *)clientID {
 	
+    NSAssert( [NSThread isMainThread] == NO, @"This should not get called on the main thread");
+    
     // Errors should be handled by ’processRemoteError:' method
     if (!change[CH_ERROR]) {
         return NO;

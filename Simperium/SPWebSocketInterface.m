@@ -384,6 +384,16 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     [channel requestLatestVersionsForBucket:b];
 }
 
+- (void)requestResyncForBucket:(SPBucket *)b {
+    SPWebSocketChannel *channel = [self channelForName:b.name];
+    [channel resyncChangesForBucket:b];
+}
+
+- (void)sendAllPendingChangesForBucket:(SPBucket *)b {
+    SPWebSocketChannel *channel = [self channelForName:b.name];
+    [channel sendAllPendingChangesForBucket:b];
+}
+
 - (void)forceSyncBucket:(SPBucket *)bucket {
 	// Let's reuse the start mechanism. This will post the latest CV + publish pending changes
 	SPWebSocketChannel *channel = [self channelForName:bucket.name];
