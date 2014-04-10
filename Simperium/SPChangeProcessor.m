@@ -617,10 +617,6 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	[self.keysForObjectsWithPendingRetry save];
 }
 
-- (BOOL)hasReachedMaxPendings {
-	return (self.changesPending.count >= SPChangeProcessorMaxPendingChanges);
-}
-
 
 #pragma mark ====================================================================================
 #pragma mark Remote Logging
@@ -662,9 +658,13 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     return (int)self.keysForObjectsWithMoreChanges.count;
 }
 
+- (BOOL)hasReachedMaxPendings {
+	return (self.changesPending.count >= SPChangeProcessorMaxPendingChanges);
+}
+
 
 #pragma mark ====================================================================================
-#pragma mark Private Helpers
+#pragma mark Private Helpers: Changeset Generation + metadata
 #pragma mark ====================================================================================
 
 - (NSString *)keyWithoutNamespaces:(NSDictionary *)change bucket:(SPBucket *)bucket {

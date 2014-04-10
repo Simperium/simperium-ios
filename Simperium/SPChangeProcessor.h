@@ -38,6 +38,7 @@ extern NSString * const CH_LOCAL_ID;
 @property (nonatomic, strong, readonly) NSString	*label;
 @property (nonatomic, assign, readonly) int			numChangesPending;
 @property (nonatomic, assign, readonly) int			numKeysForObjectsWithMoreChanges;
+@property (nonatomic, assign, readonly) BOOL        reachedMaxPendings;
 
 - (id)initWithLabel:(NSString *)label;
 
@@ -56,7 +57,6 @@ extern NSString * const CH_LOCAL_ID;
 - (void)enumerateQueuedChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
 - (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
 
-- (BOOL)hasReachedMaxPendings;
 - (NSArray*)exportPendingChanges;
 
 @end

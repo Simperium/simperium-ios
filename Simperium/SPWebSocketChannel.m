@@ -148,7 +148,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 		@autoreleasepool {
 			SPChangeProcessor *processor = object.bucket.changeProcessor;
 			
-			if (_indexing || !_started || processor.hasReachedMaxPendings) {
+			if (_indexing || !_started || processor.reachedMaxPendings) {
 				[processor markObjectWithPendingChanges:key bucket:object.bucket];
 			} else {
 				NSDictionary *change = [processor processLocalObjectWithKey:key bucket:object.bucket];
@@ -430,7 +430,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 			// Process Queued Changes: let's consider the SPWebsocketMaxPendingChanges limit
 			[processor enumerateQueuedChangesForBucket:bucket block:^(NSDictionary *change, BOOL *stop) {
 				[self sendChange:change];
-				*stop = [processor hasReachedMaxPendings];
+				*stop = [processor reachedMaxPendings];
 			}];
 		}
     });
