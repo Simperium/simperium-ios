@@ -99,25 +99,9 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 
 #pragma mark ====================================================================================
-#pragma mark Remote changes
+#pragma mark Private Helpers: Remote changes
 #pragma mark ====================================================================================
 
-- (void)notifyWillProcessRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
-    
-    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
-    
-    NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:changes.count];
-    
-    // Ignore Acks please!
-    for (NSDictionary *change in changes) {
-        NSString *key = [self keyWithoutNamespaces:change bucket:bucket];
-        if (![self awaitingAcknowledgementForKey:key]) {
-            [changedKeys addObject:key];
-		}
-    }
-    
-    if (changedKeys.count == 0) {
-        return;
     }
     
     NSDictionary *userInfo = @{
@@ -406,6 +390,37 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	// invalid
 	SPLogError(@"Simperium error (%@), received an invalid change for (%@): %@", bucket.name, key, change);
     return NO;
+}
+
+
+#pragma mark ====================================================================================
+#pragma mark Remote Changes
+#pragma mark ====================================================================================
+
+- (void)notifyRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
+    
+    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
+    
+    NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:changes.count];
+    
+    // Ignore Acks please!
+    for (NSDictionary *change in changes) {
+        NSString *key = [self keyWithoutNamespaces:change bucket:bucket];
+        if (![self awaitingAcknowledgementForKey:key]) {
+            [changedKeys addObject:key];
+		}
+    }
+    
+    if (changedKeys.count == 0) {
+        return;
+    }
+    
+    NSDictionary *userInfo = @{
+        @"bucketName"	: bucket.name,
+        @"keys"			: changedKeys
+    };
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorWillChangeObjectsNotification object:bucket userInfo:userInfo];
 }
 
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID {

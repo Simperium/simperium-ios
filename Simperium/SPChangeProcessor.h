@@ -44,8 +44,7 @@ extern NSString * const CH_LOCAL_ID;
 
 - (void)reset;
 
-- (void)notifyWillProcessRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
-- (void)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket repostNeeded:(BOOL *)repostNeeded;
+- (void)notifyRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
 
 - (void)markObjectWithPendingChanges:(NSString *)key bucket:(SPBucket *)bucket;
@@ -57,6 +56,6 @@ extern NSString * const CH_LOCAL_ID;
 - (void)enumerateQueuedChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
 - (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
 
-- (NSArray*)exportPendingChanges;
+- (NSArray *)exportPendingChanges;
 
 @end

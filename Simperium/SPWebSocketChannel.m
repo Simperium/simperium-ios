@@ -212,7 +212,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	SPLogVerbose(@"Simperium handling changes %@", changes);
 	   
     // Before going on, let's notify the delegates on the main thread that we're about to apply remote changes
-    [bucket.changeProcessor notifyWillProcessRemoteChanges:changes bucket:bucket];
+    [bucket.changeProcessor notifyRemoteChanges:changes bucket:bucket];
     
 	// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
 	// sync will still work for any unsaved changes.
@@ -222,16 +222,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 		if (!self.started) {
 			return;
 		}
-		
-		BOOL repostNeeded = NO;
-		
-		// AutoreleasePool:
-		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
-		@autoreleasepool {
-			[bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket repostNeeded:&repostNeeded];
-			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.simperium.clientID];
-		}
 
+        [bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.simperium.clientID];
+        
+#warning TODO: Don't proceed if [ReSync'ing]
+#warning TODO: Wire Repost + Resync
 		dispatch_async(dispatch_get_main_queue(), ^{
 			
 			// Note #1:
@@ -245,7 +240,8 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
             // Whenever the flag 'shouldSendPendings' is set, it means that the lib was just started, we've successfully
             // retrieved either the latest change (or reindexed), and we should upload everything that was pending
             
-            BOOL onlyQueuedChanges = !repostNeeded && !_shouldSendPendings;
+//            BOOL onlyQueuedChanges = !repostNeeded && !_shouldSendPendings;
+            BOOL onlyQueuedChanges = !_shouldSendPendings;
 			[self sendChangesForBucket:bucket onlyQueuedChanges:onlyQueuedChanges];
             self.shouldSendPendings = NO;
 		});
