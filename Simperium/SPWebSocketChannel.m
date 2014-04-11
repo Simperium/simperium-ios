@@ -52,6 +52,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 @property (nonatomic, assign) NSInteger                     objectVersionsPending;
 @property (nonatomic, assign) BOOL                          indexing;
 @property (nonatomic, assign) BOOL                          retrievingObjectHistory;
+@property (nonatomic, assign) BOOL                          shouldSendEverything;
 @property (nonatomic,   copy) SPWebSocketSyncedBlockType    onLocalChangesSent;
 @end
 
@@ -109,7 +110,9 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     // Send any pending changes first
     // This could potentially lead to some duplicate changes being sent if there are some that are awaiting
     // acknowledgment, but the server will safely ignore them
-    [self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock: ^{
+    [self setShouldSendEverything];
+    
+    [self sendChangesForBucket:bucket completionBlock: ^{
         [self requestLatestVersionsForBucket:bucket mark:nil];
     }];
 }
@@ -241,12 +244,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         [processor processRemoteChanges:changes bucket:bucket errors:&errors];
         
         // Handle any Errors
-        BOOL onlyQueuedChanges = YES;
-        
         for (NSError *error in errors) {
             switch (error.code) {
                 case SPProcessorErrorsInvalidChange:
-                    onlyQueuedChanges = NO;
+                    [self setShouldSendEverything];
                     break;
             }
         }
@@ -254,7 +255,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
         //  in the meantime, and send them.
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self sendChangesForBucket:bucket onlyQueuedChanges:onlyQueuedChanges];
+            [self sendChangesForBucket:bucket];
         });
 	});
 }
@@ -389,31 +390,17 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
     NSAssert( [NSThread isMainThread], @"This method should get called on the main thread" );
 
-    __block int numChangesPending;
-    __block int numKeysForObjectsWithMoreChanges;
-    dispatch_async(bucket.processorQueue, ^{
-		numChangesPending = [bucket.changeProcessor numChangesPending];
-		numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
-		
-		dispatch_async(dispatch_get_main_queue(), ^{
-			if (!self.authenticated) {
-				return;
-			}
-			
-			// Start getting changes from the last cv
-			NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", self.number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
-			SPLogVerbose(@"Simperium client %@ sending cv %@", self.simperium.clientID, getMessage);
-			[self.webSocketManager send:getMessage];
-			
-			if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
-				// There are also offline changes; send them right away
-				// This needs to happen after the above cv is sent, otherwise acks will arrive prematurely if there
-				// have been remote changes that need to be processed first
-				SPLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
-				[self sendChangesForBucket:bucket onlyQueuedChanges:NO];
-			}
-		});
-    });
+    if (!self.authenticated) {
+        return;
+    }
+    
+    // Start getting changes from the last cv
+    NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", self.number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
+    SPLogVerbose(@"Simperium client %@ sending cv %@", self.simperium.clientID, getMessage);
+    [self.webSocketManager send:getMessage];
+
+    // In the next changeset-handling cycle, let's send everything
+    [self setShouldSendEverything];
 }
 
 
@@ -421,20 +408,25 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 #pragma mark Private Methods: Sending Changes
 #pragma mark ====================================================================================
 
-- (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(SPWebSocketSyncedBlockType)completionBlock {
+- (void)setShouldSendEverything {
+    self.shouldSendEverything = YES;
+}
+
+- (void)sendChangesForBucket:(SPBucket *)bucket completionBlock:(SPWebSocketSyncedBlockType)completionBlock {
 
     NSAssert( self.onLocalChangesSent == nil, @"This method should not get called more than once, before completion" );
     self.onLocalChangesSent = completionBlock;
-    [self sendChangesForBucket:bucket onlyQueuedChanges:onlyQueuedChanges];
+    [self sendChangesForBucket:bucket];
 }
 
-- (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges {
+- (void)sendChangesForBucket:(SPBucket *)bucket {
 	
     // Note: 'onlyQueuedChanges' set to false will post **every** pending change, again
     if (!self.authenticated) {
         return;
     }
     
+    BOOL onlyQueuedChanges              = !self.shouldSendEverything;
 	SPChangeProcessor *processor		= bucket.changeProcessor;
 	SPChangeEnumerationBlockType block	= ^(NSDictionary *change, BOOL *stop) {
 		[self sendChange:change];
@@ -473,6 +465,9 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             }
 		}
     });
+    
+    // Already done
+    self.shouldSendEverything = NO;
 }
 
 - (void)sendChange:(NSDictionary *)change {
