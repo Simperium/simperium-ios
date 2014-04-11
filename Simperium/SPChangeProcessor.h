@@ -16,13 +16,14 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
+typedef void(^SPChangeErrorHandlerBlockType)(NSDictionary *change, NSError *error);
 typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change, BOOL *stop);
 
 typedef NS_ENUM(NSInteger, SPProcessorErrors) {
     SPProcessorErrorsDuplicateChange,           // Should Re-Sync
-    SPProcessorErrorsInvalidChange,             // Should Re-Send all
-    SPProcessorErrorsServerError,               // Change is enqueued for retry
-    SPProcessorErrorsClientError                // Change is nuked
+    SPProcessorErrorsInvalidChange,             // Should Retry, by sending the full data
+    SPProcessorErrorsServerError,               // Should Retry
+    SPProcessorErrorsClientError                // Should Nuke PendingChange
 };
 
 #pragma mark ====================================================================================
@@ -41,10 +42,13 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 
 - (void)reset;
 
-- (void)notifyRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errors:(NSSet **)errors;
+- (void)notifyOfRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errorHandler:(SPChangeErrorHandlerBlockType)errorHandler;
 
 - (void)markObjectWithPendingChanges:(NSString *)key bucket:(SPBucket *)bucket;
+- (void)markPendingChangeForRetry:(NSDictionary *)change bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData;
+- (void)discardPendingChange:(NSDictionary *)change bucket:(SPBucket *)bucket;
+
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket;
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
 - (NSDictionary *)processLocalBucketDeletion:(SPBucket *)bucket;

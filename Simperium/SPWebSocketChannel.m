@@ -229,7 +229,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     SPChangeProcessor *processor = bucket.changeProcessor;
     
     // Notify the delegates on the main thread that we're about to apply remote changes
-    [processor notifyRemoteChanges:changes bucket:bucket];
+    [processor notifyOfRemoteChanges:changes bucket:bucket];
     
 	// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
 	// sync will still work for any unsaved changes.
@@ -240,17 +240,30 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			return;
 		}
 
-        NSSet *errors = nil;
-        [processor processRemoteChanges:changes bucket:bucket errors:&errors];
-        
-        // Handle any Errors
-        for (NSError *error in errors) {
-            switch (error.code) {
-                case SPProcessorErrorsInvalidChange:
-                    [self setShouldSendEverything];
-                    break;
+        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSDictionary *change, NSError *error) {
+            
+            if (error.code == SPProcessorErrorsDuplicateChange) {
+                
+#warning TODO HERE: SPProcessorErrorsDuplicateChange
+//                SPLogError(@"Simperium received Duplicate Error (Code %ld) for change %@. Requesting resync!", errorCode, change);
+                
+            } else if (error.code == SPProcessorErrorsInvalidChange) {
+
+                SPLogError(@"Simperium received Invalid Change Error for change %@. Overriding remote data!", change);
+                [processor markPendingChangeForRetry:change bucket:bucket overrideRemoteData:YES];
+                
+            } else if (error.code == SPProcessorErrorsServerError) {
+                
+                SPLogError(@"Simperium received Internal Server Error for change %@. Re-enqueuing change!", change);
+                [processor markPendingChangeForRetry:change bucket:bucket overrideRemoteData:NO];
+                
+            } else if (error.code == SPProcessorErrorsClientError) {
+                
+                SPLogError(@"Simperium received unhandled error for change %@", change);
+                [processor discardPendingChange:change bucket:bucket];
             }
-        }
+        }];
+        
 
         //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
         //  in the meantime, and send them.
@@ -421,11 +434,11 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)sendChangesForBucket:(SPBucket *)bucket {
 	
-    // Note: 'onlyQueuedChanges' set to false will post **every** pending change, again
     if (!self.authenticated) {
         return;
     }
     
+    // Note: 'onlyQueuedChanges' set to false will post **every** pending change, again
     BOOL onlyQueuedChanges              = !self.shouldSendEverything;
 	SPChangeProcessor *processor		= bucket.changeProcessor;
 	SPChangeEnumerationBlockType block	= ^(NSDictionary *change, BOOL *stop) {
@@ -634,7 +647,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 #pragma mark ====================================================================================
 #pragma mark Static Helpers:
-#pragma mark MockWebSocketChannel relies on this mechanism to register itself, while running the Unit Testing target
+#pragma mark MockWebSocketChannel relies on this mechanism to register itself, 
+#pragma mark while running the Unit Testing target
 #pragma mark ====================================================================================
 
 static Class _class;
