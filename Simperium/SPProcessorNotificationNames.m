@@ -13,5 +13,3 @@ NSString * const ProcessorDidAcknowledgeObjectsNotification     = @"ProcessorDid
 NSString * const ProcessorWillChangeObjectsNotification         = @"ProcessorWillChangeObjectsNotification";
 NSString * const ProcessorDidAcknowledgeDeleteNotification      = @"ProcessorDidAcknowledgeDeleteNotification";
 NSString * const ProcessorRequestsReindexingNotification        = @"ProcessorRequestsReindexingNotification";
-NSString * const ProcessorRequestsResyncNotification            = @"ProcessorRequestsResyncNotification";
-NSString * const ProcessorRequestsResendPendingsNotification    = @"ProcessorRequestsResendPendingsNotification";

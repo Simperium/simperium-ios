@@ -58,8 +58,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
         [nc addObserver:self selector:@selector(objectsWillChange:)          name:ProcessorWillChangeObjectsNotification        object:self];
         [nc addObserver:self selector:@selector(acknowledgedObjectDeletion:) name:ProcessorDidAcknowledgeDeleteNotification     object:self];
         [nc addObserver:self selector:@selector(requestLatestVersions)       name:ProcessorRequestsReindexingNotification       object:self];
-        [nc addObserver:self selector:@selector(requestResync)               name:ProcessorRequestsResyncNotification           object:self];
-        [nc addObserver:self selector:@selector(resendAllPendings)           name:ProcessorRequestsResendPendingsNotification   object:self];
     }
     
     return self;
@@ -241,14 +239,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
 
 - (void)requestLatestVersions {
     [self.network requestLatestVersionsForBucket:self];
-}
-
-- (void)requestResync {
-    [self.network requestResyncForBucket:self];
-}
-
-- (void)resendAllPendings {
-    [self.network sendAllPendingChangesForBucket:self];
 }
 
 - (SPSchema *)schema {

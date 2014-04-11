@@ -40,8 +40,6 @@
 - (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email;
 
 // Bucket Helpers
-- (void)sendAllPendingChangesForBucket:(SPBucket *)bucket;
-- (void)resyncChangesForBucket:(SPBucket *)bucket;
 - (void)removeAllBucketObjects:(SPBucket *)bucket;
 
 // Response Handlers

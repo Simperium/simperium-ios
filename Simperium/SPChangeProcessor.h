@@ -18,16 +18,12 @@
 
 typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change, BOOL *stop);
 
-extern NSString * const CH_KEY;
-extern NSString * const CH_ADD;
-extern NSString * const CH_REMOVE;
-extern NSString * const CH_MODIFY;
-extern NSString * const CH_OPERATION;
-extern NSString * const CH_VALUE;
-extern NSString * const CH_START_VERSION;
-extern NSString * const CH_END_VERSION;
-extern NSString * const CH_LOCAL_ID;
-
+typedef NS_ENUM(NSInteger, SPProcessorErrors) {
+    SPProcessorErrorsDuplicateChange,           // Should Re-Sync
+    SPProcessorErrorsInvalidChange,             // Should Re-Send all
+    SPProcessorErrorsServerError,               // Change is enqueued for retry
+    SPProcessorErrorsClientError                // Change is nuked
+};
 
 #pragma mark ====================================================================================
 #pragma mark SPChangeProcessor
@@ -46,7 +42,7 @@ extern NSString * const CH_LOCAL_ID;
 - (void)reset;
 
 - (void)notifyRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errors:(NSSet **)errors;
 
 - (void)markObjectWithPendingChanges:(NSString *)key bucket:(SPBucket *)bucket;
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket;

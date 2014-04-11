@@ -13,5 +13,3 @@ extern NSString * const ProcessorDidAcknowledgeObjectsNotification;
 extern NSString * const ProcessorWillChangeObjectsNotification;
 extern NSString * const ProcessorDidAcknowledgeDeleteNotification;
 extern NSString * const ProcessorRequestsReindexingNotification;
-extern NSString * const ProcessorRequestsResyncNotification;
-extern NSString * const ProcessorRequestsResendPendingsNotification;

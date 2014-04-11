@@ -118,7 +118,10 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 #pragma mark Private Helpers: Remote changes
 #pragma mark ====================================================================================
 
-- (BOOL)processRemoteError:(NSDictionary *)change bucket:(SPBucket *)bucket {
+- (BOOL)processRemoteError:(NSDictionary *)change bucket:(SPBucket *)bucket error:(NSError **)error {
+
+    NSAssert( [change isKindOfClass:[NSDictionary class]],  @"Empty change" );
+    NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Empty Bucket" );
 
     if (!change[CH_ERROR]) {
         return NO;
@@ -126,15 +129,14 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     
     NSString *simperiumKey  = [self keyWithoutNamespaces:change bucket:bucket];
     long errorCode          = [change[CH_ERROR] integerValue];
+    long wrappedCode        = SPProcessorErrorsClientError;
     
     switch (errorCode) {
+            
 //        case CH_ERRORS_DUPLICATE:
 //            {
 //                SPLogError(@"Simperium received Duplicate Error (Code %ld) for change %@. Requesting resync!", errorCode, change);
-//                
-//                dispatch_async(dispatch_get_main_queue(), ^{
-//                    [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsResyncNotification object:bucket];
-//                });
+//                wrappedCode = SPProcessorErrorsDuplicateChange;
 //            }
 //            break;
             
@@ -142,6 +144,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         case CH_ERRORS_EXPECTATION_FAILED:
         case CH_ERRORS_INVALID_DIFF:
             {
+                SPLogError(@"Simperium received InvalidDiff (Code %ld) for change %@. Resending all pendings!", errorCode, change);
                 
                 // Resubmit with all data
                 id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
@@ -163,11 +166,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
                 
                 [threadSafeStorage finishSafeSection];
                 
-                SPLogError(@"Simperium received InvalidDiff (Code %ld) for change %@. Resending all pendings!", errorCode, change);
-                
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsResendPendingsNotification object:bucket];
-                });
+                wrappedCode = SPProcessorErrorsInvalidChange;
             }
             break;
             
@@ -186,14 +185,22 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
                     [self.keysForObjectsWithPendingRetry addObject:simperiumKey];
                     [self.keysForObjectsWithPendingRetry save];
                     
+                    wrappedCode = SPProcessorErrorsServerError;
+                    
                 // Catch all, don't resubmit
                 } else {
                     SPLogError(@"Simperium received unhandled error %ld for change %@", errorCode, change);
                     [self.changesPending removeObjectForKey:simperiumKey];
+                    
+                    wrappedCode = SPProcessorErrorsClientError;
                 }
 
             }
             break;
+    }
+    
+    if (error) {
+        *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:wrappedCode userInfo:nil];
     }
     
     return YES;
@@ -462,15 +469,20 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorWillChangeObjectsNotification object:bucket userInfo:userInfo];
 }
 
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errors:(NSSet **)errors {
 
-    NSAssert([NSThread isMainThread] == NO, @"This should get called on the processor's queue!");
+    NSAssert( [NSThread isMainThread] == NO,            @"This should get called on the processor's queue!");
+    NSAssert( [bucket isKindOfClass:[SPBucket class]],  @"Invalid Bucket");
+    
+    NSMutableSet *theErrors = [NSMutableSet set];
     
     @autoreleasepool {
         for (NSDictionary *change in changes) {
             
             // Process any errors we might have received
-            if ([self processRemoteError:change bucket:bucket]) {
+            NSError *error = nil;
+            if ([self processRemoteError:change bucket:bucket error:&error]) {
+                [theErrors addObject:error];
                 continue;
             }
             
@@ -478,7 +490,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             if (![self processRemoteChange:change bucket:bucket]) {
                 continue;
             }
-            
+
             NSString *changeVersion = change[CH_CHANGE_VERSION];
             
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -493,6 +505,10 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         if (self.changesPending.count == 0) {
             [bucket bucketDidSync];
         }
+    }
+    
+    if (errors) {
+        *errors = theErrors;
     }
 }
 

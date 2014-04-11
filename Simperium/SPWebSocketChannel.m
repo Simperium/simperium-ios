@@ -173,16 +173,6 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 #pragma mark Bucket Helpers
 #pragma mark ====================================================================================
 
-- (void)sendAllPendingChangesForBucket:(SPBucket *)bucket {
-    [self sendChangesForBucket:bucket onlyQueuedChanges:NO];
-}
-
-- (void)resyncChangesForBucket:(SPBucket *)bucket {
-#warning TODO: WIRE ME    
-#warning TODO: STOP sending changes
-#warning TODO: ReEntrant Calls: 409 triggered during initial pendings sync
-}
-
 - (void)removeAllBucketObjects:(SPBucket *)bucket {
 	NSDictionary *change = [bucket.changeProcessor processLocalBucketDeletion:bucket];
 	NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [change sp_JSONString]];
@@ -247,12 +237,24 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			return;
 		}
 
-        [processor processRemoteChanges:changes bucket:bucket];
+        NSSet *errors = nil;
+        [processor processRemoteChanges:changes bucket:bucket errors:&errors];
         
+        // Handle any Errors
+        BOOL onlyQueuedChanges = YES;
+        
+        for (NSError *error in errors) {
+            switch (error.code) {
+                case SPProcessorErrorsInvalidChange:
+                    onlyQueuedChanges = NO;
+                    break;
+            }
+        }
+
         //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
         //  in the meantime, and send them.
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self sendChangesForBucket:bucket onlyQueuedChanges:YES];
+            [self sendChangesForBucket:bucket onlyQueuedChanges:onlyQueuedChanges];
         });
 	});
 }
@@ -408,7 +410,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 				// This needs to happen after the above cv is sent, otherwise acks will arrive prematurely if there
 				// have been remote changes that need to be processed first
 				SPLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
-				[self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:nil];
+				[self sendChangesForBucket:bucket onlyQueuedChanges:NO];
 			}
 		});
     });
@@ -428,13 +430,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges {
 	
+    // Note: 'onlyQueuedChanges' set to false will post **every** pending change, again
     if (!self.authenticated) {
         return;
     }
-    
-#warning TODO: Reentrant calls
-    
-    // Note: 'onlyQueuedChanges' set to false will post **every** pending change, again
     
 	SPChangeProcessor *processor		= bucket.changeProcessor;
 	SPChangeEnumerationBlockType block	= ^(NSDictionary *change, BOOL *stop) {
