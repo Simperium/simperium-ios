@@ -39,7 +39,6 @@ extern NSString * const CH_LOCAL_ID;
 @property (nonatomic, strong, readonly) NSString	*clientID;
 @property (nonatomic, assign, readonly) int			numChangesPending;
 @property (nonatomic, assign, readonly) int			numKeysForObjectsWithMoreChanges;
-@property (nonatomic, assign, readonly) int			numKeysForObjectsWithPendingRetry;
 @property (nonatomic, assign, readonly) BOOL        reachedMaxPendings;
 
 - (id)initWithLabel:(NSString *)label clientID:(NSString *)clientID;

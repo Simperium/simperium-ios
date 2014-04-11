@@ -128,7 +128,6 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     long errorCode          = [change[CH_ERROR] integerValue];
     
     switch (errorCode) {
-// TODO: Uncomment when proper error handling is in place
 //        case CH_ERRORS_DUPLICATE:
 //            {
 //                SPLogError(@"Simperium received Duplicate Error (Code %ld) for change %@. Requesting resync!", errorCode, change);
@@ -716,10 +715,6 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 - (int)numKeysForObjectsWithMoreChanges {
     return (int)self.keysForObjectsWithMoreChanges.count;
-}
-
-- (int)numKeysForObjectsWithPendingRetry {
-    return (int)self.keysForObjectsWithPendingRetry.count;
 }
 
 - (BOOL)reachedMaxPendings {
