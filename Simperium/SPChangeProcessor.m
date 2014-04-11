@@ -128,17 +128,18 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     long errorCode          = [change[CH_ERROR] integerValue];
     
     switch (errorCode) {
-        case CH_ERRORS_DUPLICATE:
-            {
-                SPLogError(@"Simperium received Duplicate Error (Code %ld) for change %@. Requesting resync!", errorCode, change);
-                
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsResyncNotification object:bucket];
-                });
-            }
-            break;
+// TODO: Uncomment when proper error handling is in place
+//        case CH_ERRORS_DUPLICATE:
+//            {
+//                SPLogError(@"Simperium received Duplicate Error (Code %ld) for change %@. Requesting resync!", errorCode, change);
+//                
+//                dispatch_async(dispatch_get_main_queue(), ^{
+//                    [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsResyncNotification object:bucket];
+//                });
+//            }
+//            break;
             
-//        case CH_ERRORS_BAD_VERSION:
+        case CH_ERRORS_BAD_VERSION:
         case CH_ERRORS_EXPECTATION_FAILED:
         case CH_ERRORS_INVALID_DIFF:
             {
