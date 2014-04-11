@@ -38,19 +38,22 @@ static NSString* const SPWebsocketErrorKey			= @"code";
 
 static SPLogLevels logLevel							= SPLogLevelsInfo;
 
+typedef void(^SPWebSocketSyncedBlockType)(void);
 
 #pragma mark ====================================================================================
 #pragma mark Private
 #pragma mark ====================================================================================
 
 @interface SPWebSocketChannel()
-@property (nonatomic, weak)   Simperium				*simperium;
-@property (nonatomic, strong) NSMutableArray		*responseBatch;
-@property (nonatomic, strong) NSMutableDictionary	*versionsWithErrors;
-@property (nonatomic, assign) NSInteger				retryDelay;
-@property (nonatomic, assign) NSInteger				objectVersionsPending;
-@property (nonatomic, assign) BOOL					indexing;
-@property (nonatomic, assign) BOOL					retrievingObjectHistory;
+@property (nonatomic,   weak) Simperium                     *simperium;
+@property (nonatomic, strong) NSMutableArray                *responseBatch;
+@property (nonatomic, strong) NSMutableDictionary           *versionsWithErrors;
+@property (nonatomic, assign) NSInteger                     retryDelay;
+@property (nonatomic, assign) NSInteger                     objectVersionsPending;
+@property (nonatomic, assign) BOOL                          indexing;
+@property (nonatomic, assign) BOOL                          retrievingObjectHistory;
+@property (nonatomic, assign) BOOL                          shouldSendEverything;
+@property (nonatomic,   copy) SPWebSocketSyncedBlockType    onLocalChangesSent;
 @end
 
 
@@ -94,17 +97,22 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 }
 
 - (void)requestLatestVersionsForBucket:(SPBucket *)bucket {
+    
+	SPLogVerbose(@"Simperium change version is out of date (%@), re-indexing", bucket.name);
+    
     // Multiple errors could try to trigger multiple index refreshes
     if (self.indexing) {
         return;
 	}
 	
 	self.indexing = YES;
-    
+
     // Send any pending changes first
     // This could potentially lead to some duplicate changes being sent if there are some that are awaiting
     // acknowledgment, but the server will safely ignore them
-    [self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock: ^{
+    [self setShouldSendEverything];
+    
+    [self sendChangesForBucket:bucket completionBlock: ^{
         [self requestLatestVersionsForBucket:bucket mark:nil];
     }];
 }
@@ -149,7 +157,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 		@autoreleasepool {
 			SPChangeProcessor *processor = object.bucket.changeProcessor;
 			
-			if (_indexing || !_started || processor.hasReachedMaxPendings) {
+			if (_indexing || !_authenticated || processor.reachedMaxPendings) {
 				[processor markObjectWithPendingChanges:key bucket:object.bucket];
 			} else {
 				NSDictionary *change = [processor processLocalObjectWithKey:key bucket:object.bucket];
@@ -162,6 +170,11 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 - (void)shareObject:(id<SPDiffable>)object withEmail:(NSString *)email {
     // Not yet implemented with WebSockets
 }
+
+
+#pragma mark ====================================================================================
+#pragma mark Bucket Helpers
+#pragma mark ====================================================================================
 
 - (void)removeAllBucketObjects:(SPBucket *)bucket {
 	NSDictionary *change = [bucket.changeProcessor processLocalBucketDeletion:bucket];
@@ -194,54 +207,56 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	}
 	
 	// All looking good!
-	self.started					= YES;
+	self.authenticated              = YES;
 	self.indexing					= NO;
 	self.retrievingObjectHistory	= NO;
 	self.simperium.user.email		= responseString;
-	
+    self.onLocalChangesSent         = nil;
+
 	if (bucket.lastChangeSignature == nil) {
 		[self requestLatestVersionsForBucket:bucket];
 	} else {
-		[self startProcessingChangesForBucket:bucket];
+        [self startProcessingChangesForBucket:bucket];
 	}
 }
 
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
-
-	// Signal that the bucket was sync'ed. We need this, in case the sync was manually triggered
-	if (changes.count == 0) {
-		[bucket bucketDidSync];
-		return;
-	}
-		
+    
+    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
+    
 	SPLogVerbose(@"Simperium handling changes %@", changes);
-	
+	   
+    SPChangeProcessor *processor = bucket.changeProcessor;
+    
+    // Notify the delegates on the main thread that we're about to apply remote changes
+    [processor notifyRemoteChanges:changes bucket:bucket];
+    
 	// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
 	// sync will still work for any unsaved changes.
 	[bucket.storage stashUnsavedObjects];
 	
 	dispatch_async(bucket.processorQueue, ^{
-		if (!self.started) {
+		if (!self.authenticated) {
 			return;
 		}
-		
-		BOOL repostNeeded = NO;
-		
-		// AutoreleasePool:
-		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
-		@autoreleasepool {
-			[bucket.changeProcessor processRemoteResponseForChanges:changes bucket:bucket repostNeeded:&repostNeeded];
-			[bucket.changeProcessor processRemoteChanges:changes bucket:bucket clientID:self.simperium.clientID];
-		}
 
-		dispatch_async(dispatch_get_main_queue(), ^{
-			
-			// Note #1: After remote changes have been processed, check to see if any local changes were attempted (and
-			//			queued) in the meantime, and send them.
-			
-			// Note #2: If we need to repost, we'll need to re-send everything. Not just the queued changes.
-			[self sendChangesForBucket:bucket onlyQueuedChanges:!repostNeeded completionBlock:nil];
-		});
+        NSSet *errors = nil;
+        [processor processRemoteChanges:changes bucket:bucket errors:&errors];
+        
+        // Handle any Errors
+        for (NSError *error in errors) {
+            switch (error.code) {
+                case SPProcessorErrorsInvalidChange:
+                    [self setShouldSendEverything];
+                    break;
+            }
+        }
+
+        //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
+        //  in the meantime, and send them.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self sendChangesForBucket:bucket];
+        });
 	});
 }
 
@@ -254,15 +269,15 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	}
 	
     NSDictionary *responseDict = [responseString sp_objectFromJSONString];
-    NSArray *currentIndexArray = [responseDict objectForKey:@"index"];
-    id current = [responseDict objectForKey:@"current"];
+    NSArray *currentIndexArray = responseDict[@"index"];
+    id current = responseDict[@"current"];
 	
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
     if ([current isKindOfClass:[NSNumber class]]) {
         current = [NSString stringWithFormat:@"%ld", (long)[current integerValue]];
 	}
     self.pendingLastChangeSignature = [current length] > 0 ? [NSString stringWithFormat:@"%@", current] : nil;
-    self.nextMark = [responseDict objectForKey:@"mark"];
+    self.nextMark = responseDict[@"mark"];
     
     // Remember all the retrieved data in case there's more to get
     [self.indexArray addObjectsFromArray:currentIndexArray];
@@ -278,7 +293,6 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
     [self requestVersionsForKeys:self.indexArray bucket:bucket];
     [self.indexArray removeAllObjects];
 }
-
 
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
     if ([responseString isEqualToString:@"?"]) {
@@ -373,31 +387,20 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
-    __block int numChangesPending;
-    __block int numKeysForObjectsWithMoreChanges;
-    dispatch_async(bucket.processorQueue, ^{
-		numChangesPending = [bucket.changeProcessor numChangesPending];
-		numKeysForObjectsWithMoreChanges = [bucket.changeProcessor numKeysForObjectsWithMoreChanges];
-		
-		dispatch_async(dispatch_get_main_queue(), ^{
-			if (!self.started) {
-				return;
-			}
-			
-			// Start getting changes from the last cv
-			NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", self.number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
-			SPLogVerbose(@"Simperium client %@ sending cv %@", self.simperium.clientID, getMessage);
-			[self.webSocketManager send:getMessage];
-			
-			if (numChangesPending > 0 || numKeysForObjectsWithMoreChanges > 0) {
-				// There are also offline changes; send them right away
-				// This needs to happen after the above cv is sent, otherwise acks will arrive prematurely if there
-				// have been remote changes that need to be processed first
-				SPLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
-				[self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:nil];
-			}
-		});
-    });
+
+    NSAssert( [NSThread isMainThread], @"This method should get called on the main thread" );
+
+    if (!self.authenticated) {
+        return;
+    }
+    
+    // Start getting changes from the last cv
+    NSString *getMessage = [NSString stringWithFormat:@"%d:cv:%@", self.number, bucket.lastChangeSignature ? bucket.lastChangeSignature : @""];
+    SPLogVerbose(@"Simperium client %@ sending cv %@", self.simperium.clientID, getMessage);
+    [self.webSocketManager send:getMessage];
+
+    // In the next changeset-handling cycle, let's send everything
+    [self setShouldSendEverything];
 }
 
 
@@ -405,8 +408,25 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 #pragma mark Private Methods: Sending Changes
 #pragma mark ====================================================================================
 
-- (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(void(^)())completionBlock {
+- (void)setShouldSendEverything {
+    self.shouldSendEverything = YES;
+}
+
+- (void)sendChangesForBucket:(SPBucket *)bucket completionBlock:(SPWebSocketSyncedBlockType)completionBlock {
+
+    NSAssert( self.onLocalChangesSent == nil, @"This method should not get called more than once, before completion" );
+    self.onLocalChangesSent = completionBlock;
+    [self sendChangesForBucket:bucket];
+}
+
+- (void)sendChangesForBucket:(SPBucket *)bucket {
 	
+    // Note: 'onlyQueuedChanges' set to false will post **every** pending change, again
+    if (!self.authenticated) {
+        return;
+    }
+    
+    BOOL onlyQueuedChanges              = !self.shouldSendEverything;
 	SPChangeProcessor *processor		= bucket.changeProcessor;
 	SPChangeEnumerationBlockType block	= ^(NSDictionary *change, BOOL *stop) {
 		[self sendChange:change];
@@ -418,28 +438,36 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 		// AutoreleasePool:
 		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
 		@autoreleasepool {
-			
+            
 			// Only queued: re-send failed changes
 			if (onlyQueuedChanges) {
 				[processor enumerateRetryChangesForBucket:bucket block:block];
+                
 			// Pending changes include those flagged for retry as well
 			} else {
 				[processor enumeratePendingChangesForBucket:bucket block:block];
 			}
 			
 			// Process Queued Changes: let's consider the SPWebsocketMaxPendingChanges limit
-			[processor enumerateQueuedChangesForBucket:bucket block:^(NSDictionary *change, BOOL *stop) {
-				[self sendChange:change];
-				*stop = [processor hasReachedMaxPendings];
-			}];
-			
-			if (completionBlock) {
-				dispatch_async(dispatch_get_main_queue(), ^{
-					completionBlock();
-				});
-			}
+            if (![processor reachedMaxPendings]) {
+                [processor enumerateQueuedChangesForBucket:bucket block:^(NSDictionary *change, BOOL *stop) {
+                    [self sendChange:change];
+                    *stop = [processor reachedMaxPendings];
+                }];
+            }
+            
+            // Ready posting local changes. If needed, hit the callback
+            if (self.onLocalChangesSent) {
+                if ( !(processor.numChangesPending || processor.numKeysForObjectsWithMoreChanges) ) {
+                    self.onLocalChangesSent();
+                    self.onLocalChangesSent = nil;
+                }
+            }
 		}
     });
+    
+    // Already done
+    self.shouldSendEverything = NO;
 }
 
 - (void)sendChange:(NSDictionary *)change {
@@ -485,7 +513,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 	BOOL shouldHitFinished	= (_indexing && newPendings == 0);
 	
     dispatch_async(bucket.processorQueue, ^{
-        if (self.started) {
+        if (self.authenticated) {
             [bucket.indexProcessor processVersions: batch bucket:bucket firstSync: firstSync changeHandler:^(NSString *key) {
                 // Local version was different, so process it as a local change
 				[bucket.changeProcessor markObjectWithPendingChanges:key bucket:bucket];
@@ -522,7 +550,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
     NSArray *indexArrayCopy = [currentIndexArray copy];
     dispatch_async(bucket.processorQueue, ^{
-        if (self.started) {
+        if (self.authenticated) {
             [bucket.indexProcessor processIndex:indexArrayCopy bucket:bucket versionHandler: ^(NSString *key, NSString *version) {
                 // For each version that is processed, create a network request
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -589,15 +617,17 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
     // There could be some processing happening on the queue still, so don't start until they're done
     dispatch_async(bucket.processorQueue, ^{
-        if (self.started) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if ([bucket.delegate respondsToSelector:@selector(bucketDidFinishIndexing:)]) {
-                    [bucket.delegate bucketDidFinishIndexing:bucket];
-				}
-
-                [self startProcessingChangesForBucket:bucket];
-            });
+        if (!self.authenticated) {
+            return;
         }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([bucket.delegate respondsToSelector:@selector(bucketDidFinishIndexing:)]) {
+                [bucket.delegate bucketDidFinishIndexing:bucket];
+            }
+
+            [self startProcessingChangesForBucket:bucket];
+        });
     });
 }
 
