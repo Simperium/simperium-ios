@@ -154,18 +154,14 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
                 
                 if (!object) {
                     [self.changesPending removeObjectForKey:simperiumKey];
-                    [threadSafeStorage finishSafeSection];
-                    return YES;
+                } else {
+                    // Fire fault
+                    NSMutableDictionary *newChange = [[self.changesPending objectForKey:object.simperiumKey] mutableCopy];
+                    newChange[CH_DATA] = [object dictionary];
+                    [self.changesPending setObject:newChange forKey:simperiumKey];
                 }
                 
-                NSMutableDictionary *newChange = [[self.changesPending objectForKey:simperiumKey] mutableCopy];
-                
-                [object simperiumKey]; // fire fault
-                [newChange setObject:[object dictionary] forKey:CH_DATA];
-                [self.changesPending setObject:newChange forKey:simperiumKey];
-                
                 [threadSafeStorage finishSafeSection];
-                
                 wrappedCode = SPProcessorErrorsInvalidChange;
             }
             break;
