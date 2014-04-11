@@ -405,6 +405,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 				// There are also offline changes; send them right away
 				// This needs to happen after the above cv is sent, otherwise acks will arrive prematurely if there
 				// have been remote changes that need to be processed first
+				SPLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more", numChangesPending, self.name, numKeysForObjectsWithMoreChanges);
 				[self sendChangesForBucket:bucket onlyQueuedChanges:NO completionBlock:nil];
 			}
 		});
@@ -418,7 +419,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)sendChangesForBucket:(SPBucket *)bucket onlyQueuedChanges:(BOOL)onlyQueuedChanges completionBlock:(SPWebSocketSyncedBlockType)completionBlock {
 
-    NSAssert(self.onLocalChangesSent, @"This method should not get called more than once, before completion");
+    NSAssert( self.onLocalChangesSent == nil, @"This method should not get called more than once, before completion" );
     self.onLocalChangesSent = completionBlock;
     [self sendChangesForBucket:bucket onlyQueuedChanges:onlyQueuedChanges];
 }
@@ -450,18 +451,12 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
 		@autoreleasepool {
             
-            NSInteger numChangesPending     = processor.numChangesPending;
-            NSInteger numUncapturedChanges  = processor.numKeysForObjectsWithMoreChanges;
-            NSInteger numRetryChanges       = processor.numKeysForObjectsWithPendingRetry;
-            
 			// Only queued: re-send failed changes
 			if (onlyQueuedChanges) {
-                SPLogVerbose(@"Simperium sending %u changes marked for retry (%@) plus %d objects with more", numRetryChanges, self.name, numUncapturedChanges);
 				[processor enumerateRetryChangesForBucket:bucket block:block];
                 
 			// Pending changes include those flagged for retry as well
 			} else {
-                SPLogVerbose(@"Simperium sending %u pending offline changes (%@) plus %d objects with more, and %d marked for retry", numChangesPending, self.name, numUncapturedChanges);
 				[processor enumeratePendingChangesForBucket:bucket block:block];
 			}
 			
@@ -471,11 +466,12 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 				*stop = [processor reachedMaxPendings];
 			}];
             
-            // If there's nothing else pending, hit the callback
-            BOOL isSynced = !(numChangesPending || numUncapturedChanges || numRetryChanges);
-            if (self.onLocalChangesSent && isSynced) {
-                self.onLocalChangesSent();
-                self.onLocalChangesSent = nil;
+            // Ready posting local changes. If needed, hit the callback
+            if (self.onLocalChangesSent) {
+                if ( !(processor.numChangesPending || processor.numKeysForObjectsWithMoreChanges) ) {
+                    self.onLocalChangesSent();
+                    self.onLocalChangesSent = nil;
+                }
             }
 		}
     });
