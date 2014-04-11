@@ -249,6 +249,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
         [processor processRemoteChanges:changes bucket:bucket];
         
+        //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
+        //  in the meantime, and send them.
         dispatch_async(dispatch_get_main_queue(), ^{
             [self sendChangesForBucket:bucket onlyQueuedChanges:YES];
         });
@@ -432,12 +434,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     
 #warning TODO: Reentrant calls
     
-    // Note #1:
-    //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
-    //  in the meantime, and send them.
-    
-    // Note #2:
-    //  If we need to repost, we'll need to re-send everything. Not just the queued changes.
+    // Note: 'onlyQueuedChanges' set to false will post **every** pending change, again
     
 	SPChangeProcessor *processor		= bucket.changeProcessor;
 	SPChangeEnumerationBlockType block	= ^(NSDictionary *change, BOOL *stop) {
@@ -461,10 +458,12 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			}
 			
 			// Process Queued Changes: let's consider the SPWebsocketMaxPendingChanges limit
-			[processor enumerateQueuedChangesForBucket:bucket block:^(NSDictionary *change, BOOL *stop) {
-				[self sendChange:change];
-				*stop = [processor reachedMaxPendings];
-			}];
+            if (![processor reachedMaxPendings]) {
+                [processor enumerateQueuedChangesForBucket:bucket block:^(NSDictionary *change, BOOL *stop) {
+                    [self sendChange:change];
+                    *stop = [processor reachedMaxPendings];
+                }];
+            }
             
             // Ready posting local changes. If needed, hit the callback
             if (self.onLocalChangesSent) {
