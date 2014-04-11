@@ -52,6 +52,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 @property (nonatomic, strong) NSMutableDictionary           *versionsWithErrors;
 @property (nonatomic, assign) NSInteger                     retryDelay;
 @property (nonatomic, assign) NSInteger                     objectVersionsPending;
+@property (nonatomic, assign) BOOL                          started;
 @property (nonatomic, assign) BOOL                          indexing;
 @property (nonatomic, assign) BOOL                          retrievingObjectHistory;
 @property (nonatomic, assign) BOOL                          shouldSendEverything;
@@ -221,6 +222,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 	
 	// All looking good!
 	self.authenticated              = YES;
+    self.started                    = NO;
 	self.indexing					= NO;
 	self.retrievingObjectHistory	= NO;
 	self.simperium.user.email		= responseString;
@@ -240,9 +242,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     // Batch-Processing: This will speed up sync'ing of large databases!
     [self.changesBatch addObjectsFromArray:changes];
     
-    if ( bucket.changeProcessor.numChangesPending < SPWebsocketChangesBatchSize || _changesBatch.count % SPWebsocketChangesBatchSize == 0 ) {
+    if ( !_started || bucket.changeProcessor.numChangesPending < SPWebsocketChangesBatchSize || _changesBatch.count % SPWebsocketChangesBatchSize == 0 ) {
         [self processBatchChanges:_changesBatch bucket:bucket];
         self.changesBatch = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
+        self.started = YES;
     }
 }
 
