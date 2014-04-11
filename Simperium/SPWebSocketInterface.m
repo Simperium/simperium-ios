@@ -118,7 +118,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 - (void)stopChannels {
     for (SPWebSocketChannel *channel in [self.channels allValues]) {
-        channel.started = NO;
+        channel.authenticated = NO;
     }
 }
 
@@ -144,6 +144,10 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 }
 
 - (void)authenticateChannel:(SPWebSocketChannel *)channel {
+    NSAssert(self.simperium.clientID,       @"Missing clientID");
+    NSAssert(self.simperium.appID,          @"Missing appID");
+    NSAssert(self.simperium.user.authToken, @"Missing authToken");
+    
     NSDictionary *jsonData = @{
 		@"api"		: @(SPAPIVersion.floatValue),
 		@"clientid"	: self.simperium.clientID,
@@ -181,7 +185,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
         channel = [self loadChannelForBucket:bucket];
     }
 	
-    if (channel.started) {
+    if (channel.authenticated) {
         return;
     }
 	
@@ -195,7 +199,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 - (void)stop:(SPBucket *)bucket {
     SPWebSocketChannel *channel = [self channelForName:bucket.name];
-    channel.started             = NO;
+    channel.authenticated       = NO;
     channel.webSocketManager    = nil;
     
     // Can't remove the channel because it's needed for offline changes; this is weird and should be fixed
@@ -252,12 +256,12 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 #pragma mark - Remote Logging Helpers
 
-- (void)handleRemoteLogLevel:(SPRemoteLogging)logLevel {
+- (void)handleRemoteLogLevel:(SPRemoteLogging)level {
     
-    SPLogVerbose(@"Simperium (%@) Received Remote LogLevel %d", self.simperium.label, logLevel);
+    SPLogVerbose(@"Simperium (%@) Received Remote LogLevel %d", self.simperium.label, level);
     
-    self.simperium.remoteLoggingEnabled	 = (logLevel != SPRemoteLoggingOff);
-    self.simperium.verboseLoggingEnabled = (logLevel == SPRemoteLoggingVerbose);
+    self.simperium.remoteLoggingEnabled	 = (level != SPRemoteLoggingOff);
+    self.simperium.verboseLoggingEnabled = (level == SPRemoteLoggingVerbose);
 }
 
 
