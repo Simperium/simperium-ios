@@ -165,7 +165,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			SPChangeProcessor *processor = object.bucket.changeProcessor;
 			
 			if (_indexing || !_authenticated || processor.reachedMaxPendings) {
-				[processor markObjectWithPendingChanges:key bucket:object.bucket];
+				[processor enqueueObjectForMoreChanges:key bucket:object.bucket];
 			} else {
                 NSSet *wrappedKey = [NSSet setWithObject:key];
 				NSArray *changes = [processor processLocalObjectsWithKeys:wrappedKey bucket:object.bucket];
@@ -225,6 +225,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     self.started                    = NO;
 	self.indexing					= NO;
 	self.retrievingObjectHistory	= NO;
+    self.shouldSendEverything       = NO;
 	self.simperium.user.email		= responseString;
     self.onLocalChangesSent         = nil;
 
@@ -262,26 +263,32 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 	[bucket.storage stashUnsavedObjects];
     
     // Notify the delegates on the main thread that we're about to apply remote changes
-    [bucket.changeProcessor notifyRemoteChanges:changes bucket:bucket];
+    [bucket.changeProcessor notifyOfRemoteChanges:changes bucket:bucket];
     
     
 	dispatch_async(bucket.processorQueue, ^{
 		if (!self.authenticated) {
 			return;
 		}
-        
-        // Process remote Changes
-        NSSet *errors = nil;
-        [processor processRemoteChanges:changes bucket:bucket errors:&errors];
 
-        // Handle any Errors
-        for (NSError *error in errors) {
-            switch (error.code) {
-                case SPProcessorErrorsInvalidChange:
-                    [self setShouldSendEverything];
-                    break;
+        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSError *error, BOOL *halt) {
+            
+            SPLogError(@"Simperium received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
+            
+            if (error.code == SPProcessorErrorsDuplicateChange) {           
+                [processor discardPendingChanges:simperiumKey bucket:bucket];
+                
+            } else if (error.code == SPProcessorErrorsInvalidChange) {
+                [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
+                
+            } else if (error.code == SPProcessorErrorsServerError) {
+                [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:NO];
+                
+            } else if (error.code == SPProcessorErrorsClientError) {
+                [processor discardPendingChanges:simperiumKey bucket:bucket];
             }
-        }
+        }];
+        
 
         //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
         //  in the meantime, and send them.
@@ -391,7 +398,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 		if ( (self.versionsBatch.count == self.objectVersionsPending && self.objectVersionsPending < SPWebsocketIndexBatchSize) ||
 			 self.versionsBatch.count % SPWebsocketIndexBatchSize == 0)
 		{
-            [self processBatchForBucket:bucket];
+            [self processVersionsBatchForBucket:bucket];
 		}
     }
 }
@@ -420,7 +427,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
 
     NSAssert( [NSThread isMainThread], @"This method should get called on the main thread" );
-
+        
     if (!self.authenticated) {
         return;
     }
@@ -452,11 +459,11 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)sendChangesForBucket:(SPBucket *)bucket {
 	
-    // Note: 'onlyQueuedChanges' set to false will post **every** pending change, again
     if (!self.authenticated) {
         return;
     }
     
+    // Note: 'onlyQueuedChanges' set to false will post **every** pending change, again
     BOOL onlyQueuedChanges              = !self.shouldSendEverything;
 	SPChangeProcessor *processor		= bucket.changeProcessor;
 	SPChangeEnumerationBlockType block	= ^(NSDictionary *change) {
@@ -527,7 +534,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     [self.webSocketManager send:message];
 }
 
-- (void)processBatchForBucket:(SPBucket *)bucket {
+- (void)processVersionsBatchForBucket:(SPBucket *)bucket {
     if (self.versionsBatch.count == 0) {
         return;
 	}
@@ -539,17 +546,19 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 	BOOL shouldHitFinished	= (_indexing && newPendings == 0);
 	
     dispatch_async(bucket.processorQueue, ^{
-        if (self.authenticated) {
-            [bucket.indexProcessor processVersions: batch bucket:bucket firstSync: firstSync changeHandler:^(NSString *key) {
-                // Local version was different, so process it as a local change
-				[bucket.changeProcessor markObjectWithPendingChanges:key bucket:bucket];
-            }];
-            
-            // Now check if indexing is complete
+        if (!self.authenticated) {
+            return;
+        }
+        
+        [bucket.indexProcessor processVersions: batch bucket:bucket firstSync: firstSync changeHandler:^(NSString *key) {
+            // Local version was different, so process it as a local change
+            [bucket.changeProcessor enqueueObjectForMoreChanges:key bucket:bucket];
+        }];
+        
+        // Now check if indexing is complete
+        if (shouldHitFinished) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (shouldHitFinished) {
-                    [self allVersionsFinishedForBucket:bucket];
-				}
+                [self allVersionsFinishedForBucket:bucket];
             });
         }
     });
@@ -606,7 +615,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 }
 
 - (void)allVersionsFinishedForBucket:(SPBucket *)bucket {
-    [self processBatchForBucket:bucket];
+    [self processVersionsBatchForBucket:bucket];
 
     SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
 
@@ -660,7 +669,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 #pragma mark ====================================================================================
 #pragma mark Static Helpers:
-#pragma mark MockWebSocketChannel relies on this mechanism to register itself, while running the Unit Testing target
+#pragma mark MockWebSocketChannel relies on this mechanism to register itself, 
+#pragma mark while running the Unit Testing target
 #pragma mark ====================================================================================
 
 static Class _class;
