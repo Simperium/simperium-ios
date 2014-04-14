@@ -241,25 +241,21 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			return;
 		}
 
-#warning TODO: Maybe this should go back to SPChangeProcessor?
-        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSError *error) {
+        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSError *error, BOOL *halt) {
             
-            SPLogError(@"Simperium received Error [%@] for object with key [%@]", error.description, simperiumKey);
+            SPLogError(@"Simperium received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
             
             if (error.code == SPProcessorErrorsDuplicateChange) {
-                
-#warning TODO: Implement Me
+#warning TODO: Implement Me                
+                [processor discardPendingChanges:simperiumKey bucket:bucket];
                 
             } else if (error.code == SPProcessorErrorsInvalidChange) {
-#warning TODO: Test Me
                 [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
                 
             } else if (error.code == SPProcessorErrorsServerError) {
-#warning TODO: Test Me
                 [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:NO];
                 
             } else if (error.code == SPProcessorErrorsClientError) {
-#warning TODO: Test Me
                 [processor discardPendingChanges:simperiumKey bucket:bucket];
             }
         }];
@@ -373,7 +369,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 		if ( (self.responseBatch.count == self.objectVersionsPending && self.objectVersionsPending < SPWebsocketIndexBatchSize) ||
 			 self.responseBatch.count % SPWebsocketIndexBatchSize == 0)
 		{
-            [self processBatchForBucket:bucket];
+            [self processVersionsBatchForBucket:bucket];
 		}
     }
 }
@@ -400,8 +396,6 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 #pragma mark ====================================================================================
 
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
-
-    NSAssert( [NSThread isMainThread], @"This method should get called on the main thread" );
 
     if (!self.authenticated) {
         return;
@@ -514,7 +508,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     [self.webSocketManager send:message];
 }
 
-- (void)processBatchForBucket:(SPBucket *)bucket {
+- (void)processVersionsBatchForBucket:(SPBucket *)bucket {
     if (self.responseBatch.count == 0) {
         return;
 	}
@@ -595,7 +589,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 }
 
 - (void)allVersionsFinishedForBucket:(SPBucket *)bucket {
-    [self processBatchForBucket:bucket];
+    [self processVersionsBatchForBucket:bucket];
 
     SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
 

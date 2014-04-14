@@ -16,7 +16,7 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-typedef void(^SPChangeErrorHandlerBlockType)(NSString *simperiumKey, NSError *error);
+typedef void(^SPChangeErrorHandlerBlockType)(NSString *simperiumKey, NSError *error, BOOL *halt);
 typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change, BOOL *stop);
 
 typedef NS_ENUM(NSInteger, SPProcessorErrors) {
