@@ -19,6 +19,7 @@
 #import "SPLogger.h"
 #import "SPBucket+Internals.h"
 #import "SPDiffer.h"
+#import "NSError+Simperium.h"
 
 
 
@@ -127,13 +128,15 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         return NO;
     }
     
-    long errorCode   = [change[CH_ERROR] integerValue];
-    long wrappedCode = SPProcessorErrorsClientError;
+    long errorCode          = [change[CH_ERROR] integerValue];
+    long wrappedCode        = SPProcessorErrorsClientError;
+    NSString *description   = @"";
     
     switch (errorCode) {
         case CH_ERRORS_DUPLICATE:
             {
                 wrappedCode = SPProcessorErrorsDuplicateChange;
+                description = @"Duplicate Change";
             }
             break;
             
@@ -142,6 +145,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         case CH_ERRORS_INVALID_DIFF:
             {
                 wrappedCode = SPProcessorErrorsInvalidChange;
+                description = @"Invalid Change";
             }
             break;
             
@@ -154,13 +158,21 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         default:
             {
                 BOOL isServerError = (errorCode >= CH_SERVER_ERROR_RANGE.location && errorCode < (CH_SERVER_ERROR_RANGE.location + CH_SERVER_ERROR_RANGE.length));
-                wrappedCode = isServerError ? SPProcessorErrorsServerError : SPProcessorErrorsClientError;
+                
+                if (isServerError) {
+                    wrappedCode = SPProcessorErrorsServerError;
+                    description = @"Server Error";
+                } else {
+                    wrappedCode = SPProcessorErrorsClientError;
+                    description = @"Client Error";
+                }
             }
             break;
     }
     
     if (error) {
-        *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:wrappedCode userInfo:nil];
+        NSString *wrappedDescription = [NSString stringWithFormat:@"%@ : %d", description, (int)errorCode];
+        *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:wrappedCode description:wrappedDescription];
     }
     
     return YES;

@@ -241,25 +241,19 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 		}
 
         [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSDictionary *change, NSError *error) {
+            SPLogError(@"Simperium received Error [%@] for object with key [%@]", error.description, simperiumKey);
             
             if (error.code == SPProcessorErrorsDuplicateChange) {
                 
 #warning TODO HERE: SPProcessorErrorsDuplicateChange
-//                SPLogError(@"Simperium received Duplicate Error (Code %ld) for change %@. Requesting resync!", errorCode, change);
                 
             } else if (error.code == SPProcessorErrorsInvalidChange) {
-
-                SPLogError(@"Simperium received Invalid Change Error for change %@. Overriding remote data!", change);
                 [processor markPendingChangeForRetry:change bucket:bucket overrideRemoteData:YES];
                 
             } else if (error.code == SPProcessorErrorsServerError) {
-                
-                SPLogError(@"Simperium received Internal Server Error for change %@. Re-enqueuing change!", change);
                 [processor markPendingChangeForRetry:change bucket:bucket overrideRemoteData:NO];
                 
             } else if (error.code == SPProcessorErrorsClientError) {
-                
-                SPLogError(@"Simperium received unhandled error for change %@", change);
                 [processor discardPendingChange:change bucket:bucket];
             }
         }];
