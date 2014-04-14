@@ -33,6 +33,7 @@
 static int const SPWebsocketIndexPageSize			= 500;
 static int const SPWebsocketIndexBatchSize			= 10;
 static int const SPWebsocketErrorAuthFailed			= 401;
+static int const SPWebsocketChangesBatchSize        = 20;
 static NSString* const SPWebsocketErrorMark			= @"{";
 static NSString* const SPWebsocketErrorKey			= @"code";
 
@@ -46,10 +47,12 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 @interface SPWebSocketChannel()
 @property (nonatomic,   weak) Simperium                     *simperium;
-@property (nonatomic, strong) NSMutableArray                *responseBatch;
+@property (nonatomic, strong) NSMutableArray                *versionsBatch;
+@property (nonatomic, strong) NSMutableArray                *changesBatch;
 @property (nonatomic, strong) NSMutableDictionary           *versionsWithErrors;
 @property (nonatomic, assign) NSInteger                     retryDelay;
 @property (nonatomic, assign) NSInteger                     objectVersionsPending;
+@property (nonatomic, assign) BOOL                          started;
 @property (nonatomic, assign) BOOL                          indexing;
 @property (nonatomic, assign) BOOL                          retrievingObjectHistory;
 @property (nonatomic, assign) BOOL                          shouldSendEverything;
@@ -67,6 +70,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 	if ((self = [super init])) {
         self.simperium			= s;
         self.indexArray			= [NSMutableArray arrayWithCapacity:200];
+        self.changesBatch       = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
         self.versionsWithErrors = [NSMutableDictionary dictionaryWithCapacity:3];
     }
 	
@@ -137,8 +141,11 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 		// AutoreleasePool:
 		//	While processing large amounts of objects, memory usage will potentially ramp up if we don't add a pool here!
 		@autoreleasepool {
-			NSDictionary *change = [object.bucket.changeProcessor processLocalDeletionWithKey:key];
-			[self sendChange:change];
+            NSSet *wrappedKey   = [NSSet setWithObject:key];
+			NSArray *changes    = [object.bucket.changeProcessor processLocalDeletionsWithKeys:wrappedKey];
+            for (NSDictionary *change in changes) {
+                [self sendChange:change];
+            }
 		}
     });
 }
@@ -158,10 +165,13 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			SPChangeProcessor *processor = object.bucket.changeProcessor;
 			
 			if (_indexing || !_authenticated || processor.reachedMaxPendings) {
-				[processor markObjectWithPendingChanges:key bucket:object.bucket];
+				[processor enqueueObjectForMoreChanges:key bucket:object.bucket];
 			} else {
-				NSDictionary *change = [processor processLocalObjectWithKey:key bucket:object.bucket];
-				[self sendChange:change];
+                NSSet *wrappedKey = [NSSet setWithObject:key];
+				NSArray *changes = [processor processLocalObjectsWithKeys:wrappedKey bucket:object.bucket];
+                for (NSDictionary *change in changes) {
+                    [self sendChange:change];
+                }
 			}
 		}
     });
@@ -177,11 +187,15 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 #pragma mark ====================================================================================
 
 - (void)removeAllBucketObjects:(SPBucket *)bucket {
-	NSDictionary *change = [bucket.changeProcessor processLocalBucketDeletion:bucket];
-	NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [change sp_JSONString]];
-	SPLogVerbose(@"Simperium deleting all Bucket Objects (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
-	
-	[self.webSocketManager send:message];
+    NSSet *wrappedBucket = [NSSet setWithObject:bucket];
+	NSArray *changes = [bucket.changeProcessor processLocalBucketsDeletion:wrappedBucket];
+    
+    for (NSDictionary *change in changes) {
+        NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [change sp_JSONString]];
+        SPLogVerbose(@"Simperium deleting all Bucket Objects (%@-%@) %@", bucket.name, bucket.instanceLabel, message);
+        
+        [self.webSocketManager send:message];
+    }
 }
 
 
@@ -208,8 +222,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 	
 	// All looking good!
 	self.authenticated              = YES;
+    self.started                    = NO;
 	self.indexing					= NO;
 	self.retrievingObjectHistory	= NO;
+    self.shouldSendEverything       = NO;
 	self.simperium.user.email		= responseString;
     self.onLocalChangesSent         = nil;
 
@@ -222,35 +238,57 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
     
-    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
+    NSAssert( [NSThread isMainThread], @"This should get called on the main thread!" );
+    
+    // Batch-Processing: This will speed up sync'ing of large databases!
+    [self.changesBatch addObjectsFromArray:changes];
+    
+    if ( !_started || bucket.changeProcessor.numChangesPending < SPWebsocketChangesBatchSize || _changesBatch.count % SPWebsocketChangesBatchSize == 0 ) {
+        [self processBatchChanges:_changesBatch bucket:bucket];
+        self.changesBatch = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
+        self.started = YES;
+    }
+}
+
+- (void)processBatchChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
+	
+    NSAssert( [NSThread isMainThread], @"This should get called on the main thread!" );
     
 	SPLogVerbose(@"Simperium handling changes %@", changes);
-	   
-    SPChangeProcessor *processor = bucket.changeProcessor;
     
-    // Notify the delegates on the main thread that we're about to apply remote changes
-    [processor notifyRemoteChanges:changes bucket:bucket];
+    SPChangeProcessor *processor = bucket.changeProcessor;
     
 	// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
 	// sync will still work for any unsaved changes.
 	[bucket.storage stashUnsavedObjects];
-	
+    
+    // Notify the delegates on the main thread that we're about to apply remote changes
+    [bucket.changeProcessor notifyOfRemoteChanges:changes bucket:bucket];
+    
+    
 	dispatch_async(bucket.processorQueue, ^{
 		if (!self.authenticated) {
 			return;
 		}
 
-        NSSet *errors = nil;
-        [processor processRemoteChanges:changes bucket:bucket errors:&errors];
-        
-        // Handle any Errors
-        for (NSError *error in errors) {
-            switch (error.code) {
-                case SPProcessorErrorsInvalidChange:
-                    [self setShouldSendEverything];
-                    break;
+        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSError *error, BOOL *halt) {
+            
+            SPLogError(@"Simperium received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
+            
+            if (error.code == SPProcessorErrorsDuplicateChange) {           
+                [processor discardPendingChanges:simperiumKey bucket:bucket];
+                
+            } else if (error.code == SPProcessorErrorsInvalidChange) {
+                [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
+                
+            } else if (error.code == SPProcessorErrorsServerError) {
+                [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:NO];
+                
+            } else if (error.code == SPProcessorErrorsClientError) {
+                [processor discardPendingChanges:simperiumKey bucket:bucket];
             }
-        }
+        }];
+        
 
         //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
         //  in the meantime, and send them.
@@ -353,14 +391,14 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     } else {
         // Otherwise, process the result for indexing
         // Marshal everything into an array for later processing
-        NSArray *responseData = [NSArray arrayWithObjects: key, payloadString, version, nil];
-        [self.responseBatch addObject:responseData];
+        NSArray *responseData = @[ key, payloadString, version ];
+        [self.versionsBatch addObject:responseData];
 
         // Batch responses for more efficient processing
-		if ( (self.responseBatch.count == self.objectVersionsPending && self.objectVersionsPending < SPWebsocketIndexBatchSize) ||
-			 self.responseBatch.count % SPWebsocketIndexBatchSize == 0)
+		if ( (self.versionsBatch.count == self.objectVersionsPending && self.objectVersionsPending < SPWebsocketIndexBatchSize) ||
+			 self.versionsBatch.count % SPWebsocketIndexBatchSize == 0)
 		{
-            [self processBatchForBucket:bucket];
+            [self processVersionsBatchForBucket:bucket];
 		}
     }
 }
@@ -389,7 +427,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
 
     NSAssert( [NSThread isMainThread], @"This method should get called on the main thread" );
-
+        
     if (!self.authenticated) {
         return;
     }
@@ -421,14 +459,14 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)sendChangesForBucket:(SPBucket *)bucket {
 	
-    // Note: 'onlyQueuedChanges' set to false will post **every** pending change, again
     if (!self.authenticated) {
         return;
     }
     
+    // Note: 'onlyQueuedChanges' set to false will post **every** pending change, again
     BOOL onlyQueuedChanges              = !self.shouldSendEverything;
 	SPChangeProcessor *processor		= bucket.changeProcessor;
-	SPChangeEnumerationBlockType block	= ^(NSDictionary *change, BOOL *stop) {
+	SPChangeEnumerationBlockType block	= ^(NSDictionary *change) {
 		[self sendChange:change];
 	};
 	
@@ -449,12 +487,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			}
 			
 			// Process Queued Changes: let's consider the SPWebsocketMaxPendingChanges limit
-            if (![processor reachedMaxPendings]) {
-                [processor enumerateQueuedChangesForBucket:bucket block:^(NSDictionary *change, BOOL *stop) {
-                    [self sendChange:change];
-                    *stop = [processor reachedMaxPendings];
-                }];
-            }
+			[processor enumerateQueuedChangesForBucket:bucket block:block];
             
             // Ready posting local changes. If needed, hit the callback
             if (self.onLocalChangesSent) {
@@ -501,35 +534,37 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     [self.webSocketManager send:message];
 }
 
-- (void)processBatchForBucket:(SPBucket *)bucket {
-    if (self.responseBatch.count == 0) {
+- (void)processVersionsBatchForBucket:(SPBucket *)bucket {
+    if (self.versionsBatch.count == 0) {
         return;
 	}
 	
-    NSMutableArray *batch	= [self.responseBatch copy];
+    NSMutableArray *batch	= [self.versionsBatch copy];
 	NSInteger newPendings	= MAX(0, _objectVersionsPending - batch.count);
 	
     BOOL firstSync			= bucket.lastChangeSignature == nil;
 	BOOL shouldHitFinished	= (_indexing && newPendings == 0);
 	
     dispatch_async(bucket.processorQueue, ^{
-        if (self.authenticated) {
-            [bucket.indexProcessor processVersions: batch bucket:bucket firstSync: firstSync changeHandler:^(NSString *key) {
-                // Local version was different, so process it as a local change
-				[bucket.changeProcessor markObjectWithPendingChanges:key bucket:bucket];
-            }];
-            
-            // Now check if indexing is complete
+        if (!self.authenticated) {
+            return;
+        }
+        
+        [bucket.indexProcessor processVersions: batch bucket:bucket firstSync: firstSync changeHandler:^(NSString *key) {
+            // Local version was different, so process it as a local change
+            [bucket.changeProcessor enqueueObjectForMoreChanges:key bucket:bucket];
+        }];
+        
+        // Now check if indexing is complete
+        if (shouldHitFinished) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (shouldHitFinished) {
-                    [self allVersionsFinishedForBucket:bucket];
-				}
+                [self allVersionsFinishedForBucket:bucket];
             });
         }
     });
 	
 	self.objectVersionsPending = newPendings;
-    [self.responseBatch removeAllObjects];
+    [self.versionsBatch removeAllObjects];
 }
 
 - (void)requestVersionsForKeys:(NSArray *)currentIndexArray bucket:(SPBucket *)bucket {
@@ -543,7 +578,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         [bucket.delegate bucketWillStartIndexing:bucket];
 	}
 
-    self.responseBatch = [NSMutableArray arrayWithCapacity:SPWebsocketIndexBatchSize];
+    self.versionsBatch = [NSMutableArray arrayWithCapacity:SPWebsocketIndexBatchSize];
 
     // Get all the latest versions
     SPLogInfo(@"Simperium processing %lu objects from index (%@)", (unsigned long)[currentIndexArray count], self.name);
@@ -580,7 +615,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 }
 
 - (void)allVersionsFinishedForBucket:(SPBucket *)bucket {
-    [self processBatchForBucket:bucket];
+    [self processVersionsBatchForBucket:bucket];
 
     SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
 
@@ -634,7 +669,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 #pragma mark ====================================================================================
 #pragma mark Static Helpers:
-#pragma mark MockWebSocketChannel relies on this mechanism to register itself, while running the Unit Testing target
+#pragma mark MockWebSocketChannel relies on this mechanism to register itself, 
+#pragma mark while running the Unit Testing target
 #pragma mark ====================================================================================
 
 static Class _class;
