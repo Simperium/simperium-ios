@@ -68,7 +68,7 @@
 }
 
 - (id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
-relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label remoteName:(NSString *)remoteName
+relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label remoteName:(NSString *)remoteName clientID:(NSString *)clientID
 {
     if ((self = [super init])) {
         self.name = aSchema.bucketName;
@@ -87,9 +87,10 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
         void (^isProcessingChangesUpdated)(BOOL) = ^(__unused BOOL x){
             [weakSelf updateWorking];
         };
-        SPChangeProcessor *cp = [[SPChangeProcessor alloc] initWithLabel:self.instanceLabel];
+        SPChangeProcessor *cp = [[SPChangeProcessor alloc] initWithLabel:self.instanceLabel clientID:clientID];
         cp.isProcessingChangesUpdated = isProcessingChangesUpdated;
         self.changeProcessor = cp;
+
 
         SPIndexProcessor *ip = [[SPIndexProcessor alloc] init];
         ip.isProcessingChangesUpdated = isProcessingChangesUpdated;
@@ -98,27 +99,17 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
         NSString *queueLabel = [@"com.simperium.processor." stringByAppendingString:self.name];
         self.processorQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
 
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectDidChange:)
-                                                     name:ProcessorDidChangeObjectNotification object:self];
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsAdded:)
-                                                     name:ProcessorDidAddObjectsNotification object:self];
+        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
         
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectKeysDeleted:)
-                                                     name:ProcessorDidDeleteObjectKeysNotification object:self];        
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsAcknowledged:)
-                                                     name:ProcessorDidAcknowledgeObjectsNotification object:self];        
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(objectsWillChange:)
-                                                     name:ProcessorWillChangeObjectsNotification object:self];        
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acknowledgedObjectDeletion:)
-                                                     name:ProcessorDidAcknowledgeDeleteNotification object:self];        
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(requestLatestVersions)
-                                                     name:ProcessorRequestsReindexing object:self];
+        [nc addObserver:self selector:@selector(objectDidChange:)            name:ProcessorDidChangeObjectNotification          object:self];
+        [nc addObserver:self selector:@selector(objectsAdded:)               name:ProcessorDidAddObjectsNotification            object:self];
+        [nc addObserver:self selector:@selector(objectKeysDeleted:)          name:ProcessorDidDeleteObjectKeysNotification      object:self];
+        [nc addObserver:self selector:@selector(objectsAcknowledged:)        name:ProcessorDidAcknowledgeObjectsNotification    object:self];
+        [nc addObserver:self selector:@selector(objectsWillChange:)          name:ProcessorWillChangeObjectsNotification        object:self];
+        [nc addObserver:self selector:@selector(acknowledgedObjectDeletion:) name:ProcessorDidAcknowledgeDeleteNotification     object:self];
+        [nc addObserver:self selector:@selector(requestLatestVersions)       name:ProcessorRequestsReindexingNotification       object:self];
     }
+    
     return self;
 }
 
@@ -338,7 +329,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
 }
 
 - (void)bucketDidSync {
-	if (self.changeProcessor.numChangesPending == 0 && self.forceSyncCompletion) {
+	if (self.forceSyncCompletion && self.changeProcessor.numChangesPending == 0) {
 		self.forceSyncCompletion();
 		self.forceSyncCompletion = nil;
 	}

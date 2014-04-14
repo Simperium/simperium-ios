@@ -154,7 +154,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 - (SPBucket *)bucketForName:(NSString *)name { 
-    SPBucket *bucket = [self.buckets objectForKey:name];
+    SPBucket *bucket = self.buckets[name];
     if (!bucket) {
         // First check for an override
         for (SPBucket *someBucket in self.buckets.allValues) {
@@ -172,7 +172,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 			// New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
 			NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
 			bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkInterface:self.network
-								 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName];
+								 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName clientID:self.clientID];
 
 			[self.buckets setObject:bucket forKey:name];
             [self.network start:bucket];
@@ -262,7 +262,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         
 		NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
 		bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
-							 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName];
+							 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName clientID:self.clientID];
         
         [bucketList setObject:bucket forKey:schema.bucketName];
     }
@@ -693,13 +693,13 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         return;
 	}
 	
-    SPAuthenticationViewController *loginController		= [[self.authenticationViewControllerClass alloc] init];
-    self.authenticationViewController					= loginController;
-    self.authenticationViewController.authenticator		= self.authenticator;
-    self.authenticationViewController.signingIn			= self.shouldSignIn;
+    SPAuthenticationViewController *loginController = [[self.authenticationViewControllerClass alloc] init];
+    loginController.authenticator       = self.authenticator;
+    loginController.signingIn           = self.shouldSignIn;
+    self.authenticationViewController   = loginController;
 	
     if (!self.rootViewController) {
-        UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
+        UIWindow *window = [[[UIApplication sharedApplication] windows] firstObject];
         self.rootViewController = [window rootViewController];
         NSAssert(self.rootViewController, @"Simperium error: to use built-in authentication, you must configure a rootViewController when you "
 										   "initialize Simperium, or call setParentViewControllerForAuthentication:. "

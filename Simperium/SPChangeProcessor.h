@@ -18,16 +18,12 @@
 
 typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change, BOOL *stop);
 
-extern NSString * const CH_KEY;
-extern NSString * const CH_ADD;
-extern NSString * const CH_REMOVE;
-extern NSString * const CH_MODIFY;
-extern NSString * const CH_OPERATION;
-extern NSString * const CH_VALUE;
-extern NSString * const CH_START_VERSION;
-extern NSString * const CH_END_VERSION;
-extern NSString * const CH_LOCAL_ID;
-
+typedef NS_ENUM(NSInteger, SPProcessorErrors) {
+    SPProcessorErrorsDuplicateChange,           // Should Re-Sync
+    SPProcessorErrorsInvalidChange,             // Should Re-Send all
+    SPProcessorErrorsServerError,               // Change is enqueued for retry
+    SPProcessorErrorsClientError                // Change is nuked
+};
 
 #pragma mark ====================================================================================
 #pragma mark SPChangeProcessor
@@ -36,15 +32,17 @@ extern NSString * const CH_LOCAL_ID;
 @interface SPChangeProcessor : NSObject
 
 @property (nonatomic, strong, readonly) NSString	*label;
+@property (nonatomic, strong, readonly) NSString	*clientID;
 @property (nonatomic, assign, readonly) int			numChangesPending;
 @property (nonatomic, assign, readonly) int			numKeysForObjectsWithMoreChanges;
+@property (nonatomic, assign, readonly) BOOL        reachedMaxPendings;
 
-- (id)initWithLabel:(NSString *)label;
+- (id)initWithLabel:(NSString *)label clientID:(NSString *)clientID;
 
 - (void)reset;
 
-- (void)processRemoteResponseForChanges:(NSArray *)changes bucket:(SPBucket *)bucket repostNeeded:(BOOL *)repostNeeded;
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket clientID:(NSString *)clientID;
+- (void)notifyRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errors:(NSSet **)errors;
 
 - (void)markObjectWithPendingChanges:(NSString *)key bucket:(SPBucket *)bucket;
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket;
@@ -55,8 +53,7 @@ extern NSString * const CH_LOCAL_ID;
 - (void)enumerateQueuedChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
 - (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
 
-- (BOOL)hasReachedMaxPendings;
-- (NSArray*)exportPendingChanges;
+- (NSArray *)exportPendingChanges;
 
 @property (atomic, assign, readonly, getter = isProcessingChanges) BOOL processingChanges;
 @property (nonatomic, copy, readwrite) void (^isProcessingChangesUpdated)(BOOL isProcessingChanges);
