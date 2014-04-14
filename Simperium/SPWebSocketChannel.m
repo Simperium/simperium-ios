@@ -158,7 +158,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			SPChangeProcessor *processor = object.bucket.changeProcessor;
 			
 			if (_indexing || !_authenticated || processor.reachedMaxPendings) {
-				[processor markObjectWithPendingChanges:key bucket:object.bucket];
+				[processor enqueueObjectForMoreChanges:key bucket:object.bucket];
 			} else {
 				NSDictionary *change = [processor processLocalObjectWithKey:key bucket:object.bucket];
 				[self sendChange:change];
@@ -210,6 +210,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 	self.authenticated              = YES;
 	self.indexing					= NO;
 	self.retrievingObjectHistory	= NO;
+    self.shouldSendEverything       = NO;
 	self.simperium.user.email		= responseString;
     self.onLocalChangesSent         = nil;
 
@@ -240,21 +241,26 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			return;
 		}
 
-        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSDictionary *change, NSError *error) {
+#warning TODO: Maybe this should go back to SPChangeProcessor?
+        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSError *error) {
+            
             SPLogError(@"Simperium received Error [%@] for object with key [%@]", error.description, simperiumKey);
             
             if (error.code == SPProcessorErrorsDuplicateChange) {
                 
-#warning TODO HERE: SPProcessorErrorsDuplicateChange
+#warning TODO: Implement Me
                 
             } else if (error.code == SPProcessorErrorsInvalidChange) {
-                [processor markPendingChangeForRetry:change bucket:bucket overrideRemoteData:YES];
+#warning TODO: Test Me
+                [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
                 
             } else if (error.code == SPProcessorErrorsServerError) {
-                [processor markPendingChangeForRetry:change bucket:bucket overrideRemoteData:NO];
+#warning TODO: Test Me
+                [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:NO];
                 
             } else if (error.code == SPProcessorErrorsClientError) {
-                [processor discardPendingChange:change bucket:bucket];
+#warning TODO: Test Me
+                [processor discardPendingChanges:simperiumKey bucket:bucket];
             }
         }];
         

@@ -453,7 +453,8 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             // Process any errors we might have received
             NSError *error = nil;
             if ([self processRemoteError:change bucket:bucket error:&error]) {
-                errorHandler(change, error);
+                NSString *key = [self keyWithoutNamespaces:change bucket:bucket];
+                errorHandler(key, error);
                 continue;
             }
             
@@ -484,7 +485,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 #pragma mark Change Helpers
 #pragma mark ====================================================================================
 
-- (void)markObjectWithPendingChanges:(NSString *)key bucket:(SPBucket *)bucket {
+- (void)enqueueObjectForMoreChanges:(NSString *)key bucket:(SPBucket *)bucket {
     
     NSAssert( [key isKindOfClass:[NSString class]],         @"Missing key" );
     NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Missing Bucket");
@@ -494,21 +495,19 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	[self.keysForObjectsWithMoreChanges save];
 }
 
-- (void)markPendingChangeForRetry:(NSDictionary *)change bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData {
+- (void)enqueueObjectForRetry:(NSString *)key bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData {
     
-    NSAssert( [change isKindOfClass:[NSDictionary class]],  @"Missing change" );
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Missing Bucket");
-    
-    NSString *simperiumKey = [self keyWithoutNamespaces:change bucket:bucket];
+    NSAssert( [key isKindOfClass:[NSString class]],     @"Missing change" );
+    NSAssert( [bucket isKindOfClass:[SPBucket class]],  @"Missing Bucket");
     
     id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
     [threadSafeStorage beginSafeSection];
     
-    id<SPDiffable>object = [threadSafeStorage objectForKey:simperiumKey bucketName :bucket.name];
+    id<SPDiffable>object = [threadSafeStorage objectForKey:key bucketName :bucket.name];
     
     // Was the object nuked?
     if (!object) {
-        [self.changesPending removeObjectForKey:simperiumKey];
+        [self.changesPending removeObjectForKey:key];
         [threadSafeStorage finishSafeSection];
         return;
     }
@@ -518,22 +517,21 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         // Fire fault
         NSMutableDictionary *newChange = [[self.changesPending objectForKey:object.simperiumKey] mutableCopy];
         newChange[CH_DATA] = [object dictionary];
-        [self.changesPending setObject:newChange forKey:simperiumKey];
+        [self.changesPending setObject:newChange forKey:key];
     }
     
     [threadSafeStorage finishSafeSection];
     
-    [self.keysForObjectsWithPendingRetry addObject:simperiumKey];
+    [self.keysForObjectsWithPendingRetry addObject:key];
     [self.keysForObjectsWithPendingRetry save];
 }
 
-- (void)discardPendingChange:(NSDictionary *)change bucket:(SPBucket *)bucket {
+- (void)discardPendingChanges:(NSString *)key bucket:(SPBucket *)bucket {
     
-    NSAssert( [change isKindOfClass:[NSDictionary class]],  @"Missing change" );
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Missing Bucket");
+    NSAssert( [key isKindOfClass:[NSString class]],     @"Missing change" );
+    NSAssert( [bucket isKindOfClass:[SPBucket class]],  @"Missing Bucket");
     
-    NSString *simperiumKey = [self keyWithoutNamespaces:change bucket:bucket];
-    [self.changesPending removeObjectForKey:simperiumKey];
+    [self.changesPending removeObjectForKey:key];
 }
 
 
@@ -562,7 +560,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
     // If there are already changes pending for this entity, mark this entity and come back to it later to get the changes
     if ([self.changesPending containsObjectForKey:key]) {
-		[self markObjectWithPendingChanges:key bucket:bucket];
+		[self enqueueObjectForMoreChanges:key bucket:bucket];
 		[storage finishSafeSection];
         return nil;
     }

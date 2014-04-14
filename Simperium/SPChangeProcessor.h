@@ -16,7 +16,7 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-typedef void(^SPChangeErrorHandlerBlockType)(NSDictionary *change, NSError *error);
+typedef void(^SPChangeErrorHandlerBlockType)(NSString *simperiumKey, NSError *error);
 typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change, BOOL *stop);
 
 typedef NS_ENUM(NSInteger, SPProcessorErrors) {
@@ -45,9 +45,9 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 - (void)notifyOfRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errorHandler:(SPChangeErrorHandlerBlockType)errorHandler;
 
-- (void)markObjectWithPendingChanges:(NSString *)key bucket:(SPBucket *)bucket;
-- (void)markPendingChangeForRetry:(NSDictionary *)change bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData;
-- (void)discardPendingChange:(NSDictionary *)change bucket:(SPBucket *)bucket;
+- (void)enqueueObjectForMoreChanges:(NSString *)key bucket:(SPBucket *)bucket;
+- (void)enqueueObjectForRetry:(NSString *)key bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData;
+- (void)discardPendingChanges:(NSString *)key bucket:(SPBucket *)bucket;
 
 - (NSDictionary *)processLocalObjectWithKey:(NSString *)key bucket:(SPBucket *)bucket;
 - (NSDictionary *)processLocalDeletionWithKey:(NSString *)key;
