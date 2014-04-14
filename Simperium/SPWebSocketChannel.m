@@ -360,7 +360,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     } else {
         // Otherwise, process the result for indexing
         // Marshal everything into an array for later processing
-        NSArray *responseData = [NSArray arrayWithObjects: key, payloadString, version, nil];
+        NSArray *responseData = @[ key, payloadString, version ];
         [self.responseBatch addObject:responseData];
 
         // Batch responses for more efficient processing
@@ -520,17 +520,19 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 	BOOL shouldHitFinished	= (_indexing && newPendings == 0);
 	
     dispatch_async(bucket.processorQueue, ^{
-        if (self.authenticated) {
-            [bucket.indexProcessor processVersions: batch bucket:bucket firstSync: firstSync changeHandler:^(NSString *key) {
-                // Local version was different, so process it as a local change
-				[bucket.changeProcessor markObjectWithPendingChanges:key bucket:bucket];
-            }];
-            
-            // Now check if indexing is complete
+        if (!self.authenticated) {
+            return;
+        }
+        
+        [bucket.indexProcessor processVersions: batch bucket:bucket firstSync: firstSync changeHandler:^(NSString *key) {
+            // Local version was different, so process it as a local change
+            [bucket.changeProcessor enqueueObjectForMoreChanges:key bucket:bucket];
+        }];
+        
+        // Now check if indexing is complete
+        if (shouldHitFinished) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (shouldHitFinished) {
-                    [self allVersionsFinishedForBucket:bucket];
-				}
+                [self allVersionsFinishedForBucket:bucket];
             });
         }
     });
