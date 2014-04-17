@@ -61,8 +61,12 @@
         NSString *fromKey = object.simperiumKey;
         dispatch_async(dispatch_get_main_queue(), ^{
             // Let Simperium store the reference so it can be properly resolved when the object gets synced
-            [bucket.relationshipResolver addPendingRelationshipToKey:simperiumKey fromKey:fromKey bucketName:bucket.name
-                                                attributeName:self.keyName storage:bucket.storage];
+            [bucket.relationshipResolver setPendingRelationshipBetweenKey:fromKey
+                                                            fromAttribute:self.keyName
+                                                                 inBucket:bucket.name
+                                                            withTargetKey:simperiumKey
+                                                          andTargetBucket:self.entityName
+                                                                  storage:bucket.storage];
         });
     }
     return value;

@@ -18,9 +18,35 @@
 @interface SPRelationshipResolver : NSObject
 
 - (void)loadPendingRelationships:(id<SPStorageProvider>)storage;
-- (void)addPendingRelationshipToKey:(NSString *)key fromKey:(NSString *)fromKey bucketName:(NSString *)bucketName
-                   attributeName:(NSString *)attributeName storage:(id<SPStorageProvider>)storage;
-- (void)resolvePendingRelationshipsToKey:(NSString *)toKey bucketName:(NSString *)bucketName storage:(id<SPStorageProvider>)storage;
+
+- (void)setPendingRelationshipBetweenKey:(NSString *)sourceKey
+                           fromAttribute:(NSString *)sourceAttribute
+                                inBucket:(NSString *)sourceBucket
+                           withTargetKey:(NSString *)targetKey
+                         andTargetBucket:(NSString *)targetBucket
+                                 storage:(id<SPStorageProvider>)storage;
+
+- (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey
+                               bucketName:(NSString *)bucketName
+                                  storage:(id<SPStorageProvider>)storage;
+
 - (void)reset:(id<SPStorageProvider>)storage;
+
+
+#pragma mark ====================================================================================
+#pragma mark Debug Helpers: Not designed for real usage!
+#pragma mark ====================================================================================
+
+#ifdef DEBUG
+
+- (NSInteger)countPendingRelationships;
+
+- (NSInteger)countPendingRelationshipsWithSourceKey:(NSString *)sourceKey
+                                       andTargetKey:(NSString *)targetKey;
+
+- (BOOL)verifyBidireccionalMappingBetweenKey:(NSString *)sourceKey
+                                      andKey:(NSString *)targetKey;
+
+#endif
 
 @end
