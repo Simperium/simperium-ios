@@ -11,16 +11,17 @@
 #import "MockStorage.h"
 #import "XCTestCase+Simperium.h"
 #import "NSString+Simperium.h"
+#import "SPObject.h"
 
 
 #pragma mark ====================================================================================
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSString *SPTestSourceBucket     = @"sourceBucket";
-static NSString *SPTestSourceAttribute  = @"sourceAttribute";
+static NSString *SPTestSourceBucket     = @"SPMockSource";
+static NSString *SPTestSourceAttribute  = @"target";
 
-static NSString *SPTestTargetBucket     = @"targetBucket";
+static NSString *SPTestTargetBucket     = @"SPMockTarget";
 
 static NSString *SPLegacyPathKey        = @"SPPathKey";
 static NSString *SPLegacyPathBucket     = @"SPPathBucket";
@@ -180,19 +181,53 @@ static NSInteger SPTestSubIterations    = 10;
 }
 
 - (void)testResolvePendingRelationshipWithSourceObjectMissing {
+    // New Objects please
+    SPObject *target    = [SPObject new];
+    target.simperiumKey = [NSString sp_makeUUID];
+    
+    SPObject *source    = [SPObject new];
+    source.simperiumKey = [NSString sp_makeUUID];
 
+    // Set the pending relationship
+    [self.resolver setPendingRelationshipBetweenKey:source.simperiumKey
+                                      fromAttribute:SPTestSourceAttribute
+                                           inBucket:SPTestSourceBucket
+                                      withTargetKey:target.simperiumKey
+                                    andTargetBucket:SPTestTargetBucket
+                                            storage:self.storage];
+    XCTAssertTrue( [self.resolver countPendingRelationships] == 1, @"Inconsistency detected" );
+    
+    // Insert Target
+    [self.storage insertObject:target bucketName:SPTestTargetBucket];
+    XCTAssertTrue( [self.storage numObjectsForBucketName:SPTestTargetBucket predicate:nil] == 1, @"Inconsistency detected" );
+    
+    // Attempt to resolve. This should not do anything
+    [self.resolver resolvePendingRelationshipsForKey:target.simperiumKey bucketName:SPTestTargetBucket storage:self.storage];
+    
+    // Resolver works in a BG thread. Wait a sec...
+    [self waitFor:1.0f];
+    XCTAssertTrue( [self.resolver countPendingRelationships] == 1, @"Inconsistency detected" );
+    
+    // Insert Source
+    [self.storage insertObject:source bucketName:SPTestSourceBucket];
+    [self.resolver resolvePendingRelationshipsForKey:source.simperiumKey bucketName:SPTestSourceBucket storage:self.storage];
+    
+    // Wait..
+    [self waitFor:1.0f];
+    XCTAssertTrue( [self.resolver countPendingRelationships] == 0, @"Inconsistency detected" );
+    XCTAssert([source simperiumValueForKey:SPTestSourceAttribute] == target, @"Inconsistency detected" );
 }
 
 - (void)testResolvePendingRelationshipWithTargetObjectMissing {
-
+#warning Implement Me!
 }
 
 - (void)testResolvePendingRelationshipWithBothObjectsInserted {
-
+#warning Implement Me!
 }
 
 - (void)testIfPendingRelationshipsGetNukedAfterBeingResolved {
-
+#warning Implement Me!
 }
 
 @end

@@ -72,7 +72,11 @@ static NSInteger const SPWorkersDone = 0;
 
 - (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate {
     NSArray *objects = [self.storage[bucketName] allValues];
-    return [[objects filteredArrayUsingPredicate:predicate] count];
+    if (predicate) {
+        return [[objects filteredArrayUsingPredicate:predicate] count];
+    } else {
+        return objects.count;
+    }
 }
 
 - (NSDictionary *)faultObjectsForKeys:(NSArray *)keys bucketName:(NSString *)bucketName {
@@ -94,15 +98,10 @@ static NSInteger const SPWorkersDone = 0;
 }
 
 - (void)insertObject:(id)object bucketName:(NSString *)bucketName {
-    // Not supported
-}
-
-- (id)insertNewObjectForBucketName:(NSString *)bucketName simperiumKey:(NSString *)key {
-
-    // New Object
-    SPObject *object = [SPObject new];
-    object.simperiumKey = key ? key : [NSString sp_makeUUID];
-
+    if ([object isKindOfClass:[SPObject class]] == NO) {
+        return;
+    }
+    
     // Load the bucket
     NSMutableDictionary *bucket = self.storage[bucketName];
     if (!bucket) {
@@ -111,9 +110,14 @@ static NSInteger const SPWorkersDone = 0;
     }
     
     // Insert
-    bucket[key] = object;
-    
-	return object;
+    SPObject *theObject = (SPObject *)object;
+    bucket[theObject.simperiumKey] = object;
+
+}
+
+- (id)insertNewObjectForBucketName:(NSString *)bucketName simperiumKey:(NSString *)key {
+    // Not supported
+    return nil;
 }
 
 - (void)deleteObject:(id)object {
