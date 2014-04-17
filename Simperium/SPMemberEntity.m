@@ -12,10 +12,8 @@
 #import "SPRelationshipResolver.h"
 
 @implementation SPMemberEntity
-@synthesize entityName;
 
-- (id)initFromDictionary:(NSDictionary *)dict
-{
+- (id)initFromDictionary:(NSDictionary *)dict {
     if (self = [super initFromDictionary:dict]) {
         self.entityName = [dict objectForKey:@"entityName"];
     }
@@ -23,41 +21,35 @@
     return self;
 }
 
-
 - (id)defaultValue {
 	return nil;
 }
 
 - (id)simperiumKeyForObject:(id)value {
-    NSString *simperiumKey = [value simperiumKey];
-	return simperiumKey == nil ? @"" : simperiumKey;
+	return [value simperiumKey] ?: @"";
 }
 
 - (SPManagedObject *)objectForKey:(NSString *)key context:(NSManagedObjectContext *)context {
     // TODO: could possibly just request a fault?
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:entityName inManagedObjectContext:context];
-    [fetchRequest setEntity:entityDescription];
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simperiumKey == %@", key];
-    [fetchRequest setPredicate:predicate];
+    fetchRequest.entity     = [NSEntityDescription entityForName:self.entityName inManagedObjectContext:context];
+    fetchRequest.predicate  = [NSPredicate predicateWithFormat:@"simperiumKey == %@", key];
     
     NSError *error;
     NSArray *items = [context executeFetchRequest:fetchRequest error:&error];
     
-    if ([items count] == 0)
-        return nil;
-    
-    return [items objectAtIndex:0];
+    return [items firstObject];
 }
 
 - (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
-    NSString *simperiumKey = [dict objectForKey: key];
+    NSString *simperiumKey = dict[key];
     
     // With optional 1 to 1 relationships, there might not be an object
-    if (!simperiumKey || simperiumKey.length == 0)
+    if (!simperiumKey || simperiumKey.length == 0) {
         return nil;
-        
+    }
+    
     SPManagedObject *managedObject = (SPManagedObject *)object;
     id value = [self objectForKey:simperiumKey context:managedObject.managedObjectContext];
     SPBucket *bucket = object.bucket;
@@ -90,13 +82,15 @@
     NSString *thisKey = [self simperiumKeyForObject:thisValue];
     
     // No change if the entity keys are equal
-    if ([thisKey isEqualToString:otherKey])
-        return [NSDictionary dictionary];
+    if ([thisKey isEqualToString:otherKey]) {
+        return @{ };
+    }
     
 	// Construct the diff in the expected format
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			OP_REPLACE, OP_OP,
-			otherKey, OP_VALUE, nil];
+	return @{
+        OP_OP       : OP_REPLACE,
+        OP_VALUE    : otherKey
+    };
 }
 
 - (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
