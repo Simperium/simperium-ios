@@ -180,6 +180,8 @@
 		B565ECA61832643000D162FF /* Config.m in Sources */ = {isa = PBXBuildFile; fileRef = 26ED43EA146CE1FD00C3D7D6 /* Config.m */; };
 		B565ECA91832940B00D162FF /* XCTestCase+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B565ECA81832940B00D162FF /* XCTestCase+Simperium.m */; };
 		B565ECAA1832940B00D162FF /* XCTestCase+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B565ECA81832940B00D162FF /* XCTestCase+Simperium.m */; };
+		B57FA3AE190052C800957205 /* MockStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = B57FA3AD190052C800957205 /* MockStorage.m */; };
+		B57FA3B21900568A00957205 /* SPRelationshipResolverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B57FA3B11900568A00957205 /* SPRelationshipResolverTests.m */; };
 		B597DD59183128FE005E95D7 /* RemoteDebugTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B597DD58183128FE005E95D7 /* RemoteDebugTests.m */; };
 		B5A19D5918806BBC0059AA36 /* SPWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A19D5718806BBC0059AA36 /* SPWebSocket.h */; };
 		B5A19D5A18806BBC0059AA36 /* SPWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A19D5818806BBC0059AA36 /* SPWebSocket.m */; };
@@ -409,6 +411,9 @@
 		B5549FE5184581BF007EA226 /* SPThreadsafeMutableSetTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPThreadsafeMutableSetTests.m; sourceTree = "<group>"; };
 		B565ECA71832940B00D162FF /* XCTestCase+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "XCTestCase+Simperium.h"; sourceTree = "<group>"; };
 		B565ECA81832940B00D162FF /* XCTestCase+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "XCTestCase+Simperium.m"; sourceTree = "<group>"; };
+		B57FA3AC190052C800957205 /* MockStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockStorage.h; sourceTree = "<group>"; };
+		B57FA3AD190052C800957205 /* MockStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MockStorage.m; sourceTree = "<group>"; };
+		B57FA3B11900568A00957205 /* SPRelationshipResolverTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPRelationshipResolverTests.m; sourceTree = "<group>"; };
 		B597DD58183128FE005E95D7 /* RemoteDebugTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = RemoteDebugTests.m; sourceTree = "<group>"; };
 		B5A0136A18312852003D4620 /* UnitTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "UnitTests-Info.plist"; sourceTree = "<group>"; };
 		B5A0136C1831285A003D4620 /* IntegrationTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "IntegrationTests-Info.plist"; sourceTree = "<group>"; };
@@ -883,6 +888,7 @@
 				B5DE0E0E1850D0200080C44D /* DeletionCascadeTest.m */,
 				B5DF229418B41FB700874C75 /* SPMemberJSONTests.m */,
 				B5E662A918F492AD0065EF11 /* NSStringSimperiumTest.m */,
+				B57FA3B11900568A00957205 /* SPRelationshipResolverTests.m */,
 			);
 			name = UnitTests;
 			sourceTree = "<group>";
@@ -917,6 +923,8 @@
 				B5ECEA251831154700B9289A /* MockWebSocketInterface.m */,
 				B5ECEA281831169E00B9289A /* MockWebSocketChannel.h */,
 				B5ECEA291831169E00B9289A /* MockWebSocketChannel.m */,
+				B57FA3AC190052C800957205 /* MockStorage.h */,
+				B57FA3AD190052C800957205 /* MockStorage.m */,
 			);
 			name = Mocks;
 			sourceTree = "<group>";
@@ -1284,6 +1292,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B565ECA31832643000D162FF /* TestObject.m in Sources */,
+				B57FA3AE190052C800957205 /* MockStorage.m in Sources */,
 				B5C6300D186321E0008C42B7 /* DiffMatchPatchArrayTests.m in Sources */,
 				B565ECA41832643000D162FF /* PostComment.m in Sources */,
 				B565ECA51832643000D162FF /* Post.m in Sources */,
@@ -1299,6 +1308,7 @@
 				B5E8D30F1831237500AE2C5A /* MockWebSocketInterface.m in Sources */,
 				B5E8D3121831237500AE2C5A /* MockWebSocketChannel.m in Sources */,
 				B5DE0E0F1850D0200080C44D /* DeletionCascadeTest.m in Sources */,
+				B57FA3B21900568A00957205 /* SPRelationshipResolverTests.m in Sources */,
 				B5EC2C28188595420067E3B8 /* SPPersistentMutableSetTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
