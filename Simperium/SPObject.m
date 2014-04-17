@@ -57,9 +57,17 @@
 
 - (id)simperiumValueForKey:(NSString *)key {
     __block id obj;
-    dispatch_sync(dispatch_get_main_queue(), ^{
+
+    dispatch_block_t block = ^{
         obj = [dict objectForKey: key];
-    });
+    };
+    
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), block);
+    }
+
     return obj;
 }
 
