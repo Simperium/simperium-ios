@@ -44,7 +44,7 @@
 - (NSInteger)countPendingRelationshipsWithSourceKey:(NSString *)sourceKey
                                        andTargetKey:(NSString *)targetKey;
 
-- (BOOL)verifyBidireccionalMappingBetweenKey:(NSString *)sourceKey
+- (BOOL)verifyBidirectionalMappingBetweenKey:(NSString *)sourceKey
                                       andKey:(NSString *)targetKey;
 
 #endif

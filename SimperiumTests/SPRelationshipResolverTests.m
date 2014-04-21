@@ -81,7 +81,7 @@ static NSInteger SPTestSubIterations    = 10;
         NSString *sourceKey = sourceKeys[i];
         NSString *targetKey = targetKeys[i];
 
-        XCTAssertTrue( [self.resolver verifyBidireccionalMappingBetweenKey:sourceKey andKey:targetKey], @"Error in bidirectional mapping" );
+        XCTAssertTrue( [self.resolver verifyBidirectionalMappingBetweenKey:sourceKey andKey:targetKey], @"Error in bidirectional mapping" );
         XCTAssertTrue( [self.resolver countPendingRelationshipsWithSourceKey:sourceKey andTargetKey:targetKey] == 1, @"Error while checking pending relationships" );
     }
     
@@ -119,7 +119,7 @@ static NSInteger SPTestSubIterations    = 10;
         NSString *sourceKey = sourceKeys[i];
         NSString *targetKey = targetKeys[i];
         
-        XCTAssertTrue( [self.resolver verifyBidireccionalMappingBetweenKey:sourceKey andKey:targetKey], @"Error in bidirectional mapping" );
+        XCTAssertTrue( [self.resolver verifyBidirectionalMappingBetweenKey:sourceKey andKey:targetKey], @"Error in bidirectional mapping" );
         XCTAssertTrue( [self.resolver countPendingRelationshipsWithSourceKey:sourceKey andTargetKey:targetKey] == 1, @"Error while checking pending relationships" );
     }
 }
@@ -161,7 +161,7 @@ static NSInteger SPTestSubIterations    = 10;
         for (NSDictionary *legacyDescriptor in legacy[targetKey]) {
             NSString *sourceKey = legacyDescriptor[SPLegacyPathKey];
             
-            XCTAssertTrue( [self.resolver verifyBidireccionalMappingBetweenKey:sourceKey andKey:targetKey], @"Inconsistency Detected" );
+            XCTAssertTrue( [self.resolver verifyBidirectionalMappingBetweenKey:sourceKey andKey:targetKey], @"Inconsistency Detected" );
             XCTAssertTrue( [self.resolver countPendingRelationshipsWithSourceKey:sourceKey andTargetKey:targetKey] == 1, @"Inconsistency Detected" );
         }
     }
@@ -232,10 +232,10 @@ static NSInteger SPTestSubIterations    = 10;
     
     // Verify
     XCTAssertTrue( [self.resolver countPendingRelationships] == 4, @"Inconsistency detected" );
-    XCTAssertTrue( [self.resolver verifyBidireccionalMappingBetweenKey:firstSource.simperiumKey andKey:target.simperiumKey], @"Inconsistency detected" );
-    XCTAssertTrue( [self.resolver verifyBidireccionalMappingBetweenKey:secondSource.simperiumKey andKey:target.simperiumKey], @"Inconsistency detected" );
-    XCTAssertTrue( [self.resolver verifyBidireccionalMappingBetweenKey:target.simperiumKey andKey:firstSource.simperiumKey], @"Inconsistency detected" );
-    XCTAssertTrue( [self.resolver verifyBidireccionalMappingBetweenKey:target.simperiumKey andKey:firstSource.simperiumKey], @"Inconsistency detected" );
+    XCTAssertTrue( [self.resolver verifyBidirectionalMappingBetweenKey:firstSource.simperiumKey andKey:target.simperiumKey], @"Inconsistency detected" );
+    XCTAssertTrue( [self.resolver verifyBidirectionalMappingBetweenKey:secondSource.simperiumKey andKey:target.simperiumKey], @"Inconsistency detected" );
+    XCTAssertTrue( [self.resolver verifyBidirectionalMappingBetweenKey:target.simperiumKey andKey:firstSource.simperiumKey], @"Inconsistency detected" );
+    XCTAssertTrue( [self.resolver verifyBidirectionalMappingBetweenKey:target.simperiumKey andKey:firstSource.simperiumKey], @"Inconsistency detected" );
     
     // Insert Target
     [self.storage insertObject:target bucketName:SPTestTargetBucket];
@@ -262,7 +262,7 @@ static NSInteger SPTestSubIterations    = 10;
     XCTAssert([firstSource simperiumValueForKey:SPTestSourceAttribute] == target, @"Inconsistency detected" );
     XCTAssert([target simperiumValueForKey:SPTestTargetAttribute1] == firstSource, @"Inconsistency detected" );
     XCTAssertTrue( [self.resolver countPendingRelationships] == 2, @"Inconsistency detected" );
-    XCTAssertFalse([self.resolver verifyBidireccionalMappingBetweenKey:target.simperiumKey andKey:firstSource.simperiumKey], @"Inconsistency detected");
+    XCTAssertFalse([self.resolver verifyBidirectionalMappingBetweenKey:target.simperiumKey andKey:firstSource.simperiumKey], @"Inconsistency detected");
     
     // Insert Second Source
     [self.storage insertObject:secondSource bucketName:SPTestSourceBucket];
@@ -274,7 +274,7 @@ static NSInteger SPTestSubIterations    = 10;
     // Verify
     XCTAssert([secondSource simperiumValueForKey:SPTestSourceAttribute] == target, @"Inconsistency detected" );
     XCTAssert([target simperiumValueForKey:SPTestTargetAttribute2] == secondSource, @"Inconsistency detected" );
-    XCTAssertFalse([self.resolver verifyBidireccionalMappingBetweenKey:target.simperiumKey andKey:secondSource.simperiumKey], @"Inconsistency detected");
+    XCTAssertFalse([self.resolver verifyBidirectionalMappingBetweenKey:target.simperiumKey andKey:secondSource.simperiumKey], @"Inconsistency detected");
     XCTAssertTrue( [self.resolver countPendingRelationships] == 0, @"Inconsistency detected" );
 }
 

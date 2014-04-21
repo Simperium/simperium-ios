@@ -370,7 +370,7 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
     return count;
 }
 
-- (BOOL)verifyBidireccionalMappingBetweenKey:(NSString *)sourceKey
+- (BOOL)verifyBidirectionalMappingBetweenKey:(NSString *)sourceKey
                                       andKey:(NSString *)targetKey {
     
     NSHashTable *directTable    = [self.directMap objectForKey:sourceKey];
