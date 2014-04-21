@@ -60,29 +60,31 @@ static NSInteger SPTestSubIterations    = 10;
 - (void)testSetPendingRelationships {
     
     // Set 'SPTestIterations' pending relationships
-    NSMutableArray *sourceKeys = [NSMutableArray array];
-    NSMutableArray *targetKeys = [NSMutableArray array];
+    NSMutableArray *relationships = [NSMutableArray array];
     
     for (NSInteger i = 1; i <= SPTestIterations; ++i) {
         NSString *sourceKey = [NSString sp_makeUUID];
         NSString *targetKey = [NSString sp_makeUUID];
-
-        [self.resolver setPendingRelationshipBetweenKey:sourceKey fromAttribute:SPTestSourceAttribute inBucket:SPTestSourceBucket
-                                          withTargetKey:targetKey andTargetBucket:SPTestTargetBucket storage:self.storage];
         
-        [sourceKeys addObject:sourceKey];
-        [targetKeys addObject:targetKey];
+        SPRelationship *pending = [SPRelationship relationshipFromObjectWithKey:sourceKey
+                                                                   andAttribute:SPTestSourceAttribute
+                                                                       inBucket:SPTestSourceBucket
+                                                                toObjectWithKey:targetKey
+                                                                       inBucket:SPTestTargetBucket];
+        [self.resolver addPendingRelationship:pending];
+        [relationships addObject:pending];
     }
     
-    // Verify
+    // Verify: No persistance involved
     XCTAssert( [self.resolver countPendingRelationships] == SPTestIterations, @"Inconsistency Detected" );
 
-    for (NSInteger i = 1; i < SPTestIterations; ++i) {
-        NSString *sourceKey = sourceKeys[i];
-        NSString *targetKey = targetKeys[i];
-
-        XCTAssertTrue( [self.resolver verifyBidirectionalMappingBetweenKey:sourceKey andKey:targetKey], @"Error in bidirectional mapping" );
-        XCTAssertTrue( [self.resolver countPendingRelationshipsWithSourceKey:sourceKey andTargetKey:targetKey] == 1, @"Error while checking pending relationships" );
+    for (SPRelationship *relationship in relationships) {
+        
+        BOOL isMapped           = [self.resolver verifyBidirectionalMappingBetweenKey:relationship.sourceKey andKey:relationship.targetKey];
+        BOOL isCardinalityOkay  = [self.resolver countPendingRelationshipsWithSourceKey:relationship.sourceKey andTargetKey:relationship.targetKey] == 1;
+        
+        XCTAssertTrue(isMapped, @"Error in bidirectional mapping" );
+        XCTAssertTrue(isCardinalityOkay, @"Error while checking pending relationships" );
     }
     
     XCTAssertTrue( [self.resolver countPendingRelationships] == SPTestIterations, @"Inconsitency Detected" );
@@ -91,37 +93,41 @@ static NSInteger SPTestSubIterations    = 10;
 - (void)testLoadingPendingRelationships {
     
     // Set 'SPTestIterations' pending relationships
-    NSMutableArray *sourceKeys = [NSMutableArray array];
-    NSMutableArray *targetKeys = [NSMutableArray array];
+    NSMutableArray *relationships = [NSMutableArray array];
     
     for (NSInteger i = 1; i <= SPTestIterations; ++i) {
         NSString *sourceKey = [NSString sp_makeUUID];
         NSString *targetKey = [NSString sp_makeUUID];
         
-        [self.resolver setPendingRelationshipBetweenKey:sourceKey fromAttribute:SPTestSourceAttribute inBucket:SPTestSourceBucket
-                                          withTargetKey:targetKey andTargetBucket:SPTestTargetBucket storage:self.storage];
-        
-        [sourceKeys addObject:sourceKey];
-        [targetKeys addObject:targetKey];
+        SPRelationship *pending = [SPRelationship relationshipFromObjectWithKey:sourceKey
+                                                                   andAttribute:SPTestSourceAttribute
+                                                                       inBucket:SPTestSourceBucket
+                                                                toObjectWithKey:targetKey
+                                                                       inBucket:SPTestTargetBucket];
+        [self.resolver addPendingRelationship:pending];
+        [relationships addObject:pending];
     }
     
-    // Save OP is async
-    [self waitFor:1.0];
+    // Let's save now
+    [self.resolver saveWithStorage:self.storage];
     
     // ""Simulate"" App Relaunch
     self.resolver = [SPRelationshipResolver new];
     [self.resolver loadPendingRelationships:self.storage];
     
-    // Verify
-    XCTAssert( [self.resolver countPendingRelationships] == SPTestIterations, @"Inconsistency found" );
+    // Verify: After Reload
+    XCTAssert( [self.resolver countPendingRelationships] == SPTestIterations, @"Inconsistency Detected" );
     
-    for (NSInteger i = 1; i < SPTestIterations; ++i) {
-        NSString *sourceKey = sourceKeys[i - 1];
-        NSString *targetKey = targetKeys[i - 1];
+    for (SPRelationship *relationship in relationships) {
         
-        XCTAssertTrue( [self.resolver verifyBidirectionalMappingBetweenKey:sourceKey andKey:targetKey], @"Error in bidirectional mapping" );
-        XCTAssertTrue( [self.resolver countPendingRelationshipsWithSourceKey:sourceKey andTargetKey:targetKey] == 1, @"Error while checking pending relationships" );
+        BOOL isMapped           = [self.resolver verifyBidirectionalMappingBetweenKey:relationship.sourceKey andKey:relationship.targetKey];
+        BOOL isCardinalityOkay  = [self.resolver countPendingRelationshipsWithSourceKey:relationship.sourceKey andTargetKey:relationship.targetKey] == 1;
+        
+        XCTAssertTrue(isMapped, @"Error in bidirectional mapping" );
+        XCTAssertTrue(isCardinalityOkay, @"Error while checking pending relationships" );
     }
+    
+    XCTAssertTrue( [self.resolver countPendingRelationships] == SPTestIterations, @"Inconsitency Detected" );
 }
 
 - (void)testMigrateLegacyRelationships {
@@ -137,7 +143,7 @@ static NSInteger SPTestSubIterations    = 10;
                 SPLegacyPathKey          : [NSString sp_makeUUID],
                 SPLegacyPathBucket       : SPTestSourceBucket,
                 SPLegacyPathAttribute    : SPTestSourceAttribute
-                }];
+            }];
         }
         
         legacy[targetKey] = relationships;
@@ -150,7 +156,7 @@ static NSInteger SPTestSubIterations    = 10;
     // Sanity Check
     XCTAssertTrue([self.resolver countPendingRelationships] == 0, @"Inconsistency Detected");
     
-    // Load
+    // Load + Migrate
     [self.resolver loadPendingRelationships:self.storage];
     
     XCTAssertTrue([self.resolver countPendingRelationships] == SPTestIterations * SPTestSubIterations, @"Inconsistency Detected");
@@ -173,12 +179,20 @@ static NSInteger SPTestSubIterations    = 10;
         NSString *sourceKey = [NSString sp_makeUUID];
         NSString *targetKey = [NSString sp_makeUUID];
         
-        [self.resolver setPendingRelationshipBetweenKey:sourceKey fromAttribute:SPTestSourceAttribute inBucket:SPTestSourceBucket
-                                          withTargetKey:targetKey andTargetBucket:SPTestTargetBucket storage:self.storage];
+        SPRelationship *pending = [SPRelationship relationshipFromObjectWithKey:sourceKey
+                                                                   andAttribute:SPTestSourceAttribute
+                                                                       inBucket:SPTestSourceBucket
+                                                                toObjectWithKey:targetKey
+                                                                       inBucket:SPTestTargetBucket];
+        [self.resolver addPendingRelationship:pending];
     }
     
+    [self.resolver saveWithStorage:self.storage];
+    
+    // Verify
     XCTAssertTrue( [self.resolver countPendingRelationships] == SPTestIterations, @"Inconsistency detected" );
 
+    // Reset + Verify again
     [self.resolver reset:self.storage];
     
     XCTAssertTrue( [self.resolver countPendingRelationships] == 0, @"Inconsistency detected" );
@@ -195,11 +209,20 @@ static NSInteger SPTestSubIterations    = 10;
     NSString *firstKey  = [NSString sp_makeUUID];
     NSString *secondKey = [NSString sp_makeUUID];
 
-    [self.resolver setPendingRelationshipBetweenKey:firstKey fromAttribute:SPTestSourceAttribute inBucket:SPTestSourceBucket
-                                      withTargetKey:secondKey andTargetBucket:SPTestTargetBucket storage:self.storage];
+    SPRelationship *relationship1 = [SPRelationship relationshipFromObjectWithKey:firstKey
+                                                                     andAttribute:SPTestTargetAttribute1
+                                                                         inBucket:SPTestTargetBucket
+                                                                  toObjectWithKey:secondKey
+                                                                         inBucket:SPTestSourceBucket];
     
-    [self.resolver setPendingRelationshipBetweenKey:firstKey fromAttribute:SPTestSourceAttribute inBucket:SPTestSourceBucket
-                                      withTargetKey:secondKey andTargetBucket:SPTestTargetBucket storage:self.storage];
+    SPRelationship *relationship2 = [SPRelationship relationshipFromObjectWithKey:firstKey
+                                                                     andAttribute:SPTestTargetAttribute1
+                                                                         inBucket:SPTestTargetBucket
+                                                                  toObjectWithKey:secondKey
+                                                                         inBucket:SPTestSourceBucket];
+    
+    [self.resolver addPendingRelationship:relationship1];
+    [self.resolver addPendingRelationship:relationship2];
     
     XCTAssertTrue( [self.resolver countPendingRelationships] == 1, @"Inconsistency detected" );
 }
@@ -216,20 +239,34 @@ static NSInteger SPTestSubIterations    = 10;
     secondSource.simperiumKey   = [NSString sp_makeUUID];
 
     // Set 4 pendings:  target >> firstSource + secondSource  ||  firstSource >> target  ||  secondSource >> target
-    [self.resolver setPendingRelationshipBetweenKey:target.simperiumKey fromAttribute:SPTestTargetAttribute1 inBucket:SPTestTargetBucket
-                                      withTargetKey:firstSource.simperiumKey andTargetBucket:SPTestSourceBucket storage:self.storage];
+    SPRelationship *relationship1 = [SPRelationship relationshipFromObjectWithKey:target.simperiumKey
+                                                                     andAttribute:SPTestTargetAttribute1
+                                                                         inBucket:SPTestTargetBucket
+                                                                  toObjectWithKey:firstSource.simperiumKey
+                                                                         inBucket:SPTestSourceBucket];
 
-    [self.resolver setPendingRelationshipBetweenKey:target.simperiumKey fromAttribute:SPTestTargetAttribute2 inBucket:SPTestTargetBucket
-                                      withTargetKey:secondSource.simperiumKey andTargetBucket:SPTestSourceBucket storage:self.storage];
+    SPRelationship *relationship2 = [SPRelationship relationshipFromObjectWithKey:target.simperiumKey
+                                                                     andAttribute:SPTestTargetAttribute2
+                                                                         inBucket:SPTestTargetBucket
+                                                                  toObjectWithKey:secondSource.simperiumKey
+                                                                         inBucket:SPTestSourceBucket];
     
-    [self.resolver setPendingRelationshipBetweenKey:firstSource.simperiumKey fromAttribute:SPTestSourceAttribute inBucket:SPTestSourceBucket
-                                      withTargetKey:target.simperiumKey andTargetBucket:SPTestTargetBucket storage:self.storage];
+    SPRelationship *relationship3 = [SPRelationship relationshipFromObjectWithKey:firstSource.simperiumKey
+                                                                     andAttribute:SPTestSourceAttribute
+                                                                         inBucket:SPTestSourceBucket
+                                                                  toObjectWithKey:target.simperiumKey
+                                                                         inBucket:SPTestTargetBucket];
     
-    [self.resolver setPendingRelationshipBetweenKey:secondSource.simperiumKey fromAttribute:SPTestSourceAttribute inBucket:SPTestSourceBucket
-                                      withTargetKey:target.simperiumKey andTargetBucket:SPTestTargetBucket storage:self.storage];
+    SPRelationship *relationship4 = [SPRelationship relationshipFromObjectWithKey:secondSource.simperiumKey
+                                                                     andAttribute:SPTestSourceAttribute
+                                                                         inBucket:SPTestSourceBucket
+                                                                  toObjectWithKey:target.simperiumKey
+                                                                         inBucket:SPTestTargetBucket];
     
-    // Resolver works in a BG thread. Wait a sec...
-    [self waitFor:1.0f];
+    [self.resolver addPendingRelationship:relationship1];
+    [self.resolver addPendingRelationship:relationship2];
+    [self.resolver addPendingRelationship:relationship3];
+    [self.resolver addPendingRelationship:relationship4];
     
     // Verify
     XCTAssertTrue( [self.resolver countPendingRelationships] == 4, @"Inconsistency detected" );

@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "SPStorageProvider.h"
+#import "SPRelationship.h"
 
 
 
@@ -19,16 +20,13 @@
 
 - (void)loadPendingRelationships:(id<SPStorageProvider>)storage;
 
-- (void)setPendingRelationshipBetweenKey:(NSString *)sourceKey
-                           fromAttribute:(NSString *)sourceAttribute
-                                inBucket:(NSString *)sourceBucket
-                           withTargetKey:(NSString *)targetKey
-                         andTargetBucket:(NSString *)targetBucket
-                                 storage:(id<SPStorageProvider>)storage;
+- (void)addPendingRelationship:(SPRelationship *)relationship;
 
 - (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey
                                bucketName:(NSString *)bucketName
                                   storage:(id<SPStorageProvider>)storage;
+
+- (void)saveWithStorage:(id<SPStorageProvider>)storage;
 
 - (void)reset:(id<SPStorageProvider>)storage;
 
