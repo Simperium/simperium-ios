@@ -26,7 +26,8 @@
 }
 
 - (id)simperiumKeyForObject:(id)value {
-	return [value simperiumKey] ?: @"";
+    NSString *simperiumKey = [value simperiumKey];
+    return simperiumKey == nil ? @"" : simperiumKey;
 }
 
 - (SPManagedObject *)objectForKey:(NSString *)key context:(NSManagedObjectContext *)context {
