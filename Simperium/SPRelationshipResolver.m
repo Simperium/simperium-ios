@@ -197,8 +197,6 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
             id<SPDiffable>targetObject  = [threadSafeStorage objectForKey:targetKey bucketName:targetBucket];
             
             if (!sourceObject || !targetObject) {
-                SPLogError(@"Simperium error, tried to resolve reference to an object that doesn't exist yet (%@) %@ >> (%@) %@",
-                           sourceBucket, sourceKey, targetBucket, targetKey);
                 continue;
             }
 
@@ -253,7 +251,7 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
         }
         
         NSMutableDictionary *updated = [metadata mutableCopy];
-        updated[SPRelationshipsPendingsNewKey] = self.pendingRelationships;
+        updated[SPRelationshipsPendingsNewKey] = [self.pendingRelationships allObjects];
         [storage setMetadata:updated];
     };
     
