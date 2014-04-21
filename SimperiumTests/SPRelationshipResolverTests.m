@@ -108,7 +108,7 @@ static NSInteger SPTestSubIterations    = 10;
     // Save OP is async
     [self waitFor:1.0];
     
-    // ""Simulate"" App Relaungh
+    // ""Simulate"" App Relaunch
     self.resolver = [SPRelationshipResolver new];
     [self.resolver loadPendingRelationships:self.storage];
     
@@ -183,7 +183,7 @@ static NSInteger SPTestSubIterations    = 10;
     
     XCTAssertTrue( [self.resolver countPendingRelationships] == 0, @"Inconsistency detected" );
     
-    // ""Simulate"" App Relaungh
+    // ""Simulate"" App Relaunch
     self.resolver = [SPRelationshipResolver new];
     [self.resolver loadPendingRelationships:self.storage];
     
