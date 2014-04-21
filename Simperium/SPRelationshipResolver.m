@@ -72,14 +72,14 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
     
     // Do we need to migrate anything?
     NSDictionary *legacyPendings = storage.metadata[SPLegacyPendingsKey];
-    if ( legacyPendings == nil ) {
+    if (legacyPendings == nil) {
         return;
     }
     
     // Migrate!
     for (NSString *targetKey in legacyPendings) {
         NSArray *relationships = legacyPendings[targetKey];
-        NSAssert( [relationships isKindOfClass:[NSArray class]], @"Invalid Kind" );
+        NSAssert([relationships isKindOfClass:[NSArray class]], @"Invalid Kind");
 
         for (NSDictionary *relationship in relationships) {
             [self setPendingRelationshipBetweenKey:relationship[SPLegacyPathKey]
@@ -104,7 +104,7 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
 
 - (void)loadPendingRelationships:(id<SPStorageProvider>)storage {
     
-    NSAssert( storage, @"Invalid Parameter" );
+    NSAssert(storage, @"Invalid Parameter");
     
     // Migrate Legacy
     [self migrateLegacyReferences:storage];
@@ -113,7 +113,7 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
 	NSArray *pendings = storage.metadata[SPRelationshipsPendingsNewKey];
     
     for (NSDictionary *descriptor in pendings) {
-        NSAssert( [descriptor isKindOfClass:[NSDictionary class]], @"Invalid Parameter" );
+        NSAssert([descriptor isKindOfClass:[NSDictionary class]], @"Invalid Parameter");
 
         NSString *sourceKey = descriptor[SPRelationshipsSourceKey];
         NSString *targetKey = descriptor[SPRelationshipsTargetKey];
@@ -129,11 +129,11 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
                          andTargetBucket:(NSString *)targetBucket
                                  storage:(id<SPStorageProvider>)storage {
     
-    NSAssert( sourceKey.length,         @"Invalid Parameter" );
-    NSAssert( sourceAttribute.length,   @"Invalid Parameter" );
-    NSAssert( sourceBucket.length,      @"Invalid Parameter" );
-    NSAssert( targetKey.length,         @"Invalid Parameter" );
-    NSAssert( storage,                  @"Invalid Parameter" );
+    NSAssert(sourceKey.length,         @"Invalid Parameter");
+    NSAssert(sourceAttribute.length,   @"Invalid Parameter");
+    NSAssert(sourceBucket.length,      @"Invalid Parameter");
+    NSAssert(targetKey.length,         @"Invalid Parameter");
+    NSAssert(storage,                  @"Invalid Parameter");
     
     // Non-debug Failsafe
     if (targetKey.length == 0) {
@@ -240,13 +240,13 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
 
 - (void)saveRelationshipDescriptors:(id<SPStorageProvider>)storage {
     
-    NSAssert( [storage conformsToProtocol:@protocol(SPStorageProvider)], @"Invalid Storage" );
+    NSAssert([storage conformsToProtocol:@protocol(SPStorageProvider)], @"Invalid Storage");
     
     dispatch_block_t block = ^{
         NSDictionary *metadata = [storage metadata];
         
         // If there's already nothing there, save some CPU by not writing anything
-        if ( self.pendingRelationships.count == 0 && metadata[SPRelationshipsPendingsNewKey] == nil ) {
+        if (self.pendingRelationships.count == 0 && metadata[SPRelationshipsPendingsNewKey] == nil) {
             return;
         }
         
@@ -264,8 +264,8 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
 
 - (NSHashTable *)relationshipDescriptorsForKey:(NSString *)simperiumKey {
     
-    NSAssert( [simperiumKey isKindOfClass:[NSString class]], @"Invalid Parameter" );
-    NSAssert( [NSThread isMainThread],                       @"Invalid Thread");
+    NSAssert([simperiumKey isKindOfClass:[NSString class]], @"Invalid Parameter");
+    NSAssert([NSThread isMainThread],                       @"Invalid Thread");
     
     // Lookup relationships [From + To] this object
     NSHashTable *relationships = [NSHashTable weakObjectsHashTable];
@@ -277,10 +277,10 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
 
 - (void)addRelationshipDescriptor:(NSDictionary *)descriptor sourceKey:(NSString *)sourceKey targetKey:(NSString *)targetKey {
     
-    NSAssert( [descriptor isKindOfClass:[NSDictionary class]],  @"Invalid Parameter" );
-    NSAssert( [sourceKey isKindOfClass:[NSString class]],       @"Invalid Parameter" );
-    NSAssert( [targetKey isKindOfClass:[NSString class]],       @"Invalid Parameter" );
-    NSAssert( [NSThread isMainThread],                          @"Invalid Thread" );
+    NSAssert([descriptor isKindOfClass:[NSDictionary class]],  @"Invalid Parameter");
+    NSAssert([sourceKey isKindOfClass:[NSString class]],       @"Invalid Parameter");
+    NSAssert([targetKey isKindOfClass:[NSString class]],       @"Invalid Parameter");
+    NSAssert([NSThread isMainThread],                          @"Invalid Thread");
     
     // Store the Relationship itself
     [self.pendingRelationships addObject:descriptor];
@@ -292,9 +292,9 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
 
 - (void)addRelationship:(NSDictionary *)descriptor inMap:(NSMapTable *)map withKey:(NSString *)key {
     
-    NSAssert( [descriptor isKindOfClass:[NSDictionary class]],  @"Invalid Parameter" );
-    NSAssert( [map isKindOfClass:[NSMapTable class]],           @"Invalid Parameter" );
-    NSAssert( [key isKindOfClass:[NSString class]],             @"Invalid Parameter" );
+    NSAssert([descriptor isKindOfClass:[NSDictionary class]],  @"Invalid Parameter");
+    NSAssert([map isKindOfClass:[NSMapTable class]],           @"Invalid Parameter");
+    NSAssert([key isKindOfClass:[NSString class]],             @"Invalid Parameter");
     
     NSHashTable *pendings = [map objectForKey:key];
     if (!pendings) {
@@ -307,7 +307,7 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
 
 - (void)removeRelationshipDescriptors:(NSHashTable *)descriptors {
     
-    NSAssert( [descriptors isKindOfClass:[NSHashTable class]],  @"Invalid Parameter" );
+    NSAssert([descriptors isKindOfClass:[NSHashTable class]],  @"Invalid Parameter");
     
     dispatch_block_t block = ^{
         [self.pendingRelationships minusHashTable:descriptors];
@@ -361,8 +361,8 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
     
     NSInteger count = 0;
     for (NSDictionary *descriptor in table) {
-        if ( [descriptor[SPRelationshipsSourceKey] isEqualToString:sourceKey] &&
-            [descriptor[SPRelationshipsTargetKey] isEqualToString:targetKey] ) {
+        if ([descriptor[SPRelationshipsSourceKey] isEqualToString:sourceKey] &&
+            [descriptor[SPRelationshipsTargetKey] isEqualToString:targetKey]) {
             ++count;
         }
     }
