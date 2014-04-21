@@ -273,26 +273,11 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
     NSAssert( [NSThread isMainThread],                       @"Invalid Thread");
     
     // Lookup relationships [From + To] this object
-    NSHashTable *relationships = [NSHashTable hashTableWithOptions:NSHashTableStrongMemory];
+    NSHashTable *relationships = [NSHashTable weakObjectsHashTable];
     [relationships unionHashTable:[self.directMap objectForKey:simperiumKey]];
     [relationships unionHashTable:[self.inverseMap objectForKey:simperiumKey]];
     
     return relationships;
-}
-
-- (void)removeRelationshipDescriptors:(NSHashTable *)descriptors {
-    
-    NSAssert( [descriptors isKindOfClass:[NSHashTable class]],  @"Invalid Parameter" );
-    
-    dispatch_block_t block = ^{
-        [self.pendingRelationships minusHashTable:descriptors];
-    };
-    
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_async(dispatch_get_main_queue(), block);
-    }
 }
 
 - (void)addRelationshipDescriptor:(NSDictionary *)descriptor sourceKey:(NSString *)sourceKey targetKey:(NSString *)targetKey {
@@ -323,6 +308,39 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
     }
     
     [pendings addObject:descriptor];
+}
+
+- (void)removeRelationshipDescriptors:(NSHashTable *)descriptors {
+    
+    NSAssert( [descriptors isKindOfClass:[NSHashTable class]],  @"Invalid Parameter" );
+    
+    dispatch_block_t block = ^{
+        [self.pendingRelationships minusHashTable:descriptors];
+        
+        // Note: Although we've set up internal structures with weak memory management, since there the
+        // autoreleasepool will be drained by iOS at will, we really need to cleanup the directMap + inverseMap collections
+        for (NSDictionary *descriptor in descriptors) {
+            NSString *sourceKey = descriptor[SPRelationshipsSourceKey];
+            NSString *targetKey = descriptor[SPRelationshipsTargetKey];
+            [self removeRelationship:descriptor fromMap:self.directMap withKey:sourceKey];
+            [self removeRelationship:descriptor fromMap:self.inverseMap withKey:targetKey];
+        }
+    };
+    
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_async(dispatch_get_main_queue(), block);
+    }
+}
+
+- (void)removeRelationship:(NSDictionary *)descriptor fromMap:(NSMapTable *)map withKey:(NSString *)key {
+    NSHashTable *table = [map objectForKey:key];
+    [table removeObject:descriptor];
+    
+    if (table.count == 0) {
+        [map removeObjectForKey:key];
+    }
 }
 
 
@@ -366,7 +384,9 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
     NSInteger directCount       = [self countPendingRelationshipWithSourceKey:sourceKey targetKey:targetKey inTable:directTable];
     NSInteger inverseCount      = [self countPendingRelationshipWithSourceKey:sourceKey targetKey:targetKey inTable:inverseTable];
     
-    return (directCount == 1 && inverseCount == 1);
+    NSAssert(directCount == inverseCount, @"Inconsistency");
+    
+    return (directCount == inverseCount && inverseCount == 1);
 }
 
 #endif
