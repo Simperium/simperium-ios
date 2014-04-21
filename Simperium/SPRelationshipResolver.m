@@ -213,8 +213,11 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
         
         if (processed.count) {
             [threadSafeStorage save];
-            [self removeRelationshipDescriptors:processed];
-            [self saveRelationshipDescriptors:storage];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self removeRelationshipDescriptors:processed];
+                [self saveRelationshipDescriptors:storage];
+            });
         }
         
         [threadSafeStorage finishSafeSection];
@@ -241,25 +244,18 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
 - (void)saveRelationshipDescriptors:(id<SPStorageProvider>)storage {
     
     NSAssert([storage conformsToProtocol:@protocol(SPStorageProvider)], @"Invalid Storage");
+    NSAssert([NSThread isMainThread], @"Invalid Thread");
     
-    dispatch_block_t block = ^{
-        NSDictionary *metadata = [storage metadata];
-        
-        // If there's already nothing there, save some CPU by not writing anything
-        if (self.pendingRelationships.count == 0 && metadata[SPRelationshipsPendingsNewKey] == nil) {
-            return;
-        }
-        
-        NSMutableDictionary *updated = [metadata mutableCopy];
-        updated[SPRelationshipsPendingsNewKey] = [self.pendingRelationships allObjects];
-        [storage setMetadata:updated];
-    };
+    NSDictionary *metadata = [storage metadata];
     
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_async(dispatch_get_main_queue(), block);
+    // If there's already nothing there, save some CPU by not writing anything
+    if (self.pendingRelationships.count == 0 && metadata[SPRelationshipsPendingsNewKey] == nil) {
+        return;
     }
+    
+    NSMutableDictionary *updated = [metadata mutableCopy];
+    updated[SPRelationshipsPendingsNewKey] = [self.pendingRelationships allObjects];
+    [storage setMetadata:updated];
 }
 
 - (NSHashTable *)relationshipDescriptorsForKey:(NSString *)simperiumKey {
@@ -308,24 +304,17 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
 - (void)removeRelationshipDescriptors:(NSHashTable *)descriptors {
     
     NSAssert([descriptors isKindOfClass:[NSHashTable class]],  @"Invalid Parameter");
+    NSAssert([NSThread isMainThread], @"Invalid Thread");
     
-    dispatch_block_t block = ^{
-        [self.pendingRelationships minusHashTable:descriptors];
-        
-        // Note: Although we've set up internal structures with weak memory management, since there the
-        // autoreleasepool will be drained by iOS at will, we really need to cleanup the directMap + inverseMap collections
-        for (NSDictionary *descriptor in descriptors) {
-            NSString *sourceKey = descriptor[SPRelationshipsSourceKey];
-            NSString *targetKey = descriptor[SPRelationshipsTargetKey];
-            [self removeRelationship:descriptor fromMap:self.directMap withKey:sourceKey];
-            [self removeRelationship:descriptor fromMap:self.inverseMap withKey:targetKey];
-        }
-    };
+    [self.pendingRelationships minusHashTable:descriptors];
     
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_async(dispatch_get_main_queue(), block);
+    // Note: Although we've set up internal structures with weak memory management, since there the
+    // autoreleasepool will be drained by iOS at will, we really need to cleanup the directMap + inverseMap collections
+    for (NSDictionary *descriptor in descriptors) {
+        NSString *sourceKey = descriptor[SPRelationshipsSourceKey];
+        NSString *targetKey = descriptor[SPRelationshipsTargetKey];
+        [self removeRelationship:descriptor fromMap:self.directMap withKey:sourceKey];
+        [self removeRelationship:descriptor fromMap:self.inverseMap withKey:targetKey];
     }
 }
 
