@@ -63,7 +63,7 @@ static NSInteger SPTestSubIterations    = 10;
     NSMutableArray *sourceKeys = [NSMutableArray array];
     NSMutableArray *targetKeys = [NSMutableArray array];
     
-    for (NSInteger i = 0; ++i <= SPTestIterations; ) {
+    for (NSInteger i = 1; i <= SPTestIterations; ++i) {
         NSString *sourceKey = [NSString sp_makeUUID];
         NSString *targetKey = [NSString sp_makeUUID];
 
@@ -77,7 +77,7 @@ static NSInteger SPTestSubIterations    = 10;
     // Verify
     XCTAssert( [self.resolver countPendingRelationships] == SPTestIterations, @"Inconsistency Detected" );
 
-    for (NSInteger i = 0; ++i < SPTestIterations; ) {
+    for (NSInteger i = 1; i < SPTestIterations; ++i) {
         NSString *sourceKey = sourceKeys[i];
         NSString *targetKey = targetKeys[i];
 
@@ -94,7 +94,7 @@ static NSInteger SPTestSubIterations    = 10;
     NSMutableArray *sourceKeys = [NSMutableArray array];
     NSMutableArray *targetKeys = [NSMutableArray array];
     
-    for (NSInteger i = 0; ++i <= SPTestIterations; ) {
+    for (NSInteger i = 1; i <= SPTestIterations; ++i) {
         NSString *sourceKey = [NSString sp_makeUUID];
         NSString *targetKey = [NSString sp_makeUUID];
         
@@ -115,9 +115,9 @@ static NSInteger SPTestSubIterations    = 10;
     // Verify
     XCTAssert( [self.resolver countPendingRelationships] == SPTestIterations, @"Inconsistency found" );
     
-    for (NSInteger i = 0; ++i < SPTestIterations; ) {
-        NSString *sourceKey = sourceKeys[i];
-        NSString *targetKey = targetKeys[i];
+    for (NSInteger i = 1; i < SPTestIterations; ++i) {
+        NSString *sourceKey = sourceKeys[i - 1];
+        NSString *targetKey = targetKeys[i - 1];
         
         XCTAssertTrue( [self.resolver verifyBidirectionalMappingBetweenKey:sourceKey andKey:targetKey], @"Error in bidirectional mapping" );
         XCTAssertTrue( [self.resolver countPendingRelationshipsWithSourceKey:sourceKey andTargetKey:targetKey] == 1, @"Error while checking pending relationships" );
@@ -128,11 +128,11 @@ static NSInteger SPTestSubIterations    = 10;
     // Set 'SPTestIterations x SPTestIterations' pending legacy relationships
     NSMutableDictionary *legacy = [NSMutableDictionary dictionary];
     
-    for (NSInteger i = 0; ++i <= SPTestIterations; ) {
+    for (NSInteger i = 1; i <= SPTestIterations; ++i) {
         NSString *targetKey = [NSString sp_makeUUID];
     
         NSMutableArray *relationships = [NSMutableArray array];
-        for (NSInteger j = 0; ++j <= SPTestSubIterations; ) {
+        for (NSInteger j = 1; j <= SPTestSubIterations; ++j) {
             [relationships addObject: @{
                 SPLegacyPathKey          : [NSString sp_makeUUID],
                 SPLegacyPathBucket       : SPTestSourceBucket,
@@ -148,12 +148,12 @@ static NSInteger SPTestSubIterations    = 10;
     self.storage.metadata           = metadata;
 
     // Sanity Check
-    XCTAssertTrue( [self.resolver countPendingRelationships] == 0, @"Inconsistency Detected");
+    XCTAssertTrue([self.resolver countPendingRelationships] == 0, @"Inconsistency Detected");
     
     // Load
     [self.resolver loadPendingRelationships:self.storage];
     
-    XCTAssertTrue( [self.resolver countPendingRelationships] == SPTestIterations * SPTestSubIterations, @"Inconsistency Detected");
+    XCTAssertTrue([self.resolver countPendingRelationships] == SPTestIterations * SPTestSubIterations, @"Inconsistency Detected");
  
     // Verify
     for (NSString *targetKey in [legacy allKeys]) {
@@ -169,7 +169,7 @@ static NSInteger SPTestSubIterations    = 10;
 
 - (void)testResetPendingRelationships {
     // Set SPTestIterations pendings
-    for (NSInteger i = 0; ++i <= SPTestIterations; ) {
+    for (NSInteger i = 1; i <= SPTestIterations; ++i) {
         NSString *sourceKey = [NSString sp_makeUUID];
         NSString *targetKey = [NSString sp_makeUUID];
         
@@ -195,10 +195,11 @@ static NSInteger SPTestSubIterations    = 10;
     NSString *firstKey  = [NSString sp_makeUUID];
     NSString *secondKey = [NSString sp_makeUUID];
 
-    for (NSInteger i = 0; ++i <= 2; ) {
-        [self.resolver setPendingRelationshipBetweenKey:firstKey fromAttribute:SPTestSourceAttribute inBucket:SPTestSourceBucket
-                                          withTargetKey:secondKey andTargetBucket:SPTestTargetBucket storage:self.storage];
-    }
+    [self.resolver setPendingRelationshipBetweenKey:firstKey fromAttribute:SPTestSourceAttribute inBucket:SPTestSourceBucket
+                                      withTargetKey:secondKey andTargetBucket:SPTestTargetBucket storage:self.storage];
+    
+    [self.resolver setPendingRelationshipBetweenKey:firstKey fromAttribute:SPTestSourceAttribute inBucket:SPTestSourceBucket
+                                      withTargetKey:secondKey andTargetBucket:SPTestTargetBucket storage:self.storage];
     
     XCTAssertTrue( [self.resolver countPendingRelationships] == 1, @"Inconsistency detected" );
 }
