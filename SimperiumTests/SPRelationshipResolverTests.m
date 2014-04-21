@@ -257,7 +257,7 @@ static NSInteger SPTestSubIterations    = 10;
     
     // Resolve OP is async
     [self waitFor:1.0f];
-    [self.resolver resolvePendingRelationshipsForKey:firstSource.simperiumKey bucketName:SPTestSourceBucket storage:self.storage];
+
     // Verify
     XCTAssert([firstSource simperiumValueForKey:SPTestSourceAttribute] == target, @"Inconsistency detected" );
     XCTAssert([target simperiumValueForKey:SPTestTargetAttribute1] == firstSource, @"Inconsistency detected" );
