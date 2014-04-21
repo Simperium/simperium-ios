@@ -16,9 +16,6 @@
 
 
 
-#warning TODO: CodeReview!
-#warning TODO: Cache fetched objects?
-
 #pragma mark ====================================================================================
 #pragma mark Constants
 #pragma mark ====================================================================================
