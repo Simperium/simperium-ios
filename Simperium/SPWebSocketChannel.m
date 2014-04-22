@@ -228,6 +228,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     self.shouldSendEverything       = NO;
 	self.simperium.user.email		= responseString;
     self.onLocalChangesSent         = nil;
+    self.objectVersionsPending      = 0;
 
 	if (bucket.lastChangeSignature == nil) {
 		[self requestLatestVersionsForBucket:bucket];
