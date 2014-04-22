@@ -12,6 +12,7 @@
 #import "XCTestCase+Simperium.h"
 #import "NSString+Simperium.h"
 #import "SPObject.h"
+#import "SPBucket.h"
 
 
 #pragma mark ====================================================================================
@@ -30,6 +31,7 @@ static NSString *SPLegacyPathBucket     = @"SPPathBucket";
 static NSString *SPLegacyPathAttribute  = @"SPPathAttribute";
 static NSString *SPLegacyPendingsKey    = @"SPPendingReferences";
 
+static NSInteger SPTestStressIterations = 1000;
 static NSInteger SPTestIterations       = 100;
 static NSInteger SPTestSubIterations    = 10;
 
@@ -314,6 +316,108 @@ static NSInteger SPTestSubIterations    = 10;
     XCTAssert([target simperiumValueForKey:SPTestTargetAttribute2] == secondSource, @"Inconsistency detected" );
     XCTAssertFalse([self.resolver verifyBidirectionalMappingBetweenKey:target.simperiumKey andKey:secondSource.simperiumKey], @"Inconsistency detected");
     XCTAssertTrue( [self.resolver countPendingRelationships] == 0, @"Inconsistency detected" );
+}
+
+- (void)testStressRelationshipResolver {
+    
+    // Create 'SPTestStressIterations x SPTestStressIterations' objects, and establish a relationship between them
+    NSMutableArray *sourceObjects = [NSMutableArray array];
+    NSMutableArray *targetObjects = [NSMutableArray array];
+    
+    for (NSInteger i = 1; i <= SPTestStressIterations; ++i) {
+        
+        // New Objects please
+        SPObject *target    = [SPObject new];
+        target.simperiumKey = [NSString sp_makeUUID];
+        
+        SPObject *source    = [SPObject new];
+        source.simperiumKey = [NSString sp_makeUUID];
+        
+        // Keep them
+        [sourceObjects addObject:source];
+        [targetObjects addObject:target];
+        
+        // Set Relationship: Source >> Target
+        SPRelationship *relationship = [SPRelationship relationshipFromObjectWithKey:source.simperiumKey
+                                                                         andAttribute:SPTestSourceAttribute
+                                                                             inBucket:SPTestSourceBucket
+                                                                      toObjectWithKey:target.simperiumKey
+                                                                             inBucket:SPTestTargetBucket];
+        
+        [self.resolver addPendingRelationship:relationship];
+    }
+    
+    // Verify if the relationships were correctly established
+    XCTAssertTrue( [self.resolver countPendingRelationships] == SPTestStressIterations, @"Inconsistency detected" );
+    
+    // Helper Structures
+    char *sourceLabel               = [@"com.simperium.source" cStringUsingEncoding:NSUTF8StringEncoding];
+    char *targetLabel               = [@"com.simperium.target" cStringUsingEncoding:NSUTF8StringEncoding];
+    dispatch_queue_t sourceQueue    = dispatch_queue_create(sourceLabel, NULL);
+    dispatch_queue_t targetQueue    = dispatch_queue_create(targetLabel, NULL);
+	dispatch_group_t group          = dispatch_group_create();
+
+    // Insert Source Objects, asynchronously, and hit resolve on the main thread
+    dispatch_group_enter(group);
+    dispatch_async(sourceQueue, ^{
+        
+        for (SPObject *object in sourceObjects) {
+            [self.storage insertObject:object bucketName:SPTestSourceBucket];
+            
+            dispatch_group_enter(group);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.resolver resolvePendingRelationshipsForKey:object.simperiumKey
+                                                      bucketName:SPTestSourceBucket
+                                                         storage:self.storage
+                                                      completion:^{
+                                                          dispatch_group_leave(group);
+                                                      }];
+            });
+        }
+        
+        NSLog(@">> Finished inserting Source Objects");
+        dispatch_group_leave(group);
+    });
+
+    // Insert Target Objects, asynchronously, and hit resolve on the main thread
+    dispatch_group_enter(group);
+    dispatch_async(targetQueue, ^{
+
+        for (SPObject *object in targetObjects) {
+            [self.storage insertObject:object bucketName:SPTestTargetBucket];
+
+            dispatch_group_enter(group);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.resolver resolvePendingRelationshipsForKey:object.simperiumKey
+                                                      bucketName:SPTestTargetBucket
+                                                         storage:self.storage
+                                                      completion:^{
+                                                          dispatch_group_leave(group);
+                                                      }];
+            });
+        }
+        
+        NSLog(@">> Finished inserting Target Objects");
+        dispatch_group_leave(group);
+    });
+    
+    // Wait for completion and verify
+    StartBlock();
+	dispatch_group_notify(group, dispatch_get_main_queue(), ^ {
+        
+        NSLog(@">> Begins checking integrity");
+        
+        for (NSInteger i = 0; i < sourceObjects.count; ++ i) {
+            SPObject *source = sourceObjects[i];
+            SPObject *target = targetObjects[i];
+            XCTAssert([source simperiumValueForKey:SPTestSourceAttribute] == target, @"Inconsistency detected" );
+        }
+
+        XCTAssertTrue([self.resolver countPendingRelationships] == 0, @"Inconsistency detected");
+        EndBlock();
+    });
+    
+    WaitUntilBlockCompletes();
 }
 
 @end

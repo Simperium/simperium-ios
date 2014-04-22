@@ -12,6 +12,8 @@
 
 
 
+typedef void(^SPResolverCompletionBlockType)();
+
 #pragma mark ====================================================================================
 #pragma mark SPRelationshipResolver
 #pragma mark ====================================================================================
@@ -36,6 +38,11 @@
 #pragma mark ====================================================================================
 
 #ifdef DEBUG
+
+- (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey
+                               bucketName:(NSString *)bucketName
+                                  storage:(id<SPStorageProvider>)storage
+                               completion:(SPResolverCompletionBlockType)completion;
 
 - (NSInteger)countPendingRelationships;
 

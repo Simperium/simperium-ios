@@ -122,7 +122,20 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
     [self addRelationship:relationship inMap:self.inverseMap withKey:relationship.targetKey];
 }
 
-- (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey bucketName:(NSString *)bucketName storage:(id<SPStorageProvider>)storage {
+- (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey
+                               bucketName:(NSString *)bucketName
+                                  storage:(id<SPStorageProvider>)storage {
+
+    [self resolvePendingRelationshipsForKey:simperiumKey
+                                 bucketName:bucketName
+                                    storage:storage
+                                 completion:nil];
+}
+
+- (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey
+                               bucketName:(NSString *)bucketName
+                                  storage:(id<SPStorageProvider>)storage
+                               completion:(SPResolverCompletionBlockType)completion {
 
     NSAssert([simperiumKey isKindOfClass:[NSString class]], @"Invalid Parameter");
     NSAssert([bucketName isKindOfClass:[NSString class]],   @"Invalid Parameter");
@@ -178,12 +191,20 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
             [threadSafeStorage save];
             
             dispatch_async(dispatch_get_main_queue(), ^{
-                [self removeRelationships:processed];
-                [self saveWithStorage:storage];
+                @autoreleasepool {
+                    [self removeRelationships:processed];
+                    [self saveWithStorage:storage];
+                }
             });
         }
         
         [threadSafeStorage finishSafeSection];
+        
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion();
+            });
+        }
     });
 }
 
