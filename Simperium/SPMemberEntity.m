@@ -60,6 +60,12 @@
         // This is a convenient place to track references because it's guaranteed to be called from loadMemberData in
         // SPManagedObject when it arrives off the wire.
         NSString *fromKey = object.simperiumKey;
+        
+        // Failsafe
+        if (!fromKey || !simperiumKey) {
+            return nil;
+        }
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             // Let Simperium store the reference so it can be properly resolved when the object gets synced
             SPRelationship *relationship = [SPRelationship relationshipFromObjectWithKey:fromKey

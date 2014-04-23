@@ -108,12 +108,7 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
     
     NSAssert([relationship isKindOfClass:[SPRelationship class]], @"Invalid Parameter");
     NSAssert([NSThread isMainThread], @"Invalid Thread");
-    
-    if (relationship.targetKey.length == 0) {
-        SPLogWarn(@"Simperium warning: received empty pending reference to attribute %@", relationship.sourceAttribute);
-        return;
-    }
-    
+        
     // Store the Relationship itself
     [self.pendingRelationships addObject:relationship];
     
