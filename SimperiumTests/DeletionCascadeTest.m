@@ -25,7 +25,6 @@ static NSInteger const kStressIterations	= 100;
 
 @implementation DeletionCascadeTest
 
-
 - (void)testStress {
 	for (NSInteger i = 0; ++i <= kStressIterations; ) {
 		NSLog(@"<> Stress Iteration %ld", (long)i);
