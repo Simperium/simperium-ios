@@ -12,8 +12,6 @@
 
 
 
-typedef void(^SPResolverCompletionBlockType)();
-
 #pragma mark ====================================================================================
 #pragma mark SPRelationshipResolver
 #pragma mark ====================================================================================
@@ -31,27 +29,5 @@ typedef void(^SPResolverCompletionBlockType)();
 - (void)saveWithStorage:(id<SPStorageProvider>)storage;
 
 - (void)reset:(id<SPStorageProvider>)storage;
-
-
-#pragma mark ====================================================================================
-#pragma mark Debug Helpers: Not designed for real usage!
-#pragma mark ====================================================================================
-
-#ifdef DEBUG
-
-- (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey
-                               bucketName:(NSString *)bucketName
-                                  storage:(id<SPStorageProvider>)storage
-                               completion:(SPResolverCompletionBlockType)completion;
-
-- (NSInteger)countPendingRelationships;
-
-- (NSInteger)countPendingRelationshipsWithSourceKey:(NSString *)sourceKey
-                                       andTargetKey:(NSString *)targetKey;
-
-- (BOOL)verifyBidirectionalMappingBetweenKey:(NSString *)sourceKey
-                                      andKey:(NSString *)targetKey;
-
-#endif
 
 @end

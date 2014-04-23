@@ -8,6 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import "SPRelationshipResolver.h"
+#import "SPRelationshipResolver+Internals.h"
 #import "MockStorage.h"
 #import "XCTestCase+Simperium.h"
 #import "NSString+Simperium.h"
@@ -351,8 +352,8 @@ static NSInteger SPTestSubIterations    = 10;
     XCTAssertTrue( [self.resolver countPendingRelationships] == SPTestStressIterations, @"Inconsistency detected" );
     
     // Helper Structures
-    char *sourceLabel               = [@"com.simperium.source" cStringUsingEncoding:NSUTF8StringEncoding];
-    char *targetLabel               = [@"com.simperium.target" cStringUsingEncoding:NSUTF8StringEncoding];
+    const char *sourceLabel               = [@"com.simperium.source" cStringUsingEncoding:NSUTF8StringEncoding];
+    const char *targetLabel               = [@"com.simperium.target" cStringUsingEncoding:NSUTF8StringEncoding];
     dispatch_queue_t sourceQueue    = dispatch_queue_create(sourceLabel, NULL);
     dispatch_queue_t targetQueue    = dispatch_queue_create(targetLabel, NULL);
 	dispatch_group_t group          = dispatch_group_create();

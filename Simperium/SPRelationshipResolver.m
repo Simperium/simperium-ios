@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 Simperium. All rights reserved.
 //
 
-#import "SPRelationshipResolver.H"
+#import "SPRelationshipResolver+Internals.h"
 #import "SPDiffable.h"
 #import "SPStorage.h"
 #import "SPStorageProvider.h"
