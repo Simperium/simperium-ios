@@ -52,7 +52,6 @@ static NSInteger const SPWorkersDone = 0;
 }
 
 - (NSArray *)objectsForKeys:(NSSet *)keys bucketName:(NSString *)bucketName {
-
     NSMutableArray *array = [NSMutableArray array];
     
     for (NSString *key in keys) {
@@ -80,7 +79,6 @@ static NSInteger const SPWorkersDone = 0;
 }
 
 - (NSDictionary *)faultObjectsForKeys:(NSArray *)keys bucketName:(NSString *)bucketName {
-    
     NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
     
     for (NSString *key in keys) {
@@ -121,7 +119,6 @@ static NSInteger const SPWorkersDone = 0;
 }
 
 - (void)deleteObject:(id)object {
-    
     SPObject *theObject = (SPObject *)object;
     if ([theObject isKindOfClass:[SPObject class]]) {
         [self stopManagingObjectWithKey:theObject.simperiumKey];

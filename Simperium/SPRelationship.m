@@ -72,11 +72,11 @@ static NSString * const SPLegacyPathAttribute           = @"SPPathAttribute";
     }
     
     SPRelationship *second = (SPRelationship *)object;
-    return  [self.sourceKey isEqual:second.sourceKey] &&
-            [self.sourceAttribute isEqual:second.sourceAttribute] &&
-            [self.sourceBucket isEqual:second.sourceBucket] &&
-            [self.targetBucket isEqual:second.targetBucket] &&
-            [self.targetKey isEqual:second.targetKey];
+    return  [self.sourceKey         isEqual:second.sourceKey]       &&
+            [self.sourceAttribute   isEqual:second.sourceAttribute] &&
+            [self.sourceBucket      isEqual:second.sourceBucket]    &&
+            [self.targetBucket      isEqual:second.targetBucket]    &&
+            [self.targetKey         isEqual:second.targetKey];
 }
 
 - (NSUInteger)hash {
@@ -114,11 +114,11 @@ static NSString * const SPLegacyPathAttribute           = @"SPPathAttribute";
     for (NSDictionary *rawRelationship in rawRelationships) {
         NSAssert([rawRelationship isKindOfClass:[NSDictionary class]], @"Invalid Parameter");
         
-        SPRelationship *relationship = [[[self class] alloc] initWithSourceKey:rawRelationship[SPRelationshipsSourceKey]
-                                                               sourceAttribute:rawRelationship[SPRelationshipsSourceAttribute]
-                                                                  sourceBucket:rawRelationship[SPRelationshipsSourceBucket]
-                                                                     targetKey:rawRelationship[SPRelationshipsTargetKey]
-                                                                  targetBucket:rawRelationship[SPRelationshipsTargetBucket]];
+        SPRelationship *relationship = [SPRelationship relationshipFromObjectWithKey:rawRelationship[SPRelationshipsSourceKey]
+                                                                        andAttribute:rawRelationship[SPRelationshipsSourceAttribute]
+                                                                            inBucket:rawRelationship[SPRelationshipsSourceBucket]
+                                                                     toObjectWithKey:rawRelationship[SPRelationshipsTargetKey]
+                                                                            inBucket:rawRelationship[SPRelationshipsTargetBucket]];
         
         [parsed addObject:relationship];
     }
