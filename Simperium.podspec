@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Simperium"
-  s.version      = "0.6.5"
+  s.version      = "0.6.6"
   s.summary      = "Simperium libraries."
   s.description  = "Simperium is a simple way for developers to move data as it changes, instantly and automatically."
   s.homepage     = "https://github.com/Simperium/simperium-ios"
@@ -57,6 +57,6 @@ Pod::Spec.new do |s|
 
   # Mapping SocketRocket from our fork, until the official repository fixes 'handleEvent:' crash
   # s.dependency 'SocketRocket'
-  s.dependency 'SocketRocket', :git => 'https://github.com/jleandroperez/SocketRocket.git'
+  s.dependency 'SocketRocket', :podspec => 'https://github.com/jleandroperez/SocketRocket.git'
 
 end
