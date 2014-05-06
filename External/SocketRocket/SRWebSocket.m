@@ -1138,11 +1138,11 @@ static const uint8_t SRPayloadLenMask   = 0x7F;
 {
     // Cleanup NSStream delegate's in the same RunLoop used by the streams themselves:
     // This way we'll prevent race conditions between handleEvent and SRWebsocket's dealloc
-    NSTimer *timer = [NSTimer timerWithTimeInterval:(0.0f) target:self selector:@selector(_cleanupSelfReference) userInfo:nil repeats:NO];
+    NSTimer *timer = [NSTimer timerWithTimeInterval:(0.0f) target:self selector:@selector(_cleanupSelfReference:) userInfo:nil repeats:NO];
     [[NSRunLoop SR_networkRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
 }
 
-- (void)_cleanupSelfReference
+- (void)_cleanupSelfReference:(NSTimer *)timer
 {
     _inputStream.delegate = nil;
     _outputStream.delegate = nil;
