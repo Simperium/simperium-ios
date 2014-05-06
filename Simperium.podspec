@@ -54,9 +54,5 @@ Pod::Spec.new do |s|
   #
   s.dependency 'Google-Diff-Match-Patch'
   s.dependency 'JRSwizzle'
-
-  # Mapping SocketRocket from our fork, until the official repository fixes 'handleEvent:' crash
-  # s.dependency 'SocketRocket'
-  s.dependency 'SocketRocket', :git => 'https://github.com/jleandroperez/SocketRocket.git'
-
+  s.dependency 'SocketRocket'
 end
