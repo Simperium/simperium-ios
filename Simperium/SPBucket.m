@@ -183,18 +183,20 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
 
 - (void)sendAllObjectsWithChanges {
     [self syncInFlightProcess:^{
-        for (id <SPDiffable> object in [self.storage objectsForBucketName:self.name predicate:nil]) {
-            // Objects that differ to their ghost and have no pending changes remain
-            // stuck in a bad state until a local change occurs because any remote
-            // diffs are transformed against the local diff, but the local diff
-            // remains unsent. This method resolves the bad state by sending a
-            // change for any objects which differ from their ghost.
-            //
-            // As -[SPWebSocketChannel sendObjectChanges:] sends
-            // changes only for objects with local diffs, attempting to send every
-            // object skips all except those that should be sent.
-            [self.network sendObjectChanges:object];
-        }
+
+    for (id <SPDiffable> object in [self.storage objectsForBucketName:self.name predicate:nil]) {
+        // Objects that differ to their ghost and have no pending changes remain
+        // stuck in a bad state until a local change occurs because any remote
+        // diffs are transformed against the local diff, but the local diff
+        // remains unsent. This method resolves the bad state by sending a
+        // change for any objects which differ from their ghost.
+        //
+        // As -[SPWebSocketChannel sendObjectChanges:] sends
+        // changes only for objects with local diffs, attempting to send every
+        // object skips all except those that should be sent.
+        [self.network sendObjectChanges:object];
+    }
+
     }];
 }
 
