@@ -457,6 +457,10 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 #if defined(__IPHONE_7_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0)
 
 - (void)backgroundFetchWithCompletion:(SimperiumBackgroundFetchCompletion)completion {
+    [self backgroundFetchWithTimeout:SPBackgroundSyncTimeout completion:completion];
+}
+
+- (void)backgroundFetchWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumBackgroundFetchCompletion)completion {
     __block UIBackgroundFetchResult result  = UIBackgroundFetchResultNoData;
 	dispatch_group_t group                  = dispatch_group_create();
     
@@ -476,7 +480,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     // delegate, we risk getting the app killed. As a safety measure, let's set a timeout.
     //
 	__block BOOL notified   = NO;
-    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, SPBackgroundSyncTimeout * NSEC_PER_SEC);
+    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, timeoutSeconds * NSEC_PER_SEC);
     dispatch_block_t block  = ^{
 		if (!notified) {
 			completion(result);
