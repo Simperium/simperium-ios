@@ -30,6 +30,7 @@
 
 NSString * const UUID_KEY						= @"SPUUIDKey";
 NSString * const SimperiumWillSaveNotification	= @"SimperiumWillSaveNotification";
+NSTimeInterval const SPBackgroundSyncTimeout    = 20.0f;
 
 #ifdef DEBUG
 static SPLogLevels logLevel						= SPLogLevelsVerbose;
@@ -453,34 +454,42 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     return result;
 }
 
-- (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumForceSyncCompletion)completion {
-	dispatch_group_t group = dispatch_group_create();
-	__block BOOL notified = NO;
-	
+#if defined(__IPHONE_7_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0)
+
+- (void)backgroundFetchWithCompletion:(SimperiumBackgroundFetchCompletion)completion {
+    __block UIBackgroundFetchResult result  = UIBackgroundFetchResultNoData;
+	dispatch_group_t group                  = dispatch_group_create();
+    
 	// Sync every bucket
 	for (SPBucket* bucket in self.buckets.allValues) {
 		dispatch_group_enter(group);
-		[bucket forceSyncWithCompletion:^() {
+		[bucket forceSyncWithCompletion:^(BOOL signatureUpdated) {
+            if (signatureUpdated) {
+                result = UIBackgroundFetchResultNewData;
+            }
 			dispatch_group_leave(group);
 		}];
 	}
 
-	// Wait until the workers are ready
-	dispatch_group_notify(group, dispatch_get_main_queue(), ^ {
+	// NOTE:
+    // We have up to 30 seconds to complete this OP. If anything happens: slow network / broken pipe, and we don't hit the
+    // delegate, we risk getting the app killed. As a safety measure, let's set a timeout.
+    //
+	__block BOOL notified   = NO;
+    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, SPBackgroundSyncTimeout * NSEC_PER_SEC);
+    dispatch_block_t block  = ^{
 		if (!notified) {
-			completion(YES);
+			completion(result);
 			notified = YES;
 		}
-	});
-	
-	// Notify anyways after timeout
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeoutSeconds * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
-		if (!notified) {
-			completion(NO);
-			notified = YES;
-		}
-    });
+	};
+
+	dispatch_group_notify(group, dispatch_get_main_queue(), block);
+    dispatch_after(timeout, dispatch_get_main_queue(), block);
 }
+
+#endif
+
 
 #if !TARGET_OS_IPHONE
 
@@ -517,7 +526,13 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 
 - (void)signOutAndRemoveLocalData:(BOOL)remove completion:(SimperiumSignoutCompletion)completion {
 	
+    // Don't proceed, if the user isn't logged in
+    if (!self.user.authenticated) {
+        return;
+    }
+    
     SPLogInfo(@"Simperium logging out...");
+    
     // Reset Simperium: Don't start network managers again; expect app to handle that
     [self stopNetworking];
     

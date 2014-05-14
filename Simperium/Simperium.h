@@ -13,6 +13,9 @@
 #import "SPAuthenticator.h"
 #import "SPUser.h"
 
+#if TARGET_OS_IPHONE
+#import <UIKit/UIApplication.h>
+#endif
 
 
 @class Simperium;
@@ -86,9 +89,12 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
 // (you can also just save your context and Simperium will see the changes).
 - (BOOL)save;
 
-// Force Simperium to sync all its buckets. Success return value will be false if the timeout is reached, and the sync wasn't completed.
-typedef void (^SimperiumForceSyncCompletion)(BOOL success);
-- (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumForceSyncCompletion)completion;
+// Support for iOS Background Fetch. 'result' flag will be set to UIBackgroundFetchResultNewData, if new data was retrieved,
+// or set to UIBackgroundFetchResultNoData in any other case.
+#if defined(__IPHONE_7_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0)
+typedef void (^SimperiumBackgroundFetchCompletion)(UIBackgroundFetchResult result);
+- (void)backgroundFetchWithCompletion:(SimperiumBackgroundFetchCompletion)completion;
+#endif
 
 // Get a particular bucket (which, for Core Data, corresponds to a particular Entity name in your model).
 // Once you have a bucket instance, you can set a SPBucketDelegate to react to changes.
