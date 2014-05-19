@@ -29,7 +29,7 @@
 
 - (void)simperiumSetValue:(id)value forKey:(NSString *)key {
     [self willChangeValueForKey:key];
-    [self setValue:value forKey:key];
+    [self safeSetValue:value forKey:key];
     [self didChangeValueForKey:key];
 }
 
@@ -126,7 +126,7 @@
             
             // This sets the actual instance data
             [self willChangeValueForKey:member.keyName];
-            [self setValue:data forKey:member.keyName];
+            [self safeSetValue:data forKey:[member keyName]];
             [self didChangeValueForKey:member.keyName];
         }
     }
@@ -175,6 +175,23 @@
 
 - (NSString *)namespacedSimperiumKey {
     return [NSString stringWithFormat:@"%@.%@", self.bucket.name, self.simperiumKey];
+}
+
+- (void)safeSetValue:(id)value forKey:(NSString*)key {
+    NSDictionary *attributes = [[self entity] attributesByName];
+    NSAttributeType attributeType = [[attributes objectForKey:key] attributeType];
+    
+    if ((attributeType == NSStringAttributeType) && ([value isKindOfClass:[NSNumber class]])) {
+        value = [value stringValue];
+    }
+    else if (((attributeType == NSInteger16AttributeType) || (attributeType == NSInteger32AttributeType) || (attributeType == NSInteger64AttributeType) || (attributeType == NSBooleanAttributeType)) && ([value isKindOfClass:[NSString class]])) {
+        value = [NSNumber numberWithInteger:[value integerValue]];
+    }
+    else if (((attributeType == NSFloatAttributeType) || (attributeType == NSDoubleAttributeType) || (attributeType == NSDecimalAttributeType)) &&  ([value isKindOfClass:[NSString class]])) {
+        value = [NSNumber numberWithDouble:[value doubleValue]];
+    }
+    
+    [self setValue:value forKey:key];
 }
 
 @end
