@@ -186,12 +186,12 @@
     }
     free(properties);
     
-    if(!property) {
+    if (!property) {
         // property doesn't exist, we can't set it
         return;
     }
     
-    if (value != nil) {
+    if (value) {
         char *typeEncoding = NULL;
         typeEncoding = property_copyAttributeValue(property, "T");
         switch (typeEncoding[0]) {
@@ -208,12 +208,12 @@
                     [self setValue:value forKey:key];
                 }
                 else {
-                    
+                    NSLog(@"Simperium error: type mismatch");
+                    // TODO: handle exception
                 }
             }
                 
-            default:
-            {
+            default: {
                 break;
             }
         }
