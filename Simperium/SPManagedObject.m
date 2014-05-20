@@ -15,7 +15,7 @@
 #import "SPGhost.h"
 #import "JSONKit+Simperium.h"
 #import "SPLogger.h"
-
+#import "objc/runtime.h"
 
 
 @implementation SPManagedObject
@@ -172,20 +172,58 @@
 }
 
 - (void)safeSetValue:(id)value forKey:(NSString*)key {
-    NSDictionary *attributes = [[self entity] attributesByName];
-    NSAttributeType attributeType = [[attributes objectForKey:key] attributeType];
+    // first we get the objc_property_t that corresponds to the key
+    unsigned int propertyCount;
+    objc_property_t *properties = class_copyPropertyList([self class], &propertyCount);
+    objc_property_t property;
+    for (int i=0; i<propertyCount; i++) {
+        objc_property_t propertyi = properties[i];
+        const char *propertyName = property_getName(propertyi);
+        NSString *keyName = [NSString stringWithUTF8String:propertyName];
+        if([keyName isEqualToString:key]) {
+            property = propertyi;
+        }
+    }
+    free(properties);
     
-    if ((attributeType == NSStringAttributeType) && ([value isKindOfClass:[NSNumber class]])) {
-        value = [value stringValue];
-    }
-    else if (((attributeType == NSInteger16AttributeType) || (attributeType == NSInteger32AttributeType) || (attributeType == NSInteger64AttributeType) || (attributeType == NSBooleanAttributeType)) && ([value isKindOfClass:[NSString class]])) {
-        value = [NSNumber numberWithInteger:[value integerValue]];
-    }
-    else if (((attributeType == NSFloatAttributeType) || (attributeType == NSDoubleAttributeType) || (attributeType == NSDecimalAttributeType)) &&  ([value isKindOfClass:[NSString class]])) {
-        value = [NSNumber numberWithDouble:[value doubleValue]];
+    if(!property) {
+        // property doesn't exist, we can't set it
+        return;
     }
     
-    [self setValue:value forKey:key];
+    if (value != nil) {
+        char *typeEncoding = NULL;
+        typeEncoding = property_copyAttributeValue(property, "T");
+        switch (typeEncoding[0]) {
+            case '@': {
+                // We get the class of the property
+                Class class = nil;
+                if (strlen(typeEncoding) >= 3) {
+                    char *className = strndup(typeEncoding+2, strlen(typeEncoding)-3);
+                    class = NSClassFromString([NSString stringWithUTF8String:className]);
+                }
+                
+                //We check for type mismatch
+                if ([value isKindOfClass:class]) {
+                    [self setValue:value forKey:key];
+                }
+                else {
+                    
+                }
+            }
+                
+            default:
+            {
+                break;
+            }
+        }
+        free(typeEncoding);
+    }
+    else {
+        [self setValue:value forKey:key];
+    }
+
 }
+
 
 @end
