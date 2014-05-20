@@ -493,8 +493,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             // Ready posting local changes. If needed, hit the callback
             if (self.onLocalChangesSent) {
                 if ( !(processor.numChangesPending || processor.numKeysForObjectsWithMoreChanges) ) {
-                    self.onLocalChangesSent();
-                    self.onLocalChangesSent = nil;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        self.onLocalChangesSent();
+                        self.onLocalChangesSent = nil;
+                    });
                 }
             }
 		}
