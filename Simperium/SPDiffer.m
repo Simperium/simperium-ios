@@ -155,6 +155,14 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 		}
         id ghostValue = oldGhostMemberData[key];
         if (!ghostValue) {
+
+            // Happy Inspector: If the ghost value is nil, but both diffs are an add operation,
+            //                  transform the new diff into a replace operation
+            if ([memberDiff[OP_OP] isEqualToString:OP_OBJECT_ADD] && [oldMemberDiff[OP_OP] isEqualToString:OP_OBJECT_ADD]) {
+                newDiff[key] = @{OP_OP : OP_REPLACE, OP_VALUE : memberDiff[OP_VALUE]};
+                continue;
+            }
+
 			SPLogError(@"Simperium error: transform diff for a ghost member (ghost %@, memberData %@) that doesn't exist (%@): %@", oldGhost, oldGhost.memberData, key, [memberDiff description]);
             continue;
         }
