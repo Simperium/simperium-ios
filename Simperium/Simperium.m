@@ -61,17 +61,19 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 			context:(NSManagedObjectContext *)context
 		coordinator:(NSPersistentStoreCoordinator *)coordinator {
 	
-	return [self initWithModel:model context:context coordinator:coordinator label:@""];
+	return [self initWithModel:model context:context coordinator:coordinator label:@"" bucketOverrides:nil];
 }
 
 - (id)initWithModel:(NSManagedObjectModel *)model
 			context:(NSManagedObjectContext *)context
 		coordinator:(NSPersistentStoreCoordinator *)coordinator
-			  label:(NSString *)label {
+			  label:(NSString *)label
+    bucketOverrides:(NSDictionary *)bucketOverrides {
 	
 	if ((self = [super init])) {
         
 		self.label							= label;
+        self.bucketOverrides                = bucketOverrides;
         self.networkEnabled					= YES;
         self.authenticationEnabled			= YES;
         self.dynamicSchemaEnabled			= YES;
@@ -176,7 +178,10 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 								 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName clientID:self.clientID];
 
 			[self.buckets setObject:bucket forKey:name];
-            [self.network start:bucket];
+            
+            if (self.networkManagersStarted) {
+                [self.network start:bucket];
+            }
         }
     }
     

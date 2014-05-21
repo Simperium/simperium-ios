@@ -37,7 +37,8 @@
 @property (nonatomic,	copy) NSString					*appID;
 @property (nonatomic,	copy) NSString					*APIKey;
 @property (nonatomic,	copy) NSString					*appURL;
-@property (nonatomic, copy) NSString					*label;
+@property (nonatomic,   copy) NSString					*label;
+@property (nonatomic,   copy) NSDictionary              *bucketOverrides;
 @property (nonatomic, assign) BOOL						skipContextProcessing;
 @property (nonatomic, assign) BOOL						networkManagersStarted;
 @property (nonatomic, assign) BOOL						dynamicSchemaEnabled;
@@ -53,7 +54,8 @@
 - (id)initWithModel:(NSManagedObjectModel *)model
 			context:(NSManagedObjectContext *)context
 		coordinator:(NSPersistentStoreCoordinator *)coordinator
-			  label:(NSString *)label;
+			  label:(NSString *)label
+    bucketOverrides:(NSDictionary *)bucketOverrides;
 
 - (void)removeRemoteData;
 
