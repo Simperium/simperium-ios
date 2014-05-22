@@ -151,7 +151,7 @@ static NSString *const SPLoggerDefaultFileExtension         = @"log";
 - (NSURL *)createLogfileIfNeeded {    
     // Make sure the baseURL exists
     NSError *error	= nil;
-    NSURL *baseURL	= self.baseURL;
+    NSURL *baseURL	= self.logfilesFolderURL;
     BOOL success	= [[NSFileManager defaultManager] createDirectoryAtURL:baseURL withIntermediateDirectories:YES attributes:nil error:&error];
     if (!success) {
         NSLog(@"%@ could not create folder %@ :: %@", NSStringFromClass([self class]), baseURL, error);
@@ -183,7 +183,7 @@ static NSString *const SPLoggerDefaultFileExtension         = @"log";
 {
     // Do we need to proceed?
     NSFileManager *fileManager  = [NSFileManager defaultManager];
-    NSArray *filenames          = [fileManager contentsOfDirectoryAtPath:self.baseURL.path error:nil];
+    NSArray *filenames          = [fileManager contentsOfDirectoryAtPath:self.logfilesFolderURL.path error:nil];
     if (_maxLogfiles == 0 || filenames.count < _maxLogfiles) {
         return;
     }
@@ -198,7 +198,7 @@ static NSString *const SPLoggerDefaultFileExtension         = @"log";
         [sortedFilenames removeObject:filename];
 
         // Failsafe: check the file extension
-        NSURL *path = [self.baseURL URLByAppendingPathComponent:filename];
+        NSURL *path = [self.logfilesFolderURL URLByAppendingPathComponent:filename];
         if ([path.pathExtension isEqual:SPLoggerDefaultFileExtension]) {
             [fileManager removeItemAtURL:path error:nil];
         }
@@ -213,14 +213,14 @@ static NSString *const SPLoggerDefaultFileExtension         = @"log";
 
 #if TARGET_OS_IPHONE
 
-- (NSURL *)baseURL {
+- (NSURL *)logfilesFolderURL {
     NSURL *appSupportURL = [[[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask] lastObject];
 	return [appSupportURL URLByAppendingPathComponent:NSStringFromClass([self class])];
 }
 
 #else
 
-- (NSURL *)baseURL {
+- (NSURL *)logfilesFolderURL {
     NSURL *appSupportURL = [[[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask] lastObject];
 	return [appSupportURL URLByAppendingPathComponent:NSStringFromClass([self class])];
 }

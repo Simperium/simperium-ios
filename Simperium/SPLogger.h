@@ -72,6 +72,7 @@ typedef NS_ENUM(NSInteger, SPLogLevels) {
 @property (nonatomic, assign, readwrite) BOOL                   writesToDisk;
 @property (nonatomic, assign, readwrite) NSUInteger             maxLogfiles;
 @property (nonatomic, assign, readwrite) unsigned long long     maxLogfileSize;
+@property (nonatomic, strong,  readonly) NSURL                  *logfilesFolderURL;
 
 + (instancetype)sharedInstance;
 
