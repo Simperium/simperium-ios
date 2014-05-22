@@ -69,6 +69,9 @@ typedef NS_ENUM(NSInteger, SPLogLevels) {
 
 @property (nonatomic, weak,   readwrite) id<SPLoggerDelegate>	delegate;
 @property (nonatomic, assign, readwrite) SPLogLevels			sharedLogLevel;
+@property (nonatomic, assign, readwrite) BOOL                   writesToDisk;
+@property (nonatomic, assign, readwrite) NSUInteger             maxLogfiles;
+@property (nonatomic, assign, readwrite) unsigned long long     maxLogfileSize;
 
 + (instancetype)sharedInstance;
 
