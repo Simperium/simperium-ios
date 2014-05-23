@@ -255,11 +255,11 @@
     [follower disconnect];
     
     // Leader: Insert a Config Object
-    SPBucket *leaderBucket      = [leader.simperium bucketForName:[Config entityName]];
-    Config *leadConfig          = [leaderBucket insertNewObject];
-    leadConfig.simperiumKey     = sharedKey;
+    SPBucket *leaderBucket          = [leader.simperium bucketForName:[Config entityName]];
+    Config *leadConfig              = [leaderBucket insertNewObject];
+    leadConfig.simperiumKey         = sharedKey;
     
-    leader.expectedAcknowledgments = 1;
+    leader.expectedAcknowledgments  = 1;
     [leader.simperium save];
     XCTAssertTrue([self waitForCompletion:4.0 farmArray:@[ leader ]], @"timed out (adding)");
     
@@ -273,8 +273,8 @@
     [followerBucket deleteObject:followerConfig];
     [follower.simperium save];
     
-    follower.expectedAdditions          = 1;
-    follower.expectedAcknowledgments    = 1;
+    follower.expectedAdditions  = 1;
+    follower.expectedDeletions  = 1;
     [follower connect];
     XCTAssertTrue([self waitForCompletion:4.0 farmArray:@[ follower ]], @"timed out (adding)");
     
