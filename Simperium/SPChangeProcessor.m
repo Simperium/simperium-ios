@@ -181,7 +181,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 - (BOOL)processRemoteDeleteWithKey:(NSString*)simperiumKey bucket:(SPBucket *)bucket objectWasFound:(BOOL)objectWasFound {
 	
 	// REMOVE operation
-	// If this wasn't just an ack, perform the deletion
+	// If the object still exists in our local storage (no matter if this is an ACK, or remote deletion), proceed nuking it
 	if (objectWasFound) {
 		SPLogVerbose(@"Simperium non-local REMOVE ENTITY received");
 		
