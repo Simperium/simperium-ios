@@ -491,14 +491,20 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			[processor enumerateQueuedChangesForBucket:bucket block:block];
             
             // Ready posting local changes. If needed, hit the callback
-            if (self.onLocalChangesSent) {
-                if ( !(processor.numChangesPending || processor.numKeysForObjectsWithMoreChanges) ) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        self.onLocalChangesSent();
-                        self.onLocalChangesSent = nil;
-                    });
-                }
+            if (!self.onLocalChangesSent) {
+                return;
             }
+            
+            if (processor.numChangesPending || processor.numKeysForObjectsWithMoreChanges) {
+                return;
+            }
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (self.onLocalChangesSent) {
+                    self.onLocalChangesSent();
+                    self.onLocalChangesSent = nil;
+                }
+            });
 		}
     });
     
