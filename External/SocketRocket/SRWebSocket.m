@@ -1150,6 +1150,7 @@ static const uint8_t SRPayloadLenMask   = 0x7F;
     if (!_sentClose) {
         [_inputStream close];
         [_outputStream close];
+        _sentClose = YES;
     }
     
     // Cleanup selfRetain in the same GCD queue as usual
