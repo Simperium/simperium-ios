@@ -370,7 +370,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 	
 	// Manually initialize the user
 	self.user = [[SPUser alloc] initWithEmail:@"" token:token];
-    [self startNetworkManagers];
+    [self startNetworking];
 }
 
 - (void)shutdown {
