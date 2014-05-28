@@ -275,6 +275,7 @@ typedef void (^data_callback)(SRWebSocket *webSocket,  NSData *data);
     
     BOOL _sentClose;
     BOOL _didFail;
+    BOOL _cleanupScheduled;
     int _closeCode;
     
     BOOL _isPumping;
@@ -1136,23 +1137,25 @@ static const uint8_t SRPayloadLenMask   = 0x7F;
 
 - (void)_scheduleCleanup
 {
-    // Cleanup NSStream delegate's in the same RunLoop used by the streams themselves:
-    // This way we'll prevent race conditions between handleEvent and SRWebsocket's dealloc
-    NSTimer *timer = [NSTimer timerWithTimeInterval:(0.0f) target:self selector:@selector(_cleanupSelfReference:) userInfo:nil repeats:NO];
-    [[NSRunLoop SR_networkRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    @synchronized(self) {
+        if (_cleanupScheduled) {
+            return;
+        }
+        
+        _cleanupScheduled = YES;
+        
+        // Cleanup NSStream delegate's in the same RunLoop used by the streams themselves:
+        // This way we'll prevent race conditions between handleEvent and SRWebsocket's dealloc
+        NSTimer *timer = [NSTimer timerWithTimeInterval:(0.0f) target:self selector:@selector(_cleanupSelfReference:) userInfo:nil repeats:NO];
+        [[NSRunLoop SR_networkRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    }
 }
 
 - (void)_cleanupSelfReference:(NSTimer *)timer
 {
     _inputStream.delegate = nil;
     _outputStream.delegate = nil;
-    
-    if (!_sentClose) {
-        [_inputStream close];
-        [_outputStream close];
-        _sentClose = YES;
-    }
-    
+        
     // Cleanup selfRetain in the same GCD queue as usual
     dispatch_async(_workQueue, ^{
         _selfRetain = nil;
@@ -1430,7 +1433,7 @@ static const size_t SRFrameHeaderOverhead = 32;
             }
         }
     }
-    
+
     dispatch_async(_workQueue, ^{
         [weakSelf safeHandleEvent:eventCode stream:aStream];
     });
