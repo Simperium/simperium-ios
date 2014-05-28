@@ -198,7 +198,6 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 }
 
 - (void)stop:(SPBucket *)bucket {
-    NSLog(@"<> %@ :: %@", NSStringFromSelector(_cmd), [NSThread currentThread]);
     
     SPWebSocketChannel *channel = [self channelForName:bucket.name];
     channel.authenticated       = NO;
@@ -296,7 +295,6 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 	// Network enabled = YES: There was a networking glitch, yet, reachability flags are OK. We should retry
     if (self.simperium.networkEnabled) {
 		SPLogVerbose(@"Simperium websocket failed (will retry) with error %@", error);
-        NSLog(@"<> %@ :: %@", NSStringFromSelector(_cmd), [NSThread currentThread]);
 		[self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
 	// Otherwise, the device lost reachability, and the interfaces were shut down by the framework
 	} else {
@@ -365,7 +363,6 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     if (self.open) {
         // Closed unexpectedly, retry
-        NSLog(@"<> %@ :: %@", NSStringFromSelector(_cmd), [NSThread currentThread]);
         [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
         SPLogVerbose(@"Simperium connection closed (will retry): %ld, %@", (long)code, reason);
     } else {

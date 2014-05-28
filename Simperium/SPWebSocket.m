@@ -117,7 +117,6 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
-    NSLog(@"<> %@ :: %@", NSStringFromSelector(_cmd), [NSThread currentThread]);
 	[self invalidateTimeoutTimer];
 	[self.delegate webSocket:(SRWebSocket*)self didFailWithError:error];
 }
