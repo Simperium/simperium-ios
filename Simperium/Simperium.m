@@ -99,7 +99,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 		
 		[self setupNotifications];
 		
-		[self setupCoreDataWithModelModel:model context:context coordinator:coordinator];
+		[self setupCoreDataWithModel:model context:context coordinator:coordinator];
     }
 
 	return self;
@@ -122,9 +122,9 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 
 }
 
-- (void)setupCoreDataWithModelModel:(NSManagedObjectModel *)model
-							context:(NSManagedObjectContext *)context
-						coordinator:(NSPersistentStoreCoordinator *)coordinator {
+- (void)setupCoreDataWithModel:(NSManagedObjectModel *)model
+                       context:(NSManagedObjectContext *)context
+                   coordinator:(NSPersistentStoreCoordinator *)coordinator {
 	
 	NSParameterAssert(model);
 	NSParameterAssert(context);
