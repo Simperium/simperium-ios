@@ -98,7 +98,7 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 	
 	NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"Activity Timeout"};
 	NSError* error = [NSError errorWithDomain:SRWebSocketErrorDomain code:SPWebSocketErrorsActivityTimeout userInfo:userInfo];
-	[self.delegate webSocket:(SRWebSocket*)error didFailWithError:error];
+	[self.delegate webSocket:self didFailWithError:error];
 }
 
 
@@ -108,22 +108,22 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 
 - (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
 	[self resetTimeoutTimer];
-	[self.delegate webSocketDidOpen:(SRWebSocket*)self];
+	[self.delegate webSocketDidOpen:self];
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
 	[self resetTimeoutTimer];
-	[self.delegate webSocket:(SRWebSocket*)self didReceiveMessage:message];
+	[self.delegate webSocket:self didReceiveMessage:message];
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
 	[self invalidateTimeoutTimer];
-	[self.delegate webSocket:(SRWebSocket*)self didFailWithError:error];
+	[self.delegate webSocket:self didFailWithError:error];
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
 	[self invalidateTimeoutTimer];
-	[self.delegate webSocket:(SRWebSocket*)self didCloseWithCode:code reason:reason wasClean:wasClean];
+	[self.delegate webSocket:self didCloseWithCode:code reason:reason wasClean:wasClean];
 }
 
 

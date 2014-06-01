@@ -56,7 +56,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 #pragma mark Private
 #pragma mark ====================================================================================
 
-@interface SPWebSocketInterface() <SRWebSocketDelegate>
+@interface SPWebSocketInterface() <SPWebSocketDelegate>
 @property (nonatomic, strong, readwrite) SPWebSocket			*webSocket;
 @property (nonatomic, weak,   readwrite) Simperium				*simperium;
 @property (nonatomic, strong, readwrite) NSMutableDictionary	*channels;
@@ -270,12 +270,12 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 }
 
 
-#pragma mark - SRWebSocketDelegate Methods
+#pragma mark - SPWebSocketDelegate Methods
 
-- (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
+- (void)webSocketDidOpen:(SPWebSocket *)theWebSocket {
     
 	// Reconnection failsafe
-	if ( theWebSocket != (SRWebSocket*)self.webSocket) {
+	if ( theWebSocket != self.webSocket) {
 		return;
 	}
 	
@@ -284,7 +284,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     [self resetHeartbeatTimer];
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
+- (void)webSocket:(SPWebSocket *)webSocket didFailWithError:(NSError *)error {
     
 	[self stopChannels];
 	self.webSocket.delegate = nil;
@@ -301,7 +301,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 	}
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
+- (void)webSocket:(SPWebSocket *)webSocket didReceiveMessage:(id)message {
 			
     NSArray *components = [message sp_componentsSeparatedByString:@":" limit:SPMessageIndexLast];
     
@@ -359,7 +359,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     }
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
+- (void)webSocket:(SPWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     if (self.open) {
         // Closed unexpectedly, retry
         [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
