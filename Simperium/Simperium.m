@@ -100,6 +100,8 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 		[self setupNotifications];
 		
 		[self setupCoreDataWithModelModel:model context:context coordinator:coordinator];
+        
+        self.reachability = [SPReachability reachabilityWithHostName:SPReachabilityURL];
     }
 
 	return self;
@@ -218,9 +220,10 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 }
 
 - (void)startNetworking {
-    // Create a new one each time to make sure it fires (and causes networking to start)
+    // Initial call to handleNetworkChange
+    [self handleNetworkChange:nil];
+    // Subsequent changes to reachibility trigger call to handleNetworkChange
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kReachabilityChangedNotification object:nil];
-    self.reachability = [SPReachability reachabilityWithHostName:SPReachabilityURL];
     [self.reachability startNotifier];
 }
 
