@@ -402,7 +402,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 #pragma mark - Status Properties
 
-- (NSString *)status {    
+- (NSString *)status {
     if (!_webSocket) {
         return NSLocalizedString(@"Uninitialized", @"WebSocket not initialized");
     }
@@ -411,7 +411,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
       @(SR_CONNECTING)  : @"Connecting",
       @(SR_OPEN)        : @"Open",
       @(SR_CLOSING)     : @"Closing",
-      @(SR_CLOSED)      : @"Unknown"
+      @(SR_CLOSED)      : @"Closed"
     };
     
     return statusMap[@(_webSocket.readyState)] ?: @"Unknown";
