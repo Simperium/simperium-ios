@@ -219,7 +219,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 
 - (void)startNetworking {
     // Create a new one each time to make sure it fires (and causes networking to start)
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kReachabilityChangedNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kSPReachabilityChangedNotification object:nil];
     self.reachability = [SPReachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
 }

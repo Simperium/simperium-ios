@@ -64,7 +64,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
         self.delegate	= authDelegate;
         self.simperium	= s;
 		
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kReachabilityChangedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kSPReachabilityChangedNotification object:nil];
 		self.reachability = [SPReachability reachabilityForInternetConnection];
         self.connected = [self.reachability currentReachabilityStatus] != NotReachable;
         [self.reachability startNotifier];
