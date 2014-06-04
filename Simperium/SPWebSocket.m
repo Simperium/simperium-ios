@@ -62,6 +62,7 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 }
 
 - (void)open {
+	[self resetTimeoutTimer];
 	[self.webSocket open];
 }
 
