@@ -178,6 +178,16 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // Returns the current SPAuthenticator instance
 @property (nonatomic, readwrite, strong) SPAuthenticator *authenticator;
 
+// Returns a flag indicating if there is network access
+@property (nonatomic, readonly, assign) BOOL requiresConnection;
+
+// Returns a string describing the network status
+@property (nonatomic, readonly, strong) NSString *networkStatus;
+
+// Returns the timestamp of the last message received by the backend
+@property (nonatomic, readonly, strong) NSDate *networkLastSeenTime;
+
+
 // You can implement your own subclass of SPAuthenticationViewController (iOS) or
 // SPAuthenticationWindowController (OSX) to customize authentication.
 #if TARGET_OS_IPHONE
@@ -185,7 +195,6 @@ typedef void (^SimperiumSignoutCompletion)(void);
 #else
 @property (nonatomic, readwrite, weak) Class authenticationWindowControllerClass;
 #endif
-
 
 #if TARGET_OS_IPHONE
 @property (nonatomic, readwrite, weak) UIViewController *rootViewController;

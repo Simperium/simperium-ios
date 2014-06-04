@@ -400,6 +400,28 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 }
 
 
+#pragma mark - Status Properties
+
+- (NSString *)status {    
+    if (!_webSocket) {
+        return NSLocalizedString(@"Uninitialized", @"WebSocket not initialized");
+    }
+    
+    NSDictionary *statusMap = @{
+      @(SR_CONNECTING)  : @"Connecting",
+      @(SR_OPEN)        : @"Open",
+      @(SR_CLOSING)     : @"Closing",
+      @(SR_CLOSED)      : @"Unknown"
+    };
+    
+    return statusMap[@(_webSocket.readyState)] ?: @"Unknown";
+}
+
+- (NSDate *)lastSeenTime {
+    return self.webSocket.lastSeenTimestamp;
+}
+
+
 #pragma mark Static Helpers:
 #pragma mark MockWebSocketInterface relies on this mechanism to register itself, while running the Unit Testing target
 

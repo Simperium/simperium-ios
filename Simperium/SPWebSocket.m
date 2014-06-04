@@ -28,6 +28,7 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 @interface SPWebSocket () <SRWebSocketDelegate>
 @property (nonatomic, strong, readwrite) SRWebSocket	*webSocket;
 @property (nonatomic, strong, readwrite) NSTimer		*timeoutTimer;
+@property (nonatomic, strong, readwrite) NSDate         *lastSeenTimestamp;
 @end
 
 
@@ -103,16 +104,27 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 
 
 #pragma mark ====================================================================================
+#pragma mark Timestamp Helpers
+#pragma mark ====================================================================================
+
+- (void)resetLastSeenTimestamp {
+    self.lastSeenTimestamp = [NSDate date];
+}
+
+
+#pragma mark ====================================================================================
 #pragma mark SRWebSocketDelegate Methods
 #pragma mark ====================================================================================
 
 - (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
 	[self resetTimeoutTimer];
+    [self resetLastSeenTimestamp];
 	[self.delegate webSocketDidOpen:self];
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
 	[self resetTimeoutTimer];
+    [self resetLastSeenTimestamp];
 	[self.delegate webSocket:self didReceiveMessage:message];
 }
 

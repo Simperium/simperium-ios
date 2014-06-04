@@ -639,6 +639,17 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     return !self.skipContextProcessing;
 }
 
+- (BOOL)requiresConnection {
+    return (self.reachability.currentReachabilityStatus != NotReachable);
+}
+- (NSString *)networkStatus {
+    return self.network.status;
+}
+
+- (NSDate *)networkLastSeenTime {
+    return self.network.lastSeenTime;
+}
+
 
 #pragma mark ====================================================================================
 #pragma mark Authentication Helpers
