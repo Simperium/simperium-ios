@@ -162,9 +162,9 @@ static SPLogLevels logLevel                             = SPLogLevelsInfo;
             if (remainingPaths.count > 0) {
                 self.pendingRelationships[toKey] = remainingPaths;
 
-                // Still some unresolved references, so try again after a delay (10 seconds)
+                // Still some unresolved references, so try again after a delay (2 seconds)
                 SPLogVerbose(@"Simperium scheduling reattempt to resolve pending references (%@): %@", bucketName, toKey);
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                     [self resolvePendingRelationshipsToKey:toKey bucketName:bucketName storage:storage];
                 });
             } else {
