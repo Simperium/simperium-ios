@@ -226,6 +226,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 
 - (void)stopNetworking {
     [self stopNetworkManagers];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kReachabilityChangedNotification object:nil];
 }
 
 - (void)handleNetworkChange:(NSNotification *)notification {
