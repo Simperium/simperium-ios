@@ -56,7 +56,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 #pragma mark Private
 #pragma mark ====================================================================================
 
-@interface SPWebSocketInterface() <SRWebSocketDelegate>
+@interface SPWebSocketInterface() <SPWebSocketDelegate>
 @property (nonatomic, strong, readwrite) SPWebSocket			*webSocket;
 @property (nonatomic, weak,   readwrite) Simperium				*simperium;
 @property (nonatomic, strong, readwrite) NSMutableDictionary	*channels;
@@ -210,9 +210,14 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     
     // Mark it closed so it doesn't reopen
     self.open               = NO;
+    
+    // Cleanup
     [self.webSocket close];
 	self.webSocket.delegate = nil;
     self.webSocket          = nil;
+    
+	// Prevent any pending retries
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
     
     // TODO: Consider ensuring threads are done their work and sending a notification
 }
@@ -267,12 +272,12 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 }
 
 
-#pragma mark - SRWebSocketDelegate Methods
+#pragma mark - SPWebSocketDelegate Methods
 
-- (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
+- (void)webSocketDidOpen:(SPWebSocket *)theWebSocket {
     
 	// Reconnection failsafe
-	if ( theWebSocket != (SRWebSocket*)self.webSocket) {
+	if ( theWebSocket != self.webSocket) {
 		return;
 	}
 	
@@ -281,7 +286,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     [self resetHeartbeatTimer];
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
+- (void)webSocket:(SPWebSocket *)webSocket didFailWithError:(NSError *)error {
     
 	[self stopChannels];
 	self.webSocket.delegate = nil;
@@ -298,7 +303,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 	}
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
+- (void)webSocket:(SPWebSocket *)webSocket didReceiveMessage:(id)message {
 			
     NSArray *components = [message sp_componentsSeparatedByString:@":" limit:SPMessageIndexLast];
     
@@ -356,7 +361,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     }
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
+- (void)webSocket:(SPWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     if (self.open) {
         // Closed unexpectedly, retry
         [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
@@ -394,6 +399,28 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 	// Let's reuse the start mechanism. This will post the latest CV + publish pending changes
 	SPWebSocketChannel *channel = [self channelForName:bucket.name];
 	[channel startProcessingChangesForBucket:bucket];
+}
+
+
+#pragma mark - Status Properties
+
+- (NSString *)status {
+    if (!_webSocket) {
+        return NSLocalizedString(@"Uninitialized", @"WebSocket not initialized");
+    }
+    
+    NSDictionary *statusMap = @{
+      @(SR_CONNECTING)  : @"Connecting",
+      @(SR_OPEN)        : @"Open",
+      @(SR_CLOSING)     : @"Closing",
+      @(SR_CLOSED)      : @"Closed"
+    };
+    
+    return statusMap[@(_webSocket.readyState)] ?: @"Unknown";
+}
+
+- (NSDate *)lastSeenTime {
+    return self.webSocket.lastSeenTimestamp;
 }
 
 

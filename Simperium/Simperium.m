@@ -100,7 +100,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 		
 		[self setupNotifications];
 		
-		[self setupCoreDataWithModelModel:model context:context coordinator:coordinator];
+		[self setupCoreDataWithModel:model context:context coordinator:coordinator];
     }
 
 	return self;
@@ -120,12 +120,12 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 	
 	NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
 	[nc addObserver:self selector:@selector(authenticationDidFail) name:SPAuthenticationDidFail object:nil];
-
+    [nc addObserver:self selector:@selector(handleNetworkChange:)  name:kSPReachabilityChangedNotification object:nil];
 }
 
-- (void)setupCoreDataWithModelModel:(NSManagedObjectModel *)model
-							context:(NSManagedObjectContext *)context
-						coordinator:(NSPersistentStoreCoordinator *)coordinator {
+- (void)setupCoreDataWithModel:(NSManagedObjectModel *)model
+                       context:(NSManagedObjectContext *)context
+                   coordinator:(NSPersistentStoreCoordinator *)coordinator {
 	
 	NSParameterAssert(model);
 	NSParameterAssert(context);
@@ -220,8 +220,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 
 - (void)startNetworking {
     // Create a new one each time to make sure it fires (and causes networking to start)
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kReachabilityChangedNotification object:nil];
-    self.reachability = [SPReachability reachabilityWithHostName:SPReachabilityURL];
+    self.reachability = [SPReachability reachabilityForInternetConnection];
     [self.reachability startNotifier];
 }
 
@@ -371,7 +370,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 	
 	// Manually initialize the user
 	self.user = [[SPUser alloc] initWithEmail:@"" token:token];
-    [self startNetworkManagers];
+    [self startNetworking];
 }
 
 - (void)shutdown {
@@ -642,6 +641,17 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 - (BOOL)objectsShouldSync {
     // TODO: rename or possibly (re)move this
     return !self.skipContextProcessing;
+}
+
+- (BOOL)requiresConnection {
+    return (self.reachability.currentReachabilityStatus != NotReachable);
+}
+- (NSString *)networkStatus {
+    return self.network.status;
+}
+
+- (NSDate *)networkLastSeenTime {
+    return self.network.lastSeenTime;
 }
 
 
