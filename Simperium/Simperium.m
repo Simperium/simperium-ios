@@ -221,6 +221,9 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 - (void)startNetworking {
     // Create a new one each time to make sure it fires (and causes networking to start)
     self.reachability = [SPReachability reachabilityForInternetConnection];
+    if ([self.reachability currentReachabilityStatus] != NotReachable && self.user.authenticated) {
+        [self startNetworkManagers];
+    }
     [self.reachability startNotifier];
 }
 
