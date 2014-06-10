@@ -26,6 +26,22 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
     SPProcessorErrorsClientError                // Should Nuke PendingChange
 };
 
+NSString * const CH_KEY;
+NSString * const CH_ADD;
+NSString * const CH_REMOVE;
+NSString * const CH_MODIFY;
+NSString * const CH_OPERATION;
+NSString * const CH_VALUE;
+NSString * const CH_START_VERSION;
+NSString * const CH_END_VERSION;
+NSString * const CH_CHANGE_VERSION;
+NSString * const CH_LOCAL_ID;
+NSString * const CH_CLIENT_ID;
+NSString * const CH_ERROR;
+NSString * const CH_DATA;
+NSString * const CH_EMPTY;
+
+
 #pragma mark ====================================================================================
 #pragma mark SPChangeProcessor
 #pragma mark ====================================================================================

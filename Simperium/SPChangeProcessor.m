@@ -58,7 +58,7 @@ typedef NS_ENUM(NSUInteger, CH_ERRORS) {
 };
 
 // Internal Server Errors: [500-599]
-static NSRange const CH_SERVER_ERROR_RANGE = {500, 99};
+static NSRange const CH_SERVER_ERROR_RANGE          = {500, 99};
 
 static int const SPChangeProcessorMaxPendingChanges	= 200;
 
@@ -225,7 +225,6 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
 	
     BOOL newlyAdded = NO;
-    NSString *key = [self keyWithoutNamespaces:change bucket:bucket];
     
     // MODIFY operation
     if (!object) {
@@ -240,14 +239,14 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         newlyAdded = YES;
 		
         // Create the new object
-        object = [threadSafeStorage insertNewObjectForBucketName:bucket.name simperiumKey:key];
+        object = [threadSafeStorage insertNewObjectForBucketName:bucket.name simperiumKey:simperiumKey];
         SPLogVerbose(@"Simperium managing newly added entity %@", [object simperiumKey]);
         
         // Remember this object's ghost for future diffing			
         // Send nil member data because it'll get loaded below
-        SPGhost *ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData:nil];
-        ghost.version = @"0";
-        object.ghost = ghost;
+        SPGhost *ghost  = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData:nil];
+        ghost.version   = @"0";
+        object.ghost    = ghost;
         
         // If this wasn't just an ack, send a notification and load the data
         SPLogVerbose(@"Simperium non-local ADD ENTITY received");
@@ -258,7 +257,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     
     // It already exists, now MODIFY it
     if (!object.ghost) {
-        SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, key);
+        SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, simperiumKey);
 		[threadSafeStorage finishSafeSection];
         return NO;
     }
@@ -287,8 +286,8 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     // If the versions are equal or there's no start version (new object), process the change
     if (startVersion == nil || [oldVersion isEqualToString:startVersion]) {
         // Remember the old ghost
-        SPGhost *oldGhost = [object.ghost copy];
-        NSDictionary *diff = [change objectForKey:CH_VALUE];
+        SPGhost *oldGhost   = [object.ghost copy];
+        NSDictionary *diff  = change[CH_VALUE];
         
         // Apply the diff to the ghost and store the new data in the object's ghost
         [bucket.differ applyGhostDiff: diff to:object];
@@ -296,7 +295,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         
         // Slight hack to ensure Core Data realizes the object has changed and needs a save
         NSString *ghostDataCopy = [[[object.ghost dictionary] sp_JSONString] copy];
-        object.ghostData = ghostDataCopy;
+        object.ghostData        = ghostDataCopy;
         
         SPLogVerbose(@"Simperium MODIFIED ghost version %@ (%@-%@)", endVersion, bucket.name, self.label);
         
@@ -304,7 +303,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         if (!acknowledged && !newlyAdded) {
             SPLogVerbose(@"Simperium non-local MODIFY ENTITY received");
             NSDictionary *oldDiff = [bucket.differ diff:object withDictionary:[oldGhost memberData]];
-            if ([oldDiff count] > 0) {
+            if (oldDiff.count > 0) {
                 // The local client version changed in the meantime, so transform the diff before applying it
                 SPLogVerbose(@"Simperium applying transform to diff: %@", diff);			
                 diff = [bucket.differ transform:object diff:oldDiff oldDiff: diff oldGhost: oldGhost];
@@ -312,7 +311,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
                 // Load from the ghost data so the subsequent diff is applied to the correct data
                 // Do an extra check in case there was a problem with the transform/diff, e.g. if a client's own change was misinterpreted
                 // as another client's change, in other words not properly acknowledged.
-                if ([diff count] > 0) {
+                if (diff.count > 0) {
                     [object loadMemberData: [object.ghost memberData]];
                 } else {
                     SPLogVerbose(@"Simperium transform resulted in empty diff (invalid ack?)");
@@ -321,7 +320,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         }
         
         // Apply the diff to the object itself
-        if (!acknowledged && [diff count] > 0) {
+        if (!acknowledged && diff.count > 0) {
             SPLogVerbose(@"Simperium applying diff: %@", diff);
             [bucket.differ applyDiff: diff to:object];
         }
@@ -330,7 +329,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         dispatch_async(dispatch_get_main_queue(), ^{
             NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                       bucket.name, @"bucketName",
-                                      [NSSet setWithObject:key], @"keys", nil];
+                                      [NSSet setWithObject:simperiumKey], @"keys", nil];
             NSString *notificationName;
             if (newlyAdded) {
                 notificationName = ProcessorDidAddObjectsNotification;
