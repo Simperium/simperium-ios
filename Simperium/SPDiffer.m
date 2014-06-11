@@ -113,6 +113,11 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 		NSDictionary *change    = diff[key];
 		NSString *operation     = [change[OP_OP] lowercaseString];
 		
+        // Failsafe: This should never happen
+        if (change == nil) {
+            continue;
+        }
+        
 		// Make sure the member exists and is tracked by Simperium
 		SPMember *member = [self.schema memberForKey:key];
 		if (!member) {
@@ -141,7 +146,6 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
             
             // Build a newValue from thisValue based on otherValue
             id newValue = [member applyDiff:thisValue otherValue:otherValue];
-            
             [object simperiumSetValue:newValue forKey:key];
         }
     }	
@@ -157,7 +161,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 		NSDictionary *change    = diff[key];
 		NSString *operation     = [change[OP_OP] lowercaseString];
         
-        // This should never happen, but it can if a change somehow slips in from a PUT request
+        // Failsafe: This should never happen
         if (change == nil) {
             continue;
         }
