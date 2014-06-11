@@ -26,9 +26,9 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSInteger const SPNumberOfEntities       = 1000;
+static NSInteger const SPNumberOfEntities       = 100;
 static NSString * const SPRemoteClientID        = @"OSX-Remote!";
-static NSUInteger const SPRandomStringLength    = 100;
+static NSUInteger const SPRandomStringLength    = 1000;
 
 
 #pragma mark ====================================================================================
@@ -43,46 +43,64 @@ static NSUInteger const SPRandomStringLength    = 100;
 
 - (void)testApplyRemoteDiffWithUncommitedChanges
 {
-	MockSimperium* s				= [MockSimperium mockSimperium];
-	SPBucket* bucket                = [s bucketForName:NSStringFromClass([Post class])];
-	SPCoreDataStorage* storage		= bucket.storage;
-	NSMutableArray* posts           = [NSMutableArray array];
-	NSString *titleMemberName       = NSStringFromSelector(@selector(title));
+    // ===================================================================================================
+	// Helpers
+    // ===================================================================================================
+    //
+	MockSimperium* s                    = [MockSimperium mockSimperium];
+	SPBucket* bucket                    = [s bucketForName:NSStringFromClass([Post class])];
+	SPCoreDataStorage* storage          = bucket.storage;
+	NSMutableArray* posts               = [NSMutableArray array];
+	NSString *titleMemberName           = NSStringFromSelector(@selector(title));
+    DiffMatchPatch *dmp                 = [[DiffMatchPatch alloc] init];
+    NSMutableDictionary *changes        = [NSMutableDictionary dictionary];
+    NSMutableDictionary *originalTitles = [NSMutableDictionary dictionary];
+    NSString *remoteTitleFormat         = @"REMOTE PREPEND\n%@\nREMOTE APPEND";
+    NSString *localTitleFormat          = @"LOCAL  PREPEND\n%@\nLOCAL  APPEND";
+    
     
     // ===================================================================================================
 	// Insert Posts
     // ===================================================================================================
     //
 	for (NSInteger i = 0; ++i <= SPNumberOfEntities; ) {
-		Post* post = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
-		post.title = [NSString sp_randomStringOfLength:SPRandomStringLength];
+        NSString *originalTitle         = [NSString sp_randomStringOfLength:SPRandomStringLength];
         
-        // Intialize SPGhost: we're not relying on the backend to confirm these additions!
+        // New post please!
+		Post* post                      = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+		post.title                      = originalTitle;
+        
+        // Manually Intialize SPGhost: we're not relying on the backend to confirm these additions!
         NSMutableDictionary *memberData = [post.dictionary mutableCopy];
         SPGhost *ghost                  = [[SPGhost alloc] initWithKey:post.simperiumKey memberData:memberData];
         ghost.version                   = @"1";
         post.ghost                      = ghost;
         post.ghostData                  = [memberData sp_JSONString];
-		[storage save];
         
+        // Keep a copy of the original title
+        NSString *key                   = post.simperiumKey;
+        originalTitles[key]             = originalTitle;
+        
+        // And keep a reference to the post
 		[posts addObject:post];
 	}
 
+	[storage save];
+    
+    NSLog(@"<> Successfully inserted %d objects", (int)SPNumberOfEntities);
+    
+    
     // ===================================================================================================
     // Prepare Remote Changes
     // ===================================================================================================
     //
-    DiffMatchPatch *dmp             = [[DiffMatchPatch alloc] init];
-    NSMutableDictionary *changes    = [NSMutableDictionary dictionary];
-    NSMutableDictionary *newTitles  = [NSMutableDictionary dictionary];
-    
     for (Post *post in posts) {
         NSString *changeVersion     = [NSString sp_makeUUID];
         NSString *startVersion      = post.ghost.version;
         NSString *endVersion        = [NSString stringWithFormat:@"%d", startVersion.intValue + 1];
-        NSString *newTitle          = [NSString sp_randomStringOfLength:SPRandomStringLength];
+        NSString *newTitle          = [NSString stringWithFormat:remoteTitleFormat, post.title];
         
-        // Calculate the delta string
+        // Calculate the delta between the old and nu title's
         NSMutableArray *diffList    = [dmp diff_mainOfOldString:post.title andNewString:newTitle];
         if (diffList.count > 2) {
             [dmp diff_cleanupSemantic:diffList];
@@ -108,18 +126,24 @@ static NSUInteger const SPRandomStringLength    = 100;
                                     }
         };
         
-        changes[post.simperiumKey]      = change;
-        newTitles[post.simperiumKey]    = newTitle;
+        changes[post.simperiumKey] = change;
     }
     
+    NSLog(@"<> Successfully generated remote changes");
     
+
     // ===================================================================================================
-    // Perform Local Changes (Uncommited)
+    // Perform Local Changes
     // ===================================================================================================
     //
     for (Post *post in posts) {
-        post.title = [NSString sp_makeUUID];
+        NSString *newTitle = [NSString stringWithFormat:localTitleFormat, post.title];
+        post.title = newTitle;
     }
+
+    [storage save];
+    
+    NSLog(@"<> Successfully performed local changes");
     
     
     // ===================================================================================================
@@ -142,16 +166,25 @@ static NSUInteger const SPRandomStringLength    = 100;
     
 	WaitUntilBlockCompletes();
     
+    NSLog(@"<> Finished processing remote changes");
+    
+    
     // ===================================================================================================
     // Verify if the changeProcessor actually did its job
     // ===================================================================================================
     //
     for (Post *post in posts) {
-        NSString *newTitle      = newTitles[post.simperiumKey];
-        NSString *endVersion    = changes[post.simperiumKey][CH_END_VERSION];
+        NSDictionary *change    = changes[post.simperiumKey];
+        NSString *endVersion    = change[CH_END_VERSION];
         
-        XCTAssert([post.title isEqualToString:newTitle],    @"Invalid Post Title");
-        XCTAssert([post.ghost.version isEqual:endVersion],  @"Invalid Ghost Version");
+        // Rebuild the expected Post Title
+        NSString *originalTitle = originalTitles[post.simperiumKey];
+        NSString *expectedTitle = [NSString stringWithFormat:localTitleFormat, originalTitle];
+        expectedTitle           = [NSString stringWithFormat:remoteTitleFormat, expectedTitle];
+        
+        // THE check!
+        XCTAssert([post.title isEqualToString:expectedTitle], @"Invalid Post Title");
+        XCTAssert([post.ghost.version isEqual:endVersion], @"Invalid Ghost Version");
     }
 }
 

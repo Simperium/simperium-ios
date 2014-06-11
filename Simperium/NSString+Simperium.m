@@ -99,10 +99,11 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
     return result;
 }
 
-+ (NSString *)sp_randomStringOfLength:(NSUInteger)len
++ (NSString *)sp_randomStringOfLength:(NSUInteger)length
 {
-    NSMutableString *randomString = [NSMutableString stringWithCapacity:len];
-    for (int i = 0; i < len; i++) {
+    NSMutableString *randomString   = [NSMutableString stringWithCapacity:length];
+    
+    for (int i = 0; i < length; i++) {
         char letter = arc4random_uniform(26) + 'a';
         [randomString appendFormat:@"%c", letter];
     }

@@ -15,7 +15,7 @@
 + (NSString *)sp_encodeBase64WithData:(NSData *)objData;
 + (NSString *)sp_makeUUID;
 + (NSString *)sp_md5StringFromData:(NSData *)data;
-+ (NSString *)sp_randomStringOfLength:(NSUInteger)len;
++ (NSString *)sp_randomStringOfLength:(NSUInteger)length;
 - (NSString *)sp_urlEncodeString;
 - (NSArray *)sp_componentsSeparatedByString:(NSString *)separator limit:(NSInteger)limit;
 
