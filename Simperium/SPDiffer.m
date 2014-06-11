@@ -114,7 +114,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 		NSString *operation     = [change[OP_OP] lowercaseString];
 		
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *member = [self.schema memberForKey: key];
+		SPMember *member = [self.schema memberForKey:key];
 		if (!member) {
 			SPLogWarn(@"Simperium warning: applyDiff for a member that doesn't exist (%@): %@", key, [change description]);
 			continue;
@@ -123,13 +123,12 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
         if ([operation isEqualToString:OP_OBJECT_ADD] || [operation isEqualToString:OP_REPLACE]) {
             // Newly added / replaced member: set the value
             id newValue = [member getValueFromDictionary:change key:OP_VALUE object:object];
-            [object simperiumSetValue: newValue forKey: key];
+            [object simperiumSetValue:newValue forKey:key];
         } else if ([operation isEqualToString:OP_OBJECT_REMOVE]) {
             // Set the value to nil for now
-            [object simperiumSetValue: nil forKey: key];
+            [object simperiumSetValue:nil forKey:key];
             
-            // TODO: If an SPMemberEntity or SPMemberBinary are set to nil, there's likely some cleanup
-            // that needs to be done
+            // TODO: If an SPMemberEntity is set to nil, there's likely some cleanup that needs to be done
         } else {
             // Changed member
             id thisValue  = [object simperiumValueForKey:member.keyName];
@@ -155,17 +154,16 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 	NSMutableDictionary *ghostMemberData = object.ghost.memberData;
 	NSMutableDictionary *newMemberData = [ghostMemberData mutableCopy] ?: [NSMutableDictionary dictionaryWithCapacity:diff.count];
 	for (NSString *key in diff.allKeys) {
-		NSDictionary *change = diff[key];
+		NSDictionary *change    = diff[key];
+		NSString *operation     = [change[OP_OP] lowercaseString];
         
         // This should never happen, but it can if a change somehow slips in from a PUT request
         if (change == nil) {
             continue;
         }
         
-		NSString *operation = [change[OP_OP] lowercaseString];
-        SPMember *member    = [self.schema memberForKey:key];
-
         // Make sure the member exists and is tracked by Simperium
+        SPMember *member = [self.schema memberForKey:key];
         if (!member) {
             SPLogWarn(@"Simperium warning: applyGhostDiff for a member that doesn't exist (%@): %@", key, [change description]);
             continue;
@@ -173,8 +171,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
         if ([operation isEqualToString:OP_OBJECT_ADD] || [operation isEqualToString:OP_REPLACE]) {
             // Newly added / replaced member: set the value
-            // (no need to convert it to JSON-compatible format because it already is)
-            id otherValue = [change objectForKey:OP_VALUE];
+            id otherValue = change[OP_VALUE];
             [newMemberData setObject:otherValue forKey:key];
         } else if ([operation isEqualToString:OP_OBJECT_REMOVE]) {
             [newMemberData removeObjectForKey:key];
