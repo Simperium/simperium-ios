@@ -41,7 +41,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
 
 @implementation SPChangeProcessorTests
 
-- (void)testApplyRemoteDiffWithUncommitedChanges
+- (void)testApplyRemoteDiffWithLocalChanges
 {
     // ===================================================================================================
 	// Helpers

@@ -9,12 +9,19 @@
 #import "SPMemberText.h"
 #import "DiffMatchPatch.h"
 
+
+
+@interface SPMemberText ()
+@property (nonatomic, strong) DiffMatchPatch *dmp;
+@end
+
+
 @implementation SPMemberText
 
 - (id)initFromDictionary:(NSDictionary *)dict
 {
     if (self = [super initFromDictionary:dict]) {
-        dmp = [[DiffMatchPatch alloc] init];
+        self.dmp = [[DiffMatchPatch alloc] init];
     }
     return self;
 }
@@ -30,18 +37,19 @@
 	
 	// Use DiffMatchPatch to find the diff
 	// Use some logic from MobWrite to clean stuff up
-	NSMutableArray *diffList = [dmp diff_mainOfOldString:thisValue andNewString:otherValue];
-	if ([diffList count] > 2) {
-		[dmp diff_cleanupSemantic:diffList];
-		[dmp diff_cleanupEfficiency:diffList];
+	NSMutableArray *diffList = [self.dmp diff_mainOfOldString:thisValue andNewString:otherValue];
+	if (diffList.count > 2) {
+		[self.dmp diff_cleanupSemantic:diffList];
+		[self.dmp diff_cleanupEfficiency:diffList];
 	}
 	
-	if ([diffList count] > 0 && [dmp diff_levenshtein:diffList] != 0) {
+	if (diffList.count > 0 && [self.dmp diff_levenshtein:diffList] != 0) {
 		// Construct the patch delta and return it as a change operation
-		NSString *delta = [dmp diff_toDelta:diffList];
-		return [NSDictionary dictionaryWithObjectsAndKeys:
-				OP_STRING, OP_OP,
-				delta, OP_VALUE, nil];
+		NSString *delta = [self.dmp diff_toDelta:diffList];
+		return @{
+            OP_OP       : OP_STRING,
+            OP_VALUE    : delta
+        };
 	}
     
 	// No difference
@@ -57,35 +65,38 @@
     //if ([thisValue length] == 0)
     //    return otherValue;
     
-	NSMutableArray *diffs = [dmp diff_fromDeltaWithText:thisValue andDelta:otherValue error:&error];
-	NSMutableArray *patches = [dmp patch_makeFromOldString:thisValue andDiffs:diffs];
-	NSArray *result = [dmp patch_apply:patches toString:thisValue];
-    
-	return [result objectAtIndex:0];
+	NSMutableArray *diffs   = [self.dmp diff_fromDeltaWithText:thisValue andDelta:otherValue error:&error];
+	NSMutableArray *patches = [self.dmp patch_makeFromOldString:thisValue andDiffs:diffs];
+	NSArray *result         = [self.dmp patch_apply:patches toString:thisValue];
+
+	return [result firstObject];
 }
 
 - (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue {
 	// Assorted hocus pocus ported from JS code
 	NSError *error;
-	NSMutableArray *thisDiffs = [dmp diff_fromDeltaWithText:oldValue andDelta:thisValue error:&error];
-	NSMutableArray *otherDiffs = [dmp diff_fromDeltaWithText:oldValue andDelta:otherValue error:&error];
-	NSMutableArray *thisPatches = [dmp patch_makeFromOldString:oldValue andDiffs:thisDiffs];
-	NSMutableArray *otherPatches = [dmp patch_makeFromOldString:oldValue andDiffs:otherDiffs];
+	NSMutableArray *thisDiffs       = [self.dmp diff_fromDeltaWithText:oldValue andDelta:thisValue error:&error];
+	NSMutableArray *otherDiffs      = [self.dmp diff_fromDeltaWithText:oldValue andDelta:otherValue error:&error];
+	NSMutableArray *thisPatches     = [self.dmp patch_makeFromOldString:oldValue andDiffs:thisDiffs];
+	NSMutableArray *otherPatches    = [self.dmp patch_makeFromOldString:oldValue andDiffs:otherDiffs];
 	
-	NSArray *otherResult = [dmp patch_apply:otherPatches toString:oldValue];
-	NSString *otherString = [otherResult objectAtIndex:0];
-	NSArray *combinedResult = [dmp patch_apply:thisPatches toString:otherString];
-	NSString *combinedString = [combinedResult objectAtIndex:0];
+	NSArray *otherResult            = [self.dmp patch_apply:otherPatches toString:oldValue];
+	NSString *otherString           = [otherResult firstObject];
+	NSArray *combinedResult         = [self.dmp patch_apply:thisPatches toString:otherString];
+	NSString *combinedString        = [combinedResult firstObject];
 	
-	NSMutableArray *finalDiffs = [dmp diff_mainOfOldString:otherString andNewString:combinedString];// [dmp diff_fromDeltaWithText:otherString andDelta:combinedString error:&error];
-	if ([finalDiffs count] > 2)
-		[dmp diff_cleanupEfficiency:finalDiffs];
-	
-	if ([finalDiffs count] > 0) {
-		NSString *delta = [dmp diff_toDelta:finalDiffs];
-		return [NSDictionary dictionaryWithObjectsAndKeys:
-				OP_STRING, OP_OP,
-				delta, OP_VALUE, nil];
+	NSMutableArray *finalDiffs      = [self.dmp diff_mainOfOldString:otherString andNewString:combinedString];// [dmp diff_fromDeltaWithText:otherString andDelta:combinedString error:&error];
+	if (finalDiffs.count > 2) {
+		[self.dmp diff_cleanupEfficiency:finalDiffs];
+	}
+    
+	if (finalDiffs.count > 0) {
+		NSString *delta = [self.dmp diff_toDelta:finalDiffs];
+        
+		return @{
+            OP_OP       : OP_STRING,
+            OP_VALUE    : delta
+        };
 	}
 	
 	return [NSDictionary dictionary];

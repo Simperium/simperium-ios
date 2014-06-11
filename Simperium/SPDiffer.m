@@ -205,9 +205,9 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 - (NSDictionary *)transform:(id<SPDiffable>)object diff:(NSDictionary *)diff oldDiff:(NSDictionary *)oldDiff oldGhost:(SPGhost *)oldGhost {
 	NSMutableDictionary *newDiff = [NSMutableDictionary dictionary];
 	// Transform diff first, and then apply it
-	for (NSString *key in [diff allKeys]) {
-		NSDictionary *change = [diff objectForKey:key];
-		NSDictionary *oldChange = [oldDiff objectForKey:key];
+	for (NSString *key in diff.allKeys) {
+		NSDictionary *change    = diff[key];
+		NSDictionary *oldChange = oldDiff[key];
 		
 		// Make sure the member exists and is tracked by Simperium
 		SPMember *member = [self.schema memberForKey: key];
@@ -234,13 +234,13 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 		 }
 			*/
 		
-		id thisValue = [member getValueFromDictionary:change key:OP_VALUE object:object];
-		id otherValue = [member getValueFromDictionary:oldChange key:OP_VALUE object:object];
+		id thisValue            = [member getValueFromDictionary:change key:OP_VALUE object:object];
+		id otherValue           = [member getValueFromDictionary:oldChange key:OP_VALUE object:object];
 		NSDictionary *newChange = [member transform: thisValue otherValue:otherValue oldValue:ghostValue];
 		
-		if (newChange)
+		if (newChange) {
 			[newDiff setObject:newChange forKey:key];
-		else {
+		} else {
             NSDictionary *changeCopy = [change copy];
 			// If there was no transformation required, just use the original change
 			[newDiff setObject:changeCopy forKey:key];
