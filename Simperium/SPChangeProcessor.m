@@ -290,7 +290,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         NSDictionary *diff  = change[CH_VALUE];
         
         // Apply the diff to the ghost and store the new data in the object's ghost
-        [bucket.differ applyGhostDiff: diff to:object];
+        [bucket.differ applyGhostDiff:diff to:object];
         object.ghost.version = endVersion;
         
         // Slight hack to ensure Core Data realizes the object has changed and needs a save
@@ -302,17 +302,17 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         // If it wasn't an ack, then local data needs to be updated and the app needs to be notified
         if (!acknowledged && !newlyAdded) {
             SPLogVerbose(@"Simperium non-local MODIFY ENTITY received");
-            NSDictionary *oldDiff = [bucket.differ diff:object withDictionary:[oldGhost memberData]];
-            if (oldDiff.count > 0) {
+            NSDictionary *oldDiff = [bucket.differ diff:object withDictionary:oldGhost.memberData];
+            if (oldDiff.count) {
                 // The local client version changed in the meantime, so transform the diff before applying it
                 SPLogVerbose(@"Simperium applying transform to diff: %@", diff);			
-                diff = [bucket.differ transform:object diff:oldDiff oldDiff: diff oldGhost: oldGhost];
+                diff = [bucket.differ transform:object diff:oldDiff oldDiff:diff oldGhost:oldGhost];
                 
                 // Load from the ghost data so the subsequent diff is applied to the correct data
                 // Do an extra check in case there was a problem with the transform/diff, e.g. if a client's own change was misinterpreted
                 // as another client's change, in other words not properly acknowledged.
-                if (diff.count > 0) {
-                    [object loadMemberData: [object.ghost memberData]];
+                if (diff.count) {
+                    [object loadMemberData:object.ghost.memberData];
                 } else {
                     SPLogVerbose(@"Simperium transform resulted in empty diff (invalid ack?)");
 				}
@@ -320,16 +320,17 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         }
         
         // Apply the diff to the object itself
-        if (!acknowledged && diff.count > 0) {
+        if (!acknowledged && diff.count) {
             SPLogVerbose(@"Simperium applying diff: %@", diff);
-            [bucket.differ applyDiff: diff to:object];
+            [bucket.differ applyDiff:diff to:object];
         }
         [threadSafeStorage save];
 		
         dispatch_async(dispatch_get_main_queue(), ^{
             NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                      bucket.name, @"bucketName",
-                                      [NSSet setWithObject:simperiumKey], @"keys", nil];
+                                                bucket.name, @"bucketName",
+                                                [NSSet setWithObject:simperiumKey], @"keys",
+                                             nil];
             NSString *notificationName;
             if (newlyAdded) {
                 notificationName = ProcessorDidAddObjectsNotification;
