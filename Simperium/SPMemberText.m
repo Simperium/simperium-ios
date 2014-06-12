@@ -56,16 +56,13 @@
 	return [NSDictionary dictionary];
 }
 
-- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
-	// DMP stuff, TODO: error handling
-	NSError *error;
-    
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue error:(NSError **)error {
     // Special case if there was no previous value
     // REMOVED THIS: causes an actual diff (e.g. "+H") to be entered as the new value
-    //if ([thisValue length] == 0)
+    // if ([thisValue length] == 0)
     //    return otherValue;
     
-	NSMutableArray *diffs   = [self.dmp diff_fromDeltaWithText:thisValue andDelta:otherValue error:&error];
+	NSMutableArray *diffs   = [self.dmp diff_fromDeltaWithText:thisValue andDelta:otherValue error:error];
 	NSMutableArray *patches = [self.dmp patch_makeFromOldString:thisValue andDiffs:diffs];
 	NSArray *result         = [self.dmp patch_apply:patches toString:thisValue];
 
@@ -73,8 +70,9 @@
 }
 
 - (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue {
+    NSError *error = nil;
+    
 	// Assorted hocus pocus ported from JS code
-	NSError *error;
 	NSMutableArray *thisDiffs       = [self.dmp diff_fromDeltaWithText:oldValue andDelta:thisValue error:&error];
 	NSMutableArray *otherDiffs      = [self.dmp diff_fromDeltaWithText:oldValue andDelta:otherValue error:&error];
 	NSMutableArray *thisPatches     = [self.dmp patch_makeFromOldString:oldValue andDiffs:thisDiffs];
@@ -99,7 +97,7 @@
         };
 	}
 	
-	return [NSDictionary dictionary];
+	return @{ };
 }
 
 @end

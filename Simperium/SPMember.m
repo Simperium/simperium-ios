@@ -89,7 +89,7 @@ NSString * const OP_STRING			= @"d";
 	return nil;
 }
 
-- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue error:(NSError **)error {
 	return otherValue;
 }
 

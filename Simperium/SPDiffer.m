@@ -107,7 +107,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 }
 
 // Apply an incoming diff to this entity instance
-- (void)applyDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
+- (BOOL)applyDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
 	// Process each change in the diff
 	for (NSString *key in diff.allKeys) {
 		NSDictionary *change    = diff[key];
@@ -145,15 +145,22 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
             }
             
             // Build a newValue from thisValue based on otherValue
-            id newValue = [member applyDiff:thisValue otherValue:otherValue];
+            NSError *error  = nil;
+            id newValue     = [member applyDiff:thisValue otherValue:otherValue error:&error];
+            if (error) {
+                return NO;
+            }
+            
             [object simperiumSetValue:newValue forKey:key];
         }
-    }	
+    }
+    
+    return YES;
 }
 
 // Same strategy as applyDiff, but do it to the ghost's memberData
 // Note that no conversions are necessary here since all data is in JSON-compatible format already
-- (void)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
+- (BOOL)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
 	// Create a copy of the ghost's data and update any members that have changed
 	NSMutableDictionary *ghostMemberData = object.ghost.memberData;
 	NSMutableDictionary *newMemberData = [ghostMemberData mutableCopy] ?: [NSMutableDictionary dictionaryWithCapacity:diff.count];
@@ -195,11 +202,19 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
                 continue;
             }
             
-            id newValue = [member applyDiff:thisValue otherValue:otherValue];
-            [member setValue:newValue forKey:key inDictionary: newMemberData];
+            NSError *error  = nil;
+            id newValue     = [member applyDiff:thisValue otherValue:otherValue error:&error];
+            if (error) {
+                return NO;
+            }
+
+            [member setValue:newValue forKey:key inDictionary:newMemberData];
         }
 	}
-	object.ghost.memberData = newMemberData;
+    
+    object.ghost.memberData = newMemberData;
+    
+    return YES;
 }
 
 - (NSDictionary *)transform:(id<SPDiffable>)object diff:(NSDictionary *)diff oldDiff:(NSDictionary *)oldDiff oldGhost:(SPGhost *)oldGhost {

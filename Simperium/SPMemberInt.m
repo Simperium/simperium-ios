@@ -40,7 +40,7 @@
 	return value;
 }
 
-- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue error:(NSError **)error {
 	NSAssert([thisValue isKindOfClass:[NSNumber class]] && [otherValue isKindOfClass:[NSNumber class]],
 			 @"Simperium error: couldn't apply diff to ints because their classes weren't NSNumber");
 	
