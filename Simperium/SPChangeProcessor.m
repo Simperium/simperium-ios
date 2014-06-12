@@ -216,8 +216,14 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     return YES;
 }
 
+
+// TODO:
+//      - Split this method into processRemoteModify and processRemoteInsertion
+//      - This method should receive the coreData context + object, so we prevent double fetching
+//      - Once the above are implemented, move the 'begin/finish'SafeSection calls to the caller, and nuke duplicated code, PLEASE!
+//
 - (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket change:(NSDictionary *)change
-					  acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches
+					  acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches error:(NSError **)error
 {
     id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
 	[threadSafeStorage beginSafeSection];
@@ -286,11 +292,21 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     // If the versions are equal or there's no start version (new object), process the change
     if (startVersion == nil || [oldVersion isEqualToString:startVersion]) {
         // Remember the old ghost
-        SPGhost *oldGhost   = [object.ghost copy];
-        NSDictionary *diff  = change[CH_VALUE];
+        SPGhost *oldGhost       = [object.ghost copy];
+        NSDictionary *diff      = change[CH_VALUE];
+        NSError *theError       = nil;
         
         // Apply the diff to the ghost and store the new data in the object's ghost
-        [bucket.differ applyGhostDiff:diff to:object error:nil];
+        if (![bucket.differ applyGhostDiff:diff to:object error:&theError]) {
+            // Relay back the error + halt
+            if (error) {
+                *error = theError;
+            }
+
+            [threadSafeStorage finishSafeSection];
+            return NO;
+        }
+        
         object.ghost.version = endVersion;
         
         // Slight hack to ensure Core Data realizes the object has changed and needs a save
@@ -305,8 +321,17 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             NSDictionary *oldDiff = [bucket.differ diff:object withDictionary:oldGhost.memberData];
             if (oldDiff.count) {
                 // The local client version changed in the meantime, so transform the diff before applying it
-                SPLogVerbose(@"Simperium applying transform to diff: %@", diff);			
-                diff = [bucket.differ transform:object diff:oldDiff oldDiff:diff oldGhost:oldGhost error:nil];
+                SPLogVerbose(@"Simperium applying transform to diff: %@", diff);
+                diff = [bucket.differ transform:object diff:oldDiff oldDiff:diff oldGhost:oldGhost error:&theError];
+                
+                if (theError) {
+                    // Relay back the error + halt
+                    if (error) {
+                        *error = theError;
+                    }
+                    [threadSafeStorage finishSafeSection];
+                    return NO;
+                }
                 
                 // Load from the ghost data so the subsequent diff is applied to the correct data
                 // Do an extra check in case there was a problem with the transform/diff, e.g. if a client's own change was misinterpreted
@@ -322,8 +347,18 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         // Apply the diff to the object itself
         if (!acknowledged && diff.count) {
             SPLogVerbose(@"Simperium applying diff: %@", diff);
-            [bucket.differ applyDiff:diff to:object error:nil];
+            
+            if (![bucket.differ applyDiff:diff to:object error:&theError]) {
+                
+                // Relay back the error + halt
+                if (error) {
+                    *error = theError;
+                }
+                [threadSafeStorage finishSafeSection];
+                return NO;
+            }
         }
+        
         [threadSafeStorage save];
 		
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -356,7 +391,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     return YES;
 }
 
-- (BOOL)processRemoteChange:(NSDictionary *)change bucket:(SPBucket *)bucket {
+- (BOOL)processRemoteChange:(NSDictionary *)change bucket:(SPBucket *)bucket error:(NSError **)error {
 	
     NSAssert( [NSThread isMainThread] == NO, @"This should not get called on the main thread" );
     NSAssert( self.clientID, @"Missing clientID" );
@@ -401,7 +436,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     if (remove && (objectWasFound || acknowledged)) {
         return [self processRemoteDeleteWithKey:key bucket:bucket objectWasFound:objectWasFound];
     } else if (operation && [operation compare: CH_MODIFY] == NSOrderedSame) {
-        return [self processRemoteModifyWithKey:key bucket:bucket change:change acknowledged:acknowledged clientMatches:clientMatches];
+        return [self processRemoteModifyWithKey:key bucket:bucket change:change acknowledged:acknowledged clientMatches:clientMatches error:error];
     }
 	
 	// invalid
@@ -460,7 +495,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             }
             
             // Process Changes: this is necessary even if it's an ack, so the ghost data gets set accordingly
-            if (![self processRemoteChange:change bucket:bucket]) {
+            if (![self processRemoteChange:change bucket:bucket error:&error]) {
                 continue;
             }
 
