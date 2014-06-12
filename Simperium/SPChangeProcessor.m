@@ -86,16 +86,16 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     
     NSAssert(clientID, @"ChangeProcessor should be initialized with a valid clientID");
     
-    if (self = [super init]) {
-        self.label			= label;
-        self.clientID       = clientID;
+    if ((self = [super init])) {
+        self.label                          = label;
+        self.clientID                       = clientID;
         
-		self.changesPending = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
+		self.changesPending                 = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
 		
-		NSString *moreKey = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", label];
-        self.keysForObjectsWithMoreChanges = [SPPersistentMutableSet loadSetWithLabel:moreKey];
+		NSString *moreKey                   = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", label];
+        self.keysForObjectsWithMoreChanges  = [SPPersistentMutableSet loadSetWithLabel:moreKey];
 		
-		NSString *retryKey = [NSString stringWithFormat:@"keysForObjectsWithPendingRetry-%@", label];
+		NSString *retryKey                  = [NSString stringWithFormat:@"keysForObjectsWithPendingRetry-%@", label];
         self.keysForObjectsWithPendingRetry = [SPPersistentMutableSet loadSetWithLabel:retryKey];
 		
 		[self migratePendingChangesIfNeeded];
@@ -121,8 +121,8 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 - (BOOL)processRemoteError:(NSDictionary *)change bucket:(SPBucket *)bucket error:(NSError **)error {
 
-    NSAssert( [change isKindOfClass:[NSDictionary class]],  @"Empty change" );
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Empty Bucket" );
+    NSAssert([change isKindOfClass:[NSDictionary class]],  @"Empty change");
+    NSAssert([bucket isKindOfClass:[SPBucket class]],      @"Empty Bucket");
 
     if (!change[CH_ERROR]) {
         return NO;
@@ -391,13 +391,9 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 - (BOOL)processRemoteChange:(NSDictionary *)change bucket:(SPBucket *)bucket error:(NSError **)error {
 	
-    NSAssert( [NSThread isMainThread] == NO, @"This should not get called on the main thread" );
-    NSAssert( self.clientID, @"Missing clientID" );
-    
-    // Errors should be handled by ’processRemoteError:' method
-    if (change[CH_ERROR]) {
-        return NO;
-    }
+    NSAssert([NSThread isMainThread] == NO, @"This should not get called on the main thread");
+    NSAssert(self.clientID,                 @"Missing clientID");
+    NSAssert(change[CH_ERROR] == nil,       @"This should not be called if the change has an error");
 	
     // Create a new context (to be thread-safe) and fetch the entity from it
     NSString *key                           = [self keyWithoutNamespaces:change bucket:bucket];
@@ -415,7 +411,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	// Process
     BOOL objectWasFound         = (object != nil);
     BOOL clientMatches			= [changeClientID compare:self.clientID] == NSOrderedSame;
-    BOOL remove					= operation && [operation compare: CH_REMOVE] == NSOrderedSame;
+    BOOL remove					= operation && [operation compare:CH_REMOVE] == NSOrderedSame;
     BOOL acknowledged			= [self awaitingAcknowledgementForKey:key] && clientMatches;
     
     // If the entity already exists locally, or it's being removed, then check for an ack
@@ -437,7 +433,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         return [self processRemoteModifyWithKey:key bucket:bucket change:change acknowledged:acknowledged clientMatches:clientMatches error:error];
     }
 	
-	// invalid
+	// Invalid
 	SPLogError(@"Simperium error (%@), received an invalid change for (%@): %@", bucket.name, key, change);
     return NO;
 }
@@ -452,8 +448,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
     
     NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:changes.count];
-    
-    // Ignore Acks please!
+
     for (NSDictionary *change in changes) {
         NSString *key = [self keyWithoutNamespaces:change bucket:bucket];
         if (![self awaitingAcknowledgementForKey:key]) {
@@ -475,9 +470,9 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errorHandler:(SPChangeErrorHandlerBlockType)errorHandler {
 
-    NSAssert( [NSThread isMainThread] == NO,            @"This should get called on the processor's queue!");
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],  @"Invalid Bucket");
-    NSAssert( errorHandler,                             @"Please, provide an error handler!" );
+    NSAssert([NSThread isMainThread] == NO,            @"This should get called on the processor's queue!");
+    NSAssert([bucket isKindOfClass:[SPBucket class]],  @"Invalid Bucket");
+    NSAssert(errorHandler,                             @"Please, provide an error handler!");
     
     @autoreleasepool {
         
@@ -507,14 +502,14 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             NSString *changeVersion = change[CH_CHANGE_VERSION];
             
             dispatch_async(dispatch_get_main_queue(), ^{
-                [bucket setLastChangeSignature: changeVersion];
+                bucket.lastChangeSignature = changeVersion;
             });
         }
     
         [self.changesPending save];
         
         // Signal that the bucket has been sync'ed (If Needed!)
-        if (![bucket isForceSyncPending] || self.changesPending.count) {
+        if (!bucket.isForceSyncPending || self.changesPending.count) {
             return;
         }
         
@@ -612,8 +607,8 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             newData = [bucket.differ diff:object withDictionary:object.ghost.memberData];
             SPLogVerbose(@"Simperium entity diff found %lu changed members", (unsigned long)newData.count);
         } else  {
-            SPLogVerbose(@"Simperium local ADD detected, creating diff...");
             newData = [bucket.differ diffForAddition:object];
+            SPLogVerbose(@"Simperium local ADD detected, creating diff...");
         }
         
         if (newData.count == 0) {
