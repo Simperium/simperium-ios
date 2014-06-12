@@ -484,17 +484,22 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         for (NSDictionary *change in changes) {
             
             // Process Errors: Halt if needed (critical errors!)
-            NSString *key   = [self keyWithoutNamespaces:change bucket:bucket];
-            NSError *error  = nil;
+            NSString *key       = [self keyWithoutNamespaces:change bucket:bucket];
+            NSString *version   = change[CH_END_VERSION];
+            NSError *error      = nil;
 
             if ([self processRemoteError:change bucket:bucket error:&error]) {
-                errorHandler(key, error);
+                errorHandler(key, version, error);
                 continue;
             }
             
             // Process Changes: this is necessary even if it's an ack, so the ghost data gets set accordingly
             if (![self processRemoteChange:change bucket:bucket error:&error]) {
-                errorHandler(key, error);
+                
+                // Do we have any error that needs to be handled?
+                if (error) {
+                    errorHandler(key, version, error);
+                }
                 continue;
             }
 
@@ -508,7 +513,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     
         [self.changesPending save];
         
-        // Signal that synthe bucket has been sync'ed (If Needed!)
+        // Signal that the bucket has been sync'ed (If Needed!)
         if (![bucket isForceSyncPending] || self.changesPending.count) {
             return;
         }

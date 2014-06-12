@@ -121,6 +121,13 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     }];
 }
 
+- (void)requestVersion:(NSString *)version forObjectWithKey:(NSString *)simperiumKey {
+    
+	SPLogVerbose(@"Simperium re-downloading entity (%@) %@.%@", self.name, simperiumKey, version);
+    NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", self.number, simperiumKey, version];
+    [self.webSocketManager send:message];
+}
+
 
 #pragma mark ====================================================================================
 #pragma mark Sending Object Changes
@@ -267,12 +274,14 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     [bucket.changeProcessor notifyOfRemoteChanges:changes bucket:bucket];
     
     
+    __weak __typeof(self) weakSelf = self;
+    
 	dispatch_async(bucket.processorQueue, ^{
 		if (!self.authenticated) {
 			return;
 		}
 
-        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSError *error) {
+        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
             
             SPLogError(@"Simperium received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
             
@@ -287,6 +296,12 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
                 
             } else if (error.code == SPProcessorErrorsClientError) {
                 [processor discardPendingChanges:simperiumKey bucket:bucket];
+                
+            } else if (error.code == SPProcessorErrorsInvalidRemoteChange) {
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
+                });
             }
         }];
         
