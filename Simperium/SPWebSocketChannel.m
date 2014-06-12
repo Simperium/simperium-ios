@@ -49,7 +49,6 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 @property (nonatomic,   weak) Simperium                     *simperium;
 @property (nonatomic, strong) NSMutableArray                *versionsBatch;
 @property (nonatomic, strong) NSMutableArray                *changesBatch;
-@property (nonatomic, strong) NSMutableDictionary           *versionsWithErrors;
 @property (nonatomic, assign) NSInteger                     retryDelay;
 @property (nonatomic, assign) NSInteger                     objectVersionsPending;
 @property (nonatomic, assign) BOOL                          started;
@@ -71,7 +70,6 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         self.simperium			= s;
         self.indexArray			= [NSMutableArray arrayWithCapacity:200];
         self.changesBatch       = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
-        self.versionsWithErrors = [NSMutableDictionary dictionaryWithCapacity:3];
     }
 	
 	return self;
@@ -392,9 +390,6 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     
     // All unwrapped, now get it in the format we need for marshaling
     NSString *payloadString = [dataDict sp_JSONString];
-    
-    // If there was an error previously, unflag it
-    [self.versionsWithErrors removeObjectForKey:key];
 	
     // If retrieving object versions (e.g. for going back in time), return the result directly to the delegate
     if (_retrievingObjectHistory) {
@@ -642,31 +637,6 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     [self processVersionsBatchForBucket:bucket];
 
     SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
-
-    // Save it now that all versions are fetched; it improves performance to wait until this point
-    //[simperium saveWithoutSyncing];
-
-    if ([self.versionsWithErrors count] > 0) {
-        // Try the index refresh again; this could be more efficient since we could know which version requests
-        // failed, but it should happen rarely so take the easy approach for now
-        SPLogWarn(@"Index refresh complete (%@) but %lu versions didn't load, retrying...", self.name, (unsigned long)[self.versionsWithErrors count]);
-
-        // Create an array in the expected format
-        NSMutableArray *errorArray = [NSMutableArray arrayWithCapacity: [self.versionsWithErrors count]];
-        for (NSString *key in [self.versionsWithErrors allKeys]) {
-            id errorVersion = [self.versionsWithErrors objectForKey:key];
-            NSDictionary *versionDict = @{ @"v" : errorVersion,
-										   @"id" : key};
-            [errorArray addObject:versionDict];
-        }
-		
-		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1.0f * NSEC_PER_SEC);
-		dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
-			[self performSelector:@selector(requestVersionsForKeys:bucket:) withObject: errorArray withObject:bucket];
-		});
-
-        return;
-    }
 
     // All versions were received successfully, so update the lastChangeSignature
     [bucket setLastChangeSignature:self.pendingLastChangeSignature];
