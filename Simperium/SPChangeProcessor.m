@@ -454,17 +454,8 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             NSError *error = nil;
 
             if ([self processRemoteError:change bucket:bucket error:&error]) {
-                
-                // Handle the error
                 NSString *key   = [self keyWithoutNamespaces:change bucket:bucket];
-                BOOL halt       = NO;
-                errorHandler(key, error, &halt);
-                
-                // Should we halt everything?
-                if (halt) {
-                    break;
-                }
-                
+                errorHandler(key, error);
                 continue;
             }
             

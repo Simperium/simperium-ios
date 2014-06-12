@@ -272,7 +272,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			return;
 		}
 
-        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSError *error, BOOL *halt) {
+        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSError *error) {
             
             SPLogError(@"Simperium received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
             
