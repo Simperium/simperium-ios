@@ -44,6 +44,6 @@ extern NSString * const OP_STRING;
 - (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict;
 - (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue;
 - (id)applyDiff:(id)thisValue otherValue:(id)otherValue error:(NSError **)error;
-- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue;
+- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue error:(NSError **)error;
 
 @end

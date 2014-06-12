@@ -107,9 +107,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 }
 
 // Apply an incoming diff to this entity instance
-- (BOOL)applyDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
-    BOOL success = YES;
-    
+- (BOOL)applyDiff:(NSDictionary *)diff to:(id<SPDiffable>)object error:(NSError **)error {
 	// Process each change in the diff
 	for (NSString *key in diff.allKeys) {
 		NSDictionary *change    = diff[key];
@@ -147,24 +145,27 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
             }
             
             // Build a newValue from thisValue based on otherValue
-            NSError *error  = nil;
-            id newValue     = [member applyDiff:thisValue otherValue:otherValue error:&error];
-            if (error) {
-                success = NO;
+            NSError *theError   = nil;
+            id newValue         = [member applyDiff:thisValue otherValue:otherValue error:&theError];
+            
+            // On error: halt and relay the error to the caller
+            if (theError) {
+                if (error) {
+                    *error = theError;
+                }
+                return NO;
             }
             
             [object simperiumSetValue:newValue forKey:key];
         }
     }
     
-    return success;
+    return YES;
 }
 
 // Same strategy as applyDiff, but do it to the ghost's memberData
 // Note that no conversions are necessary here since all data is in JSON-compatible format already
-- (BOOL)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
-    BOOL success = YES;
-    
+- (BOOL)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object error:(NSError **)error {
 	// Create a copy of the ghost's data and update any members that have changed
 	NSMutableDictionary *ghostMemberData = object.ghost.memberData;
 	NSMutableDictionary *newMemberData = [ghostMemberData mutableCopy] ?: [NSMutableDictionary dictionaryWithCapacity:diff.count];
@@ -206,10 +207,15 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
                 continue;
             }
             
-            NSError *error  = nil;
-            id newValue     = [member applyDiff:thisValue otherValue:otherValue error:&error];
-            if (error) {
-                success = NO;
+            NSError *theError   = nil;
+            id newValue         = [member applyDiff:thisValue otherValue:otherValue error:&theError];
+            
+            // On error: halt and relay the error to the caller
+            if (theError) {
+                if (error) {
+                    *error = theError;
+                }
+                return NO;
             }
 
             [member setValue:newValue forKey:key inDictionary:newMemberData];
@@ -218,10 +224,10 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
     
     object.ghost.memberData = newMemberData;
     
-    return success;
+    return YES;
 }
 
-- (NSDictionary *)transform:(id<SPDiffable>)object diff:(NSDictionary *)diff oldDiff:(NSDictionary *)oldDiff oldGhost:(SPGhost *)oldGhost {
+- (NSDictionary *)transform:(id<SPDiffable>)object diff:(NSDictionary *)diff oldDiff:(NSDictionary *)oldDiff oldGhost:(SPGhost *)oldGhost error:(NSError **)error {
 	NSMutableDictionary *newDiff = [NSMutableDictionary dictionary];
 	// Transform diff first, and then apply it
 	for (NSString *key in diff.allKeys) {
@@ -255,13 +261,23 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 		
 		id thisValue            = [member getValueFromDictionary:change key:OP_VALUE object:object];
 		id otherValue           = [member getValueFromDictionary:oldChange key:OP_VALUE object:object];
-		NSDictionary *newChange = [member transform: thisValue otherValue:otherValue oldValue:ghostValue];
+        
+        NSError *theError       = nil;
+		NSDictionary *newChange = [member transform: thisValue otherValue:otherValue oldValue:ghostValue error:&theError];
 		
-		if (newChange) {
+        // On error: halt and relay the error to the caller
+        if (theError) {
+            if (error) {
+                *error = theError;
+            }
+            return nil;
+        }
+        
+        if (newChange) {
 			[newDiff setObject:newChange forKey:key];
 		} else {
-            NSDictionary *changeCopy = [change copy];
 			// If there was no transformation required, just use the original change
+            NSDictionary *changeCopy = [change copy];
 			[newDiff setObject:changeCopy forKey:key];
         }
 	}

@@ -69,12 +69,10 @@
 	return [result firstObject];
 }
 
-- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue {
-    NSError *error = nil;
-    
+- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue error:(NSError **)error {
 	// Assorted hocus pocus ported from JS code
-	NSMutableArray *thisDiffs       = [self.dmp diff_fromDeltaWithText:oldValue andDelta:thisValue error:&error];
-	NSMutableArray *otherDiffs      = [self.dmp diff_fromDeltaWithText:oldValue andDelta:otherValue error:&error];
+	NSMutableArray *thisDiffs       = [self.dmp diff_fromDeltaWithText:oldValue andDelta:thisValue error:error];
+	NSMutableArray *otherDiffs      = [self.dmp diff_fromDeltaWithText:oldValue andDelta:otherValue error:error];
 	NSMutableArray *thisPatches     = [self.dmp patch_makeFromOldString:oldValue andDiffs:thisDiffs];
 	NSMutableArray *otherPatches    = [self.dmp patch_makeFromOldString:oldValue andDiffs:otherDiffs];
 	
@@ -83,7 +81,7 @@
 	NSArray *combinedResult         = [self.dmp patch_apply:thisPatches toString:otherString];
 	NSString *combinedString        = [combinedResult firstObject];
 	
-	NSMutableArray *finalDiffs      = [self.dmp diff_mainOfOldString:otherString andNewString:combinedString];// [dmp diff_fromDeltaWithText:otherString andDelta:combinedString error:&error];
+	NSMutableArray *finalDiffs      = [self.dmp diff_mainOfOldString:otherString andNewString:combinedString];
 	if (finalDiffs.count > 2) {
 		[self.dmp diff_cleanupEfficiency:finalDiffs];
 	}

@@ -290,7 +290,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         NSDictionary *diff  = change[CH_VALUE];
         
         // Apply the diff to the ghost and store the new data in the object's ghost
-        [bucket.differ applyGhostDiff:diff to:object];
+        [bucket.differ applyGhostDiff:diff to:object error:nil];
         object.ghost.version = endVersion;
         
         // Slight hack to ensure Core Data realizes the object has changed and needs a save
@@ -306,7 +306,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             if (oldDiff.count) {
                 // The local client version changed in the meantime, so transform the diff before applying it
                 SPLogVerbose(@"Simperium applying transform to diff: %@", diff);			
-                diff = [bucket.differ transform:object diff:oldDiff oldDiff:diff oldGhost:oldGhost];
+                diff = [bucket.differ transform:object diff:oldDiff oldDiff:diff oldGhost:oldGhost error:nil];
                 
                 // Load from the ghost data so the subsequent diff is applied to the correct data
                 // Do an extra check in case there was a problem with the transform/diff, e.g. if a client's own change was misinterpreted
@@ -322,7 +322,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         // Apply the diff to the object itself
         if (!acknowledged && diff.count) {
             SPLogVerbose(@"Simperium applying diff: %@", diff);
-            [bucket.differ applyDiff:diff to:object];
+            [bucket.differ applyDiff:diff to:object error:nil];
         }
         [threadSafeStorage save];
 		

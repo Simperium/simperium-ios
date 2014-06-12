@@ -73,7 +73,7 @@
 	return [source sp_arrayByApplyingDiffDelta:delta diffMatchPatch:self.diffMatchPatch];
 }
 
-- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue {
+- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue error:(NSError **)error {
 	NSArray *source = oldValue;
 	NSString *delta1 = thisValue;
 	NSString *delta2 = otherValue;
