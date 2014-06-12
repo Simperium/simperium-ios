@@ -121,7 +121,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     }];
 }
 
-- (void)requestVersion:(NSString *)version forObjectWithKey:(NSString *)simperiumKey {
+- (void)requestVersion:(NSNumber *)version forObjectWithKey:(NSString *)simperiumKey {
     
 	SPLogVerbose(@"Simperium re-downloading entity (%@) %@.%@", self.name, simperiumKey, version);
     NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", self.number, simperiumKey, version];
@@ -281,7 +281,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			return;
 		}
 
-        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
+        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSNumber *version, NSError *error) {
             
             SPLogError(@"Simperium received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
             
