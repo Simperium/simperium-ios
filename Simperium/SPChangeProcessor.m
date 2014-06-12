@@ -144,7 +144,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         case CH_ERRORS_EXPECTATION_FAILED:
         case CH_ERRORS_INVALID_DIFF:
             {
-                wrappedCode = SPProcessorErrorsInvalidChange;
+                wrappedCode = SPProcessorErrorsInvalidLocalChange;
                 description = @"Invalid Change";
             }
             break;
@@ -300,7 +300,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         if (![bucket.differ applyGhostDiff:diff to:object error:&theError]) {
             // Relay back the error + halt
             if (error) {
-                *error = theError;
+                *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsInvalidRemoteChange description:theError.description];
             }
 
             [threadSafeStorage finishSafeSection];
@@ -323,11 +323,10 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
                 // The local client version changed in the meantime, so transform the diff before applying it
                 SPLogVerbose(@"Simperium applying transform to diff: %@", diff);
                 diff = [bucket.differ transform:object diff:oldDiff oldDiff:diff oldGhost:oldGhost error:&theError];
-                
                 if (theError) {
                     // Relay back the error + halt
                     if (error) {
-                        *error = theError;
+                        *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsInvalidRemoteChange description:theError.description];
                     }
                     [threadSafeStorage finishSafeSection];
                     return NO;
@@ -349,10 +348,9 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             SPLogVerbose(@"Simperium applying diff: %@", diff);
             
             if (![bucket.differ applyDiff:diff to:object error:&theError]) {
-                
                 // Relay back the error + halt
                 if (error) {
-                    *error = theError;
+                    *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsInvalidRemoteChange description:theError.description];
                 }
                 [threadSafeStorage finishSafeSection];
                 return NO;
@@ -486,16 +484,17 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         for (NSDictionary *change in changes) {
             
             // Process Errors: Halt if needed (critical errors!)
-            NSError *error = nil;
+            NSString *key   = [self keyWithoutNamespaces:change bucket:bucket];
+            NSError *error  = nil;
 
             if ([self processRemoteError:change bucket:bucket error:&error]) {
-                NSString *key   = [self keyWithoutNamespaces:change bucket:bucket];
                 errorHandler(key, error);
                 continue;
             }
             
             // Process Changes: this is necessary even if it's an ack, so the ghost data gets set accordingly
             if (![self processRemoteChange:change bucket:bucket error:&error]) {
+                errorHandler(key, error);
                 continue;
             }
 

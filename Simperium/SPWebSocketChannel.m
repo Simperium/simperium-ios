@@ -279,7 +279,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             if (error.code == SPProcessorErrorsDuplicateChange) {           
                 [processor discardPendingChanges:simperiumKey bucket:bucket];
                 
-            } else if (error.code == SPProcessorErrorsInvalidChange) {
+            } else if (error.code == SPProcessorErrorsInvalidLocalChange) {
                 [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
                 
             } else if (error.code == SPProcessorErrorsServerError) {

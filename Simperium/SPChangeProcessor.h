@@ -21,7 +21,8 @@ typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change);
 
 typedef NS_ENUM(NSInteger, SPProcessorErrors) {
     SPProcessorErrorsDuplicateChange,           // Should Re-Sync
-    SPProcessorErrorsInvalidChange,             // Should Retry, by sending the full data
+    SPProcessorErrorsInvalidLocalChange,        // Should Retry, by sending the full data
+    SPProcessorErrorsInvalidRemoteChange,       // Should Redownload the Entity
     SPProcessorErrorsServerError,               // Should Retry
     SPProcessorErrorsClientError                // Should Nuke PendingChange
 };
