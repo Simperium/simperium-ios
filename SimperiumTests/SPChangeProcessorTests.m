@@ -13,7 +13,7 @@
 #import "SPGhost.h"
 #import "SPChangeProcessor.h"
 #import "SPCoreDataStorage.h"
-#import "Post.h"
+#import "Config.h"
 
 #import "NSString+Simperium.h"
 #import "JSONKit+Simperium.h"
@@ -48,15 +48,16 @@ static NSUInteger const SPRandomStringLength    = 1000;
     // ===================================================================================================
     //
 	MockSimperium* s                    = [MockSimperium mockSimperium];
-	SPBucket* bucket                    = [s bucketForName:NSStringFromClass([Post class])];
+	SPBucket* bucket                    = [s bucketForName:NSStringFromClass([Config class])];
 	SPCoreDataStorage* storage          = bucket.storage;
-	NSMutableArray* posts               = [NSMutableArray array];
-	NSString *titleMemberName           = NSStringFromSelector(@selector(title));
+	NSMutableArray* configs             = [NSMutableArray array];
     DiffMatchPatch *dmp                 = [[DiffMatchPatch alloc] init];
     NSMutableDictionary *changes        = [NSMutableDictionary dictionary];
-    NSMutableDictionary *originalTitles = [NSMutableDictionary dictionary];
-    NSString *remoteTitleFormat         = @"REMOTE PREPEND\n%@\nREMOTE APPEND";
-    NSString *localTitleFormat          = @"LOCAL  PREPEND\n%@\nLOCAL  APPEND";
+    NSMutableDictionary *originalLogs   = [NSMutableDictionary dictionary];
+    NSString *remoteLogFormat           = @"REMOTE PREPEND\n%@\nREMOTE APPEND";
+    NSString *localLogFormat            = @"LOCAL  PREPEND\n%@\nLOCAL  APPEND";
+    NSNumber *localWarp                 = @(10);
+    NSNumber *remoteWarp                = @(31337);
     
     
     // ===================================================================================================
@@ -64,25 +65,25 @@ static NSUInteger const SPRandomStringLength    = 1000;
     // ===================================================================================================
     //
 	for (NSInteger i = 0; ++i <= SPNumberOfEntities; ) {
-        NSString *originalTitle         = [NSString sp_randomStringOfLength:SPRandomStringLength];
+        NSString *originalLog           = [NSString sp_randomStringOfLength:SPRandomStringLength];
         
         // New post please!
-		Post* post                      = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
-		post.title                      = originalTitle;
+		Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+		config.captainsLog              = originalLog;
         
         // Manually Intialize SPGhost: we're not relying on the backend to confirm these additions!
-        NSMutableDictionary *memberData = [post.dictionary mutableCopy];
-        SPGhost *ghost                  = [[SPGhost alloc] initWithKey:post.simperiumKey memberData:memberData];
+        NSMutableDictionary *memberData = [config.dictionary mutableCopy];
+        SPGhost *ghost                  = [[SPGhost alloc] initWithKey:config.simperiumKey memberData:memberData];
         ghost.version                   = @"1";
-        post.ghost                      = ghost;
-        post.ghostData                  = [memberData sp_JSONString];
+        config.ghost                    = ghost;
+        config.ghostData                = [memberData sp_JSONString];
         
         // Keep a copy of the original title
-        NSString *key                   = post.simperiumKey;
-        originalTitles[key]             = originalTitle;
+        NSString *key                   = config.simperiumKey;
+        originalLogs[key]               = originalLog;
         
         // And keep a reference to the post
-		[posts addObject:post];
+		[configs addObject:config];
 	}
 
 	[storage save];
@@ -94,14 +95,14 @@ static NSUInteger const SPRandomStringLength    = 1000;
     // Prepare Remote Changes
     // ===================================================================================================
     //
-    for (Post *post in posts) {
+    for (Config *config in configs) {
         NSString *changeVersion     = [NSString sp_makeUUID];
-        NSString *startVersion      = post.ghost.version;
+        NSString *startVersion      = config.ghost.version;
         NSString *endVersion        = [NSString stringWithFormat:@"%d", startVersion.intValue + 1];
-        NSString *newTitle          = [NSString stringWithFormat:remoteTitleFormat, post.title];
+        NSString *newTitle          = [NSString stringWithFormat:remoteLogFormat, config.captainsLog];
         
         // Calculate the delta between the old and nu title's
-        NSMutableArray *diffList    = [dmp diff_mainOfOldString:post.title andNewString:newTitle];
+        NSMutableArray *diffList    = [dmp diff_mainOfOldString:config.captainsLog andNewString:newTitle];
         if (diffList.count > 2) {
             [dmp diff_cleanupSemantic:diffList];
             [dmp diff_cleanupEfficiency:diffList];
@@ -116,34 +117,47 @@ static NSUInteger const SPRandomStringLength    = 1000;
             CH_CHANGE_VERSION   : changeVersion,
             CH_START_VERSION    : startVersion,
             CH_END_VERSION      : endVersion,
-            CH_KEY              : post.simperiumKey,
+            CH_KEY              : config.simperiumKey,
             CH_OPERATION        : CH_MODIFY,
             CH_VALUE            : @{
-                                        titleMemberName : @{
-                                                                CH_OPERATION    : CH_DATA,
-                                                                CH_VALUE        : delta
-                                                            }
+                                        NSStringFromSelector(@selector(captainsLog))    : @{
+                                                                                                CH_OPERATION    : CH_DATA,
+                                                                                                CH_VALUE        : delta
+                                                                                            },
+                                        NSStringFromSelector(@selector(warpSpeed))      : @{
+                                                                                                CH_OPERATION    : CH_DATA,
+                                                                                                CH_VALUE        : remoteWarp
+                                                                                            }
                                     }
         };
         
-        changes[post.simperiumKey] = change;
+        changes[config.simperiumKey] = change;
     }
     
     NSLog(@"<> Successfully generated remote changes");
     
 
     // ===================================================================================================
-    // Perform Local Changes
+    // Perform Local Changes (And store them!)
     // ===================================================================================================
     //
-    for (Post *post in posts) {
-        NSString *newTitle = [NSString stringWithFormat:localTitleFormat, post.title];
-        post.title = newTitle;
+    for (Config *config in configs) {
+        config.captainsLog = [NSString stringWithFormat:localLogFormat, config.captainsLog];
     }
 
     [storage save];
     
     NSLog(@"<> Successfully performed local changes");
+    
+
+    // ===================================================================================================
+    // Perform Local Changes on a second property. Don't save them:
+    //      We expect unsaved values not to get overwritten by remote delta's!
+    // ===================================================================================================
+    //
+    for (Config *config in configs) {
+        config.warpSpeed = localWarp;
+    }
     
     
     // ===================================================================================================
@@ -155,7 +169,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
     dispatch_async(bucket.processorQueue, ^{
         [bucket.changeProcessor processRemoteChanges:changes.allValues
                                               bucket:bucket
-                                        errorHandler:^(NSString *simperiumKey, NSError *error, BOOL *halt) {
+                                        errorHandler:^(NSString *simperiumKey, NSError *error) {
                                             
                                         }];
         
@@ -173,18 +187,19 @@ static NSUInteger const SPRandomStringLength    = 1000;
     // Verify if the changeProcessor actually did its job
     // ===================================================================================================
     //
-    for (Post *post in posts) {
-        NSDictionary *change    = changes[post.simperiumKey];
+    for (Config *config in configs) {
+        NSDictionary *change    = changes[config.simperiumKey];
         NSString *endVersion    = change[CH_END_VERSION];
         
         // Rebuild the expected Post Title
-        NSString *originalTitle = originalTitles[post.simperiumKey];
-        NSString *expectedTitle = [NSString stringWithFormat:localTitleFormat, originalTitle];
-        expectedTitle           = [NSString stringWithFormat:remoteTitleFormat, expectedTitle];
+        NSString *originalTitle = originalLogs[config.simperiumKey];
+        NSString *expectedTitle = [NSString stringWithFormat:localLogFormat, originalTitle];
+        expectedTitle           = [NSString stringWithFormat:remoteLogFormat, expectedTitle];
         
         // THE check!
-        XCTAssert([post.title isEqualToString:expectedTitle], @"Invalid Post Title");
-        XCTAssert([post.ghost.version isEqual:endVersion], @"Invalid Ghost Version");
+        XCTAssert([config.warpSpeed isEqualToNumber:localWarp], @"Invalid warp value");
+        XCTAssert([config.captainsLog isEqualToString:expectedTitle], @"Invalid Post Title");
+        XCTAssert([config.ghost.version isEqual:endVersion], @"Invalid Ghost Version");
     }
 }
 
