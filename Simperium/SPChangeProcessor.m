@@ -569,7 +569,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         }
     }
     
-    // 3.2. Overwrite local data
+    // 3.2. On Error: Overwrite local data
     if (shouldOverwriteObject) {
         [object loadMemberData:data];
         SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@", bucket.name, simperiumKey);
