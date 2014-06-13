@@ -153,7 +153,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 - (void)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object {
 	// Create a copy of the ghost's data and update any members that have changed
 	NSMutableDictionary *ghostMemberData = object.ghost.memberData;
-	NSMutableDictionary *newMemberData = [ghostMemberData mutableCopy] ?: [NSMutableDictionary dictionaryWithCapacity:diff.count];
+	NSMutableDictionary *newMemberData = ghostMemberData ? [ghostMemberData mutableCopy] : [NSMutableDictionary dictionaryWithCapacity:diff.count];
 	for (NSString *key in diff.allKeys) {
 		NSDictionary *change = diff[key];
         
