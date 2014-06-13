@@ -54,20 +54,8 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
     return diff;
 }
 
-- (NSDictionary *)diffFromObject:(id<SPDiffable>)object toDictionary:(NSDictionary *)dict {
-    return [self diffWithObject:object andDictionary:dict inverse:NO];
-}
-
+//  Calculates the diff required to go from Dictionary-state into Object-state
 - (NSDictionary *)diffFromDictionary:(NSDictionary *)dict toObject:(id<SPDiffable>)object {
-    return [self diffWithObject:object andDictionary:dict inverse:YES];
-}
-
-//  Calculates the diff between an object and a dictionary
-//  @inverse:   Allows to set the direction of the diff calculation.
-//              -   Inverse = YES:    Will calculate the diff required to go from the Dictionary to the Object  (<<<<)
-//              -   Inverse = NO:     Will calculate the diff required to go from the Object to the Dictionary  (>>>>)
-//
-- (NSDictionary *)diffWithObject:(id<SPDiffable>)object andDictionary:(NSDictionary *)dict inverse:(BOOL)inverse {
 	// changes contains the operations for every key that is different
 	NSMutableDictionary *changes = [NSMutableDictionary dictionaryWithCapacity:3];
 	
@@ -88,12 +76,6 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 		
 		id currentValue = [object simperiumValueForKey:key];
 		id dictValue    = [thisMember getValueFromDictionary:dict key:key object:object];
-        
-        if (!inverse) {
-            id swap         = currentValue;
-            currentValue    = dictValue;
-            dictValue       = swap;
-        }
         
         // If both are nil, don't add any changes
         if (!currentValue && !dictValue) {
