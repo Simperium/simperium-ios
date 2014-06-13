@@ -557,11 +557,11 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         // 3.1. Calculate Delta: LocalGhost > RemoteMembers
         NSDictionary *remoteDiff    = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
     
-        // 3.2. Transform localDiff: Equivalent to "git stash"!
+        // 3.2. Transform localDiff: LocalGhost >> RemoteMembers >> LocalDiff (equivalent to git rebase)
         NSError *error              = nil;
         NSDictionary *rebaseDiff    = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost:localGhost error:&error];
     
-        // 3.3. Attempt to apply the Local Transformed Diff: "git stash apply"
+        // 3.3. Attempt to apply the Local Transformed Diff
         if (!error && rebaseDiff.count) {
             [bucket.differ applyDiff:rebaseDiff to:object error:&error];
         }
