@@ -542,37 +542,36 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 		[storage finishSafeSection];
         return NO;
     }
-	
-    NSError *error              = nil;
-    BOOL shouldOverwriteObject  = YES;
-    
-    // 1.  Calculate Delta: LocalGhost > LocalMembers
+	   
+    // 1. Calculate Delta: LocalGhost > LocalMembers
     SPGhost *localGhost         = [object.ghost copy];
     NSDictionary *localDiff     = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
     
-    // 2. Calculate Delta: LocalMembers > RemoteMembers
-    NSDictionary *remoteDiff    = [bucket.differ diffFromObject:object toDictionary:data];
+    // 2. Load the full Remote Member Data
+    [object loadMemberData:data];
+    SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@", bucket.name, simperiumKey);
     
-    // 3. Merge (1) + (2), if needed
-    NSDictionary *patchedDiff = remoteDiff;
+    // 3. Rebase + apply localDiff
     if (localDiff.count) {
-        patchedDiff = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost:localGhost error:&error];
-    }
-    
-    // 3.1. No Errors: Apply the diff
-    if (!error && patchedDiff.count) {
-        [bucket.differ applyDiff:patchedDiff to:object error:&error];
         
-        if (!error) {
-            shouldOverwriteObject = NO;
+        // 3.1. Calculate Delta: LocalGhost > RemoteMembers
+        NSDictionary *remoteDiff    = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
+    
+        // 3.2. Transform localDiff: Equivalent to "git stash"!
+        NSError *error              = nil;
+        NSDictionary *rebaseDiff    = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost:localGhost error:&error];
+    
+        // 3.3. Attempt to apply the Local Transformed Diff: "git stash apply"
+        if (!error && rebaseDiff.count) {
+            [bucket.differ applyDiff:rebaseDiff to:object error:&error];
+        }
+        
+        // 3.4. Some debugging
+        if (error) {
+            SPLogWarn(@"Simperium error: could not apply local transformed diff for entity (%@): %@", bucket.name, simperiumKey);
+        } else {
             SPLogWarn(@"Simperium successfully updated local entity (%@): %@", bucket.name, simperiumKey);
         }
-    }
-    
-    // 3.2. On Error: Overwrite local data
-    if (shouldOverwriteObject) {
-        [object loadMemberData:data];
-        SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@", bucket.name, simperiumKey);
     }
     
     // 4. Update the ghost with the remote member data + version
