@@ -216,7 +216,6 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     return YES;
 }
 
-
 // TODO:
 //      - Split this method into processRemoteModify and processRemoteInsertion
 //      - This method should receive the coreData context + object, so we prevent double fetching
@@ -318,7 +317,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         // If it wasn't an ack, then local data needs to be updated and the app needs to be notified
         if (!acknowledged && !newlyAdded) {
             SPLogVerbose(@"Simperium non-local MODIFY ENTITY received");
-            NSDictionary *oldDiff = [bucket.differ diff:object withDictionary:oldGhost.memberData];
+            NSDictionary *oldDiff = [bucket.differ diffFromDictionary:oldGhost.memberData toObject:object];
             if (oldDiff.count) {
                 // The local client version changed in the meantime, so transform the diff before applying it
                 SPLogVerbose(@"Simperium applying transform to diff: %@", diff);
@@ -521,6 +520,84 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 
 #pragma mark ====================================================================================
+#pragma mark Error Handling Helpers
+#pragma mark ====================================================================================
+
+- (BOOL)processRemoteEntityWithKey:(NSString *)simperiumKey version:(NSString *)version data:(NSDictionary *)data bucket:(SPBucket *)bucket
+{
+    id<SPStorageProvider>storage    = [bucket.storage threadSafeStorage];
+	[storage beginSafeSection];
+	
+    id<SPDiffable> object           = [storage objectForKey:simperiumKey bucketName:bucket.name];
+    [object willBeRead];
+    
+    if (!object) {
+        SPLogWarn(@"Simperium warning: received full remote entity for a locally deleted object (%@): %@", bucket.name, simperiumKey);
+		[storage finishSafeSection];
+        return NO;
+    }
+    
+    if (!object.ghost) {
+        SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, simperiumKey);
+		[storage finishSafeSection];
+        return NO;
+    }
+	
+    NSError *error              = nil;
+    BOOL shouldOverwriteObject  = YES;
+    
+    // 1.  Calculate Delta: LocalGhost > LocalMembers
+    SPGhost *localGhost         = [object.ghost copy];
+    NSDictionary *localDiff     = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
+    
+    // 2. Calculate Delta: LocalMembers > RemoteMembers
+    NSDictionary *remoteDiff    = [bucket.differ diffFromObject:object toDictionary:data];
+    
+    // 5. Merge (1) + (2), if needed
+    NSDictionary *patchedDiff = remoteDiff;
+    if (localDiff.count) {
+        patchedDiff = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost:localGhost error:&error];
+    }
+    
+    // 5.1. No Errors: Apply the diff
+    if (!error && patchedDiff.count) {
+        [bucket.differ applyDiff:patchedDiff to:object error:&error];
+        
+        if (!error) {
+            shouldOverwriteObject = NO;
+            SPLogWarn(@"Simperium successfully updated local entity (%@): %@", bucket.name, simperiumKey);
+        }
+    }
+    
+    // 5.2. Overwrite local data
+    if (shouldOverwriteObject) {
+        [object loadMemberData:data];
+        SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@", bucket.name, simperiumKey);
+    }
+    
+    // 6. Update the ghost with the remote member data + version
+    SPGhost *ghost  = [[SPGhost alloc] initWithKey:simperiumKey memberData:[data mutableCopy]];
+    ghost.version   = version;
+    object.ghost    = ghost;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSDictionary *userInfo = @{
+            @"bucketName"     : bucket.name,
+            @"keys"           : [NSSet setWithObject:simperiumKey],
+            @"changedMembers" : data.allKeys
+        };
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidChangeObjectNotification object:bucket userInfo:userInfo];
+    });
+	
+    [storage save];
+    [storage finishSafeSection];
+    
+    return YES;
+}
+
+
+#pragma mark ====================================================================================
 #pragma mark Change Helpers
 #pragma mark ====================================================================================
 
@@ -604,7 +681,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         
         if (object.ghost != nil && [object.ghost memberData] != nil) {
             // This object has already been synced in the past and has a server ghost, so we're modifying the object
-            newData = [bucket.differ diff:object withDictionary:object.ghost.memberData];
+            newData = [bucket.differ diffFromDictionary:object.ghost.memberData toObject:object];
             SPLogVerbose(@"Simperium entity diff found %lu changed members", (unsigned long)newData.count);
         } else  {
             newData = [bucket.differ diffForAddition:object];

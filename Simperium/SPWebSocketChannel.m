@@ -403,7 +403,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 	
     if ([self.pendingEntityDownloads containsObject:key]) {
         // We had a pending entity re-download: There might have been an issue while applying a remote diff!
-#warning TODO: Implement entity merge!
+        dispatch_async(bucket.processorQueue, ^{
+            [bucket.changeProcessor processRemoteEntityWithKey:key version:version data:dataDict bucket:bucket];
+        });
+        
         [self.pendingEntityDownloads removeObject:key];
 
     } else if (_retrievingObjectHistory) {

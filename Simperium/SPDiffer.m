@@ -54,8 +54,20 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
     return diff;
 }
 
-// Construct a diff against a particular dictionary of data, such as a ghost dictionary
-- (NSDictionary *)diff:(id<SPDiffable>)object withDictionary:(NSDictionary *)dict {
+- (NSDictionary *)diffFromObject:(id<SPDiffable>)object toDictionary:(NSDictionary *)dict {
+    return [self diffWithObject:object andDictionary:dict inverse:NO];
+}
+
+- (NSDictionary *)diffFromDictionary:(NSDictionary *)dict toObject:(id<SPDiffable>)object {
+    return [self diffWithObject:object andDictionary:dict inverse:YES];
+}
+
+//  Calculates the diff between an object and a dictionary
+//  @inverse:   Allows to set the direction of the diff calculation.
+//              -   Inverse = YES:    Will calculate the diff required to go from the Dictionary to the Object  (<<<<)
+//              -   Inverse = NO:     Will calculate the diff required to go from the Object to the Dictionary  (>>>>)
+//
+- (NSDictionary *)diffWithObject:(id<SPDiffable>)object andDictionary:(NSDictionary *)dict inverse:(BOOL)inverse {
 	// changes contains the operations for every key that is different
 	NSMutableDictionary *changes = [NSMutableDictionary dictionaryWithCapacity:3];
 	
@@ -68,36 +80,45 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
     {
         NSString *key = [member keyName];
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *thisMember = [self.schema memberForKey: key];
+		SPMember *thisMember = [self.schema memberForKey:key];
 		if (!thisMember) {
 			SPLogWarn(@"Simperium warning: trying to diff a member that doesn't exist (%@) from ghost: %@", key, [dict description]);
 			continue;
 		}
 		
 		id currentValue = [object simperiumValueForKey:key];
-		id dictValue = [thisMember getValueFromDictionary: dict key: key object:object];
+		id dictValue    = [thisMember getValueFromDictionary:dict key:key object:object];
+        
+        if (!inverse) {
+            id swap         = currentValue;
+            currentValue    = dictValue;
+            dictValue       = swap;
+        }
         
         // If both are nil, don't add any changes
-        if (!currentValue && !dictValue)
+        if (!currentValue && !dictValue) {
             continue;
+        }
 		
 		// Perform the actual diff; the mechanics of the diff will depend on the member class
         
         // If there was no previous value, then add the new value
-        if (!dictValue)
+        if (!dictValue) {
             currentDiff = [thisMember diffForAddition:currentValue];
-        else if (!currentValue && dictValue)
+        } else if (!currentValue && dictValue) {
             // This could happen if you have an optional member that gets set to nil
             //SPLogWarn(@"Simperium warning: trying to set a nil member (%@)", key);
             // TODO: Consider returning a diff that sets the value to [member defaultValue]
             currentDiff = [thisMember diffForRemoval];
-        else
+        } else {
             // Perform a full diff
             currentDiff = [thisMember diff: dictValue otherValue:currentValue];
+        }
 		
 		// If there was no difference, then don't add any changes for this member
-		if (currentDiff == nil || [currentDiff count] == 0)
+		if (currentDiff == nil || [currentDiff count] == 0) {
 			continue;
+        }
 		
 		// Otherwise, add this as a change
 		[changes setObject:currentDiff forKey:[thisMember keyName]];
