@@ -553,13 +553,13 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     // 2. Calculate Delta: LocalMembers > RemoteMembers
     NSDictionary *remoteDiff    = [bucket.differ diffFromObject:object toDictionary:data];
     
-    // 5. Merge (1) + (2), if needed
+    // 3. Merge (1) + (2), if needed
     NSDictionary *patchedDiff = remoteDiff;
     if (localDiff.count) {
         patchedDiff = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost:localGhost error:&error];
     }
     
-    // 5.1. No Errors: Apply the diff
+    // 3.1. No Errors: Apply the diff
     if (!error && patchedDiff.count) {
         [bucket.differ applyDiff:patchedDiff to:object error:&error];
         
@@ -569,13 +569,13 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         }
     }
     
-    // 5.2. Overwrite local data
+    // 3.2. Overwrite local data
     if (shouldOverwriteObject) {
         [object loadMemberData:data];
         SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@", bucket.name, simperiumKey);
     }
     
-    // 6. Update the ghost with the remote member data + version
+    // 4. Update the ghost with the remote member data + version
     SPGhost *ghost  = [[SPGhost alloc] initWithKey:simperiumKey memberData:[data mutableCopy]];
     ghost.version   = version;
     object.ghost    = ghost;
