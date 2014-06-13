@@ -317,9 +317,192 @@ static NSUInteger const SPRandomStringLength    = 1000;
         NSString *originalTitle = originalLogs[config.simperiumKey];
         
         // THE check!
-        XCTAssert([config.captainsLog isEqualToString:originalTitle],   @"Invalid Post Title");
+        XCTAssert([config.captainsLog isEqualToString:originalTitle],   @"Invalid CaptainsLog");
         XCTAssert(![config.ghost.version isEqual:endVersion],           @"Invalid Ghost Version");
     }
+}
+
+- (void)testProcessRemoteEntityWithLocalPendingChanges {
+    
+    // ===================================================================================================
+	// Helpers
+    // ===================================================================================================
+    //
+	MockSimperium* s                    = [MockSimperium mockSimperium];
+	SPBucket* bucket                    = [s bucketForName:NSStringFromClass([Config class])];
+	SPCoreDataStorage* storage          = bucket.storage;
+    
+    
+    // ===================================================================================================
+	// Insert Post
+    // ===================================================================================================
+    //
+    NSString *originalLog           = @"1111 Captains Log";
+    Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+    config.captainsLog              = originalLog;
+    
+    // Manually Intialize SPGhost: we're not relying on the backend to confirm these additions!
+    NSMutableDictionary *memberData = [config.dictionary mutableCopy];
+    SPGhost *ghost                  = [[SPGhost alloc] initWithKey:config.simperiumKey memberData:memberData];
+    ghost.version                   = @"1";
+    config.ghost                    = ghost;
+    config.ghostData                = [memberData sp_JSONString];
+    
+	[storage save];
+    
+    NSLog(@"<> Successfully inserted Config object", (int)SPNumberOfEntities);
+    
+    
+    // ===================================================================================================
+    // Prepare Remote Entity Message
+    // ===================================================================================================
+    //
+    NSString *changeVersion     = [NSString sp_makeUUID];
+    NSString *endVersion        = [NSString stringWithFormat:@"%d", config.ghost.version.intValue + 1];
+    NSString *newRemoteLog      = @"2222 Captains Log";
+    NSNumber *newRemoteCost     = @(300);
+    NSNumber *newRemoteWarp     = @(10);
+    
+    // Prepare the change itself
+    NSDictionary *entity        = @{
+        NSStringFromSelector(@selector(captainsLog))    : newRemoteLog,
+        NSStringFromSelector(@selector(cost))           : newRemoteCost,
+        NSStringFromSelector(@selector(warpSpeed))      : newRemoteWarp,
+    };
+    
+    NSLog(@"<> Successfully generated remote change");
+    
+    
+    // ===================================================================================================
+    // Add local pending changes
+    // ===================================================================================================
+    //
+    NSNumber *localPendingWarp  = @(31337);
+    NSNumber *localPendingCost  = @(900);
+    NSString *localPendingLog   = @"3333 Captains Log Suffix";
+    
+    config.captainsLog          = localPendingLog;
+    config.warpSpeed            = localPendingWarp;
+    config.cost                 = localPendingCost;
+    
+    [storage save];
+    
+    
+    // ===================================================================================================
+    // Process remote changes
+    // ===================================================================================================
+    //
+	StartBlock();
+    
+    dispatch_async(bucket.processorQueue, ^{
+        [bucket.changeProcessor processRemoteEntityWithKey:config.simperiumKey version:endVersion data:entity bucket:bucket];
+        
+		dispatch_async(dispatch_get_main_queue(), ^{
+			EndBlock();
+		});
+    });
+    
+	WaitUntilBlockCompletes();
+    
+    NSLog(@"<> Finished processing remote changes");
+    
+    
+    // ===================================================================================================
+    // Verify if the changeProcessor actually did its job
+    // ===================================================================================================
+    //
+
+    [storage refaultObjects:@[config]];
+    
+    XCTAssert([config.captainsLog isEqualToString:localPendingLog], @"Invalid Log");
+    XCTAssert([config.cost isEqual:localPendingCost],               @"Invalid Cost");
+    XCTAssert([config.warpSpeed isEqual:localPendingWarp],          @"Invalid Warp");
+    XCTAssert([config.ghost.version isEqual:endVersion],            @"Invalid Ghost Version");
+    XCTAssert([config.ghost.memberData isEqual:entity],             @"Invalid Ghost MemberData");
+}
+
+- (void)testProcessRemoteEntityWithoutLocalPendingChanges {
+ 
+    // ===================================================================================================
+	// Helpers
+    // ===================================================================================================
+    //
+	MockSimperium* s                    = [MockSimperium mockSimperium];
+	SPBucket* bucket                    = [s bucketForName:NSStringFromClass([Config class])];
+	SPCoreDataStorage* storage          = bucket.storage;
+    
+    
+    // ===================================================================================================
+	// Insert Post
+    // ===================================================================================================
+    //
+    NSString *originalLog           = @"1111 Captains Log";
+    Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+    config.captainsLog              = originalLog;
+    
+    // Manually Intialize SPGhost: we're not relying on the backend to confirm these additions!
+    NSMutableDictionary *memberData = [config.dictionary mutableCopy];
+    SPGhost *ghost                  = [[SPGhost alloc] initWithKey:config.simperiumKey memberData:memberData];
+    ghost.version                   = @"1";
+    config.ghost                    = ghost;
+    config.ghostData                = [memberData sp_JSONString];
+    
+	[storage save];
+    
+    NSLog(@"<> Successfully inserted Config object", (int)SPNumberOfEntities);
+    
+    
+    // ===================================================================================================
+    // Prepare Remote Entity Message
+    // ===================================================================================================
+    //
+    NSString *changeVersion     = [NSString sp_makeUUID];
+    NSString *endVersion        = [NSString stringWithFormat:@"%d", config.ghost.version.intValue + 1];
+    NSString *newRemoteLog      = @"2222 Captains Log";
+    NSNumber *newRemoteCost     = @(300);
+    NSNumber *newRemoteWarp     = @(10);
+    
+    // Prepare the change itself
+    NSDictionary *entity        = @{
+                                    NSStringFromSelector(@selector(captainsLog))    : newRemoteLog,
+                                    NSStringFromSelector(@selector(cost))           : newRemoteCost,
+                                    NSStringFromSelector(@selector(warpSpeed))      : newRemoteWarp,
+                                    };
+    
+    NSLog(@"<> Successfully generated remote change");
+    
+    
+    // ===================================================================================================
+    // Process remote changes
+    // ===================================================================================================
+    //
+	StartBlock();
+    
+    dispatch_async(bucket.processorQueue, ^{
+        [bucket.changeProcessor processRemoteEntityWithKey:config.simperiumKey version:endVersion data:entity bucket:bucket];
+        
+		dispatch_async(dispatch_get_main_queue(), ^{
+			EndBlock();
+		});
+    });
+    
+	WaitUntilBlockCompletes();
+    
+    NSLog(@"<> Finished processing remote changes");
+    
+    
+    // ===================================================================================================
+    // Verify if the changeProcessor actually did its job
+    // ===================================================================================================
+    //
+    
+    [storage refaultObjects:@[config]];
+    
+    XCTAssert([config.captainsLog isEqualToString:newRemoteLog],    @"Invalid Log");
+    XCTAssert([config.cost isEqual:newRemoteCost],                  @"Invalid Cost");
+    XCTAssert([config.warpSpeed isEqual:newRemoteWarp],             @"Invalid Warp");
+    XCTAssert([config.ghost.version isEqual:endVersion],            @"Invalid Ghost Version");
+    XCTAssert([config.ghost.memberData isEqual:entity],             @"Invalid Ghost MemberData");
 }
 
 @end
