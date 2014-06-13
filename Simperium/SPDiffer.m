@@ -120,7 +120,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 			continue;
 		}
 		
-        if ([operation isEqualToString:OP_OBJECT_ADD] || [operation isEqualToString:OP_REPLACE]) {
+        if ([operation isEqualToString:OP_OBJECT_ADD] || [operation isEqualToString:OP_OBJECT_REPLACE]) {
             // Newly added / replaced member: set the value
             id newValue = [member getValueFromDictionary:change key:OP_VALUE object:object];
             [object simperiumSetValue: newValue forKey: key];
