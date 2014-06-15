@@ -61,7 +61,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
     
     
     // ===================================================================================================
-	// Insert Posts
+	// Insert Configs
     // ===================================================================================================
     //
 	for (NSInteger i = 0; ++i <= SPNumberOfEntities; ) {
@@ -218,7 +218,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
     
     
     // ===================================================================================================
-	// Insert Posts
+	// Insert Config
     // ===================================================================================================
     //
 	for (NSInteger i = 0; ++i <= SPNumberOfEntities; ) {
@@ -334,10 +334,10 @@ static NSUInteger const SPRandomStringLength    = 1000;
     
     
     // ===================================================================================================
-	// Insert Post
+	// Insert Config
     // ===================================================================================================
     //
-    NSString *originalLog           = @"1111 Captains Log";
+    NSString *originalLog           = @"Original Captains Log";
     Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
     config.captainsLog              = originalLog;
     
@@ -359,7 +359,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
     //
     NSString *changeVersion     = [NSString sp_makeUUID];
     NSString *endVersion        = [NSString stringWithFormat:@"%d", config.ghost.version.intValue + 1];
-    NSString *newRemoteLog      = @"2222 Captains Log";
+    NSString *newRemoteLog      = @"Remote Captains Log";
     NSNumber *newRemoteCost     = @(300);
     NSNumber *newRemoteWarp     = @(10);
     
@@ -379,7 +379,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
     //
     NSNumber *localPendingWarp  = @(31337);
     NSNumber *localPendingCost  = @(900);
-    NSString *localPendingLog   = @"3333 Captains Log Suffix";
+    NSString *localPendingLog   = @"Local Captains Log Suffix";
     
     config.captainsLog          = localPendingLog;
     config.warpSpeed            = localPendingWarp;
@@ -433,7 +433,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
     
     
     // ===================================================================================================
-	// Insert Post
+	// Insert Config
     // ===================================================================================================
     //
     NSString *originalLog           = @"1111 Captains Log";
