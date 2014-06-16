@@ -325,21 +325,41 @@ static NSUInteger const SPRandomStringLength    = 1000;
 - (void)testProcessRemoteEntityWithLocalPendingChanges {
     
     // ===================================================================================================
+	// Testing values! yay!
+    // ===================================================================================================
+    //
+    NSString *originalLog           = @"Original Captains Log";
+    NSNumber *originalWarp          = @(29);
+    
+    NSNumber *localPendingWarp      = @(31337);
+    NSNumber *localPendingCost      = @(900);
+    NSString *localPendingLog       = @"Something Original Captains Log";
+    
+    NSString *newRemoteLog          = @"Remote Original Captains Log Suffixed";
+    NSNumber *newRemoteCost         = @(300);
+    NSNumber *newRemoteWarp         = @(10);
+
+    NSString *expectedLog           = @"Remote Something Original Captains Log Suffixed";
+    NSNumber *expectedCost          = localPendingCost;
+    NSNumber *expectedWarp          = localPendingWarp;
+    
+    
+    // ===================================================================================================
 	// Helpers
     // ===================================================================================================
     //
-	MockSimperium* s                    = [MockSimperium mockSimperium];
-	SPBucket* bucket                    = [s bucketForName:NSStringFromClass([Config class])];
-	SPCoreDataStorage* storage          = bucket.storage;
+	MockSimperium* s                = [MockSimperium mockSimperium];
+	SPBucket* bucket                = [s bucketForName:NSStringFromClass([Config class])];
+	SPCoreDataStorage* storage      = bucket.storage;
     
     
     // ===================================================================================================
 	// Insert Config
     // ===================================================================================================
     //
-    NSString *originalLog           = @"Original Captains Log";
     Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
     config.captainsLog              = originalLog;
+    config.warpSpeed                = originalWarp;
     
     // Manually Intialize SPGhost: we're not relying on the backend to confirm these additions!
     NSMutableDictionary *memberData = [config.dictionary mutableCopy];
@@ -357,11 +377,8 @@ static NSUInteger const SPRandomStringLength    = 1000;
     // Prepare Remote Entity Message
     // ===================================================================================================
     //
-    NSString *changeVersion     = [NSString sp_makeUUID];
-    NSString *endVersion        = [NSString stringWithFormat:@"%d", config.ghost.version.intValue + 1];
-    NSString *newRemoteLog      = @"Remote Captains Log";
-    NSNumber *newRemoteCost     = @(300);
-    NSNumber *newRemoteWarp     = @(10);
+    NSString *changeVersion = [NSString sp_makeUUID];
+    NSString *endVersion    = [NSString stringWithFormat:@"%d", config.ghost.version.intValue + 1];
     
     // Prepare the change itself
     NSDictionary *entity        = @{
@@ -377,13 +394,9 @@ static NSUInteger const SPRandomStringLength    = 1000;
     // Add local pending changes
     // ===================================================================================================
     //
-    NSNumber *localPendingWarp  = @(31337);
-    NSNumber *localPendingCost  = @(900);
-    NSString *localPendingLog   = @"Local Captains Log Suffix";
-    
-    config.captainsLog          = localPendingLog;
-    config.warpSpeed            = localPendingWarp;
-    config.cost                 = localPendingCost;
+    config.captainsLog  = localPendingLog;
+    config.warpSpeed    = localPendingWarp;
+    config.cost         = localPendingCost;
     
     [storage save];
     
@@ -414,11 +427,11 @@ static NSUInteger const SPRandomStringLength    = 1000;
 
     [storage refaultObjects:@[config]];
     
-    XCTAssert([config.captainsLog isEqualToString:localPendingLog], @"Invalid Log");
-    XCTAssert([config.cost isEqual:localPendingCost],               @"Invalid Cost");
-    XCTAssert([config.warpSpeed isEqual:localPendingWarp],          @"Invalid Warp");
-    XCTAssert([config.ghost.version isEqual:endVersion],            @"Invalid Ghost Version");
-    XCTAssert([config.ghost.memberData isEqual:entity],             @"Invalid Ghost MemberData");
+    XCTAssert([config.captainsLog isEqualToString:expectedLog], @"Invalid Log");
+    XCTAssert([config.cost isEqual:expectedCost],               @"Invalid Cost");
+    XCTAssert([config.warpSpeed isEqual:expectedWarp],          @"Invalid Warp");
+    XCTAssert([config.ghost.version isEqual:endVersion],        @"Invalid Ghost Version");
+    XCTAssert([config.ghost.memberData isEqual:entity],         @"Invalid Ghost MemberData");
 }
 
 - (void)testProcessRemoteEntityWithoutLocalPendingChanges {
