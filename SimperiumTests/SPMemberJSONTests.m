@@ -46,9 +46,9 @@
 								};
 
     NSError *error = nil;
-	NSDictionary *output = [self.jsonMember applyDiff:local otherValue:diff error:&error];
+    NSDictionary *output = [self.jsonMember applyDiff:local otherValue:diff error:&error];
     
-	XCTAssertEqualObjects(output, expected, @"Error applying ListInsertion Diff");
+    XCTAssertEqualObjects(output, expected, @"Error applying ListInsertion Diff");
     XCTAssertNil(error, @"Error applying diff");
 }
 
@@ -93,16 +93,16 @@
 											}
 								};
 	
-	NSDictionary *expected	= @{
+    NSDictionary *expected	= @{
 								@"body" :	@{
 												@"something-else" : @(42)
 											}
 								};
 	
     NSError *error = nil;
-	NSDictionary *output = [self.jsonMember applyDiff:local otherValue:diff error:&error];
+    NSDictionary *output = [self.jsonMember applyDiff:local otherValue:diff error:&error];
     
-	XCTAssertEqualObjects(output, expected, @"Error applying ListInsertion Diff");
+    XCTAssertEqualObjects(output, expected, @"Error applying ListInsertion Diff");
     XCTAssertNil(error, @"Error applying diff");
 }
 
@@ -133,9 +133,9 @@
 								};
 	
     NSError *error = nil;
-	NSDictionary *output = [self.jsonMember applyDiff:local otherValue:diff error:&error];
+    NSDictionary *output = [self.jsonMember applyDiff:local otherValue:diff error:&error];
     
-	XCTAssertEqualObjects(output, expected, @"Error applying ListInsertion Diff");
+    XCTAssertEqualObjects(output, expected, @"Error applying ListInsertion Diff");
     XCTAssertNil(error, @"Error applying diff");
 }
 

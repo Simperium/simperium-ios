@@ -122,7 +122,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
         }
         
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *member = [self.schema memberForKey:key];
+        SPMember *member = [self.schema memberForKey:key];
 		if (!member) {
 			SPLogWarn(@"Simperium warning: applyDiff for a member that doesn't exist (%@): %@", key, [change description]);
 			continue;
@@ -266,7 +266,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 		id otherValue           = [member getValueFromDictionary:oldChange key:OP_VALUE object:object];
         
         NSError *theError       = nil;
-		NSDictionary *newChange = [member transform: thisValue otherValue:otherValue oldValue:ghostValue error:&theError];
+        NSDictionary *newChange = [member transform:thisValue otherValue:otherValue oldValue:ghostValue error:&theError];
 		
         // On error: halt and relay the error to the caller
         if (theError) {
@@ -278,7 +278,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
         
         if (newChange) {
 			[newDiff setObject:newChange forKey:key];
-		} else {
+        } else {
 			// If there was no transformation required, just use the original change
             NSDictionary *changeCopy = [change copy];
 			[newDiff setObject:changeCopy forKey:key];

@@ -46,7 +46,7 @@
 	if (diffList.count > 0 && [self.dmp diff_levenshtein:diffList] != 0) {
 		// Construct the patch delta and return it as a change operation
 		NSString *delta = [self.dmp diff_toDelta:diffList];
-		return @{
+        return @{
             OP_OP       : OP_STRING,
             OP_VALUE    : delta
         };
@@ -87,9 +87,9 @@
 	}
     
 	if (finalDiffs.count > 0) {
-		NSString *delta = [self.dmp diff_toDelta:finalDiffs];
+        NSString *delta = [self.dmp diff_toDelta:finalDiffs];
         
-		return @{
+        return @{
             OP_OP       : OP_STRING,
             OP_VALUE    : delta
         };

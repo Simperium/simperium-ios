@@ -397,7 +397,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     NSString *key                   = [self keyWithoutNamespaces:change bucket:bucket];
     id<SPStorageProvider>storage    = [bucket.storage threadSafeStorage];
     
-	[storage beginSafeSection];
+    [storage beginSafeSection];
 	
     NSString *operation			= change[CH_OPERATION];
     NSString *changeVersion		= change[CH_CHANGE_VERSION];
@@ -532,13 +532,13 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     
     if (!object) {
         SPLogWarn(@"Simperium warning: received full remote entity for a locally deleted object (%@): %@", bucket.name, simperiumKey);
-		[storage finishSafeSection];
+        [storage finishSafeSection];
         return NO;
     }
     
     if (!object.ghost) {
         SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, simperiumKey);
-		[storage finishSafeSection];
+        [storage finishSafeSection];
         return NO;
     }
 	   
