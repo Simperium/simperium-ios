@@ -291,9 +291,9 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
         [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSNumber *version, NSError *error) {
             
-            SPLogError(@"Simperium received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
+            SPLogError(@"Simperium Received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
             
-            if (error.code == SPProcessorErrorsDuplicateChange) {           
+            if (error.code == SPProcessorErrorsSentDuplicateChange) {           
                 [processor discardPendingChanges:simperiumKey bucket:bucket];
                 
             } else if (error.code == SPProcessorErrorsInvalidLocalChange) {

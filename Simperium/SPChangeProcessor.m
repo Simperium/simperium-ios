@@ -135,7 +135,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     switch (errorCode) {
         case CH_ERRORS_DUPLICATE:
             {
-                wrappedCode = SPProcessorErrorsDuplicateChange;
+                wrappedCode = SPProcessorErrorsSentDuplicateChange;
                 description = @"Duplicate Change";
             }
             break;
@@ -178,8 +178,9 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     return YES;
 }
 
-- (BOOL)processRemoteDeleteWithKey:(NSString*)simperiumKey bucket:(SPBucket *)bucket objectWasFound:(BOOL)objectWasFound {
-	
+- (BOOL)processRemoteDeleteWithKey:(NSString*)simperiumKey bucket:(SPBucket *)bucket objectWasFound:(BOOL)objectWasFound
+                             error:(NSError **)error {
+    
 	// REMOVE operation
 	// If the object still exists in our local storage (no matter if this is an ACK, or remote deletion), proceed nuking it
 	if (objectWasFound) {
@@ -220,10 +221,11 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 //      - Split this method into processRemoteModify and processRemoteInsertion
 //      - This method should receive the coreData context + object, so we prevent double fetching
 //      - Once the above are implemented, move the 'begin/finish'SafeSection calls to the caller, and nuke duplicated code, PLEASE!
+//      - Nuke ProcessorRequestsReindexingNotification. That should be handled by the processRemoteChanges error handler block
 //
 - (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket change:(NSDictionary *)change
-					  acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches error:(NSError **)error
-{
+					  acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches error:(NSError **)error {
+    
     id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
 	[storage beginSafeSection];
 	
@@ -236,6 +238,9 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 		// If the change was sent by this very same client, and the object isn't available, don't add it.
 		// It Must have been locally deleted before the confirmation got through!
 		if (clientMatches) {
+            if (error) {
+                *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedZombieChange description:nil];
+            }
 			[storage finishSafeSection];
 			return NO;
 		}
@@ -276,12 +281,18 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     // It already exists, now MODIFY it
     if (!object.ghost) {
         SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, simperiumKey);
+        if (error) {
+            *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedUnknownChange description:nil];
+        }
 		[storage finishSafeSection];
         return NO;
     }
     
 	// If the local version matches the remote endVersion, don't process this change: it's a dupe message
 	if ([object.ghost.version isEqual:endVersion]) {
+        if (error) {
+            *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedDuplicateChange description:nil];
+        }
 		[storage finishSafeSection];
 		return NO;
 	}
@@ -300,7 +311,6 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             if (error) {
                 *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsInvalidRemoteChange description:theError.description];
             }
-
             [storage finishSafeSection];
             return NO;
         }
@@ -369,7 +379,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
                 notificationName = ProcessorDidAcknowledgeObjectsNotification;
             } else {
                 notificationName = ProcessorDidChangeObjectNotification;                
-                [userInfo setObject:[diff allKeys] forKey:@"changedMembers"];
+                [userInfo setObject:diff.allKeys forKey:@"changedMembers"];
             }
 			
             [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:bucket userInfo:userInfo];
@@ -426,7 +436,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	[storage finishSafeSection];
 		
     if (remove && (objectWasFound || acknowledged)) {
-        return [self processRemoteDeleteWithKey:key bucket:bucket objectWasFound:objectWasFound];
+        return [self processRemoteDeleteWithKey:key bucket:bucket objectWasFound:objectWasFound error:error];
     } else if (operation && [operation compare: CH_MODIFY] == NSOrderedSame) {
         return [self processRemoteModifyWithKey:key bucket:bucket change:change acknowledged:acknowledged clientMatches:clientMatches error:error];
     }
@@ -488,11 +498,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             
             // Process Changes: this is necessary even if it's an ack, so the ghost data gets set accordingly
             if (![self processRemoteChange:change bucket:bucket error:&error]) {
-                
-                // Do we have any error that needs to be handled?
-                if (error) {
-                    errorHandler(key, version, error);
-                }
+                errorHandler(key, version, error);
                 continue;
             }
 
