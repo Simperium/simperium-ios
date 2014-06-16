@@ -238,7 +238,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 		NSDictionary *oldChange = oldDiff[key];
 		
 		// Make sure the member exists and is tracked by Simperium
-		SPMember *member = [self.schema memberForKey: key];
+		SPMember *member = [self.schema memberForKey:key];
 		id ghostValue = [member getValueFromDictionary:oldGhost.memberData key:key object:object];
 		if (!member) {
 			SPLogError(@"Simperium error: transform diff for a member that doesn't exist (%@): %@", key, [change description]);
