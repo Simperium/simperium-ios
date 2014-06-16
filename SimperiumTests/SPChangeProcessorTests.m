@@ -370,14 +370,13 @@ static NSUInteger const SPRandomStringLength    = 1000;
     
 	[storage save];
     
-    NSLog(@"<> Successfully inserted Config object", (int)SPNumberOfEntities);
+    NSLog(@"<> Successfully inserted Config object");
     
     
     // ===================================================================================================
     // Prepare Remote Entity Message
     // ===================================================================================================
     //
-    NSString *changeVersion = [NSString sp_makeUUID];
     NSString *endVersion    = [NSString stringWithFormat:@"%d", config.ghost.version.intValue + 1];
     
     // Prepare the change itself
@@ -462,14 +461,13 @@ static NSUInteger const SPRandomStringLength    = 1000;
     
 	[storage save];
     
-    NSLog(@"<> Successfully inserted Config object", (int)SPNumberOfEntities);
+    NSLog(@"<> Successfully inserted Config object");
     
     
     // ===================================================================================================
     // Prepare Remote Entity Message
     // ===================================================================================================
     //
-    NSString *changeVersion     = [NSString sp_makeUUID];
     NSString *endVersion        = [NSString stringWithFormat:@"%d", config.ghost.version.intValue + 1];
     NSString *newRemoteLog      = @"2222 Captains Log";
     NSNumber *newRemoteCost     = @(300);
