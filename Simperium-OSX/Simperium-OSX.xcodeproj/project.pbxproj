@@ -144,6 +144,8 @@
 		B525F1FA188429A8003E4AA0 /* STKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = B525F1F8188429A8003E4AA0 /* STKeychain.m */; };
 		B53E4888182AAC58000AA4C8 /* NSURLResponse+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */; };
 		B53E4889182AAC58000AA4C8 /* NSURLResponse+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B53E4887182AAC58000AA4C8 /* NSURLResponse+Simperium.m */; };
+		B56819C2194F7A6000E0DC65 /* DiffMatchPatch+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B56819C0194F7A6000E0DC65 /* DiffMatchPatch+Simperium.h */; };
+		B56819C3194F7A6000E0DC65 /* DiffMatchPatch+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B56819C1194F7A6000E0DC65 /* DiffMatchPatch+Simperium.m */; };
 		B56B1643183566DA00E45C98 /* NSArray+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B56B1641183566DA00E45C98 /* NSArray+Simperium.h */; };
 		B56B1644183566DA00E45C98 /* NSArray+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B56B1642183566DA00E45C98 /* NSArray+Simperium.m */; };
 		B56B1645183567C600E45C98 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 268EDED0155F06D5006B566F /* CoreData.framework */; };
@@ -334,6 +336,8 @@
 		B525F1F8188429A8003E4AA0 /* STKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STKeychain.m; sourceTree = "<group>"; };
 		B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSURLResponse+Simperium.h"; path = "../../Simperium/NSURLResponse+Simperium.h"; sourceTree = "<group>"; };
 		B53E4887182AAC58000AA4C8 /* NSURLResponse+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSURLResponse+Simperium.m"; path = "../../Simperium/NSURLResponse+Simperium.m"; sourceTree = "<group>"; };
+		B56819C0194F7A6000E0DC65 /* DiffMatchPatch+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "DiffMatchPatch+Simperium.h"; path = "../../Simperium/DiffMatchPatch+Simperium.h"; sourceTree = "<group>"; };
+		B56819C1194F7A6000E0DC65 /* DiffMatchPatch+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "DiffMatchPatch+Simperium.m"; path = "../../Simperium/DiffMatchPatch+Simperium.m"; sourceTree = "<group>"; };
 		B56B1641183566DA00E45C98 /* NSArray+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSArray+Simperium.h"; path = "../../Simperium/NSArray+Simperium.h"; sourceTree = "<group>"; };
 		B56B1642183566DA00E45C98 /* NSArray+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSArray+Simperium.m"; path = "../../Simperium/NSArray+Simperium.m"; sourceTree = "<group>"; };
 		B56B16461835682500E45C98 /* PostComment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PostComment.h; path = ../../SimperiumTests/PostComment.h; sourceTree = "<group>"; };
@@ -730,6 +734,8 @@
 		B5E03DA7182C237B00412572 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				B56819C0194F7A6000E0DC65 /* DiffMatchPatch+Simperium.h */,
+				B56819C1194F7A6000E0DC65 /* DiffMatchPatch+Simperium.m */,
 				B5E03DA3182C236200412572 /* JSONKit+Simperium.h */,
 				B5E03DA4182C236200412572 /* JSONKit+Simperium.m */,
 				B56B1641183566DA00E45C98 /* NSArray+Simperium.h */,
@@ -774,6 +780,7 @@
 				268EDF46155F08A2006B566F /* SPEnvironment.h in Headers */,
 				268EDF48155F08A2006B566F /* SPGhost.h in Headers */,
 				268EDF4C155F08A2006B566F /* SPIndexProcessor.h in Headers */,
+				B56819C2194F7A6000E0DC65 /* DiffMatchPatch+Simperium.h in Headers */,
 				B59AAC95185B90F000B557D3 /* SPThreadsafeMutableSet.h in Headers */,
 				268EDF50155F08A2006B566F /* SPManagedObject.h in Headers */,
 				268EDF52155F08A2006B566F /* SPMember.h in Headers */,
@@ -972,6 +979,7 @@
 				2698BE4615C908C80020565F /* NSMutableDictionary+Simperium.m in Sources */,
 				B56B1644183566DA00E45C98 /* NSArray+Simperium.m in Sources */,
 				2698BE4815C908C80020565F /* SPBucket.m in Sources */,
+				B56819C3194F7A6000E0DC65 /* DiffMatchPatch+Simperium.m in Sources */,
 				2698BE4B15C908C80020565F /* SPDiffer.m in Sources */,
 				2698BE4D15C908C80020565F /* SPJSONStorage.m in Sources */,
 				2698BE4F15C908C80020565F /* SPObject.m in Sources */,

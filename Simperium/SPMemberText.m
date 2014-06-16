@@ -8,6 +8,7 @@
 
 #import "SPMemberText.h"
 #import "DiffMatchPatch.h"
+#import "DiffMatchPatch+Simperium.h"
 
 
 
@@ -76,9 +77,10 @@
 	NSMutableArray *thisPatches     = [self.dmp patch_makeFromOldString:oldValue andDiffs:thisDiffs];
 	NSMutableArray *otherPatches    = [self.dmp patch_makeFromOldString:oldValue andDiffs:otherDiffs];
 	
-	NSArray *otherResult            = [self.dmp patch_apply:otherPatches toString:oldValue];
+	NSArray *otherResult            = [self.dmp patch_apply:otherPatches toString:oldValue error:error];
 	NSString *otherString           = [otherResult firstObject];
-	NSArray *combinedResult         = [self.dmp patch_apply:thisPatches toString:otherString];
+    
+	NSArray *combinedResult         = [self.dmp patch_apply:thisPatches toString:otherString error:error];
 	NSString *combinedString        = [combinedResult firstObject];
 	
 	NSMutableArray *finalDiffs      = [self.dmp diff_mainOfOldString:otherString andNewString:combinedString];
