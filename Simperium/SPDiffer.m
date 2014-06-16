@@ -113,8 +113,8 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 - (BOOL)applyDiff:(NSDictionary *)diff to:(id<SPDiffable>)object error:(NSError **)error {
 	// Process each change in the diff
 	for (NSString *key in diff.allKeys) {
-		NSDictionary *change    = diff[key];
-		NSString *operation     = [change[OP_OP] lowercaseString];
+        NSDictionary *change    = diff[key];
+        NSString *operation     = [change[OP_OP] lowercaseString];
 		
         // Failsafe: This should never happen
         if (change == nil) {
@@ -262,8 +262,8 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 		 }
 			*/
 		
-		id thisValue            = [member getValueFromDictionary:change key:OP_VALUE object:object];
-		id otherValue           = [member getValueFromDictionary:oldChange key:OP_VALUE object:object];
+        id thisValue            = [member getValueFromDictionary:change key:OP_VALUE object:object];
+        id otherValue           = [member getValueFromDictionary:oldChange key:OP_VALUE object:object];
         
         NSError *theError       = nil;
         NSDictionary *newChange = [member transform:thisValue otherValue:otherValue oldValue:ghostValue error:&theError];
@@ -281,7 +281,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
         } else {
 			// If there was no transformation required, just use the original change
             NSDictionary *changeCopy = [change copy];
-			[newDiff setObject:changeCopy forKey:key];
+            [newDiff setObject:changeCopy forKey:key];
         }
 	}
 	

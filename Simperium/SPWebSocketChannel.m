@@ -128,7 +128,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     }
     
     // Hit the WebSocket
-	SPLogVerbose(@"Simperium re-downloading entity (%@) %@.%@", self.name, simperiumKey, version);
+    SPLogVerbose(@"Simperium re-downloading entity (%@) %@.%@", self.name, simperiumKey, version);
     NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", self.number, simperiumKey, version];
     [self.webSocketManager send:message];
     

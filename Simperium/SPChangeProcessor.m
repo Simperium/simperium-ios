@@ -59,15 +59,15 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         self.label                          = label;
         self.clientID                       = clientID;
         
-		self.changesPending                 = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
+        self.changesPending                 = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
 		
-		NSString *moreKey                   = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", label];
+        NSString *moreKey                   = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", label];
         self.keysForObjectsWithMoreChanges  = [SPPersistentMutableSet loadSetWithLabel:moreKey];
 		
-		NSString *retryKey                  = [NSString stringWithFormat:@"keysForObjectsWithPendingRetry-%@", label];
+        NSString *retryKey                  = [NSString stringWithFormat:@"keysForObjectsWithPendingRetry-%@", label];
         self.keysForObjectsWithPendingRetry = [SPPersistentMutableSet loadSetWithLabel:retryKey];
 		
-		[self migratePendingChangesIfNeeded];
+        [self migratePendingChangesIfNeeded];
     }
     
     return self;
@@ -253,7 +253,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         if (error) {
             *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedUnknownChange description:nil];
         }
-		[storage finishSafeSection];
+        [storage finishSafeSection];
         return NO;
     }
     
@@ -388,7 +388,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	// Process
     BOOL objectWasFound         = (object != nil);
     BOOL clientMatches			= ([changeClientID compare:self.clientID] == NSOrderedSame);
-    BOOL remove					= (operation && [operation compare:CH_REMOVE] == NSOrderedSame);
+    BOOL remove                 = (operation && [operation compare:CH_REMOVE] == NSOrderedSame);
     BOOL acknowledged			= ([self awaitingAcknowledgementForKey:key] && clientMatches);
     
     // If the entity already exists locally, or it's being removed, then check for an ack
