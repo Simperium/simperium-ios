@@ -41,7 +41,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
 
 @implementation SPChangeProcessorTests
 
-- (void)testApplyRemoteDiffWithLocalChanges {
+- (void)testProcessRemoteChangeWithLocalChanges {
     
     // ===================================================================================================
 	// Helpers
@@ -203,7 +203,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
     }
 }
 
-- (void)testApplyInvalidRemoteDiff {
+- (void)testProcessRemoteInvalidChange {
     
     // ===================================================================================================
 	// Helpers
@@ -328,20 +328,20 @@ static NSUInteger const SPRandomStringLength    = 1000;
 	// Testing values! yay!
     // ===================================================================================================
     //
-    NSString *originalLog           = @"Original Captains Log";
-    NSNumber *originalWarp          = @(29);
+    NSString *originalLog               = @"Original Captains Log";
+    NSNumber *originalWarp              = @(29);
     
-    NSNumber *localPendingWarp      = @(31337);
-    NSNumber *localPendingCost      = @(900);
-    NSString *localPendingLog       = @"Something Original Captains Log";
+    NSNumber *localPendingWarp          = @(31337);
+    NSDecimalNumber *localPendingCost   = [NSDecimalNumber decimalNumberWithString:@"900"];
+    NSString *localPendingLog           = @"Something Original Captains Log";
     
-    NSString *newRemoteLog          = @"Remote Original Captains Log Suffixed";
-    NSNumber *newRemoteCost         = @(300);
-    NSNumber *newRemoteWarp         = @(10);
+    NSString *newRemoteLog              = @"Remote Original Captains Log Suffixed";
+    NSDecimalNumber *newRemoteCost      = [NSDecimalNumber decimalNumberWithString:@"300"];
+    NSNumber *newRemoteWarp             = @(10);
 
-    NSString *expectedLog           = @"Remote Something Original Captains Log Suffixed";
-    NSNumber *expectedCost          = localPendingCost;
-    NSNumber *expectedWarp          = localPendingWarp;
+    NSString *expectedLog               = @"Remote Something Original Captains Log Suffixed";
+    NSDecimalNumber *expectedCost       = localPendingCost;
+    NSNumber *expectedWarp              = localPendingWarp;
     
     
     // ===================================================================================================
@@ -468,17 +468,17 @@ static NSUInteger const SPRandomStringLength    = 1000;
     // Prepare Remote Entity Message
     // ===================================================================================================
     //
-    NSString *endVersion        = [NSString stringWithFormat:@"%d", config.ghost.version.intValue + 1];
-    NSString *newRemoteLog      = @"2222 Captains Log";
-    NSNumber *newRemoteCost     = @(300);
-    NSNumber *newRemoteWarp     = @(10);
+    NSString *endVersion            = [NSString stringWithFormat:@"%d", config.ghost.version.intValue + 1];
+    NSString *newRemoteLog          = @"2222 Captains Log";
+    NSDecimalNumber *newRemoteCost  = [NSDecimalNumber decimalNumberWithString:@"300"];
+    NSNumber *newRemoteWarp         = @(10);
     
     // Prepare the change itself
-    NSDictionary *entity        = @{
-                                    NSStringFromSelector(@selector(captainsLog))    : newRemoteLog,
-                                    NSStringFromSelector(@selector(cost))           : newRemoteCost,
-                                    NSStringFromSelector(@selector(warpSpeed))      : newRemoteWarp,
-                                    };
+    NSDictionary *entity = @{
+        NSStringFromSelector(@selector(captainsLog))    : newRemoteLog,
+        NSStringFromSelector(@selector(cost))           : newRemoteCost,
+        NSStringFromSelector(@selector(warpSpeed))      : newRemoteWarp,
+    };
     
     NSLog(@"<> Successfully generated remote change");
     
