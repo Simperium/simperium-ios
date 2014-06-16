@@ -29,37 +29,6 @@
 
 static SPLogLevels logLevel			= SPLogLevelsInfo;
 
-NSString * const CH_KEY				= @"id";
-NSString * const CH_ADD				= @"+";
-NSString * const CH_REMOVE			= @"-";
-NSString * const CH_MODIFY			= @"M";
-NSString * const CH_OPERATION		= @"o";
-NSString * const CH_VALUE			= @"v";
-NSString * const CH_START_VERSION   = @"sv";
-NSString * const CH_END_VERSION     = @"ev";
-NSString * const CH_CHANGE_VERSION	= @"cv";
-NSString * const CH_LOCAL_ID		= @"ccid";
-NSString * const CH_CLIENT_ID		= @"clientid";
-NSString * const CH_ERROR           = @"error";
-NSString * const CH_DATA            = @"d";
-NSString * const CH_EMPTY			= @"EMPTY";
-
-typedef NS_ENUM(NSUInteger, CH_ERRORS) {
-    CH_ERRORS_INVALID_SCHEMA        = 400,
-    CH_ERRORS_INVALID_PERMISSION    = 401,
-    CH_ERRORS_NOT_FOUND             = 404,
-	CH_ERRORS_BAD_VERSION           = 405,
-	CH_ERRORS_DUPLICATE             = 409,
-    CH_ERRORS_EMPTY_CHANGE          = 412,
-    CH_ERRORS_DOCUMENT_TOO_lARGE    = 413,
-	CH_ERRORS_EXPECTATION_FAILED	= 417,		// (e.g. foreign key doesn't exist just yet)
-    CH_ERRORS_INVALID_DIFF			= 440,
-	CH_ERRORS_THRESHOLD				= 503
-};
-
-// Internal Server Errors: [500-599]
-static NSRange const CH_SERVER_ERROR_RANGE          = {500, 99};
-
 static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 

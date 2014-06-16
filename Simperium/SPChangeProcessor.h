@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SPProcessorNotificationNames.h"
+#import "SPProcessorConstants.h"
 
 
 @class SPBucket;
@@ -29,21 +29,6 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
     SPProcessorErrorsServerError,               // Should Retry: Catch-all server errors
     SPProcessorErrorsClientError                // Should Nuke PendingChange: Catch-all client errors
 };
-
-NSString * const CH_KEY;
-NSString * const CH_ADD;
-NSString * const CH_REMOVE;
-NSString * const CH_MODIFY;
-NSString * const CH_OPERATION;
-NSString * const CH_VALUE;
-NSString * const CH_START_VERSION;
-NSString * const CH_END_VERSION;
-NSString * const CH_CHANGE_VERSION;
-NSString * const CH_LOCAL_ID;
-NSString * const CH_CLIENT_ID;
-NSString * const CH_ERROR;
-NSString * const CH_DATA;
-NSString * const CH_EMPTY;
 
 
 #pragma mark ====================================================================================

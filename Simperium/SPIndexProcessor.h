@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SPProcessorNotificationNames.h"
+#import "SPProcessorConstants.h"
 
 @class Simperium;
 @class SPDiffer;

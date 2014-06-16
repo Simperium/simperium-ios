@@ -147,8 +147,8 @@
 		26F4BBCC13DCFD9E00B8AC56 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBCB13DCFD9E00B8AC56 /* SystemConfiguration.framework */; };
 		26F4BBCE13DCFDA700B8AC56 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBCD13DCFDA700B8AC56 /* CFNetwork.framework */; };
 		26F4BBD413DCFDC100B8AC56 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */; };
-		460A505E17DE96350070F02B /* SPProcessorNotificationNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */; };
-		460A505F17DE96350070F02B /* SPProcessorNotificationNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */; };
+		460A505E17DE96350070F02B /* SPProcessorConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 460A505C17DE96350070F02B /* SPProcessorConstants.m */; };
+		460A505F17DE96350070F02B /* SPProcessorConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 460A505D17DE96350070F02B /* SPProcessorConstants.h */; };
 		466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41017BC45F5005F7599 /* SPAuthenticationConfiguration.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		466EB41517BC45F5005F7599 /* SPAuthenticationConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 466EB41117BC45F5005F7599 /* SPAuthenticationConfiguration.m */; };
 		466EB41617BC45F5005F7599 /* SPAuthenticationValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */; };
@@ -382,8 +382,8 @@
 		26F4BBCD13DCFDA700B8AC56 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		26F4BBCF13DCFDB000B8AC56 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
-		460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPProcessorNotificationNames.m; sourceTree = "<group>"; };
-		460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessorNotificationNames.h; sourceTree = "<group>"; };
+		460A505C17DE96350070F02B /* SPProcessorConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPProcessorConstants.m; sourceTree = "<group>"; };
+		460A505D17DE96350070F02B /* SPProcessorConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessorConstants.h; sourceTree = "<group>"; };
 		466EB41017BC45F5005F7599 /* SPAuthenticationConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationConfiguration.h; sourceTree = "<group>"; };
 		466EB41117BC45F5005F7599 /* SPAuthenticationConfiguration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAuthenticationConfiguration.m; sourceTree = "<group>"; };
 		466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationValidator.h; sourceTree = "<group>"; };
@@ -577,11 +577,11 @@
 			isa = PBXGroup;
 			children = (
 				B52674701858EC4800A89D7A /* Simperium+Internals.h */,
-				460A505D17DE96350070F02B /* SPProcessorNotificationNames.h */,
-				460A505C17DE96350070F02B /* SPProcessorNotificationNames.m */,
 				267CE8EF156C0FD20028801C /* SPBucket.h */,
 				B5AC545C1857917800608CAC /* SPBucket+Internals.h */,
 				267CE8F0156C0FD20028801C /* SPBucket.m */,
+				460A505D17DE96350070F02B /* SPProcessorConstants.h */,
+				460A505C17DE96350070F02B /* SPProcessorConstants.m */,
 				269A7F3D147355D100CB29EE /* SPChangeProcessor.h */,
 				269A7F3E147355D100CB29EE /* SPChangeProcessor.m */,
 				269A7F4214743A9C00CB29EE /* SPIndexProcessor.h */,
@@ -1003,7 +1003,7 @@
 				466EB41617BC45F5005F7599 /* SPAuthenticationValidator.h in Headers */,
 				466EB41A17BC4890005F7599 /* SPAuthenticationButton.h in Headers */,
 				B5F65F7A1847DE0100CEF48D /* SPManagedObject+Internals.h in Headers */,
-				460A505F17DE96350070F02B /* SPProcessorNotificationNames.h in Headers */,
+				460A505F17DE96350070F02B /* SPProcessorConstants.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1253,7 +1253,7 @@
 				466EB41717BC45F5005F7599 /* SPAuthenticationValidator.m in Sources */,
 				466EB41B17BC4890005F7599 /* SPAuthenticationButton.m in Sources */,
 				466FFEA417CBF53200399652 /* SPNetworkInterface.m in Sources */,
-				460A505E17DE96350070F02B /* SPProcessorNotificationNames.m in Sources */,
+				460A505E17DE96350070F02B /* SPProcessorConstants.m in Sources */,
 				B5F4C84618FC1B04009F8643 /* NSError+Simperium.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
