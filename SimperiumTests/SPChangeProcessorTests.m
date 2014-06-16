@@ -291,7 +291,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
         [bucket.changeProcessor processRemoteChanges:changes.allValues
                                               bucket:bucket
                                         errorHandler:^(NSString *simperiumKey, NSNumber *version, NSError *error) {
-                                            XCTAssertTrue(error.code == SPProcessorErrorsInvalidRemoteChange, @"Invalid error code");
+                                            XCTAssertTrue(error.code == SPProcessorErrorsReceivedInvalidChange, @"Invalid error code");
                                             ++errorCount;
                                         }];
         

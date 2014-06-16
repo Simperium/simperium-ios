@@ -144,7 +144,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         case CH_ERRORS_EXPECTATION_FAILED:
         case CH_ERRORS_INVALID_DIFF:
             {
-                wrappedCode = SPProcessorErrorsInvalidLocalChange;
+                wrappedCode = SPProcessorErrorsSentInvalidChange;
                 description = @"Invalid Change";
             }
             break;
@@ -309,7 +309,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         if (![bucket.differ applyGhostDiff:diff to:object error:&theError]) {
             SPLogError(@"Simperium error during applyGhostDiff: %@", theError.localizedDescription);
             if (error) {
-                *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsInvalidRemoteChange description:theError.description];
+                *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
             }
             [storage finishSafeSection];
             return NO;
@@ -334,7 +334,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
                 if (theError) {
                     SPLogError(@"Simperium error during diff transform: %@", theError.localizedDescription);
                     if (error) {
-                        *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsInvalidRemoteChange description:theError.description];
+                        *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
                     }
                     [storage finishSafeSection];
                     return NO;
@@ -358,7 +358,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             if (![bucket.differ applyDiff:diff to:object error:&theError]) {
                 SPLogError(@"Simperium error during applyDiff: %@", theError.localizedDescription);
                 if (error) {
-                    *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsInvalidRemoteChange description:theError.description];
+                    *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
                 }
                 [storage finishSafeSection];
                 return NO;

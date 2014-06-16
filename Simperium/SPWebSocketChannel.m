@@ -296,7 +296,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             if (error.code == SPProcessorErrorsSentDuplicateChange) {           
                 [processor discardPendingChanges:simperiumKey bucket:bucket];
                 
-            } else if (error.code == SPProcessorErrorsInvalidLocalChange) {
+            } else if (error.code == SPProcessorErrorsSentInvalidChange) {
                 [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
                 
             } else if (error.code == SPProcessorErrorsServerError) {
@@ -305,7 +305,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             } else if (error.code == SPProcessorErrorsClientError) {
                 [processor discardPendingChanges:simperiumKey bucket:bucket];
                 
-            } else if (error.code == SPProcessorErrorsInvalidRemoteChange) {
+            } else if (error.code == SPProcessorErrorsReceivedInvalidChange) {
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
