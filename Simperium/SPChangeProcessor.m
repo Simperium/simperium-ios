@@ -224,10 +224,10 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 - (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket change:(NSDictionary *)change
 					  acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches error:(NSError **)error
 {
-    id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
-	[threadSafeStorage beginSafeSection];
+    id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
+	[storage beginSafeSection];
 	
-    id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
+    id<SPDiffable> object = [storage objectForKey:simperiumKey bucketName:bucket.name];
 	
     BOOL newlyAdded = NO;
     
@@ -236,7 +236,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 		// If the change was sent by this very same client, and the object isn't available, don't add it.
 		// It Must have been locally deleted before the confirmation got through!
 		if (clientMatches) {
-			[threadSafeStorage finishSafeSection];
+			[storage finishSafeSection];
 			return NO;
 		}
 		
@@ -244,33 +244,25 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         newlyAdded = YES;
 		
         // Create the new object
-        object = [threadSafeStorage insertNewObjectForBucketName:bucket.name simperiumKey:simperiumKey];
-        SPLogVerbose(@"Simperium managing newly added entity %@", [object simperiumKey]);
+        object = [storage insertNewObjectForBucketName:bucket.name simperiumKey:simperiumKey];
         
-        // Remember this object's ghost for future diffing			
+        // Remember this object's ghost for future diffing
         // Send nil member data because it'll get loaded below
         SPGhost *ghost  = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData:nil];
         ghost.version   = @"0";
         object.ghost    = ghost;
         
         // If this wasn't just an ack, send a notification and load the data
-        SPLogVerbose(@"Simperium non-local ADD ENTITY received");
+        SPLogVerbose(@"Simperium non-local ADD ENTITY received %@", object.simperiumKey);
     }
     
     // Another hack since 'ghost' isn't transient: check for fault and forcefire if necessary
     [object willBeRead];
     
-    // It already exists, now MODIFY it
-    if (!object.ghost) {
-        SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, simperiumKey);
-		[threadSafeStorage finishSafeSection];
-        return NO;
-    }
-    
     // Make sure the expected last change matches the actual last change
     NSString *oldVersion	= [object.ghost version];
-    id startVersion			= change[CH_START_VERSION];
-    id endVersion			= change[CH_END_VERSION];
+    NSString *startVersion	= change[CH_START_VERSION];
+    NSString *endVersion	= change[CH_END_VERSION];
     
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
     if ([startVersion isKindOfClass:[NSNumber class]]) {
@@ -281,9 +273,16 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         endVersion = [NSString stringWithFormat:@"%ld", (long)[endVersion integerValue]];
     }
 	
+    // It already exists, now MODIFY it
+    if (!object.ghost) {
+        SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, simperiumKey);
+		[storage finishSafeSection];
+        return NO;
+    }
+    
 	// If the local version matches the remote endVersion, don't process this change: it's a dupe message
 	if ([object.ghost.version isEqual:endVersion]) {
-		[threadSafeStorage finishSafeSection];
+		[storage finishSafeSection];
 		return NO;
 	}
 	
@@ -297,12 +296,12 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         
         // Apply the diff to the ghost and store the new data in the object's ghost
         if (![bucket.differ applyGhostDiff:diff to:object error:&theError]) {
-            // Relay back the error + halt
+            SPLogError(@"Simperium error during applyGhostDiff: %@", theError.localizedDescription);
             if (error) {
                 *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsInvalidRemoteChange description:theError.description];
             }
 
-            [threadSafeStorage finishSafeSection];
+            [storage finishSafeSection];
             return NO;
         }
         
@@ -323,11 +322,11 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
                 SPLogVerbose(@"Simperium applying transform to diff: %@", diff);
                 diff = [bucket.differ transform:object diff:oldDiff oldDiff:diff oldGhost:oldGhost error:&theError];
                 if (theError) {
-                    // Relay back the error + halt
+                    SPLogError(@"Simperium error during diff transform: %@", theError.localizedDescription);
                     if (error) {
                         *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsInvalidRemoteChange description:theError.description];
                     }
-                    [threadSafeStorage finishSafeSection];
+                    [storage finishSafeSection];
                     return NO;
                 }
                 
@@ -347,16 +346,16 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             SPLogVerbose(@"Simperium applying diff: %@", diff);
             
             if (![bucket.differ applyDiff:diff to:object error:&theError]) {
-                // Relay back the error + halt
+                SPLogError(@"Simperium error during applyDiff: %@", theError.localizedDescription);
                 if (error) {
                     *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsInvalidRemoteChange description:theError.description];
                 }
-                [threadSafeStorage finishSafeSection];
+                [storage finishSafeSection];
                 return NO;
             }
         }
         
-        [threadSafeStorage save];
+        [storage save];
 		
         dispatch_async(dispatch_get_main_queue(), ^{
             NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:
@@ -383,7 +382,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         });
     }
 	
-	[threadSafeStorage finishSafeSection];
+	[storage finishSafeSection];
 	
     return YES;
 }
@@ -395,23 +394,23 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     NSAssert(change[CH_ERROR] == nil,       @"This should not be called if the change has an error");
 	
     // Create a new context (to be thread-safe) and fetch the entity from it
-    NSString *key                           = [self keyWithoutNamespaces:change bucket:bucket];
-    id<SPStorageProvider>threadSafeStorage  = [bucket.storage threadSafeStorage];
+    NSString *key                   = [self keyWithoutNamespaces:change bucket:bucket];
+    id<SPStorageProvider>storage    = [bucket.storage threadSafeStorage];
     
-	[threadSafeStorage beginSafeSection];
+	[storage beginSafeSection];
 	
     NSString *operation			= change[CH_OPERATION];
     NSString *changeVersion		= change[CH_CHANGE_VERSION];
     NSString *changeClientID	= change[CH_CLIENT_ID];
-    id<SPDiffable> object		= [threadSafeStorage objectForKey:key bucketName:bucket.name];
+    id<SPDiffable> object		= [storage objectForKey:key bucketName:bucket.name];
     
     SPLogVerbose(@"Simperium client %@ received change (%@) %@: %@", self.clientID, bucket.name, changeClientID, change);
 	
 	// Process
     BOOL objectWasFound         = (object != nil);
-    BOOL clientMatches			= [changeClientID compare:self.clientID] == NSOrderedSame;
-    BOOL remove					= operation && [operation compare:CH_REMOVE] == NSOrderedSame;
-    BOOL acknowledged			= [self awaitingAcknowledgementForKey:key] && clientMatches;
+    BOOL clientMatches			= ([changeClientID compare:self.clientID] == NSOrderedSame);
+    BOOL remove					= (operation && [operation compare:CH_REMOVE] == NSOrderedSame);
+    BOOL acknowledged			= ([self awaitingAcknowledgementForKey:key] && clientMatches);
     
     // If the entity already exists locally, or it's being removed, then check for an ack
     if (remove || (object && acknowledged && clientMatches)) {
@@ -424,7 +423,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     }
 
     SPLogVerbose(@"Simperium performing change operation: %@", operation);
-	[threadSafeStorage finishSafeSection];
+	[storage finishSafeSection];
 		
     if (remove && (objectWasFound || acknowledged)) {
         return [self processRemoteDeleteWithKey:key bucket:bucket objectWasFound:objectWasFound];
