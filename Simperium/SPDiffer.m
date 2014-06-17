@@ -110,7 +110,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 }
 
 // Apply an incoming diff to this entity instance
-- (BOOL)applyDiff:(NSDictionary *)diff to:(id<SPDiffable>)object error:(NSError **)error {
+- (BOOL)applyDiffFromDictionary:(NSDictionary *)diff toObject:(id<SPDiffable>)object error:(NSError **)error {
 	// Process each change in the diff
 	for (NSString *key in diff.allKeys) {
         NSDictionary *change    = diff[key];
@@ -168,7 +168,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
 // Same strategy as applyDiff, but do it to the ghost's memberData
 // Note that no conversions are necessary here since all data is in JSON-compatible format already
-- (BOOL)applyGhostDiff:(NSDictionary *)diff to:(id<SPDiffable>)object error:(NSError **)error {
+- (BOOL)applyGhostDiffFromDictionary:(NSDictionary *)diff toObject:(id<SPDiffable>)object error:(NSError **)error {
 	// Create a copy of the ghost's data and update any members that have changed
 	NSMutableDictionary *ghostMemberData = object.ghost.memberData;
 	NSMutableDictionary *newMemberData = [ghostMemberData mutableCopy] ?: [NSMutableDictionary dictionaryWithCapacity:diff.count];

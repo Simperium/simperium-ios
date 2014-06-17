@@ -275,7 +275,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         NSError *theError       = nil;
         
         // Apply the diff to the ghost and store the new data in the object's ghost
-        if (![bucket.differ applyGhostDiff:diff to:object error:&theError]) {
+        if (![bucket.differ applyGhostDiffFromDictionary:diff toObject:object error:&theError]) {
             SPLogError(@"Simperium error during applyGhostDiff: %@", theError.localizedDescription);
             if (error) {
                 *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
@@ -324,7 +324,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         if (!acknowledged && diff.count) {
             SPLogVerbose(@"Simperium applying diff: %@", diff);
             
-            if (![bucket.differ applyDiff:diff to:object error:&theError]) {
+            if (![bucket.differ applyDiffFromDictionary:diff toObject:object error:&theError]) {
                 SPLogError(@"Simperium error during applyDiff: %@", theError.localizedDescription);
                 if (error) {
                     *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
@@ -538,7 +538,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     
         // 3.3. Attempt to apply the Local Transformed Diff
         if (!error && rebaseDiff.count) {
-            [bucket.differ applyDiff:rebaseDiff to:object error:&error];
+            [bucket.differ applyDiffFromDictionary:rebaseDiff toObject:object error:&error];
         }
         
         // 3.4. Some debugging
