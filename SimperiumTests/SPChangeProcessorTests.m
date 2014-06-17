@@ -271,7 +271,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
     XCTAssertEqualObjects(config.ghost.memberData, entity,  @"Invalid Ghost MemberData");
 }
 
-- (void)testProcessRemoteEntityWithLocalPendingChangesFailsRebasingAndFavorsRemoteData {
+- (void)testProcessRemoteEntityWithLocalPendingChangesFailsRebasingAndFavorsLocalData {
     
     // ===================================================================================================
 	// Testing values! yay!
@@ -280,7 +280,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
     NSString *originalLog           = @"Original Captains Log";
     NSString *localPendingLog       = @"Local Captains Log";
     NSString *newRemoteLog          = @"Remote Captains Log";
-    NSString *expectedLog           = newRemoteLog;
+    NSString *expectedLog           = localPendingLog;
     
     
     // ===================================================================================================

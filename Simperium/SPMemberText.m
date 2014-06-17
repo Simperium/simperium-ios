@@ -71,17 +71,29 @@
 }
 
 - (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue error:(NSError **)error {
-	// Assorted hocus pocus ported from JS code
+	// Calculate the delta from the Ghost to the Local + Remote values. Treat any error here as fatal
 	NSMutableArray *thisDiffs       = [self.dmp diff_fromDeltaWithText:oldValue andDelta:thisValue error:error];
 	NSMutableArray *otherDiffs      = [self.dmp diff_fromDeltaWithText:oldValue andDelta:otherValue error:error];
+    if (error && *error) {
+        return @{ };
+    }
+    
+    // Attempt to apply those two patches
 	NSMutableArray *thisPatches     = [self.dmp patch_makeFromOldString:oldValue andDiffs:thisDiffs];
 	NSMutableArray *otherPatches    = [self.dmp patch_makeFromOldString:oldValue andDiffs:otherDiffs];
 	
-	NSArray *otherResult            = [self.dmp patch_apply:otherPatches toString:oldValue error:error];
+    NSError *internalError          = nil;
+	NSArray *otherResult            = [self.dmp patch_apply:otherPatches toString:oldValue error:&internalError];
 	NSString *otherString           = [otherResult firstObject];
     
-	NSArray *combinedResult         = [self.dmp patch_apply:thisPatches toString:otherString error:error];
+	NSArray *combinedResult         = [self.dmp patch_apply:thisPatches toString:otherString error:&internalError];
 	NSString *combinedString        = [combinedResult firstObject];
+    
+    // If the rebase fails, fallback to the Local State
+    if (internalError) {
+        combinedResult              = [self.dmp patch_apply:thisPatches toString:oldValue error:error];
+        combinedString              = [combinedResult firstObject];
+    }
 	
 	NSMutableArray *finalDiffs      = [self.dmp diff_mainOfOldString:otherString andNewString:combinedString];
 	if (finalDiffs.count > 2) {
