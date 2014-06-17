@@ -379,18 +379,18 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     
     [storage beginSafeSection];
 	
-    NSString *operation			= change[CH_OPERATION];
-    NSString *changeVersion		= change[CH_CHANGE_VERSION];
-    NSString *changeClientID	= change[CH_CLIENT_ID];
-    id<SPDiffable> object		= [storage objectForKey:key bucketName:bucket.name];
+    NSString *operation         = change[CH_OPERATION];
+    NSString *changeVersion     = change[CH_CHANGE_VERSION];
+    NSString *changeClientID    = change[CH_CLIENT_ID];
+    id<SPDiffable> object       = [storage objectForKey:key bucketName:bucket.name];
     
     SPLogVerbose(@"Simperium client %@ received change (%@) %@: %@", self.clientID, bucket.name, changeClientID, change);
 	
 	// Process
     BOOL objectWasFound         = (object != nil);
-    BOOL clientMatches			= ([changeClientID compare:self.clientID] == NSOrderedSame);
+    BOOL clientMatches          = ([changeClientID compare:self.clientID] == NSOrderedSame);
     BOOL remove                 = (operation && [operation compare:CH_REMOVE] == NSOrderedSame);
-    BOOL acknowledged			= ([self awaitingAcknowledgementForKey:key] && clientMatches);
+    BOOL acknowledged           = ([self awaitingAcknowledgementForKey:key] && clientMatches);
     
     // If the entity already exists locally, or it's being removed, then check for an ack
     if (remove || (object && acknowledged && clientMatches)) {
