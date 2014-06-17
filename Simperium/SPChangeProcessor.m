@@ -337,10 +337,11 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         [storage save];
 		
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                                bucket.name, @"bucketName",
-                                                [NSSet setWithObject:simperiumKey], @"keys",
-                                             nil];
+            NSMutableDictionary *userInfo = [@{
+                @"bucketName" : bucket.name,
+                @"keys"       : [NSSet setWithObject:simperiumKey]
+            } mutableCopy];
+            
             NSString *notificationName;
             if (newlyAdded) {
                 notificationName = ProcessorDidAddObjectsNotification;
