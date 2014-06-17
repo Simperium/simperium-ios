@@ -28,6 +28,7 @@ static NSInteger DiffMatchPatchApplyError = -9999;
         }
         if (!result.boolValue) {
             success = NO;
+            break;
         }
     }
     
