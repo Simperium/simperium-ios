@@ -257,14 +257,14 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         return NO;
     }
     
-	// If the local version matches the remote endVersion, don't process this change: it's a dupe message
-	if ([object.ghost.version isEqual:endVersion]) {
+    // If the local version matches the remote endVersion, don't process this change: it's a dupe message
+    if ([object.ghost.version isEqual:endVersion]) {
         if (error) {
             *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedDuplicateChange description:nil];
         }
-		[storage finishSafeSection];
-		return NO;
-	}
+        [storage finishSafeSection];
+        return NO;
+    }
 	
     SPLogVerbose(@"Simperium received version = %@, previous version = %@", startVersion, oldVersion);
     // If the versions are equal or there's no start version (new object), process the change
