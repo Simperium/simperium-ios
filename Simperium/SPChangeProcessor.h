@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SPProcessorNotificationNames.h"
+#import "SPProcessorConstants.h"
 
 
 @class SPBucket;
@@ -16,15 +16,20 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-typedef void(^SPChangeErrorHandlerBlockType)(NSString *simperiumKey, NSError *error, BOOL *halt);
+typedef void(^SPChangeErrorHandlerBlockType)(NSString *simperiumKey, NSNumber *version, NSError *error);
 typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change);
 
 typedef NS_ENUM(NSInteger, SPProcessorErrors) {
-    SPProcessorErrorsDuplicateChange,           // Should Re-Sync
-    SPProcessorErrorsInvalidChange,             // Should Retry, by sending the full data
-    SPProcessorErrorsServerError,               // Should Retry
-    SPProcessorErrorsClientError                // Should Nuke PendingChange
+    SPProcessorErrorsSentDuplicateChange,       // Should Re-Sync
+    SPProcessorErrorsSentInvalidChange,         // Send Full Data: The backend couldn't apply our diff
+    SPProcessorErrorsReceivedDuplicateChange,   // No need to handle: The backend sent the same change twice
+    SPProcessorErrorsReceivedZombieChange,      // No need to handle: The backend sent a change for a locally nuked entity
+    SPProcessorErrorsReceivedUnknownChange,     // No need to handle: We've received a change for an unknown entity
+    SPProcessorErrorsReceivedInvalidChange,     // Should Redownload the Entity: We couldn't apply a remote diff
+    SPProcessorErrorsServerError,               // Should Retry: Catch-all server errors
+    SPProcessorErrorsClientError                // Should Nuke PendingChange: Catch-all client errors
 };
+
 
 #pragma mark ====================================================================================
 #pragma mark SPChangeProcessor
@@ -44,6 +49,8 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 
 - (void)notifyOfRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errorHandler:(SPChangeErrorHandlerBlockType)errorHandler;
+
+- (BOOL)processRemoteEntityWithKey:(NSString *)simperiumKey version:(NSString *)version data:(NSDictionary *)data bucket:(SPBucket *)bucket;
 
 - (void)enqueueObjectForMoreChanges:(NSString *)key bucket:(SPBucket *)bucket;
 - (void)enqueueObjectForRetry:(NSString *)key bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData;

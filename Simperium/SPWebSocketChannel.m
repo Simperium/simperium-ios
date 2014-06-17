@@ -49,7 +49,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 @property (nonatomic,   weak) Simperium                     *simperium;
 @property (nonatomic, strong) NSMutableArray                *versionsBatch;
 @property (nonatomic, strong) NSMutableArray                *changesBatch;
-@property (nonatomic, strong) NSMutableDictionary           *versionsWithErrors;
+@property (nonatomic, strong) NSMutableSet                  *pendingEntityDownloads;
 @property (nonatomic, assign) NSInteger                     retryDelay;
 @property (nonatomic, assign) NSInteger                     objectVersionsPending;
 @property (nonatomic, assign) BOOL                          started;
@@ -68,10 +68,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (id)initWithSimperium:(Simperium *)s {
 	if ((self = [super init])) {
-        self.simperium			= s;
-        self.indexArray			= [NSMutableArray arrayWithCapacity:200];
-        self.changesBatch       = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
-        self.versionsWithErrors = [NSMutableDictionary dictionaryWithCapacity:3];
+        self.simperium              = s;
+        self.indexArray             = [NSMutableArray arrayWithCapacity:200];
+        self.changesBatch           = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
+        self.pendingEntityDownloads = [NSMutableSet set];
     }
 	
 	return self;
@@ -119,6 +119,21 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     [self sendChangesForBucket:bucket completionBlock: ^{
         [self requestLatestVersionsForBucket:bucket mark:nil];
     }];
+}
+
+- (void)requestVersion:(NSNumber *)version forObjectWithKey:(NSString *)simperiumKey {
+    
+    if (!version || !simperiumKey) {
+        return;
+    }
+    
+    // Hit the WebSocket
+    SPLogVerbose(@"Simperium re-downloading entity (%@) %@.%@", self.name, simperiumKey, version);
+    NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", self.number, simperiumKey, version];
+    [self.webSocketManager send:message];
+    
+    // Remember this!
+    [self.pendingEntityDownloads addObject:simperiumKey];
 }
 
 
@@ -267,19 +282,21 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     [bucket.changeProcessor notifyOfRemoteChanges:changes bucket:bucket];
     
     
+    __weak __typeof(self) weakSelf = self;
+    
 	dispatch_async(bucket.processorQueue, ^{
 		if (!self.authenticated) {
 			return;
 		}
 
-        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSError *error, BOOL *halt) {
+        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSNumber *version, NSError *error) {
             
-            SPLogError(@"Simperium received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
+            SPLogError(@"Simperium Received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
             
-            if (error.code == SPProcessorErrorsDuplicateChange) {           
+            if (error.code == SPProcessorErrorsSentDuplicateChange) {           
                 [processor discardPendingChanges:simperiumKey bucket:bucket];
                 
-            } else if (error.code == SPProcessorErrorsInvalidChange) {
+            } else if (error.code == SPProcessorErrorsSentInvalidChange) {
                 [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
                 
             } else if (error.code == SPProcessorErrorsServerError) {
@@ -287,6 +304,12 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
                 
             } else if (error.code == SPProcessorErrorsClientError) {
                 [processor discardPendingChanges:simperiumKey bucket:bucket];
+                
+            } else if (error.code == SPProcessorErrorsReceivedInvalidChange) {
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
+                });
             }
         }];
         
@@ -358,9 +381,9 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     NSRange versionRange = NSMakeRange(keyRange.location + keyRange.length,
                                        headerRange.location - headerRange.length - keyRange.location);
     
-    NSString *key = [responseString substringToIndex:keyRange.location];
-    NSString *version = [responseString substringWithRange:versionRange];
-    NSString *payload = [responseString substringFromIndex:headerRange.location + headerRange.length];
+    NSString *key       = [responseString substringToIndex:keyRange.location];
+    NSString *version   = [responseString substringWithRange:versionRange];
+    NSString *payload   = [responseString substringFromIndex:headerRange.location + headerRange.length];
     SPLogVerbose(@"Simperium received version (%@): %@", self.name, responseString);
     
     // With websockets, the data is wrapped up (somewhat annoyingly) in a dictionary, so unwrap it
@@ -377,12 +400,17 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     
     // All unwrapped, now get it in the format we need for marshaling
     NSString *payloadString = [dataDict sp_JSONString];
-    
-    // If there was an error previously, unflag it
-    [self.versionsWithErrors removeObjectForKey:key];
 	
-    // If retrieving object versions (e.g. for going back in time), return the result directly to the delegate
-    if (_retrievingObjectHistory) {
+    if ([self.pendingEntityDownloads containsObject:key]) {
+        // We had a pending entity re-download: There might have been an issue while applying a remote diff!
+        dispatch_async(bucket.processorQueue, ^{
+            [bucket.changeProcessor processRemoteEntityWithKey:key version:version data:dataDict bucket:bucket];
+        });
+        
+        [self.pendingEntityDownloads removeObject:key];
+
+    } else if (_retrievingObjectHistory) {
+        // If retrieving object versions (e.g. for going back in time), return the result directly to the delegate
         if (--_objectVersionsPending == 0) {
             _retrievingObjectHistory = NO;
 		}
@@ -627,31 +655,6 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     [self processVersionsBatchForBucket:bucket];
 
     SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
-
-    // Save it now that all versions are fetched; it improves performance to wait until this point
-    //[simperium saveWithoutSyncing];
-
-    if ([self.versionsWithErrors count] > 0) {
-        // Try the index refresh again; this could be more efficient since we could know which version requests
-        // failed, but it should happen rarely so take the easy approach for now
-        SPLogWarn(@"Index refresh complete (%@) but %lu versions didn't load, retrying...", self.name, (unsigned long)[self.versionsWithErrors count]);
-
-        // Create an array in the expected format
-        NSMutableArray *errorArray = [NSMutableArray arrayWithCapacity: [self.versionsWithErrors count]];
-        for (NSString *key in [self.versionsWithErrors allKeys]) {
-            id errorVersion = [self.versionsWithErrors objectForKey:key];
-            NSDictionary *versionDict = @{ @"v" : errorVersion,
-										   @"id" : key};
-            [errorArray addObject:versionDict];
-        }
-		
-		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1.0f * NSEC_PER_SEC);
-		dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
-			[self performSelector:@selector(requestVersionsForKeys:bucket:) withObject: errorArray withObject:bucket];
-		});
-
-        return;
-    }
 
     // All versions were received successfully, so update the lastChangeSignature
     [bucket setLastChangeSignature:self.pendingLastChangeSignature];

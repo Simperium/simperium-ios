@@ -196,7 +196,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
                 // sync systems (e.g. Simplenote GAE), and in particular, cases where there are local, unsynced changes that
                 // should be preserved.
                 if (firstSync) {
-                    NSDictionary *diff = [bucket.differ diff:object withDictionary:data];
+                    NSDictionary *diff = [bucket.differ diffFromDictionary:data toObject:object];
                     if ([diff count] > 0 && [object respondsToSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
                         SPLogVerbose(@"Simperium object %@ has changes: %@", [object simperiumKey], diff);
                         if ([object performSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
