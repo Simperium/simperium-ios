@@ -240,7 +240,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
             }
             
             // 4. Update the ghost with the remote member data + version
-            SPGhost *ghost  = [[SPGhost alloc] initWithKey:object.simperiumKey memberData:data];
+            SPGhost *ghost  = [[SPGhost alloc] initWithKey:object.simperiumKey memberData:[data mutableCopy]];
             ghost.version   = version;
             object.ghost    = ghost;
             
