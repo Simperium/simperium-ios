@@ -176,13 +176,13 @@ typedef NS_ENUM(NSInteger, SPVersion) {
         for (NSArray *versionData in versions)
         {            
             // Unmarshal the data
-            NSString *key           = versionData[SPVersionKey];
-            NSString *version       = versionData[SPVersionNumber];
-            NSDictionary *data      = versionData[SPVersionData];
+            NSString *key                   = versionData[SPVersionKey];
+            NSString *version               = versionData[SPVersionNumber];
+            NSDictionary *data              = versionData[SPVersionData];
             
             // Process the Object's Member Data
-            id<SPDiffable> object   = objects[key];
-            SPGhost *ghost          = nil;
+            id<SPDiffable> object           = objects[key];
+            NSMutableDictionary *memberData = nil;
             
             // The object doesn't exist locally yet, so create it
             if (!object) {
@@ -190,61 +190,61 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                 object.bucket   = bucket; // set it manually since it won't be set automatically yet
                 [object loadMemberData:data];
                 
-                [addedKeys addObject:key];
-                            
-                NSMutableDictionary *newMemberData = [[object dictionary] mutableCopy];
-                ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData:newMemberData];
-                SPLogVerbose(@"Simperium added object from index (%@): %@", bucket.name, object.simperiumKey);
-            } else {
-                // The object already exists locally; update it if necessary
-                BOOL overwriteLocalData = NO;
+                // Be sure to load all members into ghost (since the version results might only contain a subset of members that were changed)
+                memberData = [[object dictionary] mutableCopy];
                 
-                // The firstSync flag is set if there has not yet been a successful sync. In that case, additional checks
-                // are performed to see if the local data should be preserved instead. This handles migrations from existing
-                // sync systems (e.g. Simplenote GAE), and in particular, cases where there are local, unsynced changes that
-                // should be preserved.
-                if (firstSync) {
-                    NSDictionary *diff = [bucket.differ diffFromDictionary:data toObject:object];
-                    if ([diff count] > 0 && [object respondsToSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
-                        SPLogVerbose(@"Simperium object %@ has changes: %@", [object simperiumKey], diff);
-                        if ([object performSelector:@selector(shouldOverwriteLocalChangesFromIndex)]) {
-                            // The app has determined this object's local changes should be taken from index regardless of any local changes
-                            SPLogVerbose(@"Simperium local object found (%@) with local changes, and OVERWRITING those changes", bucket.name);
-                            overwriteLocalData = YES;
-                        } else
-                            // There's a local, unsynced change, which can only happen on first sync when migrating from an earlier version of an app.
-                            // Allow the caller to deal with this case
-                            changeHandler(key);
+                [addedKeys addObject:key];
+                SPLogVerbose(@"Simperium added object from index (%@): %@", bucket.name, object.simperiumKey);
+                
+            // The object exists. Let's attempt to rebase local pending changes
+            } else {
+
+                // 1. Calculate Delta: LocalGhost > LocalMembers
+                SPGhost *localGhost         = [object.ghost copy];
+                NSDictionary *localDiff     = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
+                
+                // 2. Load the full Remote Member Data
+                [object loadMemberData:data];
+                SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@", bucket.name, key);
+                
+                // 3. Load all members into ghostMemberData (since the version results might only contain a subset of members that were changed)
+                memberData = [[object dictionary] mutableCopy];
+                
+                // 4. Rebase + apply localDiff
+                if (localDiff.count) {
+                    
+                    // 4.1. Calculate Delta: LocalGhost > RemoteMembers
+                    NSDictionary *remoteDiff    = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
+                    
+                    // 4.2. Transform localDiff: LocalGhost >> RemoteMembers >> LocalDiff (equivalent to git rebase)
+                    NSError *error              = nil;
+                    NSDictionary *rebaseDiff    = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost:localGhost error:&error];
+                    
+                    // 4.3. Attempt to apply the Local Transformed Diff
+                    if (!error && rebaseDiff.count) {
+                        [bucket.differ applyDiffFromDictionary:rebaseDiff toObject:object error:&error];
                     }
                     
-                    // Set the ghost data (this expects all properties to be present in memberData)
-                    ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData: data];                
-                } else if (object.version != nil && ![version isEqualToString:object.version]) {
-                    // Safe to do here since the local change has already been posted
-                    overwriteLocalData = YES;
+                    // 4.4. Some debugging
+                    if (error) {
+                        SPLogWarn(@"Simperium error: could not apply local transformed diff for entity (%@): %@", bucket.name, key);
+                    } else {
+                        SPLogWarn(@"Simperium successfully updated local entity (%@): %@", bucket.name, key);
+                    }
+                    
+                    // 4.5. Signal the changeHandler that the object has untracked changes
+                    changeHandler(key);
                 }
                 
-                // Overwrite local changes if necessary
-                if (overwriteLocalData) {
-                    [object loadMemberData:data];
-                    
-                    // Be sure to load all members into ghost (since the version results might only contain a subset of members that were changed)
-                    NSMutableDictionary *ghostMemberData = [[object dictionary] mutableCopy];
-                     // might have already been allocated above
-                    ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData: ghostMemberData];
-                    [changedKeys addObject:key];
-                    SPLogVerbose(@"Simperium loaded new data into object %@ (%@)", [object simperiumKey], bucket.name);
-                }
-
+                [changedKeys addObject:key];
             }
             
-            // If there is a new/changed ghost, store it
-            if (ghost) {
-                SPLogVerbose(@"Simperium updating ghost data for object %@ (%@)", [object simperiumKey], bucket.name);
-                ghost.version = version;
-                object.ghost = ghost;
-                object.simperiumKey = object.simperiumKey; // ugly hack to force entity to save since ghost isn't transient
-            }
+            // 5. Update the ghost with the remote member data + version
+            SPGhost *ghost  = [[SPGhost alloc] initWithKey:object.simperiumKey memberData:memberData];
+            ghost.version   = version;
+            object.ghost    = ghost;
+            
+            SPLogVerbose(@"Simperium updating ghost data for object %@ (%@)", object.simperiumKey, bucket.name);
         }
         
         // Store after processing the batch for efficiency
