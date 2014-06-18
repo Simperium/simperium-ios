@@ -41,6 +41,7 @@ static SPLogLevels logLevel							= SPLogLevelsInfo;
 
 typedef void(^SPWebSocketSyncedBlockType)(void);
 
+
 #pragma mark ====================================================================================
 #pragma mark Private
 #pragma mark ====================================================================================
@@ -67,9 +68,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (id)initWithSimperium:(Simperium *)s {
 	if ((self = [super init])) {
-        self.simperium              = s;
-        self.indexArray             = [NSMutableArray arrayWithCapacity:200];
-        self.changesBatch           = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
+        self.simperium      = s;
+        self.indexArray     = [NSMutableArray arrayWithCapacity:200];
+        self.changesBatch   = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
+        self.versionsBatch  = [NSMutableArray arrayWithCapacity:SPWebsocketIndexBatchSize];
     }
 	
 	return self;
@@ -600,8 +602,6 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     if ([bucket.delegate respondsToSelector:@selector(bucketWillStartIndexing:)]) {
         [bucket.delegate bucketWillStartIndexing:bucket];
 	}
-
-    self.versionsBatch = [NSMutableArray arrayWithCapacity:SPWebsocketIndexBatchSize];
 
     // Get all the latest versions
     SPLogInfo(@"Simperium processing %lu objects from index (%@)", (unsigned long)[currentIndexArray count], self.name);
