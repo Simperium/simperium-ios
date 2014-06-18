@@ -157,18 +157,20 @@ typedef NS_ENUM(NSInteger, SPVersion) {
     NSAssert(changeHandler,                             @"Please, provide a change handler");
     
     @autoreleasepool {
-        id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
-		[threadSafeStorage beginSafeSection];
+        id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
+		[storage beginSafeSection];
 		
-        NSMutableSet *addedKeys = [NSMutableSet setWithCapacity:5];
-        NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:5];
+        NSMutableSet *addedKeys     = [NSMutableSet setWithCapacity:5];
+        NSMutableSet *changedKeys   = [NSMutableSet setWithCapacity:5];
 		
         // Batch fault all the objects into a dictionary for efficiency
-        NSMutableArray *objectKeys = [NSMutableArray arrayWithCapacity:[versions count]];
+        NSMutableArray *objectKeys  = [NSMutableArray arrayWithCapacity:versions.count];
         for (NSArray *versionData in versions) {
-            [objectKeys addObject:[versionData objectAtIndex:0]];
+            NSAssert([versionData isKindOfClass:[NSArray class]], @"Invalid Version");
+            [objectKeys addObject:versionData[0]];
         }
-        NSDictionary *objects = [threadSafeStorage faultObjectsForKeys:objectKeys bucketName:bucket.name];
+        
+        NSDictionary *objects = [storage faultObjectsForKeys:objectKeys bucketName:bucket.name];
         
         // Process all version data
         for (NSArray *versionData in versions)
@@ -184,14 +186,15 @@ typedef NS_ENUM(NSInteger, SPVersion) {
             
             // The object doesn't exist locally yet, so create it
             if (!object) {
-                object = [threadSafeStorage insertNewObjectForBucketName:bucket.name simperiumKey:key];
-                object.bucket = bucket; // set it manually since it won't be set automatically yet
-                [object loadMemberData:data];    
+                object          = [storage insertNewObjectForBucketName:bucket.name simperiumKey:key];
+                object.bucket   = bucket; // set it manually since it won't be set automatically yet
+                [object loadMemberData:data];
+                
                 [addedKeys addObject:key];
                             
                 NSMutableDictionary *newMemberData = [[object dictionary] mutableCopy];
                 ghost = [[SPGhost alloc] initWithKey:[object simperiumKey] memberData:newMemberData];
-                SPLogVerbose(@"Simperium added object from index (%@): %@", bucket.name, [object simperiumKey]);
+                SPLogVerbose(@"Simperium added object from index (%@): %@", bucket.name, object.simperiumKey);
             } else {
                 // The object already exists locally; update it if necessary
                 BOOL overwriteLocalData = NO;
@@ -245,9 +248,8 @@ typedef NS_ENUM(NSInteger, SPVersion) {
         }
         
         // Store after processing the batch for efficiency
-        [threadSafeStorage save];
-        [threadSafeStorage refaultObjects:[objects allValues]];
-		[threadSafeStorage finishSafeSection];
+        [storage save];
+		[storage finishSafeSection];
 		
         // Do all main thread work afterwards as well
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -257,21 +259,22 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 
             // Revisit the use of NSNotification if there is demand. Currently it's too slow when lots of data is being
             // indexed across buckets, so it's not done by default
-            if (bucket.notifyWhileIndexing) {
-                NSDictionary *userInfoAdded = @{
-					@"bucketName"	: bucket.name,
-					@"keys"			: addedKeys
-				};
+            if (!bucket.notifyWhileIndexing) {
+                return;
+            }
+            
+            NSDictionary *userInfoAdded = @{
+                @"bucketName"	: bucket.name,
+                @"keys"			: addedKeys
+            };
+            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidAddObjectsNotification object:bucket userInfo:userInfoAdded];
 
-                [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidAddObjectsNotification object:bucket userInfo:userInfoAdded];
-
-                for (NSString *key in changedKeys) {
-                    NSDictionary *userInfoChanged = @{
-						@"bucketName"	: bucket.name,
-						@"keys"			: [NSSet setWithObject:key]
-					};
-                    [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidChangeObjectNotification object:bucket userInfo:userInfoChanged];
-                }
+            for (NSString *key in changedKeys) {
+                NSDictionary *userInfoChanged = @{
+                    @"bucketName"	: bucket.name,
+                    @"keys"			: [NSSet setWithObject:key]
+                };
+                [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidChangeObjectNotification object:bucket userInfo:userInfoChanged];
             }
         });    
     }
