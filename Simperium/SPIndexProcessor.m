@@ -44,7 +44,8 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
 
 // Process an index of keys from the Simperium service for a particular bucket
-- (void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(void(^)(NSString *key, NSString *version))versionHandler  {
+- (void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(SPVersionHandlerBlockType)versionHandler  {
+    
     // indexArray could have thousands of items; break it up into batches to manage memory use
     NSMutableDictionary *indexDict = [NSMutableDictionary dictionaryWithCapacity:[indexArray count]];
     NSInteger numBatches = 1 + [indexArray count] / kBatchSize;
@@ -149,7 +150,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 }
 
 // Process actual version data from the Simperium service for a particular bucket
-- (void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket firstSync:(BOOL)firstSync changeHandler:(void(^)(NSString *key))changeHandler
+- (void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket changeHandler:(SPChangeHandlerBlockType)changeHandler
 {
     @autoreleasepool {
         id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
