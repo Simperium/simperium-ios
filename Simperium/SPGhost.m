@@ -70,16 +70,11 @@
 
 - (NSDictionary *)dictionary {
 	if (version == nil) {
-		return @{
-             @"key"     : self.key,
-             @"obj"     : self.memberData,
-         };
-	} else {
-		return @{
-            @"key"     : self.key,
-            @"version" : self.version,
-            @"obj"     : self.memberData,
-        };
+		return [NSDictionary dictionaryWithObjectsAndKeys:
+				self.key, @"key", self.memberData, @"obj", nil];
+    } else {
+		return [NSDictionary dictionaryWithObjectsAndKeys:
+				self.key, @"key", self.version, @"version", self.memberData, @"obj", nil];
     }
 }
 
