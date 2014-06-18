@@ -25,8 +25,14 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static SPLogLevels logLevel = SPLogLevelsInfo;
-#define kBatchSize 50
+static SPLogLevels logLevel                         = SPLogLevelsInfo;
+static NSInteger const SPIndexProcessorBatchSize    = 50;
+
+typedef NS_ENUM(NSInteger, SPVersion) {
+    SPVersionKey    = 0,
+    SPVersionNumber = 1,
+    SPVersionData   = 2
+};
 
 
 #pragma mark ====================================================================================
@@ -35,38 +41,30 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
 @implementation SPIndexProcessor
 
-- (id)init {
-    if (self = [super init]) {
-    }
-    
-    return self;
-}
-
-
 // Process an index of keys from the Simperium service for a particular bucket
 - (void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(SPVersionHandlerBlockType)versionHandler  {
     
     // indexArray could have thousands of items; break it up into batches to manage memory use
-    NSMutableDictionary *indexDict = [NSMutableDictionary dictionaryWithCapacity:[indexArray count]];
-    NSInteger numBatches = 1 + [indexArray count] / kBatchSize;
-    NSMutableArray *batchLists = [NSMutableArray arrayWithCapacity:numBatches];
-    for (int i=0; i<numBatches; i++) {
-        [batchLists addObject: [NSMutableArray arrayWithCapacity:kBatchSize]];
+    NSMutableDictionary *indexDict  = [NSMutableDictionary dictionaryWithCapacity:[indexArray count]];
+    NSInteger numBatches            = 1 + [indexArray count] / SPIndexProcessorBatchSize;
+    NSMutableArray *batchLists      = [NSMutableArray arrayWithCapacity:numBatches];
+    for (int i = 0; i<numBatches; i++) {
+        [batchLists addObject: [NSMutableArray arrayWithCapacity:SPIndexProcessorBatchSize]];
     }
     
     // Build the batches
     int currentBatch = 0;
     NSMutableArray *currentBatchList = [batchLists objectAtIndex:currentBatch];
     for (NSDictionary *dict in indexArray) {
-        NSString *key = [dict objectForKey:@"id"];
-        id version = [dict objectForKey:@"v"];
+        NSString *key   = [dict objectForKey:@"id"];
+        id version      = [dict objectForKey:@"v"];
         
         // Map it for convenience
         [indexDict setObject:version forKey:key];
         
         // Put it in a batch (advancing to next batch if necessary)
         [currentBatchList addObject:key];
-        if ([currentBatchList count] == kBatchSize) {
+        if ([currentBatchList count] == SPIndexProcessorBatchSize) {
             currentBatchList = [batchLists objectAtIndex:++currentBatch];
         }
     }
@@ -168,18 +166,18 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
         
         // Process all version data
         for (NSArray *versionData in versions)
-        {
+        {            
             // Unmarshal the data
-            NSString *key = [versionData objectAtIndex:0];
-            NSString *responseString = [versionData objectAtIndex:1];
-            NSString *version = [versionData objectAtIndex:2];
-            NSMutableDictionary *data = [responseString sp_objectFromJSONString];
-                              
-            id<SPDiffable> object = [objects objectForKey:key];
-            SPGhost *ghost = nil;
+            NSString *key           = versionData[SPVersionKey];
+            NSString *version       = versionData[SPVersionNumber];
+            NSDictionary *data      = versionData[SPVersionData];
             
+            // Process the Object's Member Data
+            id<SPDiffable> object   = objects[key];
+            SPGhost *ghost          = nil;
+            
+            // The object doesn't exist locally yet, so create it
             if (!object) {
-                // The object doesn't exist locally yet, so create it
                 object = [threadSafeStorage insertNewObjectForBucketName:bucket.name simperiumKey:key];
                 object.bucket = bucket; // set it manually since it won't be set automatically yet
                 [object loadMemberData:data];    

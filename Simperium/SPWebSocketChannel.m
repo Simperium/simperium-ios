@@ -388,8 +388,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     
     // With websockets, the data is wrapped up (somewhat annoyingly) in a dictionary, so unwrap it
     // This processing should probably be moved off the main thread (or improved at the protocol level)
-    NSDictionary *payloadDict = [payload sp_objectFromJSONString];
-    NSDictionary *dataDict = [payloadDict objectForKey:@"data"];
+    NSDictionary *payloadDict   = [payload sp_objectFromJSONString];
+    NSDictionary *dataDict      = payloadDict[@"data"];
     
     if ([dataDict class] == [NSNull class] || dataDict == nil) {
         // No data
@@ -397,9 +397,6 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         _objectVersionsPending--;
         return;
     }
-    
-    // All unwrapped, now get it in the format we need for marshaling
-    NSString *payloadString = [dataDict sp_JSONString];
 	
     if ([self.pendingEntityDownloads containsObject:key]) {
         // We had a pending entity re-download: There might have been an issue while applying a remote diff!
@@ -420,12 +417,12 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     } else {
         // Otherwise, process the result for indexing
         // Marshal everything into an array for later processing
-        NSArray *responseData = @[ key, payloadString, version ];
+        NSArray *responseData = @[ key, version, dataDict ];
         [self.versionsBatch addObject:responseData];
 
         // Batch responses for more efficient processing
 		if ( (self.versionsBatch.count == self.objectVersionsPending && self.objectVersionsPending < SPWebsocketIndexBatchSize) ||
-			 self.versionsBatch.count % SPWebsocketIndexBatchSize == 0)
+			 (self.versionsBatch.count % SPWebsocketIndexBatchSize == 0))
 		{
             [self processVersionsBatchForBucket:bucket];
 		}
