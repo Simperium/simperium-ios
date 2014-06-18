@@ -289,7 +289,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			return;
 		}
 
-        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSNumber *version, NSError *error) {
+        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
             
             SPLogError(@"Simperium Received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
             
@@ -638,7 +638,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
                 if (self.objectVersionsPending == 0) {
                     if (self.nextMark.length > 0) {
 						// More index pages to get
-                        [self requestLatestVersionsForBucket: bucket mark:self.nextMark];
+                        [self requestLatestVersionsForBucket:bucket mark:self.nextMark];
                     } else {
 						// The entire index has been retrieved
                         [self allVersionsFinishedForBucket:bucket];

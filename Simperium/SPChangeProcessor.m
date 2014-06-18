@@ -458,7 +458,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             
             // Process Errors: Halt if needed (critical errors!)
             NSString *key       = [self keyWithoutNamespaces:change bucket:bucket];
-            NSNumber *version   = change[CH_END_VERSION];
+            NSString *version   = change[CH_END_VERSION];
             NSError *error      = nil;
 
             if ([self processRemoteError:change bucket:bucket error:&error]) {
