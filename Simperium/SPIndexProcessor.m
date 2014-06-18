@@ -75,36 +75,38 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 	[self reconcileLocalAndRemoteIndex:remoteKeySet bucket:bucket];
     
     // Process each batch while being efficient with memory and faulting
-    id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
-	[threadSafeStorage beginSafeSection];
+    id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
+	[storage beginSafeSection];
 	
     for (NSMutableArray *batchList in batchLists) {
         @autoreleasepool {
         // Batch fault the entities for efficiency
-            NSDictionary *objects = [threadSafeStorage faultObjectsForKeys:batchList bucketName:bucket.name];
+            NSDictionary *objects = [storage faultObjectsForKeys:batchList bucketName:bucket.name];
             
             for (NSString *key in batchList) {
                 id version = [indexDict objectForKey: key];
                 
                 // Store versions as strings, but if they come off the wire as numbers, then handle that too
-                if ([version isKindOfClass:[NSNumber class]])
+                if ([version isKindOfClass:[NSNumber class]]) {
                     version = [NSString stringWithFormat:@"%ld", (long)[version integerValue]];
+                }
                 
                 // Check to see if this entity already exists locally and is up to date
                 id<SPDiffable> object = [objects objectForKey:key];
-                if (object && object.ghost != nil && object.ghost.version != nil && [version isEqualToString:object.ghost.version])
+                if (object && object.ghost != nil && object.ghost.version != nil && [version isEqualToString:object.ghost.version]) {
                     continue;
+                }
                 
                 // Allow caller to use the key and version
                 versionHandler(key, version);
             }
             
             // Refault to free up the memory
-            [threadSafeStorage refaultObjects: [objects allValues]];
+            [storage refaultObjects:objects.allValues];
         }
     }
 	
-	[threadSafeStorage finishSafeSection];
+	[storage finishSafeSection];
 }
 
 - (void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket {
