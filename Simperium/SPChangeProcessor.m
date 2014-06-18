@@ -257,7 +257,8 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         return NO;
     }
     
-    // If the local version matches the remote endVersion, don't process this change: it's a dupe message
+    // If the local version matches the remote endVersion, don't process this change: it's a dupe message.
+    // Processing aside, let's advance the bucket's CV, and return true
     if ([object.ghost.version isEqual:endVersion]) {
         [storage finishSafeSection];
         return YES;
