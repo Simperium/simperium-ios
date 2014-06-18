@@ -211,7 +211,14 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                     
                     // 3.2. Transform localDiff: LocalGhost >> RemoteMembers >> LocalDiff (equivalent to git rebase)
                     NSError *error              = nil;
-                    NSDictionary *rebaseDiff    = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost:localGhost error:&error];
+                    NSDictionary *rebaseDiff    = nil;
+                    
+                    if (remoteDiff.count) {
+                        // Note: if remoteDiff is empty, there is just no need to rebase!.
+                        rebaseDiff = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost:localGhost error:&error];
+                    } else {
+                        rebaseDiff = localDiff;
+                    }
                     
                     // 3.3. Attempt to apply the Local Transformed Diff
                     if (!error && rebaseDiff.count) {
