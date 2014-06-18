@@ -14,13 +14,15 @@
 @synthesize needsSave;
 
 - (id)initFromDictionary:(NSDictionary *)dict {
-	self.key = [dict objectForKey:@"key"];
-	self.memberData = [dict objectForKey:@"obj"];
-    self.version = [dict objectForKey:@"version"];
-    
-    // Make sure it's not marked dirty when initializing in this way, since ghosts are loaded
-    // through this method on launch
-    needsSave = NO;
+    if ((self = [super init])) {
+        self.key        = dict[@"key"];
+        self.memberData = dict[@"obj"];
+        self.version    = dict[@"version"];
+        
+        // Make sure it's not marked dirty when initializing in this way, since ghosts are loaded
+        // through this method on launch
+        needsSave = NO;
+    }
     
 	return self;
 }
@@ -67,14 +69,13 @@
 }
 
 - (NSDictionary *)dictionary {
-	if (version == nil)
+	if (version == nil) {
 		return [NSDictionary dictionaryWithObjectsAndKeys:
 				self.key, @"key", self.memberData, @"obj", nil];
-	else
+    } else {
 		return [NSDictionary dictionaryWithObjectsAndKeys:
-				self.key, @"key", self.version, @"version", self.memberData, @"obj", nil];		
+				self.key, @"key", self.version, @"version", self.memberData, @"obj", nil];
+    }
 }
-
-
 
 @end

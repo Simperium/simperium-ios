@@ -128,7 +128,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 			continue;
 		}
 		
-        if ([operation isEqualToString:OP_OBJECT_ADD] || [operation isEqualToString:OP_REPLACE]) {
+        if ([operation isEqualToString:OP_OBJECT_ADD] || [operation isEqualToString:OP_OBJECT_REPLACE]) {
             // Newly added / replaced member: set the value
             id newValue = [member getValueFromDictionary:change key:OP_VALUE object:object];
             [object simperiumSetValue:newValue forKey:key];
@@ -171,7 +171,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 - (BOOL)applyGhostDiffFromDictionary:(NSDictionary *)diff toObject:(id<SPDiffable>)object error:(NSError **)error {
 	// Create a copy of the ghost's data and update any members that have changed
 	NSMutableDictionary *ghostMemberData = object.ghost.memberData;
-	NSMutableDictionary *newMemberData = [ghostMemberData mutableCopy] ?: [NSMutableDictionary dictionaryWithCapacity:diff.count];
+	NSMutableDictionary *newMemberData = ghostMemberData ? [ghostMemberData mutableCopy] : [NSMutableDictionary dictionaryWithCapacity:diff.count];
 	for (NSString *key in diff.allKeys) {
 		NSDictionary *change    = diff[key];
 		NSString *operation     = [change[OP_OP] lowercaseString];

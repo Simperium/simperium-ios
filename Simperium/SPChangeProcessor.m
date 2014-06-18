@@ -458,7 +458,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             
             // Process Errors: Halt if needed (critical errors!)
             NSString *key       = [self keyWithoutNamespaces:change bucket:bucket];
-            NSNumber *version   = change[CH_END_VERSION];
+            NSString *version   = change[CH_END_VERSION];
             NSError *error      = nil;
 
             if ([self processRemoteError:change bucket:bucket error:&error]) {
@@ -491,83 +491,6 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             [bucket signalForceSyncComplete];
         });
     }
-}
-
-
-#pragma mark ====================================================================================
-#pragma mark Error Handling Helpers
-#pragma mark ====================================================================================
-
-- (BOOL)processRemoteEntityWithKey:(NSString *)simperiumKey version:(NSString *)version data:(NSDictionary *)data bucket:(SPBucket *)bucket
-{
-    id<SPStorageProvider>storage    = [bucket.storage threadSafeStorage];
-	[storage beginSafeSection];
-	
-    id<SPDiffable> object           = [storage objectForKey:simperiumKey bucketName:bucket.name];
-    [object willBeRead];
-    
-    if (!object) {
-        SPLogWarn(@"Simperium warning: received full remote entity for a locally deleted object (%@): %@", bucket.name, simperiumKey);
-        [storage finishSafeSection];
-        return NO;
-    }
-    
-    if (!object.ghost) {
-        SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, simperiumKey);
-        [storage finishSafeSection];
-        return NO;
-    }
-	   
-    // 1. Calculate Delta: LocalGhost > LocalMembers
-    SPGhost *localGhost         = [object.ghost copy];
-    NSDictionary *localDiff     = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
-    
-    // 2. Load the full Remote Member Data
-    [object loadMemberData:data];
-    SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@", bucket.name, simperiumKey);
-    
-    // 3. Rebase + apply localDiff
-    if (localDiff.count) {
-        
-        // 3.1. Calculate Delta: LocalGhost > RemoteMembers
-        NSDictionary *remoteDiff    = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
-    
-        // 3.2. Transform localDiff: LocalGhost >> RemoteMembers >> LocalDiff (equivalent to git rebase)
-        NSError *error              = nil;
-        NSDictionary *rebaseDiff    = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost:localGhost error:&error];
-    
-        // 3.3. Attempt to apply the Local Transformed Diff
-        if (!error && rebaseDiff.count) {
-            [bucket.differ applyDiffFromDictionary:rebaseDiff toObject:object error:&error];
-        }
-        
-        // 3.4. Some debugging
-        if (error) {
-            SPLogWarn(@"Simperium error: could not apply local transformed diff for entity (%@): %@", bucket.name, simperiumKey);
-        } else {
-            SPLogWarn(@"Simperium successfully updated local entity (%@): %@", bucket.name, simperiumKey);
-        }
-    }
-    
-    // 4. Update the ghost with the remote member data + version
-    SPGhost *ghost  = [[SPGhost alloc] initWithKey:simperiumKey memberData:[data mutableCopy]];
-    ghost.version   = version;
-    object.ghost    = ghost;
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSDictionary *userInfo = @{
-            @"bucketName"     : bucket.name,
-            @"keys"           : [NSSet setWithObject:simperiumKey],
-            @"changedMembers" : data.allKeys
-        };
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidChangeObjectNotification object:bucket userInfo:userInfo];
-    });
-	
-    [storage save];
-    [storage finishSafeSection];
-    
-    return YES;
 }
 
 
