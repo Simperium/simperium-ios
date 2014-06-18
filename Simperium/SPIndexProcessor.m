@@ -84,7 +84,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
             NSDictionary *objects = [storage faultObjectsForKeys:batchList bucketName:bucket.name];
             
             for (NSString *key in batchList) {
-                id version = [indexDict objectForKey: key];
+                id version = indexDict[key];
                 
                 // Store versions as strings, but if they come off the wire as numbers, then handle that too
                 if ([version isKindOfClass:[NSNumber class]]) {
@@ -152,6 +152,10 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 // Process actual version data from the Simperium service for a particular bucket
 - (void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket changeHandler:(SPChangeHandlerBlockType)changeHandler
 {
+    NSAssert([versions isKindOfClass:[NSArray class]],  @"Versions should be an array");
+    NSAssert([bucket isKindOfClass:[SPBucket class]],   @"Invalid Bucket Pointer");
+    NSAssert(changeHandler,                             @"Please, provide a change handler");
+    
     @autoreleasepool {
         id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
 		[threadSafeStorage beginSafeSection];
