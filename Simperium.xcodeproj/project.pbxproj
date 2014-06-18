@@ -186,6 +186,7 @@
 		B597DD59183128FE005E95D7 /* RemoteDebugTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B597DD58183128FE005E95D7 /* RemoteDebugTests.m */; };
 		B5A19D5918806BBC0059AA36 /* SPWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A19D5718806BBC0059AA36 /* SPWebSocket.h */; };
 		B5A19D5A18806BBC0059AA36 /* SPWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A19D5818806BBC0059AA36 /* SPWebSocket.m */; };
+		B5A57EAC1951C128006E2455 /* SPIndexProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A57EAB1951C128006E2455 /* SPIndexProcessorTests.m */; };
 		B5AC545E1857917800608CAC /* SPBucket+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5AC545C1857917800608CAC /* SPBucket+Internals.h */; };
 		B5B69C0318325B2C001F0DE1 /* MockSimperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5B69C0218325B2C001F0DE1 /* MockSimperium.m */; };
 		B5C6300D186321E0008C42B7 /* DiffMatchPatchArrayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C6300C186321E0008C42B7 /* DiffMatchPatchArrayTests.m */; };
@@ -420,6 +421,7 @@
 		B5A0136C1831285A003D4620 /* IntegrationTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "IntegrationTests-Info.plist"; sourceTree = "<group>"; };
 		B5A19D5718806BBC0059AA36 /* SPWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWebSocket.h; sourceTree = "<group>"; };
 		B5A19D5818806BBC0059AA36 /* SPWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWebSocket.m; sourceTree = "<group>"; };
+		B5A57EAB1951C128006E2455 /* SPIndexProcessorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPIndexProcessorTests.m; sourceTree = "<group>"; };
 		B5AC545C1857917800608CAC /* SPBucket+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPBucket+Internals.h"; sourceTree = "<group>"; };
 		B5B69C0118325B2C001F0DE1 /* MockSimperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockSimperium.h; sourceTree = "<group>"; };
 		B5B69C0218325B2C001F0DE1 /* MockSimperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MockSimperium.m; sourceTree = "<group>"; };
@@ -882,16 +884,17 @@
 		B5ECEA2218310DF700B9289A /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
-				B5F068B0186223DF00D0D7B7 /* DiffMatchPatchTest.m */,
-				B5C6300C186321E0008C42B7 /* DiffMatchPatchArrayTests.m */,
+				B5A57EAB1951C128006E2455 /* SPIndexProcessorTests.m */,
+				B51397F01947612B004C1416 /* SPChangeProcessorTests.m */,
 				B5C7D7F8183411B900E9109C /* SPPersistentMutableDictionaryTests.m */,
 				B5EC2C27188595420067E3B8 /* SPPersistentMutableSetTests.m */,
 				B5549FE5184581BF007EA226 /* SPThreadsafeMutableSetTests.m */,
-				B51397F01947612B004C1416 /* SPChangeProcessorTests.m */,
 				B597DD58183128FE005E95D7 /* RemoteDebugTests.m */,
 				B5DE0E0E1850D0200080C44D /* DeletionCascadeTest.m */,
 				B5DF229418B41FB700874C75 /* SPMemberJSONTests.m */,
 				B5E662A918F492AD0065EF11 /* NSStringSimperiumTest.m */,
+				B5F068B0186223DF00D0D7B7 /* DiffMatchPatchTest.m */,
+				B5C6300C186321E0008C42B7 /* DiffMatchPatchArrayTests.m */,
 			);
 			name = UnitTests;
 			sourceTree = "<group>";
@@ -1308,6 +1311,7 @@
 				B5E662AA18F492AD0065EF11 /* NSStringSimperiumTest.m in Sources */,
 				B5C7D7F9183411B900E9109C /* SPPersistentMutableDictionaryTests.m in Sources */,
 				B565ECAA1832940B00D162FF /* XCTestCase+Simperium.m in Sources */,
+				B5A57EAC1951C128006E2455 /* SPIndexProcessorTests.m in Sources */,
 				B5E8D30F1831237500AE2C5A /* MockWebSocketInterface.m in Sources */,
 				B5E8D3121831237500AE2C5A /* MockWebSocketChannel.m in Sources */,
 				B5DE0E0F1850D0200080C44D /* DeletionCascadeTest.m in Sources */,
