@@ -88,15 +88,14 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         return;
 	}
     
-    NSInteger startVersion = [object.ghost.version integerValue];
     self.retrievingObjectHistory = YES;
-    self.objectVersionsPending = MIN(startVersion, numVersions);
     
-    for (NSInteger i=startVersion; i>=1 && i>=startVersion-_objectVersionsPending; i--) {
-        NSString *versionStr = [NSString stringWithFormat:@"%ld", (long)i];
-        NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", self.number, object.simperiumKey, versionStr];
-        SPLogVerbose(@"Simperium sending object version request (%@): %@", self.name, message);
-        [self.webSocketManager send:message];
+    NSInteger lastVersion   = [object.ghost.version integerValue];
+    NSInteger firstVersion  = MAX(lastVersion - numVersions, 1);
+    
+    for (NSInteger version = lastVersion; version >= firstVersion; --version) {
+        NSString *versionStr = [NSString stringWithFormat:@"%ld", (long)version];
+        [self requestVersion:versionStr forObjectWithKey:object.simperiumKey];
     }
 }
 
