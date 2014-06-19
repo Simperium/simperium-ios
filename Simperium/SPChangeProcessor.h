@@ -22,7 +22,6 @@ typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change);
 typedef NS_ENUM(NSInteger, SPProcessorErrors) {
     SPProcessorErrorsSentDuplicateChange,       // Should Re-Sync
     SPProcessorErrorsSentInvalidChange,         // Send Full Data: The backend couldn't apply our diff
-    SPProcessorErrorsReceivedDuplicateChange,   // No need to handle: The backend sent the same change twice
     SPProcessorErrorsReceivedZombieChange,      // No need to handle: The backend sent a change for a locally nuked entity
     SPProcessorErrorsReceivedUnknownChange,     // No need to handle: We've received a change for an unknown entity
     SPProcessorErrorsReceivedInvalidChange,     // Should Redownload the Entity: We couldn't apply a remote diff
