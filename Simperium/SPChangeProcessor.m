@@ -751,17 +751,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 #pragma mark ====================================================================================
 
 - (int)numChangesPending {
-    __block int count;
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
-        count = (int)self.changesPending.count;
-        dispatch_semaphore_signal(semaphore);
-    });
-    while (dispatch_semaphore_wait(semaphore, DISPATCH_TIME_NOW)) {
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:10]];
-    }
-    return count;
+    return (int)self.changesPending.count;
 }
 
 - (int)numKeysForObjectsWithMoreChanges {
