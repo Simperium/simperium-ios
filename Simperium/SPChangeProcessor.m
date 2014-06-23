@@ -759,7 +759,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     });
     while (dispatch_semaphore_wait(semaphore, DISPATCH_TIME_NOW)) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+                                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:10]];
     }
     return count;
 }
