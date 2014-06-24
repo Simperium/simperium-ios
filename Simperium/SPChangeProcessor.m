@@ -476,9 +476,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             // Persist LastChangeSignature: do it inside the loop in case something happens to abort the loop
             NSString *changeVersion = change[CH_CHANGE_VERSION];
             
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [bucket setLastChangeSignature: changeVersion];
-            });
+            [bucket setLastChangeSignature: changeVersion];
         }
     
         [self.changesPending save];
@@ -762,6 +760,13 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	return (self.changesPending.count >= SPChangeProcessorMaxPendingChanges);
 }
 
+#pragma mark ====================================================================================
+#pragma mark Optimized methods for batch processing
+#pragma mark ====================================================================================
+
+- (void)asyncNumChangesPending:(void(^)(NSInteger))completion limit:(NSInteger)limit {
+    [self.changesPending asyncCountWithCompletion:completion limit:limit];
+}
 
 #pragma mark ====================================================================================
 #pragma mark Private Helpers: Changeset Generation + metadata

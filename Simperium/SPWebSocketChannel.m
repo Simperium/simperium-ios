@@ -244,10 +244,18 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     // Batch-Processing: This will speed up sync'ing of large databases!
     [self.changesBatch addObjectsFromArray:changes];
     
-    if ( !_started || bucket.changeProcessor.numChangesPending < SPWebsocketChangesBatchSize || _changesBatch.count % SPWebsocketChangesBatchSize == 0 ) {
+    if ( !_started || _changesBatch.count % SPWebsocketChangesBatchSize == 0 ) {
         [self processBatchChanges:_changesBatch bucket:bucket];
         self.changesBatch = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
         self.started = YES;
+    }
+    else {
+        [bucket.changeProcessor asyncNumChangesPending:^(NSInteger count) {
+            if( count < SPWebsocketChangesBatchSize) {
+                [self processBatchChanges:_changesBatch bucket:bucket];
+                self.changesBatch = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
+            }
+        } limit:SPWebsocketChangesBatchSize];
     }
 }
 
