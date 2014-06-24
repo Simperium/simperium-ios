@@ -64,6 +64,19 @@ static SPLogLevels logLevel					= SPLogLevelsError;
 	return count;
 }
 
+- (void)asyncCountWithCompletion:(void (^)(NSInteger))completion limit:(NSInteger)limit {
+    [self.managedObjectContext performBlock:^() {
+		NSError *error;
+        NSFetchRequest *request = [self requestForEntity];
+        request.fetchLimit = limit;
+		int count = [self.managedObjectContext countForFetchRequest:request error:&error];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(count);
+        });
+		SPLogOnError(error);
+	}];
+}
+
 - (BOOL)containsObjectForKey:(id)aKey {
 	// Failsafe
 	if (aKey == nil) {
@@ -79,7 +92,9 @@ static SPLogLevels logLevel					= SPLogLevelsError;
 	// Fault to Core Data
 	[self.managedObjectContext performBlockAndWait:^{
 		NSError *error = nil;
-		exists = ([self.managedObjectContext countForFetchRequest:[self requestForEntityWithKey:aKey] error:&error] > 0);
+        NSFetchRequest *request = [self requestForEntityWithKey:aKey];
+        request.fetchLimit = 1;
+		exists = ([self.managedObjectContext countForFetchRequest:request error:&error] > 0);
 		SPLogOnError(error);
 	}];
 	

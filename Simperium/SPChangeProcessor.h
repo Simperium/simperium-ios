@@ -59,4 +59,6 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 
 - (NSArray *)exportPendingChanges;
 
+- (void)asyncNumChangesPending:(void(^)(NSInteger))completion limit:(NSInteger)limit;
+
 @end
