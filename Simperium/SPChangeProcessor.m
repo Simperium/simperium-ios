@@ -72,6 +72,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 @property (nonatomic, strong, readwrite) NSString                       *clientID;
 @property (nonatomic, strong, readwrite) SPPersistentMutableDictionary	*changesPending;
 @property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsWithMoreChanges;
+@property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsToDelete;
 @property (nonatomic, strong, readwrite) SPPersistentMutableSet			*keysForObjectsWithPendingRetry;
 @end
 
@@ -97,6 +98,9 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 		
 		NSString *retryKey = [NSString stringWithFormat:@"keysForObjectsWithPendingRetry-%@", label];
         self.keysForObjectsWithPendingRetry = [SPPersistentMutableSet loadSetWithLabel:retryKey];
+        
+        NSString *deleteKey = [NSString stringWithFormat:@"keysForObjectsToDelete-%@", label];
+        self.keysForObjectsToDelete = [SPPersistentMutableSet loadSetWithLabel:deleteKey];
 		
 		[self migratePendingChangesIfNeeded];
     }
@@ -108,10 +112,12 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     [self.changesPending removeAllObjects];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
 	[self.keysForObjectsWithPendingRetry removeAllObjects];
+    [self.keysForObjectsToDelete removeAllObjects];
 	
 	[self.changesPending save];
     [self.keysForObjectsWithMoreChanges save];
 	[self.keysForObjectsWithPendingRetry save];
+    [self.keysForObjectsToDelete save];
 }
 
 
@@ -508,6 +514,15 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	[self.keysForObjectsWithMoreChanges save];
 }
 
+- (void)enqueueObjectDeletion:(NSString *)key bucket:(SPBucket *)bucket {
+    NSAssert( [key isKindOfClass:[NSString class]],         @"Missing key" );
+    NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Missing Bucket");
+    
+    SPLogVerbose(@"Simperium marking object for deletion when ready (%@): %@", bucket.name, key);
+    [self.keysForObjectsToDelete addObject:key];
+    [self.keysForObjectsToDelete save];
+}
+
 - (void)enqueueObjectForRetry:(NSString *)key bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData {
     
     NSAssert( [key isKindOfClass:[NSString class]],     @"Missing change" );
@@ -694,6 +709,37 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     [self.keysForObjectsWithMoreChanges save];
 }
 
+- (void)enumerateQueuedDeletionsForBucket:(SPBucket*)bucket block:(SPChangeEnumerationBlockType)block {
+    
+    NSInteger limit = MAX( SPChangeProcessorMaxPendingChanges - self.changesPending.count, 0);
+    NSUInteger queueCount = self.keysForObjectsToDelete.count;
+    
+    if (queueCount == 0 || limit <= 0) {
+        return;
+    }
+    
+    SPLogVerbose(@"Simperium found %lu objects to delete (%@)", (unsigned long)queueCount, bucket.name);
+    
+    NSMutableSet *processedKeys	= [NSMutableSet setWithCapacity:limit];
+    
+    for (NSString *key in self.keysForObjectsToDelete) {
+        
+        if (processedKeys.count >= limit) {
+            break;
+        }
+        [processedKeys addObject:key];
+    }
+    
+    NSArray *changes = [self processLocalDeletionsWithKeys:processedKeys];
+    
+    for (NSDictionary *change in changes) {
+        block(change);
+    }
+    
+    [self.keysForObjectsToDelete minusSet:processedKeys];
+    [self.keysForObjectsToDelete save];
+}
+
 - (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
 	
     NSInteger retryCount = self.keysForObjectsWithPendingRetry.count;
@@ -756,6 +802,10 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 - (int)numKeysForObjectsWithMoreChanges {
     return (int)self.keysForObjectsWithMoreChanges.count;
+}
+
+- (int)numKeysForObjectToDelete {
+    return (int)self.keysForObjectsToDelete.count;
 }
 
 - (BOOL)reachedMaxPendings {
