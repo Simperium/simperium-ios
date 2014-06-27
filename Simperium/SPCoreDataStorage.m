@@ -13,7 +13,7 @@
 #import "SPSchema.h"
 #import "SPThreadsafeMutableSet.h"
 #import "SPLogger.h"
-
+#import "SPBucket.h"
 
 
 #pragma mark ====================================================================================
@@ -298,7 +298,7 @@ static NSInteger const SPWorkersDone	= 0;
 	// 'mergeChangesFromContextDidSaveNotification' calls 'deleteObject' in the receiver context. As a result,
 	// remote deletions will be posted as local deletions. Let's prevent that!
 	if (self.sibling) {
-		[self.sibling.remotelyDeletedKeys addObject:managedObject.simperiumKey];
+		[self.sibling.remotelyDeletedKeys addObject:[NSString stringWithFormat:@"%@-%@", managedObject.bucket.name, managedObject.simperiumKey]];
 	}
 }
 
@@ -452,15 +452,16 @@ static NSInteger const SPWorkersDone	= 0;
 	NSDictionary *userInfo	= notification.userInfo;
 	NSMutableSet *locallyDeleted = [NSMutableSet set];
 	for (SPManagedObject* mainMO in userInfo[NSDeletedObjectsKey]) {
+        NSString *composedKey = [NSString stringWithFormat:@"%@-%@", mainMO.bucket.name, mainMO.simperiumKey];
 		if ([mainMO isKindOfClass:[SPManagedObject class]] == NO) {
 			continue;
 		}
-		if ([self.remotelyDeletedKeys containsObject:mainMO.simperiumKey] == NO) {
+		if ([self.remotelyDeletedKeys containsObject:composedKey] == NO) {
 			// We'll need to post it
 			[locallyDeleted addObject:mainMO];
 		} else {
 			// Cleanup!
-			[self.remotelyDeletedKeys removeObject:mainMO.simperiumKey];
+			[self.remotelyDeletedKeys removeObject:composedKey];
 		}
 	}
 	
