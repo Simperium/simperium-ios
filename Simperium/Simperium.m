@@ -29,6 +29,7 @@
 
 NSString * const UUID_KEY						= @"SPUUIDKey";
 NSString * const SimperiumWillSaveNotification	= @"SimperiumWillSaveNotification";
+NSTimeInterval const SPBackgroundSyncTimeout    = 20.0f;
 
 #ifdef DEBUG
 static SPLogLevels logLevel						= SPLogLevelsVerbose;
@@ -44,7 +45,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 @implementation Simperium
 
 - (void)dealloc {
-    [self stopNetworking];
+    [self stopNetworkManagers];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 	
@@ -59,22 +60,29 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 			context:(NSManagedObjectContext *)context
 		coordinator:(NSPersistentStoreCoordinator *)coordinator {
 	
-	return [self initWithModel:model context:context coordinator:coordinator label:@""];
+	return [self initWithModel:model context:context coordinator:coordinator label:@"" bucketOverrides:nil];
 }
 
 - (id)initWithModel:(NSManagedObjectModel *)model
 			context:(NSManagedObjectContext *)context
 		coordinator:(NSPersistentStoreCoordinator *)coordinator
-			  label:(NSString *)label {
+			  label:(NSString *)label
+    bucketOverrides:(NSDictionary *)bucketOverrides {
+
 	
 	if ((self = [super init])) {
         
 		self.label							= label;
+        self.bucketOverrides                = bucketOverrides;
         self.networkEnabled					= YES;
         self.authenticationEnabled			= YES;
         self.dynamicSchemaEnabled			= YES;
 		self.authenticationEnabled			= YES;
         self.buckets						= [NSMutableDictionary dictionary];
+        
+        SPReachability *reachability        = [SPReachability reachabilityForInternetConnection];
+        [reachability startNotifier];
+        self.reachability                   = reachability;
         
 		SPWebSocketInterface *websocket		= [SPWebSocketInterface interfaceWithSimperium:self];
 		self.network						= websocket;
@@ -96,7 +104,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 		
 		[self setupNotifications];
 		
-		[self setupCoreDataWithModelModel:model context:context coordinator:coordinator];
+		[self setupCoreDataWithModel:model context:context coordinator:coordinator];
     }
 
 	return self;
@@ -116,12 +124,12 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 	
 	NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
 	[nc addObserver:self selector:@selector(authenticationDidFail) name:SPAuthenticationDidFail object:nil];
-
+    [nc addObserver:self selector:@selector(handleNetworkChange:)  name:kSPReachabilityChangedNotification object:nil];
 }
 
-- (void)setupCoreDataWithModelModel:(NSManagedObjectModel *)model
-							context:(NSManagedObjectContext *)context
-						coordinator:(NSPersistentStoreCoordinator *)coordinator {
+- (void)setupCoreDataWithModel:(NSManagedObjectModel *)model
+                       context:(NSManagedObjectContext *)context
+                   coordinator:(NSPersistentStoreCoordinator *)coordinator {
 	
 	NSParameterAssert(model);
 	NSParameterAssert(context);
@@ -153,7 +161,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 - (SPBucket *)bucketForName:(NSString *)name { 
-    SPBucket *bucket = [self.buckets objectForKey:name];
+    SPBucket *bucket = self.buckets[name];
     if (!bucket) {
         // First check for an override
         for (SPBucket *someBucket in self.buckets.allValues) {
@@ -171,10 +179,13 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 			// New buckets use JSONStorage by default (you can't manually create a Core Data bucket)
 			NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
 			bucket = [[SPBucket alloc] initWithSchema:schema storage:self.JSONStorage networkInterface:self.network
-								 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName];
+								 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName clientID:self.clientID];
 
 			[self.buckets setObject:bucket forKey:name];
-            [self.network start:bucket];
+            
+            if (self.networkManagersStarted) {
+                [self.network start:bucket];
+            }
         }
     }
     
@@ -211,19 +222,8 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     self.networkManagersStarted = NO;
 }
 
-- (void)startNetworking {
-    // Create a new one each time to make sure it fires (and causes networking to start)
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kReachabilityChangedNotification object:nil];
-    self.reachability = [SPReachability reachabilityWithHostName:SPReachabilityURL];
-    [self.reachability startNotifier];
-}
-
-- (void)stopNetworking {
-    [self stopNetworkManagers];
-}
-
 - (void)handleNetworkChange:(NSNotification *)notification {
-	if ([self.reachability currentReachabilityStatus] == NotReachable) {
+	if (self.reachability.currentReachabilityStatus == NotReachable) {
         [self stopNetworkManagers];
     } else if (self.user.authenticated) {
         [self startNetworkManagers];
@@ -239,7 +239,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     if (enabled) {
         [self authenticateIfNecessary];
     } else {
-        [self stopNetworking];
+        [self stopNetworkManagers];
 	}
 }
 
@@ -261,7 +261,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         
 		NSString *remoteName = self.bucketOverrides[schema.bucketName] ?: schema.bucketName;
 		bucket = [[SPBucket alloc] initWithSchema:schema storage:self.coreDataStorage networkInterface:self.network
-							 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName];
+							 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName clientID:self.clientID];
         
         [bucketList setObject:bucket forKey:schema.bucketName];
     }
@@ -452,34 +452,42 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     return result;
 }
 
-- (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumForceSyncCompletion)completion {
-	dispatch_group_t group = dispatch_group_create();
-	__block BOOL notified = NO;
-	
+#if defined(__IPHONE_7_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0)
+
+- (void)backgroundFetchWithCompletion:(SimperiumBackgroundFetchCompletion)completion {
+    __block UIBackgroundFetchResult result  = UIBackgroundFetchResultNoData;
+	dispatch_group_t group                  = dispatch_group_create();
+    
 	// Sync every bucket
 	for (SPBucket* bucket in self.buckets.allValues) {
 		dispatch_group_enter(group);
-		[bucket forceSyncWithCompletion:^() {
+		[bucket forceSyncWithCompletion:^(BOOL signatureUpdated) {
+            if (signatureUpdated) {
+                result = UIBackgroundFetchResultNewData;
+            }
 			dispatch_group_leave(group);
 		}];
 	}
 
-	// Wait until the workers are ready
-	dispatch_group_notify(group, dispatch_get_main_queue(), ^ {
+	// NOTE:
+    // We have up to 30 seconds to complete this OP. If anything happens: slow network / broken pipe, and we don't hit the
+    // delegate, we risk getting the app killed. As a safety measure, let's set a timeout.
+    //
+	__block BOOL notified   = NO;
+    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, SPBackgroundSyncTimeout * NSEC_PER_SEC);
+    dispatch_block_t block  = ^{
 		if (!notified) {
-			completion(YES);
+			completion(result);
 			notified = YES;
 		}
-	});
-	
-	// Notify anyways after timeout
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeoutSeconds * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
-		if (!notified) {
-			completion(NO);
-			notified = YES;
-		}
-    });
+	};
+
+	dispatch_group_notify(group, dispatch_get_main_queue(), block);
+    dispatch_after(timeout, dispatch_get_main_queue(), block);
 }
+
+#endif
+
 
 #if !TARGET_OS_IPHONE
 
@@ -516,9 +524,15 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 
 - (void)signOutAndRemoveLocalData:(BOOL)remove completion:(SimperiumSignoutCompletion)completion {
 	
+    // Don't proceed, if the user isn't logged in
+    if (!self.user.authenticated) {
+        return;
+    }
+    
     SPLogInfo(@"Simperium logging out...");
+    
     // Reset Simperium: Don't start network managers again; expect app to handle that
-    [self stopNetworking];
+    [self stopNetworkManagers];
     
     // Reset the network manager and processors; any enqueued tasks will get skipped
 	dispatch_group_t group = dispatch_group_create();
@@ -619,6 +633,17 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     return !self.skipContextProcessing;
 }
 
+- (BOOL)requiresConnection {
+    return (self.reachability.currentReachabilityStatus != NotReachable);
+}
+- (NSString *)networkStatus {
+    return self.network.status;
+}
+
+- (NSDate *)networkLastSeenTime {
+    return self.network.lastSeenTime;
+}
+
 
 #pragma mark ====================================================================================
 #pragma mark Authentication Helpers
@@ -627,7 +652,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 - (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token {
     
     // It's now safe to start the network managers
-    [self startNetworking];
+    [self startNetworkManagers];
     
     [self closeAuthViewControllerAnimated:YES];
 	
@@ -637,7 +662,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 }
 
 - (void)authenticationDidCancel {
-    [self stopNetworking];
+    [self stopNetworkManagers];
     [self.authenticator reset];
     self.user.authToken = nil;
     [self closeAuthViewControllerAnimated:YES];
@@ -648,7 +673,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 }
 
 - (void)authenticationDidFail {
-    [self stopNetworking];
+    [self stopNetworkManagers];
     [self.authenticator reset];
     self.user.authToken = nil;
     
@@ -663,7 +688,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         return NO;
 	}
     
-    [self stopNetworking];
+    [self stopNetworkManagers];
     
     return [self.authenticator authenticateIfNecessary];    
 }
@@ -692,13 +717,13 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         return;
 	}
 	
-    SPAuthenticationViewController *loginController		= [[self.authenticationViewControllerClass alloc] init];
-    self.authenticationViewController					= loginController;
-    self.authenticationViewController.authenticator		= self.authenticator;
-    self.authenticationViewController.signingIn			= self.shouldSignIn;
+    SPAuthenticationViewController *loginController = [[self.authenticationViewControllerClass alloc] init];
+    loginController.authenticator       = self.authenticator;
+    loginController.signingIn           = self.shouldSignIn;
+    self.authenticationViewController   = loginController;
 	
     if (!self.rootViewController) {
-        UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
+        UIWindow *window = [[[UIApplication sharedApplication] windows] firstObject];
         self.rootViewController = [window rootViewController];
         NSAssert(self.rootViewController, @"Simperium error: to use built-in authentication, you must configure a rootViewController when you "
 										   "initialize Simperium, or call setParentViewControllerForAuthentication:. "

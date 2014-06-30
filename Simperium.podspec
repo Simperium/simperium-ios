@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Simperium"
-  s.version      = "0.6.4"
+  s.version      = "0.6.5"
   s.summary      = "Simperium libraries."
   s.description  = "Simperium is a simple way for developers to move data as it changes, instantly and automatically."
   s.homepage     = "https://github.com/Simperium/simperium-ios"
@@ -16,9 +16,9 @@ Pod::Spec.new do |s|
   s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*'
   s.osx.source_files = 'Simperium-OSX/**/*.{h,m}'
 
-  s.exclude_files = 'Simperium/SPS3Manager.{h,m}', 'External/STKeychain/*'
-  s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}'
-
+  s.exclude_files = 'External/STKeychain/*'
+  s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}', 'Simperium/SPTOSViewController.{h,m}', 'Simperium/SPAuthenticationButton.{h,m}'
+  
   # Importing non-arc files
 
   s.subspec 'STKeychain' do |keychain|
@@ -55,5 +55,4 @@ Pod::Spec.new do |s|
   s.dependency 'Google-Diff-Match-Patch'
   s.dependency 'JRSwizzle'
   s.dependency 'SocketRocket'
-
 end

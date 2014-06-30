@@ -66,14 +66,17 @@
 - (void)testLargerIndex
 {
     NSLog(@"%@ start", self.name);
-    [self createAndStartFarms];
-
     // Leader sends an object to followers, but make followers get it from the index
-    Farm *leader = self.farms[0];
+    Farm *leader    = [self createFarm:@"leader"];
+    Farm *follower  = [self createFarm:@"follower"];
+    
+    self.farms      = [NSMutableArray arrayWithObjects:leader, follower, nil];
+    
+    [leader start];
     [leader connect];
     [self waitFor:5.0];
     
-    NSNumber *refWarpSpeed = [NSNumber numberWithInt:2];
+    NSNumber *refWarpSpeed = @(2);
     int numObjects = 2;
     for (int i=0; i<numObjects; i++) {
         leader.config = [[leader.simperium bucketForName:[Config entityName]] insertNewObject];
@@ -81,7 +84,8 @@
     }
     [leader.simperium save];
     leader.expectedAcknowledgments = numObjects;
-    XCTAssertTrue([self waitForCompletion], @"timed out");
+    
+    XCTAssertTrue([self waitForCompletion:3.0 farmArray:@[ leader ]], @"timed out");
     
 	// Set the new expectations, before connecting
     [self resetExpectations:self.farms];
@@ -92,6 +96,7 @@
         if (farm == leader) {
             continue;
 		}
+        [farm start];
         [farm connect];
     }
     
@@ -241,12 +246,12 @@
     [follower connect];
 
     XCTAssertTrue([self waitForCompletion: numConfigs/6 farmArray:[NSArray arrayWithObject:follower]], @"timed out (deleting many)");
-    int numLeft = [[followerBucket allObjects] count];
+    NSUInteger numLeft = [[followerBucket allObjects] count];
     
     [self waitFor:1.0];
     
     // Expect 10 objects left (70-60) plus the one that was created offline
-    XCTAssertTrue(numLeft == 10 + 1, @"didn't delete %d configs", numLeft);
+    XCTAssertTrue(numLeft == 10 + 1, @"didn't delete %luuu configs", (unsigned long)numLeft);
     
     offlineConfig = [followerBucket objectForKey:@"offlineConfig"];
     XCTAssertTrue(offlineConfig != nil, @"offline object was clobbered after re-index");

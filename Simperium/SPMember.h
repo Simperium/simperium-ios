@@ -18,6 +18,7 @@ extern NSString * const OP_LIST_INSERT;
 extern NSString * const OP_LIST_DELETE;
 extern NSString * const OP_OBJECT_ADD;
 extern NSString * const OP_OBJECT_REMOVE;
+extern NSString * const OP_OBJECT_REPLACE;
 extern NSString * const OP_INTEGER;
 extern NSString * const OP_LIST;
 extern NSString * const OP_LIST_DMP;
@@ -43,7 +44,7 @@ extern NSString * const OP_STRING;
 - (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object;
 - (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict;
 - (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue;
-- (id)applyDiff:(id)thisValue otherValue:(id)otherValue;
-- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue;
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue error:(NSError **)error;
+- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue error:(NSError **)error;
 
 @end

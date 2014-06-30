@@ -11,7 +11,7 @@
 
 static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-@implementation NSString(NSString_Simperium)
+@implementation NSString (Simperium)
 
 // From https://github.com/mikeho/QSUtilities
 + (NSString *)sp_encodeBase64WithString:(NSString *)strData {
@@ -99,11 +99,46 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
     return result;
 }
 
++ (NSString *)sp_randomStringOfLength:(NSUInteger)length
+{
+    NSMutableString *randomString   = [NSMutableString stringWithCapacity:length];
+    
+    for (int i = 0; i < length; i++) {
+        char letter = arc4random_uniform(26) + 'a';
+        [randomString appendFormat:@"%c", letter];
+    }
+    
+    return randomString;
+}
+
 - (NSString *)sp_urlEncodeString
 {
     return (NSString *) CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)self,
                                                                                   NULL, (CFStringRef)@";/?:@&=$+{}<>!*'()%#[],",
                                                                                   CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding)));
 }  
+
+- (NSArray *)sp_componentsSeparatedByString:(NSString *)separator limit:(NSInteger)limit
+{
+    NSMutableArray *components  = [NSMutableArray array];
+    NSString *pending           = self;
+    NSRange range               = [pending rangeOfString:separator];
+
+    while ( (range.location != NSNotFound) && (components.count < limit - 1) ) {
+        NSString *left = [pending substringToIndex:range.location];
+        if (left) {
+            [components addObject:left];
+        }
+        
+        pending = [pending substringFromIndex:range.location+range.length];
+        range   = [pending rangeOfString:separator];
+    }
+    
+    if (pending) {
+        [components addObject:pending];
+    }
+    
+    return components;
+}
 
 @end
