@@ -528,19 +528,20 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
     [threadSafeStorage beginSafeSection];
     
-    id<SPDiffable>object = [threadSafeStorage objectForKey:key bucketName :bucket.name];
+    id<SPDiffable>object    = [threadSafeStorage objectForKey:key bucketName:bucket.name];
+    NSDictionary *oldChange = [self.changesPending objectForKey:key];
     
-    // Was the object nuked?
-    if (!object) {
+    // Was the object remotely nuked?
+    if (!object && ![oldChange[CH_OPERATION] isEqualToString:CH_REMOVE]) {
         [self.changesPending removeObjectForKey:key];
         [threadSafeStorage finishSafeSection];
         return;
     }
     
     // Do we need to repost with the whole data?
-    if (overrideRemoteData) {
+    if (object && overrideRemoteData) {
         // Fire fault
-        NSMutableDictionary *newChange = [[self.changesPending objectForKey:object.simperiumKey] mutableCopy];
+        NSMutableDictionary *newChange = [oldChange mutableCopy];
         newChange[CH_DATA] = [object dictionary];
         [self.changesPending setObject:newChange forKey:key];
     }
