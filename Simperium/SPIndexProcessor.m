@@ -162,6 +162,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 		
         NSMutableSet *addedKeys     = [NSMutableSet setWithCapacity:5];
         NSMutableSet *changedKeys   = [NSMutableSet setWithCapacity:5];
+        NSMutableSet *rebasedKeys   = [NSMutableSet setWithCapacity:5];
 		
         // Batch fault all the objects into a dictionary for efficiency
         NSMutableArray *objectKeys  = [NSMutableArray arrayWithCapacity:versions.count];
@@ -232,8 +233,8 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                         SPLogWarn(@"Simperium successfully updated local entity (%@): %@", bucket.name, key);
                     }
                     
-                    // 3.5. Signal the changeHandler that the object has untracked changes
-                    changeHandler(key);
+                    // 3.5. Signal the changeHandler that the object has untracked changes. Do this after saving the storage!
+                    [rebasedKeys addObject:key];
                 }
                 
                 [changedKeys addObject:key];
@@ -251,6 +252,11 @@ typedef NS_ENUM(NSInteger, SPVersion) {
         [storage save];
 		[storage finishSafeSection];
 		
+        // Signal the changeHandler that the object has untracked changes
+        for (NSString *key in rebasedKeys) {
+            changeHandler(key);
+        }
+        
         // Do all main thread work afterwards as well
         dispatch_async(dispatch_get_main_queue(), ^{
             // Manually resolve any pending references to added objects
