@@ -22,7 +22,7 @@
 - (id)initFromDictionary:(NSDictionary *)dict
 {
     if (self = [super initFromDictionary:dict]) {
-        self.dmp = [[DiffMatchPatch alloc] init];
+        _dmp = [[DiffMatchPatch alloc] init];
     }
     return self;
 }

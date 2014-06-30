@@ -68,10 +68,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (id)initWithSimperium:(Simperium *)s {
 	if ((self = [super init])) {
-        self.simperium      = s;
-        self.indexArray     = [NSMutableArray arrayWithCapacity:200];
-        self.changesBatch   = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
-        self.versionsBatch  = [NSMutableArray arrayWithCapacity:SPWebsocketIndexBatchSize];
+        _simperium      = s;
+        _indexArray     = [NSMutableArray arrayWithCapacity:200];
+        _changesBatch   = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
+        _versionsBatch  = [NSMutableArray arrayWithCapacity:SPWebsocketIndexBatchSize];
     }
 	
 	return self;
