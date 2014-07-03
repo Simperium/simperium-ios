@@ -60,24 +60,40 @@ NSString * SPOperationTypeForClass(Class class)
 }
 
 
-id SPApplyDiff(id object, SPDiff *diff)
+id SPApplyDiff(id object, SPDiff *diff, NSError *__autoreleasing *error)
 {
     NSCParameterAssert(diff);
     
-    NSString *op = diff[OP_OP];
-    id value = diff[OP_VALUE];
-    if ([op isEqual:OP_OBJECT_REMOVE]) return nil;
-        if ([op isEqual:OP_REPLACE] || [op isEqual:OP_OBJECT_ADD]) return value;
-    if ([op isEqual:OP_STRING] && [object isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]]) return [(NSString *)object sp_stringByApplyingStringDiff:value];
-    if ([op isEqual:OP_OBJECT] && [object isKindOfClass:[NSDictionary class]] && [value isKindOfClass:[NSDictionary class]]) return [(NSDictionary *)object sp_objectByApplyingObjectDiff:value];
-    if ([op isEqual:OP_LIST] && [object isKindOfClass:[NSArray class]] && [value isKindOfClass:[NSDictionary class]]) return [(NSArray *)object sp_arrayByApplyingArrayDiff:value];
-    if ([op isEqual:OP_LIST_DMP] && [object isKindOfClass:[NSArray class]] && [value isKindOfClass:[NSString class]]) return [(NSArray *)object sp_arrayByApplyingArrayDMPDiff:value];
-    if ([op isEqual:OP_INTEGER] && [object isKindOfClass:[NSNumber class]] && [value isKindOfClass:[NSNumber class]]) return [(NSNumber *)object sp_numberByApplyingNumberDiff:value];
+    NSString *op = [diff[OP_OP] lowercaseString];
+    id value     = diff[OP_VALUE];
+
+    if ([op isEqual:OP_OBJECT_REMOVE])
+        return nil;
+
+    if ([op isEqual:OP_OBJECT_REPLACE] || [op isEqual:OP_OBJECT_ADD])
+        return value;
+
+    if ([op isEqual:OP_STRING] && [object isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]])
+        return [(NSString *)object sp_stringByApplyingStringDiff:value error:error];
+
+    if ([op isEqual:OP_OBJECT] && [object isKindOfClass:[NSDictionary class]] && [value isKindOfClass:[NSDictionary class]])
+        return [(NSDictionary *)object sp_objectByApplyingObjectDiff:value error:error];
+
+    if ([op isEqual:OP_LIST] && [object isKindOfClass:[NSArray class]] && [value isKindOfClass:[NSDictionary class]])
+        return [(NSArray *)object sp_arrayByApplyingArrayDiff:value error:error];
+
+    if ([op isEqual:OP_LIST_DMP] && [object isKindOfClass:[NSArray class]] && [value isKindOfClass:[NSString class]])
+        return [(NSArray *)object sp_arrayByApplyingArrayDMPDiff:value error:error];
+
+    if ([op isEqual:OP_INTEGER] && [object isKindOfClass:[NSNumber class]] && [value isKindOfClass:[NSNumber class]])
+        return [(NSNumber *)object sp_numberByApplyingNumberDiff:value];
+
+
     SPLogError(@"Unable to apply diff (%@) to object (%@)",diff, object);
     return object;
 }
 
-SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *policy)
+SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *policy, NSError *__autoreleasing *error)
 {
     NSCParameterAssert(aop && bop);
 
@@ -88,20 +104,71 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
     }
     if ([aop_op isEqual:OP_OBJECT_REMOVE] && [bop_op isEqual:OP_OBJECT_REMOVE]) return nil;
     if (![aop_op isEqual:OP_OBJECT_ADD] && [bop_op isEqual:OP_OBJECT_REMOVE]) {
-        id valueAfterA = SPApplyDiff(source, aop);
+
+        NSError *__autoreleasing theError;
+        id valueAfterA = SPApplyDiff(source, aop, &theError);
+        if (theError) {
+            if (error) {
+                *error = theError;
+            }
+            return @{};
+        }
         if (!valueAfterA) return nil;
         return @{ OP_OP: OP_OBJECT_ADD, OP_VALUE: valueAfterA };
     }
     if ([aop_op isEqual:bop_op]) {
         if ([aop_op isEqual:OP_STRING]) {
-            NSString *transformedString = [(NSString *)source sp_stringDiffByTransformingStringDiff:aop[OP_VALUE] ontoStringDiff:bop[OP_VALUE]];
+
+            NSError *__autoreleasing theError;
+            NSString *transformedString = [(NSString *)source sp_stringDiffByTransformingStringDiff:aop[OP_VALUE] ontoStringDiff:bop[OP_VALUE] error:&theError];
+            if (theError) {
+                if (error) {
+                    *error = theError;
+                }
+                return @{};
+            }
             if (!transformedString) return nil;
             return @{ OP_OP: OP_STRING, OP_VALUE: transformedString };
         }
-        if ([aop_op isEqual:OP_OBJECT]) return @{ OP_OP: OP_OBJECT, OP_VALUE: [(NSDictionary *)source sp_objectDiffByTransformingObjectDiff:aop[OP_VALUE] ontoObjectDiff:bop[OP_VALUE] policy:policy] };
-        if ([aop_op isEqual:OP_LIST]) return @{ OP_OP: OP_LIST, OP_VALUE: [(NSArray *)source sp_arrayDiffByTransformingArrayDiff:aop[OP_VALUE] ontoArrayDiff:bop[OP_VALUE] policy:policy] };
-        if ([aop_op isEqual:OP_LIST_DMP]) return @{ OP_OP: OP_LIST_DMP, OP_VALUE: [(NSArray *)source sp_arrayDMPDiffByTransformingArrayDMPDiff:aop[OP_VALUE] ontoArrayDMPDiff:bop[OP_VALUE] policy:policy] };
-        if ([aop_op isEqual:OP_INTEGER]) return @{ OP_OP: OP_INTEGER, OP_VALUE: [(NSNumber *)source sp_numberDiffByTransformingNumberDiff:aop[OP_VALUE] ontoNumberDiff:bop[OP_VALUE]] };
+        if ([aop_op isEqual:OP_OBJECT]) {
+            NSError *__autoreleasing theError;
+            id transformedDiff = [(NSDictionary *)source sp_objectDiffByTransformingObjectDiff:aop[OP_VALUE] ontoObjectDiff:bop[OP_VALUE] policy:policy error:&theError];
+            if (theError) {
+                if (error) {
+                    *error = theError;
+                }
+                return @{};
+            }
+            return @{ OP_OP: OP_OBJECT, OP_VALUE: transformedDiff };
+        }
+
+        if ([aop_op isEqual:OP_LIST]) {
+            NSError *__autoreleasing theError;
+            id transformedDiff = [(NSArray *)source sp_arrayDiffByTransformingArrayDiff:aop[OP_VALUE] ontoArrayDiff:bop[OP_VALUE] policy:policy error:&theError];
+            if (theError) {
+                if (error) {
+                    *error = theError;
+                }
+                return @{};
+            }
+            return @{ OP_OP: OP_LIST, OP_VALUE: transformedDiff };
+        }
+
+        if ([aop_op isEqual:OP_LIST_DMP]) {
+            NSError *__autoreleasing theError;
+            id transformedDiff = [(NSArray *)source sp_arrayDMPDiffByTransformingArrayDMPDiff:aop[OP_VALUE] ontoArrayDMPDiff:bop[OP_VALUE] policy:policy error:&theError];
+            if (theError) {
+                if (error) {
+                    *error = theError;
+                }
+                return @{};
+            }
+            return @{ OP_OP: OP_LIST_DMP, OP_VALUE: transformedDiff };
+        }
+
+        if ([aop_op isEqual:OP_INTEGER]) {
+            return @{ OP_OP: OP_INTEGER, OP_VALUE: [(NSNumber *)source sp_numberDiffByTransformingNumberDiff:aop[OP_VALUE] ontoNumberDiff:bop[OP_VALUE]] };
+        }
     }
 
     return nil;
@@ -135,11 +202,19 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
     return diffs;
 }
 
-- (NSDictionary *)sp_objectByApplyingObjectDiff:(SPObjectDiff *)diff
+- (NSDictionary *)sp_objectByApplyingObjectDiff:(SPObjectDiff *)diff error:(NSError *__autoreleasing *)error
 {
     NSMutableDictionary *newObject = [self mutableCopy];
     for (NSString *key in diff) {
-        id newValue = SPApplyDiff(self[key], diff[key]);
+
+        NSError *__autoreleasing theError;
+        id newValue = SPApplyDiff(self[key], diff[key], &theError);
+        if (theError) {
+            if (error) {
+                *error = theError;
+            }
+            return nil;
+        }
         if (newValue) {
             newObject[key] = newValue;
         } else {
@@ -149,14 +224,22 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
     return newObject;
 }
 
-- (NSDictionary *)sp_objectDiffByTransformingObjectDiff:(SPObjectDiff *)ad ontoObjectDiff:(SPObjectDiff *)bd policy:(SPDiffPolicy *)diffPolicy
+- (NSDictionary *)sp_objectDiffByTransformingObjectDiff:(SPObjectDiff *)ad ontoObjectDiff:(SPObjectDiff *)bd policy:(SPDiffPolicy *)diffPolicy error:(NSError *__autoreleasing *)error
 {
     NSMutableDictionary *ad_new = [ad mutableCopy];
     for (NSString *key in ad) {
         if (!bd[key]) continue;
         
         NSDictionary *elementPolicy = diffPolicy[SPPolicyAttributesKey][key];
-        SPObjectDiff *diff = SPTransformDiff(self[key], ad[key], bd[key], elementPolicy);
+
+        NSError *__autoreleasing theError;
+        SPObjectDiff *diff = SPTransformDiff(self[key], ad[key], bd[key], elementPolicy, &theError);
+        if (theError) {
+            if (error) {
+                *error = theError;
+            }
+            return nil;
+        }
         if (diff) {
             ad_new[key] = diff;
         } else {
@@ -184,31 +267,35 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
     return [dmp diff_toDelta:diffs];
 }
 
-- (NSString *)sp_stringByApplyingStringDiff:(SPStringDiff *)diff
+- (NSString *)sp_stringByApplyingStringDiff:(SPStringDiff *)diff error:(NSError *__autoreleasing *)error
 {
     if (diff == nil) return [self copy];
+
+    // See upstream -[SPMemberText applyDiff:otherValue:error:]
     DiffMatchPatch *dmp = SPDiffMatchPatch();
-    NSError __autoreleasing *error = nil;
-    NSMutableArray *diffs = [dmp diff_fromDeltaWithText:self andDelta:diff error:&error];
-    if (error) {
-        return nil;
-    }
-    NSMutableArray *patches = [dmp patch_makeFromDiffs:diffs];
-    
-    // the first object is the patched string.
-    return [dmp patch_apply:patches toString:self][0];
+	NSMutableArray *diffs   = [dmp diff_fromDeltaWithText:self andDelta:diff error:error];
+	NSMutableArray *patches = [dmp patch_makeFromOldString:self andDiffs:diffs];
+	NSArray *result         = [dmp patch_apply:patches toString:self];
+
+	return [result firstObject];
 }
 
-- (SPStringDiff *)sp_stringDiffByTransformingStringDiff:(NSString *)stringDiff1 ontoStringDiff:(NSString *)stringDiff2
+- (SPStringDiff *)sp_stringDiffByTransformingStringDiff:(SPStringDiff *)stringDiff1 ontoStringDiff:(SPStringDiff *)stringDiff2 error:(NSError *__autoreleasing *)error
 {
     DiffMatchPatch *dmp = SPDiffMatchPatch();
-    NSError __autoreleasing *error = nil;
-    NSMutableArray *diff1Diffs = [dmp diff_fromDeltaWithText:self andDelta:stringDiff1 error:&error];
-    if (error) {
+    NSError __autoreleasing *theError = nil;
+    NSMutableArray *diff1Diffs = [dmp diff_fromDeltaWithText:self andDelta:stringDiff1 error:&theError];
+    if (theError) {
+        if (error) {
+            *error = theError;
+        }
         return nil;
     }
-    NSMutableArray *diff2Diffs = [dmp diff_fromDeltaWithText:self andDelta:stringDiff2 error:&error];
-    if (error) {
+    NSMutableArray *diff2Diffs = [dmp diff_fromDeltaWithText:self andDelta:stringDiff2 error:&theError];
+    if (theError) {
+        if (error) {
+            *error = theError;
+        }
         return nil;
     }
     NSMutableArray *diff1Patches = [dmp patch_makeFromOldString:self andDiffs:diff1Diffs];
@@ -264,18 +351,21 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
 	return [self sp_diffWithArray:targetArray diffMatchPatch:SPDiffMatchPatch()];
 }
 
-- (NSArray *)sp_arrayByApplyingArrayDMPDiff:(SPArrayDMPDiff *)arrayDMPDiff
+- (NSArray *)sp_arrayByApplyingArrayDMPDiff:(SPArrayDMPDiff *)arrayDMPDiff error:(NSError *__autoreleasing *)error
 {
 	NSParameterAssert(arrayDMPDiff);
     DiffMatchPatch *dmp = SPDiffMatchPatch();
 	
 	NSString *newLineSeparatedJSONString = [self sp_newLineSeparatedJSONString];
-	
-	NSError __autoreleasing *error = nil;
-	NSMutableArray *diffs = [dmp diff_fromDeltaWithText:newLineSeparatedJSONString andDelta:arrayDMPDiff error:&error];
-    
-	if (error) {
-		[NSException raise:NSInternalInconsistencyException format:@"Simperium: Error creating diff from diff with text %@ and diff %@ due to error %@ in %s.", newLineSeparatedJSONString, arrayDMPDiff, error, __PRETTY_FUNCTION__];
+
+    NSError *__autoreleasing theError;
+	NSMutableArray *diffs = [dmp diff_fromDeltaWithText:newLineSeparatedJSONString andDelta:arrayDMPDiff error:&theError];
+	if (theError) {
+		[NSException raise:NSInternalInconsistencyException format:@"Simperium: Error creating diff from diff with text %@ and diff %@ due to error %@ in %s.", newLineSeparatedJSONString, arrayDMPDiff, theError, __PRETTY_FUNCTION__];
+        if (error) {
+            *error = theError;
+        }
+        return nil;
 	}
     
 	NSMutableArray *patches = [dmp patch_makeFromDiffs:diffs];
@@ -284,18 +374,30 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
 	return [NSArray sp_arrayFromNewLineSeparatedJSONString:updatedNewlineSeparatedString];
 }
 
-- (SPArrayDMPDiff *)sp_arrayDMPDiffByTransformingArrayDMPDiff:(SPArrayDMPDiff *)arrayDMPDiff1 ontoArrayDMPDiff:(SPArrayDMPDiff *)arrayDMPDiff2 policy:(SPDiffPolicy *)diffPolicy
+- (SPArrayDMPDiff *)sp_arrayDMPDiffByTransformingArrayDMPDiff:(SPArrayDMPDiff *)arrayDMPDiff1 ontoArrayDMPDiff:(SPArrayDMPDiff *)arrayDMPDiff2 policy:(SPDiffPolicy *)diffPolicy error:(NSError *__autoreleasing *)error
 {
 	NSParameterAssert(arrayDMPDiff1); NSParameterAssert(arrayDMPDiff2);
     DiffMatchPatch *dmp = SPDiffMatchPatch();
 
 	NSString *sourceText = [self sp_newLineSeparatedJSONString];
 	
-	NSError __autoreleasing *error = nil;
-	NSMutableArray *diffs1 = [dmp diff_fromDeltaWithText:sourceText andDelta:arrayDMPDiff1 error:&error];
-	if (error) [NSException raise:NSInternalInconsistencyException format:@"Simperium: Error creating diff from diff with text %@ and diff %@ due to error %@ in %s.", sourceText, arrayDMPDiff1, error, __PRETTY_FUNCTION__];
-    NSMutableArray *diffs2 = [dmp diff_fromDeltaWithText:sourceText andDelta:arrayDMPDiff2 error:&error];
-	if (error) [NSException raise:NSInternalInconsistencyException format:@"Simperium: Error creating diff from diff with text %@ and diff %@ due to error %@ in %s.", sourceText, arrayDMPDiff2, error, __PRETTY_FUNCTION__];
+	NSError __autoreleasing *theError = nil;
+	NSMutableArray *diffs1 = [dmp diff_fromDeltaWithText:sourceText andDelta:arrayDMPDiff1 error:&theError];
+	if (theError) {
+        [NSException raise:NSInternalInconsistencyException format:@"Simperium: Error creating diff from diff with text %@ and diff %@ due to error %@ in %s.", sourceText, arrayDMPDiff1, theError, __PRETTY_FUNCTION__];
+        if (error) {
+            *error = theError;
+        }
+        return nil;
+    }
+    NSMutableArray *diffs2 = [dmp diff_fromDeltaWithText:sourceText andDelta:arrayDMPDiff2 error:&theError];
+	if (theError) {
+        [NSException raise:NSInternalInconsistencyException format:@"Simperium: Error creating diff from diff with text %@ and diff %@ due to error %@ in %s.", sourceText, arrayDMPDiff2, theError, __PRETTY_FUNCTION__];
+        if (error) {
+            *error = theError;
+        }
+        return nil;
+    }
 	
     NSMutableArray *patches1 = [dmp patch_makeFromDiffs:diffs1];
     NSMutableArray *patches2 = [dmp patch_makeFromDiffs:diffs2];
@@ -416,7 +518,7 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
 	return diffs;
 }
 
-- (NSArray *)sp_arrayByApplyingArrayDiff:(SPArrayDiff *)arrayDiff {
+- (NSArray *)sp_arrayByApplyingArrayDiff:(SPArrayDiff *)arrayDiff error:(NSError *__autoreleasing *)error {
     NSMutableArray *array = [self mutableCopy];
     
     NSArray *indexKeys = [[arrayDiff allKeys] sortedArrayWithOptions:0 usingComparator:^NSComparisonResult(id obj1, id obj2) {
@@ -442,7 +544,15 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
 			[indexesToInsert addIndex:index];
 		} else {
             id sourceValue = array[index];
-            id diffedValue = SPApplyDiff(sourceValue, elementDiff);
+
+            NSError *__autoreleasing theError;
+            id diffedValue = SPApplyDiff(sourceValue, elementDiff, &theError);
+            if (theError) {
+                if (error) {
+                    *error = theError;
+                }
+                return nil;
+            }
             [replacementObjects addObject:diffedValue];
             [indexesToReplace addIndex:index];
         }
@@ -456,7 +566,7 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
 	return array;
 }
 
-- (NSDictionary *)sp_arrayDiffByTransformingArrayDiff:(SPArrayDiff *)ad ontoArrayDiff:(SPArrayDiff *)bd policy:(SPDiffPolicy *)diffPolicy
+- (NSDictionary *)sp_arrayDiffByTransformingArrayDiff:(SPArrayDiff *)ad ontoArrayDiff:(SPArrayDiff *)bd policy:(SPDiffPolicy *)diffPolicy error:(NSError *__autoreleasing *)error
 {
     NSMutableArray *b_inserts = [[NSMutableArray alloc] init];
     NSMutableArray *b_deletes = [[NSMutableArray alloc] init];
@@ -494,11 +604,28 @@ SPDiff * SPTransformDiff(id source, SPDiff *aop, SPDiff *bop, SPDiffPolicy *poli
             if ([bOp[OP_OP] isEqual:OP_LIST_DELETE]) {
                 if ([op[OP_OP] isEqual:OP_REPLACE]) ad_new[shiftedIndexKey] = @{ OP_OP: OP_LIST_INSERT, OP_VALUE: op[OP_VALUE] };
                 if (![op[OP_OP] isEqual:OP_LIST_INSERT]) {
-                        ad_new[shiftedIndexKey] = @{ OP_OP: OP_LIST_INSERT, OP_VALUE: SPApplyDiff(self[index], op) };
+                    NSError *__autoreleasing theError;
+                    id value = SPApplyDiff(self[index], op, &theError);
+                    if (theError) {
+                        if (error) {
+                            *error = theError;
+                        }
+                        return nil;
+                    }
+                    ad_new[shiftedIndexKey] = @{ OP_OP: OP_LIST_INSERT, OP_VALUE: value };
                 }
                 continue;
             }
-            SPDiff *diff = SPTransformDiff(self[shiftedIndex], op, bd[shiftedIndexKey], diffPolicy[SPPolicyItemKey]);
+
+            NSError *__autoreleasing theError;
+            SPDiff *diff = SPTransformDiff(self[shiftedIndex], op, bd[shiftedIndexKey], diffPolicy[SPPolicyItemKey], &theError);
+            if (theError) {
+                if (error) {
+                    *error = theError;
+                }
+                return nil;
+            }
+
             if (diff) {
               ad_new[shiftedIndexKey] = diff;  
             } else {
