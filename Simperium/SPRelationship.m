@@ -44,62 +44,38 @@ static NSString * const SPLegacyPathAttribute           = @"SPPathAttribute";
 
 @implementation SPRelationship
 
-- (instancetype)initWithSourceKey:(NSString *)sourceKey
-                  sourceAttribute:(NSString *)sourceAttribute
-                     sourceBucket:(NSString *)sourceBucket
-                        targetKey:(NSString *)targetKey
-                     targetBucket:(NSString *)targetBucket {
-    
-    NSAssert(sourceKey.length,         @"Invalid Parameter");
-    NSAssert(sourceAttribute.length,   @"Invalid Parameter");
-    NSAssert(sourceBucket.length,      @"Invalid Parameter");
-    NSAssert(targetKey.length,         @"Invalid Parameter");
-    
-    if ((self = [super init])) {
-        self.sourceKey          = sourceKey;
-        self.sourceAttribute    = sourceAttribute;
-        self.sourceBucket       = sourceBucket;
-        self.targetKey          = targetKey;
-        self.targetBucket       = targetBucket;
-    }
-    
-    return self;
-}
-
 - (BOOL)isEqual:(id)object {
     if (![object isKindOfClass:[self class]]) {
         return NO;
     }
     
     SPRelationship *second = (SPRelationship *)object;
-    return  [self.sourceKey         isEqual:second.sourceKey]       &&
-            [self.sourceAttribute   isEqual:second.sourceAttribute] &&
-            [self.sourceBucket      isEqual:second.sourceBucket]    &&
-            [self.targetBucket      isEqual:second.targetBucket]    &&
-            [self.targetKey         isEqual:second.targetKey];
+    return  [_sourceKey     isEqual:second.sourceKey]       && [_sourceAttribute isEqual:second.sourceAttribute]    &&
+            [_sourceBucket  isEqual:second.sourceBucket]    && [_targetBucket isEqual:second.targetBucket]          &&
+            [_targetKey     isEqual:second.targetKey];
 }
 
 - (NSUInteger)hash {
-    return  [self.sourceKey         hash] +
-            [self.sourceAttribute   hash] +
-            [self.sourceBucket      hash] +
-            [self.targetKey         hash] +
-            [self.targetBucket      hash];
+    return  [_sourceKey hash] + [_sourceAttribute hash] + [_sourceBucket hash] + [_targetKey hash] + [_targetBucket hash];
 }
 
 - (NSDictionary *)toDictionary {
     return @{
-        SPRelationshipsSourceKey        : self.sourceKey,
-        SPRelationshipsSourceBucket     : self.sourceBucket,
-        SPRelationshipsSourceAttribute  : self.sourceAttribute,
-        SPRelationshipsTargetBucket     : self.targetBucket,
-        SPRelationshipsTargetKey        : self.targetKey
+        SPRelationshipsSourceKey        : _sourceKey,
+        SPRelationshipsSourceBucket     : _sourceBucket,
+        SPRelationshipsSourceAttribute  : _sourceAttribute,
+        SPRelationshipsTargetBucket     : _targetBucket,
+        SPRelationshipsTargetKey        : _targetKey
     };
 }
+
+
+#pragma mark - Public Helpers
 
 + (NSArray *)serializeToArray:(NSArray *)relationships {
     
     NSMutableArray *serialized = [NSMutableArray array];
+    
     for (SPRelationship *relationship in relationships) {
         [serialized addObject:[relationship toDictionary]];
     }
@@ -114,11 +90,12 @@ static NSString * const SPLegacyPathAttribute           = @"SPPathAttribute";
     for (NSDictionary *rawRelationship in rawRelationships) {
         NSAssert([rawRelationship isKindOfClass:[NSDictionary class]], @"Invalid Parameter");
         
-        SPRelationship *relationship = [SPRelationship relationshipFromObjectWithKey:rawRelationship[SPRelationshipsSourceKey]
-                                                                        andAttribute:rawRelationship[SPRelationshipsSourceAttribute]
-                                                                            inBucket:rawRelationship[SPRelationshipsSourceBucket]
-                                                                     toObjectWithKey:rawRelationship[SPRelationshipsTargetKey]
-                                                                            inBucket:rawRelationship[SPRelationshipsTargetBucket]];
+        SPRelationship *relationship    = [self new];
+        relationship.sourceKey          = rawRelationship[SPRelationshipsSourceKey];
+        relationship.sourceAttribute    = rawRelationship[SPRelationshipsSourceAttribute];
+        relationship.sourceBucket       = rawRelationship[SPRelationshipsSourceBucket];
+        relationship.targetKey          = rawRelationship[SPRelationshipsTargetKey];
+        relationship.targetBucket       = rawRelationship[SPRelationshipsTargetBucket];
         
         [parsed addObject:relationship];
     }
@@ -134,12 +111,15 @@ static NSString * const SPLegacyPathAttribute           = @"SPPathAttribute";
         NSArray *relationships = rawLegacy[targetKey];
         NSAssert([relationships isKindOfClass:[NSArray class]], @"Invalid Kind");
         
-        for (NSDictionary *legacy in relationships) {
-            SPRelationship *relationship = [SPRelationship relationshipFromObjectWithKey:legacy[SPLegacyPathKey]
-                                                                            andAttribute:legacy[SPLegacyPathAttribute]
-                                                                                inBucket:legacy[SPLegacyPathBucket]
-                                                                         toObjectWithKey:targetKey
-                                                                                inBucket:@""];
+        for (NSDictionary *rawRelationship in relationships) {
+            NSAssert([rawRelationship isKindOfClass:[NSDictionary class]], @"Invalid Parameter");
+            
+            SPRelationship *relationship    = [self new];
+            relationship.sourceKey          = rawRelationship[SPLegacyPathKey];
+            relationship.sourceAttribute    = rawRelationship[SPLegacyPathAttribute];
+            relationship.sourceBucket       = rawRelationship[SPLegacyPathBucket];
+            relationship.targetKey          = targetKey;
+            relationship.targetBucket       = @"";
             
             [parsed addObject:relationship];
         }
@@ -154,11 +134,15 @@ static NSString * const SPLegacyPathAttribute           = @"SPPathAttribute";
                               toObjectWithKey:(NSString *)targetKey
                                      inBucket:(NSString *)targetBucket {
     
-    return [[[self class] alloc] initWithSourceKey:sourceKey
-                                   sourceAttribute:sourceAttribute
-                                      sourceBucket:sourceBucket
-                                         targetKey:targetKey
-                                      targetBucket:targetBucket];
+    SPRelationship *relationship    = [self new];
+    
+    relationship.sourceKey          = sourceKey;
+    relationship.sourceAttribute    = sourceAttribute;
+    relationship.sourceBucket       = sourceBucket;
+    relationship.targetKey          = targetKey;
+    relationship.targetBucket       = targetBucket;
+    
+    return relationship;
 }
 
 @end

@@ -8,6 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
+
+
+#pragma mark ====================================================================================
+#pragma mark SPRelationship
+#pragma mark ====================================================================================
+
 @interface SPRelationship : NSObject
 
 @property (nonatomic, strong, readonly) NSString *sourceKey;

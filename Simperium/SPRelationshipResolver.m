@@ -47,13 +47,14 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
 @implementation SPRelationshipResolver
 
 - (id)init {
-    if ((self = [super init])) {
-        NSString *queueLabel        = [@"com.simperium." stringByAppendingString:[[self class] description]];
-        self.queue                  = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
+    self = [super init];
+    if (self) {
+        NSString *queueLabel    = [@"com.simperium." stringByAppendingString:[[self class] description]];
+        _queue                  = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
         
-        self.pendingRelationships   = [NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPersonality];
-        self.directMap              = [NSMapTable strongToStrongObjectsMapTable];
-        self.inverseMap             = [NSMapTable strongToStrongObjectsMapTable];
+        _pendingRelationships   = [NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPersonality];
+        _directMap              = [NSMapTable strongToStrongObjectsMapTable];
+        _inverseMap             = [NSMapTable strongToStrongObjectsMapTable];
     }
     
     return self;
