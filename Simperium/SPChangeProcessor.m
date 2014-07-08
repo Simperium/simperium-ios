@@ -68,8 +68,8 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         NSString *retryKey                  = [NSString stringWithFormat:@"keysForObjectsWithPendingRetry-%@", label];
         self.keysForObjectsWithPendingRetry = [SPPersistentMutableSet loadSetWithLabel:retryKey];
         
-        NSString *deleteKey = [NSString stringWithFormat:@"keysForObjectsToDelete-%@", label];
-        self.keysForObjectsToDelete = [SPPersistentMutableSet loadSetWithLabel:deleteKey];
+        NSString *deleteKey                 = [NSString stringWithFormat:@"keysForObjectsToDelete-%@", label];
+        self.keysForObjectsToDelete         = [SPPersistentMutableSet loadSetWithLabel:deleteKey];
 		
         [self migratePendingChangesIfNeeded];
     }
