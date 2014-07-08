@@ -14,8 +14,9 @@
 @implementation SPMemberEntity
 
 - (id)initFromDictionary:(NSDictionary *)dict {
-    if (self = [super initFromDictionary:dict]) {
-        self.entityName = [dict objectForKey:@"entityName"];
+    self = [super initFromDictionary:dict];
+    if (self) {
+        _entityName = dict[@"entityName"];
     }
     
     return self;
