@@ -32,10 +32,8 @@
 		self.simperium = [[Simperium alloc] initWithModel:self.managedObjectModel
 												  context:self.managedObjectContext
 											  coordinator:self.persistentStoreCoordinator
-													label:label];
-        
-        // Some stuff is stored in user prefs / keychain, so be sure to remove it
-		[self signout];
+													label:label
+                                          bucketOverrides:nil];
 		      
         self.simperium.verboseLoggingEnabled = YES;
         self.token = aToken;

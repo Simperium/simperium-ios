@@ -99,6 +99,8 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 }
 
 - (void)viewDidLoad {
+    [super viewDidLoad];
+    
     self.validator = [[SPAuthenticationValidator alloc] init];
     
 	SPAuthenticationConfiguration *configuration = [SPAuthenticationConfiguration sharedInstance];
@@ -259,6 +261,8 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
     self.tableView.scrollEnabled = NO;
     
 	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
@@ -273,6 +277,8 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    
     // un-register for keyboard notifications
 	NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
 	[nc removeObserver: self name:UIKeyboardWillHideNotification object:nil];
@@ -451,9 +457,6 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 	[self.progressView setHidden: YES];
 	[self.progressView stopAnimating];
 	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-	CFPreferencesSetAppValue(CFSTR("email"), @"", kCFPreferencesCurrentApplication);
-	CFPreferencesSetAppValue(CFSTR("password"), @"", kCFPreferencesCurrentApplication);
-	CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
 }
 
 - (void)performCreation {
@@ -464,9 +467,6 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 	[self.usernameField resignFirstResponder];
 	[self.passwordField resignFirstResponder];
 	[self.passwordConfirmField resignFirstResponder];
-	CFPreferencesSetAppValue(CFSTR("email"), (__bridge CFPropertyListRef)(self.usernameField.text), kCFPreferencesCurrentApplication);
-	CFPreferencesSetAppValue(CFSTR("password"), (__bridge CFPropertyListRef)(self.passwordField.text), kCFPreferencesCurrentApplication);
-	CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
 	
 	// Try to login and sync after entering password?
 	[self.progressView setHidden: NO];

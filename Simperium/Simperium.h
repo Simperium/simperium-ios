@@ -13,6 +13,9 @@
 #import "SPAuthenticator.h"
 #import "SPUser.h"
 
+#if TARGET_OS_IPHONE
+#import <UIKit/UIApplication.h>
+#endif
 
 
 @class Simperium;
@@ -66,6 +69,13 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
 			context:(NSManagedObjectContext *)context
 		coordinator:(NSPersistentStoreCoordinator *)coordinator;
 
+// Initializes Simperium: This constructor allows you to specify custom mappings between local and remote buckets.
+- (id)initWithModel:(NSManagedObjectModel *)model
+			context:(NSManagedObjectContext *)context
+		coordinator:(NSPersistentStoreCoordinator *)coordinator
+			  label:(NSString *)label
+    bucketOverrides:(NSDictionary *)bucketOverrides;
+
 #if TARGET_OS_IPHONE
 // Starts Simperium and displays the auth interface, if needed.
 - (void)authenticateWithAppID:(NSString *)identifier APIKey:(NSString *)key rootViewController:(UIViewController *)controller;
@@ -86,9 +96,12 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
 // (you can also just save your context and Simperium will see the changes).
 - (BOOL)save;
 
-// Force Simperium to sync all its buckets. Success return value will be false if the timeout is reached, and the sync wasn't completed.
-typedef void (^SimperiumForceSyncCompletion)(BOOL success);
-- (void)forceSyncWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumForceSyncCompletion)completion;
+// Support for iOS Background Fetch. 'result' flag will be set to UIBackgroundFetchResultNewData, if new data was retrieved,
+// or set to UIBackgroundFetchResultNoData in any other case.
+#if defined(__IPHONE_7_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0)
+typedef void (^SimperiumBackgroundFetchCompletion)(UIBackgroundFetchResult result);
+- (void)backgroundFetchWithCompletion:(SimperiumBackgroundFetchCompletion)completion;
+#endif
 
 // Get a particular bucket (which, for Core Data, corresponds to a particular Entity name in your model).
 // Once you have a bucket instance, you can set a SPBucketDelegate to react to changes.
@@ -127,19 +140,19 @@ typedef void (^SimperiumSignoutCompletion)(void);
 - (BOOL)authenticateIfNecessary;
 
 // A SimperiumDelegate for system callbacks.
-@property (nonatomic, weak) id<SimperiumDelegate> delegate;
+@property (nonatomic, readwrite, weak) id<SimperiumDelegate> delegate;
 
 // Set this to true if you need to be able to cancel the authentication dialog.
-@property (nonatomic, assign) BOOL authenticationOptional;
+@property (nonatomic, readwrite, assign) BOOL authenticationOptional;
 
 // Toggle verbose logging.
-@property (nonatomic, assign) BOOL verboseLoggingEnabled;
+@property (nonatomic, readwrite, assign) BOOL verboseLoggingEnabled;
 
 // Toggle remote logging.
-@property (nonatomic, assign) BOOL remoteLoggingEnabled;
+@property (nonatomic, readwrite, assign) BOOL remoteLoggingEnabled;
 
 // Enables or disables the network.
-@property (nonatomic, assign) BOOL networkEnabled;
+@property (nonatomic, readwrite, assign) BOOL networkEnabled;
 
 // Returns the currently authenticated Simperium user.
 @property (nonatomic, readonly, strong) SPUser *user;
@@ -148,7 +161,7 @@ typedef void (^SimperiumSignoutCompletion)(void);
 @property (nonatomic, readonly, copy) NSString *appURL;
 
 // URL to a Simperium server (can be changed to point to a custom installation).
-@property (nonatomic, copy) NSString *rootURL;
+@property (nonatomic, readwrite, copy) NSString *rootURL;
 
 // A unique ID for this app (configured at simperium.com).
 @property (nonatomic, readonly, copy) NSString *appID;
@@ -160,23 +173,33 @@ typedef void (^SimperiumSignoutCompletion)(void);
 @property (nonatomic, readonly, copy) NSString *clientID;
 
 // Remote Bucket Name Overrides!
-@property (nonatomic, copy) NSDictionary *bucketOverrides;
+@property (nonatomic, readonly, copy) NSDictionary *bucketOverrides;
+
+// Returns the current SPAuthenticator instance
+@property (nonatomic, readwrite, strong) SPAuthenticator *authenticator;
+
+// Returns a flag indicating if there is network access
+@property (nonatomic, readonly, assign) BOOL requiresConnection;
+
+// Returns a string describing the network status
+@property (nonatomic, readonly, strong) NSString *networkStatus;
+
+// Returns the timestamp of the last message received by the backend
+@property (nonatomic, readonly, strong) NSDate *networkLastSeenTime;
+
 
 // You can implement your own subclass of SPAuthenticationViewController (iOS) or
 // SPAuthenticationWindowController (OSX) to customize authentication.
 #if TARGET_OS_IPHONE
-@property (nonatomic, weak) Class authenticationViewControllerClass;
+@property (nonatomic, readwrite, weak) Class authenticationViewControllerClass;
 #else
-@property (nonatomic, weak) Class authenticationWindowControllerClass;
+@property (nonatomic, readwrite, weak) Class authenticationWindowControllerClass;
 #endif
 
-@property (nonatomic, strong) SPAuthenticator *authenticator;
-
-
 #if TARGET_OS_IPHONE
-@property (nonatomic, weak) UIViewController *rootViewController;
+@property (nonatomic, readwrite, weak) UIViewController *rootViewController;
 #else
-@property (nonatomic, weak) NSWindow *window;
+@property (nonatomic, readwrite, weak) NSWindow *window;
 #endif
 
 @end
