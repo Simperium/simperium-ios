@@ -32,10 +32,8 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
 
 @interface SPRelationshipResolver()
 
-@property (nonatomic, strong) dispatch_queue_t      queue;
-@property (nonatomic, strong) NSHashTable           *pendingRelationships;
-@property (nonatomic, strong) NSMapTable            *directMap;
-@property (nonatomic, strong) NSMapTable            *inverseMap;
+@property (nonatomic, strong, readwrite) dispatch_queue_t   queue;
+@property (nonatomic, strong, readwrite) NSHashTable        *pendingRelationships;
 
 @end
 
@@ -46,96 +44,56 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
 
 @implementation SPRelationshipResolver
 
-- (id)init {
+- (instancetype)init {
     self = [super init];
     if (self) {
-        NSString *queueLabel    = [@"com.simperium." stringByAppendingString:[[self class] description]];
-        _queue                  = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
-        
+        NSString *label         = [@"com.simperium." stringByAppendingString:[[self class] description]];
+        _queue                  = dispatch_queue_create([label cStringUsingEncoding:NSUTF8StringEncoding], NULL);
         _pendingRelationships   = [NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPersonality];
-        _directMap              = [NSMapTable strongToStrongObjectsMapTable];
-        _inverseMap             = [NSMapTable strongToStrongObjectsMapTable];
     }
     
     return self;
 }
 
-- (void)migrateLegacyReferences:(id<SPStorageProvider>)storage {
-    
-    // Do we need to migrate anything?
-    NSDictionary *legacyPendings = storage.metadata[SPRelationshipsPendingsLegacyKey];
-    if (legacyPendings == nil) {
-        return;
-    }
-    
-    // Parse the old format first
-    NSArray *parsed = [SPRelationship parseFromLegacyDictionary:legacyPendings];
 
-    for (SPRelationship *relationship in parsed) {
-        [self addPendingRelationship:relationship];
-    }
-    
-    // Update the metadata
-    NSArray *serialized             = [SPRelationship serializeToArray:[self.pendingRelationships allObjects]];
-    NSMutableDictionary *updated    = [storage.metadata mutableCopy];
-    [updated removeObjectForKey:SPRelationshipsPendingsLegacyKey];
-    [updated setObject:serialized forKey:SPRelationshipsPendingsNewKey];
-    [storage setMetadata:updated];
-}
-
-
-#pragma mark ====================================================================================
-#pragma mark NEW Bidirectional API
-#pragma mark ====================================================================================
+#pragma mark - Public Methods
 
 - (void)loadPendingRelationships:(id<SPStorageProvider>)storage {
     
-    NSAssert(storage, @"Invalid Parameter");
-    NSAssert([NSThread isMainThread], @"Invalid Thread");
+    NSAssert([NSThread isMainThread],                                   @"Invalid Thread");
+    NSAssert([storage conformsToProtocol:@protocol(SPStorageProvider)], @"Invalid Parameter");
     
-    // Migrate Legacy
-    [self migrateLegacyReferences:storage];
-    
-    // Load stored descriptors in memory
-	NSArray *rawPendings    = storage.metadata[SPRelationshipsPendingsNewKey];
-    NSArray *parsedPendings = [SPRelationship parseFromArray:rawPendings];
-    
-    for (SPRelationship *relationship in parsedPendings) {
+    NSArray *legacy = [SPRelationship parseFromLegacyDictionary:storage.metadata[SPRelationshipsPendingsLegacyKey]];
+    for (SPRelationship *relationship in legacy) {
         [self addPendingRelationship:relationship];
+    }
+    
+    NSArray *pendings = [SPRelationship parseFromArray:storage.metadata[SPRelationshipsPendingsNewKey]];
+    for (SPRelationship *relationship in pendings) {
+        [self addPendingRelationship:relationship];
+    }
+    
+    if (legacy.count) {
+        [self saveWithStorage:storage];
     }
 }
 
 - (void)addPendingRelationship:(SPRelationship *)relationship {
     
-    NSAssert([relationship isKindOfClass:[SPRelationship class]], @"Invalid Parameter");
-    NSAssert([NSThread isMainThread], @"Invalid Thread");
+    NSAssert([NSThread isMainThread],                                   @"Invalid Thread");
+    NSAssert([relationship isKindOfClass:[SPRelationship class]],       @"Invalid Parameter");
         
-    // Store the Relationship itself
     [self.pendingRelationships addObject:relationship];
-    
-    // Map the relationship: we want Direct + Inverse mapping!
-    [self addRelationship:relationship inMap:self.directMap withKey:relationship.sourceKey];
-    [self addRelationship:relationship inMap:self.inverseMap withKey:relationship.targetKey];
 }
 
 - (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey
                                bucketName:(NSString *)bucketName
                                   storage:(id<SPStorageProvider>)storage {
 
-    [self resolvePendingRelationshipsForKey:simperiumKey
-                                 bucketName:bucketName
-                                    storage:storage
-                                 completion:nil];
-}
-
-- (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey
-                               bucketName:(NSString *)bucketName
-                                  storage:(id<SPStorageProvider>)storage
-                               completion:(SPResolverCompletionBlockType)completion {
-
-    NSAssert([simperiumKey isKindOfClass:[NSString class]], @"Invalid Parameter");
-    NSAssert([bucketName isKindOfClass:[NSString class]],   @"Invalid Parameter");
-    NSAssert([NSThread isMainThread],                       @"Invalid Thread");
+    NSAssert([NSThread isMainThread],                                   @"Invalid Thread");
+    NSAssert([simperiumKey isKindOfClass:[NSString class]],             @"Invalid Parameter");
+    NSAssert([bucketName isKindOfClass:[NSString class]],               @"Invalid Parameter");
+    NSAssert([storage conformsToProtocol:@protocol(SPStorageProvider)], @"Invalid Parameter");
     
     NSHashTable *relationships = [self relationshipsForKey:simperiumKey];
     if (relationships.count == 0) {
@@ -195,12 +153,6 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
         }
         
         [threadSafeStorage finishSafeSection];
-        
-        if (completion) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion();
-            });
-        }
     });
 }
 
@@ -209,28 +161,23 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
     NSAssert([storage conformsToProtocol:@protocol(SPStorageProvider)], @"Invalid Storage");
     NSAssert([NSThread isMainThread], @"Invalid Thread");
     
-    NSDictionary *metadata = [storage metadata];
+    NSMutableDictionary *metadata = [storage.metadata mutableCopy];
     
     // If there's already nothing there, save some CPU by not writing anything
-    if (self.pendingRelationships.count == 0 && metadata[SPRelationshipsPendingsNewKey] == nil) {
+    if (_pendingRelationships.count == 0 && !metadata[SPRelationshipsPendingsNewKey]) {
         return;
     }
     
-    NSArray *serialized                     = [SPRelationship serializeToArray:[self.pendingRelationships allObjects]];
-    NSMutableDictionary *updated            = [metadata mutableCopy];
-    updated[SPRelationshipsPendingsNewKey]  = serialized;
-    [storage setMetadata:updated];
+    metadata[SPRelationshipsPendingsNewKey] = [SPRelationship serializeToArray:_pendingRelationships.allObjects];
+    [metadata removeObjectForKey:SPRelationshipsPendingsLegacyKey];
+    storage.metadata = metadata;
 }
 
 - (void)reset:(id<SPStorageProvider>)storage {
     
-    // Nuke everything
     [self.pendingRelationships removeAllObjects];
-    [self.directMap removeAllObjects];
-    [self.inverseMap removeAllObjects];
     [self saveWithStorage:storage];
     
-    // At last!
     [storage save];
 }
 
@@ -241,54 +188,25 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
 
 - (NSHashTable *)relationshipsForKey:(NSString *)simperiumKey {
     
-    NSAssert([simperiumKey isKindOfClass:[NSString class]], @"Invalid Parameter");
-    NSAssert([NSThread isMainThread],                       @"Invalid Thread");
+    NSAssert([NSThread isMainThread],                           @"Invalid Thread");
+    NSAssert([simperiumKey isKindOfClass:[NSString class]],     @"Invalid Parameter");
     
-    // Lookup relationships [From + To] this object
     NSHashTable *relationships = [NSHashTable weakObjectsHashTable];
-    [relationships unionHashTable:[self.directMap objectForKey:simperiumKey]];
-    [relationships unionHashTable:[self.inverseMap objectForKey:simperiumKey]];
+    for (SPRelationship *relationship in self.pendingRelationships) {
+        if ([relationship.sourceKey isEqualToString:simperiumKey] || [relationship.targetKey isEqualToString:simperiumKey]) {
+            [relationships addObject:relationship];
+        }
+    }
     
     return relationships;
 }
 
-- (void)addRelationship:(SPRelationship *)relationship inMap:(NSMapTable *)map withKey:(NSString *)key {
-    
-    NSAssert([relationship isKindOfClass:[SPRelationship class]],   @"Invalid Parameter");
-    NSAssert([map isKindOfClass:[NSMapTable class]],                @"Invalid Parameter");
-    NSAssert([key isKindOfClass:[NSString class]],                  @"Invalid Parameter");
-    
-    NSHashTable *pendings = [map objectForKey:key];
-    if (!pendings) {
-        pendings = [NSHashTable weakObjectsHashTable];
-        [map setObject:pendings forKey:key];
-    }
-    
-    [pendings addObject:relationship];
-}
-
 - (void)removeRelationships:(NSHashTable *)relationships {
     
-    NSAssert([relationships isKindOfClass:[NSHashTable class]],  @"Invalid Parameter");
-    NSAssert([NSThread isMainThread], @"Invalid Thread");
+    NSAssert([NSThread isMainThread],                           @"Invalid Thread");
+    NSAssert([relationships isKindOfClass:[NSHashTable class]], @"Invalid Parameter");
     
     [self.pendingRelationships minusHashTable:relationships];
-    
-    // Note: Although we've set up internal structures with weak memory management, since there the
-    // autoreleasepool will be drained by iOS at will, we really need to cleanup the directMap + inverseMap collections
-    for (SPRelationship *relationship in relationships) {
-        [self removeRelationship:relationship fromMap:self.directMap withKey:relationship.sourceKey];
-        [self removeRelationship:relationship fromMap:self.inverseMap withKey:relationship.targetKey];
-    }
-}
-
-- (void)removeRelationship:(SPRelationship *)relationship fromMap:(NSMapTable *)map withKey:(NSString *)key {
-    NSHashTable *table = [map objectForKey:key];
-    [table removeObject:relationship];
-    
-    if (table.count == 0) {
-        [map removeObjectForKey:key];
-    }
 }
 
 
@@ -298,42 +216,23 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
 
 #ifdef DEBUG
 
+- (void)performBlock:(void (^)())block {
+    dispatch_async(self.queue, block);
+}
+
 - (NSInteger)countPendingRelationships {
     return self.pendingRelationships.count;
 }
 
-- (NSInteger)countPendingRelationshipsWithSourceKey:(NSString *)sourceKey
-                                       andTargetKey:(NSString *)targetKey {
-    
-    return [self countPendingRelationshipWithSourceKey:sourceKey targetKey:targetKey inTable:self.pendingRelationships];
-}
-
-- (NSInteger)countPendingRelationshipWithSourceKey:(NSString *)sourceKey
-                                         targetKey:(NSString *)targetKey
-                                           inTable:(NSHashTable *)table {
-    
+- (NSInteger)countPendingRelationshipsWithSourceKey:(NSString *)sourceKey andTargetKey:(NSString *)targetKey {
     NSInteger count = 0;
-    for (SPRelationship *relationship in table) {
+    for (SPRelationship *relationship in self.pendingRelationships) {
         if ([relationship.sourceKey isEqualToString:sourceKey] && [relationship.targetKey isEqualToString:targetKey]) {
             ++count;
         }
     }
     
     return count;
-}
-
-- (BOOL)verifyBidirectionalMappingBetweenKey:(NSString *)sourceKey
-                                      andKey:(NSString *)targetKey {
-    
-    NSHashTable *directTable    = [self.directMap objectForKey:sourceKey];
-    NSHashTable *inverseTable   = [self.inverseMap objectForKey:targetKey];
-    
-    NSInteger directCount       = [self countPendingRelationshipWithSourceKey:sourceKey targetKey:targetKey inTable:directTable];
-    NSInteger inverseCount      = [self countPendingRelationshipWithSourceKey:sourceKey targetKey:targetKey inTable:inverseTable];
-    
-    NSAssert(directCount == inverseCount, @"Inconsistency");
-    
-    return (directCount == inverseCount && inverseCount == 1);
 }
 
 #endif

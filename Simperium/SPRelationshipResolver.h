@@ -18,16 +18,21 @@
 
 @interface SPRelationshipResolver : NSObject
 
+// Loads Pending Relationships stored in the Storage Provider's Metadata
 - (void)loadPendingRelationships:(id<SPStorageProvider>)storage;
 
+// Adds a new pending relationship
 - (void)addPendingRelationship:(SPRelationship *)relationship;
 
+// Attempts to establish any pending relationship (from/to) a given object
 - (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey
                                bucketName:(NSString *)bucketName
                                   storage:(id<SPStorageProvider>)storage;
 
+// Persists the Pending Relationships in the Storage's metadata
 - (void)saveWithStorage:(id<SPStorageProvider>)storage;
 
+// Nukes all of the pending relationships
 - (void)reset:(id<SPStorageProvider>)storage;
 
 @end

@@ -10,8 +10,6 @@
 
 
 
-typedef void(^SPResolverCompletionBlockType)();
-
 #pragma mark ====================================================================================
 #pragma mark Private Methods
 #pragma mark ====================================================================================
@@ -20,18 +18,14 @@ typedef void(^SPResolverCompletionBlockType)();
 
 #ifdef DEBUG
 
-- (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey
-                               bucketName:(NSString *)bucketName
-                                  storage:(id<SPStorageProvider>)storage
-                               completion:(SPResolverCompletionBlockType)completion;
+// Performs a block on the private queue, asynchronously
+- (void)performBlock:(void (^)())block;
 
+// Returns the number of pending relationships
 - (NSInteger)countPendingRelationships;
 
-- (NSInteger)countPendingRelationshipsWithSourceKey:(NSString *)sourceKey
-                                       andTargetKey:(NSString *)targetKey;
-
-- (BOOL)verifyBidirectionalMappingBetweenKey:(NSString *)sourceKey
-                                      andKey:(NSString *)targetKey;
+// Returns the number of pending relationships between two keys
+- (NSInteger)countPendingRelationshipsWithSourceKey:(NSString *)sourceKey andTargetKey:(NSString *)targetKey;
 
 #endif
 
