@@ -538,11 +538,14 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         return;
     }
     
+    // Hack: Force Fire fault
+    [object simperiumKey];
+    
     // Do we need to repost with the whole data?
     if (object && overrideRemoteData) {
-        // Fire fault
         NSMutableDictionary *newChange = [oldChange mutableCopy];
         newChange[CH_DATA] = [object dictionary];
+        [newChange removeObjectForKey:CH_VALUE];
         [self.changesPending setObject:newChange forKey:key];
     }
     
