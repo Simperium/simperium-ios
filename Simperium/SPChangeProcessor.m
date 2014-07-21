@@ -538,18 +538,29 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         return;
     }
     
+    // Hack: Force Fire fault
+    [object simperiumKey];
+    
     // Do we need to repost with the whole data?
+    BOOL success = YES;
+    
     if (object && overrideRemoteData) {
-        // Fire fault
-        NSMutableDictionary *newChange = [oldChange mutableCopy];
-        newChange[CH_DATA] = [object dictionary];
-        [self.changesPending setObject:newChange forKey:key];
+        NSDictionary *fullData = [object dictionary];
+        if (fullData) {
+            NSDictionary *newChange = [self createChangeForKey:key operation:CH_MODIFY version:object.ghost.version fullData:fullData];
+            [self.changesPending setObject:newChange forKey:key];
+        } else {
+            [self.changesPending removeObjectForKey:key];
+            success = NO;
+        }
     }
     
     [threadSafeStorage finishSafeSection];
     
-    [self.keysForObjectsWithPendingRetry addObject:key];
-    [self.keysForObjectsWithPendingRetry save];
+    if (success) {
+        [self.keysForObjectsWithPendingRetry addObject:key];
+        [self.keysForObjectsWithPendingRetry save];
+    }
 }
 
 - (void)discardPendingChanges:(NSString *)key bucket:(SPBucket *)bucket {
@@ -825,6 +836,27 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	// Proceed removing our local namespace
 	NSString *namespace = [bucket.localNamespace stringByAppendingString:@"/"];
 	return [changeKey stringByReplacingOccurrencesOfString:namespace withString:@""];
+}
+
+- (NSMutableDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version fullData:(NSDictionary *)fullData {    
+	// The change applies to this particular entity instance, so use its unique key as an identifier
+	NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:key forKey:CH_KEY];
+	
+	// Every change must be marked with a unique ID
+	change[CH_LOCAL_ID] = [NSString sp_makeUUID];
+	
+	// Set the change's operation
+	change[CH_OPERATION] = operation;
+    
+	// If it's a modify operation, also include the object's version as the last known version
+	if (operation == CH_MODIFY && version != nil && version.intValue != 0) {
+        change[CH_START_VERSION] = version;
+	}
+    
+	// Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
+    change[CH_DATA] = fullData;
+	
+	return change;
 }
 
 - (NSMutableDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version data:(NSDictionary *)data {
