@@ -250,6 +250,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     self.onLocalChangesSent         = nil;
     self.objectVersionsPending      = 0;
 
+    dispatch_async(bucket.processorQueue, ^{
+        [bucket.indexProcessor enableRebaseForAllObjects];
+    });
+    
 	if (bucket.lastChangeSignature == nil) {
 		[self requestLatestVersionsForBucket:bucket];
 	} else {
