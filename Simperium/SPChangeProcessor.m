@@ -511,7 +511,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	[self.keysForObjectsWithMoreChanges save];
 }
 
-- (void)enqueueObjectDeletion:(NSString *)key bucket:(SPBucket *)bucket {
+- (void)enqueueObjectForDeletion:(NSString *)key bucket:(SPBucket *)bucket {
     NSAssert( [key isKindOfClass:[NSString class]],         @"Missing key" );
     NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Missing Bucket");
     

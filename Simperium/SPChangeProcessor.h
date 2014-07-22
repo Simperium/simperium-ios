@@ -51,7 +51,7 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errorHandler:(SPChangeErrorHandlerBlockType)errorHandler;
 
 - (void)enqueueObjectForMoreChanges:(NSString *)key bucket:(SPBucket *)bucket;
-- (void)enqueueObjectDeletion:(NSString *)key bucket:(SPBucket *)bucket;
+- (void)enqueueObjectForDeletion:(NSString *)key bucket:(SPBucket *)bucket;
 - (void)enqueueObjectForRetry:(NSString *)key bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData;
 - (void)discardPendingChanges:(NSString *)key bucket:(SPBucket *)bucket;
 

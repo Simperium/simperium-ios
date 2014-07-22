@@ -158,7 +158,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             SPChangeProcessor *processor = object.bucket.changeProcessor;
 
             if (_indexing || !_authenticated || processor.reachedMaxPendings) {
-                [processor enqueueObjectDeletion:key bucket:object.bucket];
+                [processor enqueueObjectForDeletion:key bucket:object.bucket];
             } else {
                 NSSet *wrappedKey   = [NSSet setWithObject:key];
                 NSArray *changes    = [processor processLocalDeletionsWithKeys:wrappedKey];
