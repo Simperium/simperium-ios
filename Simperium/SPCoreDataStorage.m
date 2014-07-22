@@ -378,12 +378,12 @@ static NSInteger const SPWorkersDone	= 0;
 }
 
 - (void)setMetadata:(NSDictionary *)metadata {
-    NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores objectAtIndex:0];
+    NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores firstObject];
     [self.persistentStoreCoordinator setMetadata:metadata forPersistentStore:store];
 }
 
 - (NSDictionary *)metadata {
-    NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores objectAtIndex:0];
+    NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores firstObject];
     return [store metadata];
 }
 
@@ -541,7 +541,7 @@ static NSInteger const SPWorkersDone	= 0;
 }
 
 
-#pragma mark - Sincronization
+#pragma mark - Synchronization
 
 - (void)beginSafeSection {
 	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");

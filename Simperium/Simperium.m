@@ -68,6 +68,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 		coordinator:(NSPersistentStoreCoordinator *)coordinator
 			  label:(NSString *)label
     bucketOverrides:(NSDictionary *)bucketOverrides {
+
 	
 	if ((self = [super init])) {
         
@@ -103,7 +104,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 		
 		[self setupNotifications];
 		
-		[self setupCoreDataWithModelModel:model context:context coordinator:coordinator];
+		[self setupCoreDataWithModel:model context:context coordinator:coordinator];
     }
 
 	return self;
@@ -126,9 +127,9 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     [nc addObserver:self selector:@selector(handleNetworkChange:)  name:kSPReachabilityChangedNotification object:nil];
 }
 
-- (void)setupCoreDataWithModelModel:(NSManagedObjectModel *)model
-							context:(NSManagedObjectContext *)context
-						coordinator:(NSPersistentStoreCoordinator *)coordinator {
+- (void)setupCoreDataWithModel:(NSManagedObjectModel *)model
+                       context:(NSManagedObjectContext *)context
+                   coordinator:(NSPersistentStoreCoordinator *)coordinator {
 	
 	NSParameterAssert(model);
 	NSParameterAssert(context);
@@ -630,6 +631,17 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 - (BOOL)objectsShouldSync {
     // TODO: rename or possibly (re)move this
     return !self.skipContextProcessing;
+}
+
+- (BOOL)requiresConnection {
+    return (self.reachability.currentReachabilityStatus != NotReachable);
+}
+- (NSString *)networkStatus {
+    return self.network.status;
+}
+
+- (NSDate *)networkLastSeenTime {
+    return self.network.lastSeenTime;
 }
 
 

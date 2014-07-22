@@ -23,6 +23,7 @@ NSString * const OP_LIST_INSERT		= @"+";
 NSString * const OP_LIST_DELETE		= @"-";
 NSString * const OP_OBJECT_ADD		= @"+";
 NSString * const OP_OBJECT_REMOVE	= @"-";
+NSString * const OP_OBJECT_REPLACE  = @"r";
 NSString * const OP_INTEGER			= @"I";
 NSString * const OP_LIST			= @"L";
 NSString * const OP_LIST_DMP		= @"dL";
@@ -89,12 +90,12 @@ NSString * const OP_STRING			= @"d";
 	return nil;
 }
 
-- (id)applyDiff:(id)thisValue otherValue:(id)otherValue {
+- (id)applyDiff:(id)thisValue otherValue:(id)otherValue error:(NSError **)error {
 	return otherValue;
 }
 
 
-- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue {
+- (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue error:(NSError **)error {
 	// By default, don't perform any transformation
 	return nil;
 }
