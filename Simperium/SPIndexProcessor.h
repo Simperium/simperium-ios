@@ -24,7 +24,13 @@ typedef void(^SPChangeHandlerBlockType)(NSString *key);
 #pragma mark ====================================================================================
 
 @interface SPIndexProcessor : NSObject
+
 - (void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(SPVersionHandlerBlockType)versionHandler;
 - (void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket changeHandler:(SPChangeHandlerBlockType)changeHandler;
+
+- (void)disableRebaseForObjectWithKey:(NSString *)simperiumKey;
+- (void)enableRebaseForAllObjects;
+
 - (NSArray*)exportIndexStatus:(SPBucket *)bucket;
+
 @end
