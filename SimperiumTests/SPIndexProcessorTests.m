@@ -468,4 +468,116 @@ static NSInteger const SPLogLength          = 50;
     XCTAssertEqualObjects(config.ghost.memberData, data,    @"Invalid Ghost MemberData");
 }
 
+- (void)testProcessVersionsWithExistingObjectsAndLocalPendingChangesWithRebaseDisabled {
+    
+    // ===================================================================================================
+	// Testing values!
+    // ===================================================================================================
+    //
+    NSString *originalLog           = @"Original Captains Log";
+    NSString *localPendingLog       = @"Local Captains Log";
+    NSString *newRemoteLog          = @"Remote Captains Log";
+    NSString *expectedLog           = newRemoteLog;
+    
+    
+    // ===================================================================================================
+	// Helpers
+    // ===================================================================================================
+    //
+	MockSimperium* s                = [MockSimperium mockSimperium];
+	SPBucket* bucket                = [s bucketForName:NSStringFromClass([Config class])];
+	id<SPStorageProvider> storage   = bucket.storage;
+    
+    
+    // ===================================================================================================
+	// Insert Config
+    // ===================================================================================================
+    //
+    Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+    config.captainsLog              = originalLog;
+    
+    
+    // ===================================================================================================
+    // Manually Intialize SPGhost: we're not relying on the backend to confirm these additions!
+    // ===================================================================================================
+    //
+    NSMutableDictionary *memberData = [config.dictionary mutableCopy];
+    SPGhost *ghost                  = [[SPGhost alloc] initWithKey:config.simperiumKey memberData:memberData];
+    ghost.version                   = @"1";
+    config.ghost                    = ghost;
+    config.ghostData                = [memberData sp_JSONString];
+    
+	[storage save];
+    
+    NSLog(@"<> Successfully inserted Config object");
+    
+    
+    // ===================================================================================================
+    // Prepare Remote Entity Message
+    // ===================================================================================================
+    //
+    NSString *endVersion    = [NSString stringWithFormat:@"%d", config.ghost.version.intValue + 1];
+    
+    NSDictionary *data      = @{
+                                NSStringFromSelector(@selector(captainsLog)) : newRemoteLog,
+                                };
+    
+    NSArray *versions       = @[ @[ config.simperiumKey, endVersion, data ] ];
+    
+    NSLog(@"<> Successfully generated versions");
+    
+    
+    // ===================================================================================================
+    // Add local pending changes
+    // ===================================================================================================
+    //
+    config.captainsLog  = localPendingLog;
+    
+    [storage save];
+    
+
+    // ===================================================================================================
+    // Disable Rebase
+    // ===================================================================================================
+    //
+    dispatch_async(bucket.processorQueue, ^{
+        [bucket.indexProcessor disableRebaseForObjectWithKey:config.simperiumKey];
+    });
+    
+    
+    // ===================================================================================================
+    // Process remote changes
+    // ===================================================================================================
+    //
+	StartBlock();
+    
+    dispatch_async(bucket.processorQueue, ^{
+        
+        [bucket.indexProcessor processVersions:versions bucket:bucket changeHandler:^(NSString *key) {
+            XCTAssertTrue(true, @"This should not get called");
+        }];
+        
+		dispatch_async(dispatch_get_main_queue(), ^{
+			EndBlock();
+		});
+    });
+    
+	WaitUntilBlockCompletes();
+    
+    NSLog(@"<> Finished processing versions");
+    
+    
+    // ===================================================================================================
+    // Verify if the indexProcessor actually did its job
+    // ===================================================================================================
+    //
+    
+    [storage refaultObjects:@[config]];
+    
+    XCTAssertEqualObjects(config.captainsLog, expectedLog,  @"Invalid Log");
+    XCTAssertEqualObjects(config.ghost.version, endVersion, @"Invalid Ghost Version");
+    XCTAssertEqualObjects(config.ghost.memberData, data,    @"Invalid Ghost MemberData");
+}
+
+
 @end
