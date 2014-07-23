@@ -16,6 +16,7 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
+typedef void(^SPChangeSuccessHandlerBlockType)(NSString *simperiumKey, NSString *version);
 typedef void(^SPChangeErrorHandlerBlockType)(NSString *simperiumKey, NSString *version, NSError *error);
 typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change);
 
@@ -48,7 +49,7 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 - (void)reset;
 
 - (void)notifyOfRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errorHandler:(SPChangeErrorHandlerBlockType)errorHandler;
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket successHandler:(SPChangeSuccessHandlerBlockType)successHandler errorHandler:(SPChangeErrorHandlerBlockType)errorHandler;
 
 - (void)enqueueObjectForMoreChanges:(NSString *)key bucket:(SPBucket *)bucket;
 - (void)enqueueObjectForDeletion:(NSString *)key bucket:(SPBucket *)bucket;

@@ -250,10 +250,12 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     self.onLocalChangesSent         = nil;
     self.objectVersionsPending      = 0;
 
+    // Reset disable-rebase mechanism
     dispatch_async(bucket.processorQueue, ^{
         [bucket.indexProcessor enableRebaseForAllObjects];
     });
     
+    // Download the index, on the 1st sync
 	if (bucket.lastChangeSignature == nil) {
 		[self requestLatestVersionsForBucket:bucket];
 	} else {
@@ -299,11 +301,16 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			return;
 		}
 
-        [changeProcessor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
+        SPChangeSuccessHandlerBlockType successHandler = ^(NSString *simperiumKey, NSString *version) {
+            
+            [indexProcessor enableRebaseForObjectWithKey:simperiumKey];
+        };
+        
+        SPChangeErrorHandlerBlockType errorHandler = ^(NSString *simperiumKey, NSString *version, NSError *error) {
             
             SPLogError(@"Simperium Received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
             
-            if (error.code == SPProcessorErrorsSentDuplicateChange) {           
+            if (error.code == SPProcessorErrorsSentDuplicateChange) {
                 [changeProcessor discardPendingChanges:simperiumKey bucket:bucket];
                 
             } else if (error.code == SPProcessorErrorsSentInvalidChange) {
@@ -322,7 +329,9 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
                     [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
                 });
             }
-        }];
+        };
+        
+        [changeProcessor processRemoteChanges:changes bucket:bucket successHandler:successHandler errorHandler:errorHandler];
         
 
         //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
