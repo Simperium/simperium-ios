@@ -28,8 +28,9 @@ typedef void(^SPChangeHandlerBlockType)(NSString *key);
 - (void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(SPVersionHandlerBlockType)versionHandler;
 - (void)processVersions:(NSArray *)versions bucket:(SPBucket *)bucket changeHandler:(SPChangeHandlerBlockType)changeHandler;
 
-- (void)disableRebaseForObjectWithKey:(NSString *)simperiumKey;
 - (void)enableRebaseForAllObjects;
+- (void)enableRebaseForObjectWithKey:(NSString *)simperiumKey;
+- (void)disableRebaseForObjectWithKey:(NSString *)simperiumKey;
 
 - (NSArray*)exportIndexStatus:(SPBucket *)bucket;
 

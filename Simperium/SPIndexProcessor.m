@@ -311,12 +311,16 @@ typedef NS_ENUM(NSInteger, SPVersion) {
     }
 }
 
-- (void)disableRebaseForObjectWithKey:(NSString *)simperiumKey {
-    [self.keysForObjectsWithRebaseDisabled addObject:simperiumKey];
-}
-
 - (void)enableRebaseForAllObjects {
     [self.keysForObjectsWithRebaseDisabled removeAllObjects];
+}
+
+- (void)enableRebaseForObjectWithKey:(NSString *)simperiumKey {
+    [self.keysForObjectsWithRebaseDisabled removeObject:simperiumKey];
+}
+
+- (void)disableRebaseForObjectWithKey:(NSString *)simperiumKey {
+    [self.keysForObjectsWithRebaseDisabled addObject:simperiumKey];
 }
 
 - (NSArray*)exportIndexStatus:(SPBucket *)bucket {
