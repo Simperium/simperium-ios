@@ -36,10 +36,27 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 
 
 #pragma mark ====================================================================================
+#pragma mark Private
+#pragma mark ====================================================================================
+
+@interface SPIndexProcessor ()
+@property (nonatomic, strong) NSMutableSet *keysForObjectsWithRebaseDisabled;
+@end
+
+
+#pragma mark ====================================================================================
 #pragma mark SPIndexProcessor
 #pragma mark ====================================================================================
 
 @implementation SPIndexProcessor
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.keysForObjectsWithRebaseDisabled = [NSMutableSet set];
+    }
+    return self;
+}
 
 // Process an index of keys from the Simperium service for a particular bucket
 - (void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(SPVersionHandlerBlockType)versionHandler  {
@@ -205,7 +222,9 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                 SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@", bucket.name, key);
                 
                 // 3. Rebase + apply localDiff
-                if (localDiff.count) {
+                BOOL isRebaseDisabled = [self.keysForObjectsWithRebaseDisabled containsObject:key];
+                
+                if (localDiff.count && !isRebaseDisabled) {
                     
                     // 3.1. Calculate Delta: LocalGhost > RemoteMembers
                     NSDictionary *remoteDiff    = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
@@ -237,7 +256,13 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                     [rebasedKeys addObject:key];
                 }
                 
+                // 4. Keep track of changed Keys
                 [changedKeys addObject:key];
+                
+                // 5. Cleanup
+                if (isRebaseDisabled) {
+                    [self.keysForObjectsWithRebaseDisabled removeObject:key];
+                }
             }
             
             // 4. Update the ghost with the remote member data + version
@@ -284,6 +309,18 @@ typedef NS_ENUM(NSInteger, SPVersion) {
             }
         });    
     }
+}
+
+- (void)enableRebaseForAllObjects {
+    [self.keysForObjectsWithRebaseDisabled removeAllObjects];
+}
+
+- (void)enableRebaseForObjectWithKey:(NSString *)simperiumKey {
+    [self.keysForObjectsWithRebaseDisabled removeObject:simperiumKey];
+}
+
+- (void)disableRebaseForObjectWithKey:(NSString *)simperiumKey {
+    [self.keysForObjectsWithRebaseDisabled addObject:simperiumKey];
 }
 
 - (NSArray*)exportIndexStatus:(SPBucket *)bucket {

@@ -450,10 +450,11 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorWillChangeObjectsNotification object:bucket userInfo:userInfo];
 }
 
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errorHandler:(SPChangeErrorHandlerBlockType)errorHandler {
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket successHandler:(SPChangeSuccessHandlerBlockType)successHandler errorHandler:(SPChangeErrorHandlerBlockType)errorHandler {
 
     NSAssert([NSThread isMainThread] == NO,            @"This should get called on the processor's queue!");
     NSAssert([bucket isKindOfClass:[SPBucket class]],  @"Invalid Bucket");
+    NSAssert(successHandler,                           @"Please, provide a success handler!");
     NSAssert(errorHandler,                             @"Please, provide an error handler!");
     
     @autoreleasepool {
@@ -476,6 +477,9 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
                 continue;
             }
 
+            // Signal Success
+            successHandler(key, version);
+            
             // Persist LastChangeSignature: do it inside the loop in case something happens to abort the loop
             NSString *changeVersion = change[CH_CHANGE_VERSION];
             
@@ -511,7 +515,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 	[self.keysForObjectsWithMoreChanges save];
 }
 
-- (void)enqueueObjectDeletion:(NSString *)key bucket:(SPBucket *)bucket {
+- (void)enqueueObjectForDeletion:(NSString *)key bucket:(SPBucket *)bucket {
     NSAssert( [key isKindOfClass:[NSString class]],         @"Missing key" );
     NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Missing Bucket");
     

@@ -158,7 +158,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             SPChangeProcessor *processor = object.bucket.changeProcessor;
 
             if (_indexing || !_authenticated || processor.reachedMaxPendings) {
-                [processor enqueueObjectDeletion:key bucket:object.bucket];
+                [processor enqueueObjectForDeletion:key bucket:object.bucket];
             } else {
                 NSSet *wrappedKey   = [NSSet setWithObject:key];
                 NSArray *changes    = [processor processLocalDeletionsWithKeys:wrappedKey];
@@ -250,6 +250,12 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     self.onLocalChangesSent         = nil;
     self.objectVersionsPending      = 0;
 
+    // Reset disable-rebase mechanism
+    dispatch_async(bucket.processorQueue, ^{
+        [bucket.indexProcessor enableRebaseForAllObjects];
+    });
+    
+    // Download the index, on the 1st sync
 	if (bucket.lastChangeSignature == nil) {
 		[self requestLatestVersionsForBucket:bucket];
 	} else {
@@ -277,14 +283,15 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     
 	SPLogVerbose(@"Simperium handling changes %@", changes);
     
-    SPChangeProcessor *processor = bucket.changeProcessor;
+    SPChangeProcessor *changeProcessor  = bucket.changeProcessor;
+    SPIndexProcessor *indexProcessor    = bucket.indexProcessor;
     
 	// Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
 	// sync will still work for any unsaved changes.
 	[bucket.storage stashUnsavedObjects];
     
     // Notify the delegates on the main thread that we're about to apply remote changes
-    [bucket.changeProcessor notifyOfRemoteChanges:changes bucket:bucket];
+    [changeProcessor notifyOfRemoteChanges:changes bucket:bucket];
     
     
     __weak __typeof(self) weakSelf = self;
@@ -294,21 +301,27 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 			return;
 		}
 
-        [processor processRemoteChanges:changes bucket:bucket errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
+        SPChangeSuccessHandlerBlockType successHandler = ^(NSString *simperiumKey, NSString *version) {
+            
+            [indexProcessor enableRebaseForObjectWithKey:simperiumKey];
+        };
+        
+        SPChangeErrorHandlerBlockType errorHandler = ^(NSString *simperiumKey, NSString *version, NSError *error) {
             
             SPLogError(@"Simperium Received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
             
-            if (error.code == SPProcessorErrorsSentDuplicateChange) {           
-                [processor discardPendingChanges:simperiumKey bucket:bucket];
+            if (error.code == SPProcessorErrorsSentDuplicateChange) {
+                [changeProcessor discardPendingChanges:simperiumKey bucket:bucket];
                 
             } else if (error.code == SPProcessorErrorsSentInvalidChange) {
-                [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
+                [changeProcessor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
+                [indexProcessor disableRebaseForObjectWithKey:simperiumKey];
                 
             } else if (error.code == SPProcessorErrorsServerError) {
-                [processor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:NO];
+                [changeProcessor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:NO];
                 
             } else if (error.code == SPProcessorErrorsClientError) {
-                [processor discardPendingChanges:simperiumKey bucket:bucket];
+                [changeProcessor discardPendingChanges:simperiumKey bucket:bucket];
                 
             } else if (error.code == SPProcessorErrorsReceivedInvalidChange) {
                 
@@ -316,7 +329,9 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
                     [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
                 });
             }
-        }];
+        };
+        
+        [changeProcessor processRemoteChanges:changes bucket:bucket successHandler:successHandler errorHandler:errorHandler];
         
 
         //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
