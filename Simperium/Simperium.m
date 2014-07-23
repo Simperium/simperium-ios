@@ -69,23 +69,23 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 			  label:(NSString *)label
     bucketOverrides:(NSDictionary *)bucketOverrides {
 
-	
-	if ((self = [super init])) {
+    self = [super init];
+    if (self) {
         
-		self.label							= label;
+        self.label                          = label;
         self.bucketOverrides                = bucketOverrides;
-        self.networkEnabled					= YES;
+        self.networkEnabled                 = YES;
         self.validatesObjects               = YES;
-        self.authenticationEnabled			= YES;
-        self.dynamicSchemaEnabled			= YES;
-		self.authenticationEnabled			= YES;
-        self.buckets						= [NSMutableDictionary dictionary];
+        self.authenticationEnabled          = YES;
+        self.dynamicSchemaEnabled           = YES;
+        self.authenticationEnabled          = YES;
+        self.buckets                        = [NSMutableDictionary dictionary];
         
         SPReachability *reachability        = [SPReachability reachabilityForInternetConnection];
         [reachability startNotifier];
         self.reachability                   = reachability;
         
-		SPWebSocketInterface *websocket		= [SPWebSocketInterface interfaceWithSimperium:self];
+        SPWebSocketInterface *websocket		= [SPWebSocketInterface interfaceWithSimperium:self];
 		self.network						= websocket;
 		
         SPAuthenticator *auth				= [[SPAuthenticator alloc] initWithDelegate:self simperium:self];
@@ -94,8 +94,8 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         SPRelationshipResolver *resolver	= [[SPRelationshipResolver alloc] init];
         self.relationshipResolver			= resolver;
 		
-		SPLogger *logger					= [SPLogger sharedInstance];
-		logger.delegate						= self;
+        SPLogger *logger					= [SPLogger sharedInstance];
+        logger.delegate						= self;
 		
 #if TARGET_OS_IPHONE
         self.authenticationViewControllerClass		= [SPAuthenticationViewController class];
@@ -103,9 +103,9 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         self.authenticationWindowControllerClass	= [SPAuthenticationWindowController class];
 #endif
 		
-		[self setupNotifications];
+        [self setupNotifications];
 		
-		[self setupCoreDataWithModel:model context:context coordinator:coordinator];
+        [self setupCoreDataWithModel:model context:context coordinator:coordinator];
     }
 
 	return self;
