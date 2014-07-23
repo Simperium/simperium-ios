@@ -75,6 +75,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 		self.label							= label;
         self.bucketOverrides                = bucketOverrides;
         self.networkEnabled					= YES;
+        self.validatesObjects               = YES;
         self.authenticationEnabled			= YES;
         self.dynamicSchemaEnabled			= YES;
 		self.authenticationEnabled			= YES;
@@ -271,7 +272,11 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     return bucketList;
 }
 
-- (void)validateObjects {
+- (void)validateObjectsIfNecessary {
+    if (!self.validatesObjects) {
+        return;
+    }
+    
     for (SPBucket *bucket in [self.buckets allValues]) {
         // Check all existing objects (e.g. in case there are existing ones that aren't in Simperium yet)
         [bucket validateObjects];
@@ -384,7 +389,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 	
     // With everything configured, all objects can now be validated. This will pick up any objects that aren't yet
     // known to Simperium (for the case where you're adding Simperium to an existing app).
-    [self validateObjects];
+    [self validateObjectsIfNecessary];
 	
 	// Handle authentication
 	[self authenticateIfNecessary];
