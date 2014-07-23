@@ -154,6 +154,10 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // Enables or disables the network.
 @property (nonatomic, readwrite, assign) BOOL networkEnabled;
 
+// Enables or disables full database validation: objects with missing simperiumKey or ghost will be initialized.
+// By default this is enabled, and should be ran at least once after implementing Simperium on legacy databases.
+@property (nonatomic, readwrite, assign) BOOL validatesObjects;
+
 // Returns the currently authenticated Simperium user.
 @property (nonatomic, readonly, strong) SPUser *user;
 

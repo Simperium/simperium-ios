@@ -69,22 +69,23 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 			  label:(NSString *)label
     bucketOverrides:(NSDictionary *)bucketOverrides {
 
-	
-	if ((self = [super init])) {
+    self = [super init];
+    if (self) {
         
-		self.label							= label;
+        self.label                          = label;
         self.bucketOverrides                = bucketOverrides;
-        self.networkEnabled					= YES;
-        self.authenticationEnabled			= YES;
-        self.dynamicSchemaEnabled			= YES;
-		self.authenticationEnabled			= YES;
-        self.buckets						= [NSMutableDictionary dictionary];
+        self.networkEnabled                 = YES;
+        self.validatesObjects               = YES;
+        self.authenticationEnabled          = YES;
+        self.dynamicSchemaEnabled           = YES;
+        self.authenticationEnabled          = YES;
+        self.buckets                        = [NSMutableDictionary dictionary];
         
         SPReachability *reachability        = [SPReachability reachabilityForInternetConnection];
         [reachability startNotifier];
         self.reachability                   = reachability;
         
-		SPWebSocketInterface *websocket		= [SPWebSocketInterface interfaceWithSimperium:self];
+        SPWebSocketInterface *websocket		= [SPWebSocketInterface interfaceWithSimperium:self];
 		self.network						= websocket;
 		
         SPAuthenticator *auth				= [[SPAuthenticator alloc] initWithDelegate:self simperium:self];
@@ -93,8 +94,8 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         SPRelationshipResolver *resolver	= [[SPRelationshipResolver alloc] init];
         self.relationshipResolver			= resolver;
 		
-		SPLogger *logger					= [SPLogger sharedInstance];
-		logger.delegate						= self;
+        SPLogger *logger					= [SPLogger sharedInstance];
+        logger.delegate						= self;
 		
 #if TARGET_OS_IPHONE
         self.authenticationViewControllerClass		= [SPAuthenticationViewController class];
@@ -102,9 +103,9 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
         self.authenticationWindowControllerClass	= [SPAuthenticationWindowController class];
 #endif
 		
-		[self setupNotifications];
+        [self setupNotifications];
 		
-		[self setupCoreDataWithModel:model context:context coordinator:coordinator];
+        [self setupCoreDataWithModel:model context:context coordinator:coordinator];
     }
 
 	return self;
@@ -271,7 +272,11 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
     return bucketList;
 }
 
-- (void)validateObjects {
+- (void)validateObjectsIfNecessary {
+    if (!self.validatesObjects) {
+        return;
+    }
+    
     for (SPBucket *bucket in [self.buckets allValues]) {
         // Check all existing objects (e.g. in case there are existing ones that aren't in Simperium yet)
         [bucket validateObjects];
@@ -384,7 +389,7 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 	
     // With everything configured, all objects can now be validated. This will pick up any objects that aren't yet
     // known to Simperium (for the case where you're adding Simperium to an existing app).
-    [self validateObjects];
+    [self validateObjectsIfNecessary];
 	
 	// Handle authentication
 	[self authenticateIfNecessary];
