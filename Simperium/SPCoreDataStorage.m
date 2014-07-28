@@ -13,6 +13,7 @@
 #import "SPSchema.h"
 #import "SPThreadsafeMutableSet.h"
 #import "SPLogger.h"
+#import <objc/runtime.h>
 
 
 
@@ -20,7 +21,7 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-NSString* const SPCoreDataBucketListKey = @"SPCoreDataBucketListKey";
+char* const SPCoreDataBucketListKey     = "SPCoreDataBucketListKey";
 NSString* const SPCoreDataWorkerContext	= @"SPCoreDataWorkerContext";
 static SPLogLevels logLevel				= SPLogLevelsInfo;
 static NSInteger const SPWorkersDone	= 0;
@@ -112,15 +113,9 @@ static NSInteger const SPWorkersDone	= 0;
 }
 
 - (void)setBucketList:(NSDictionary *)dict {
-    // Set a custom field on the context so that objects can figure out their own buckets when they wake up
-	NSMutableDictionary* bucketList = self.writerManagedObjectContext.userInfo[SPCoreDataBucketListKey];
-	
-	if (!bucketList) {
-		bucketList = [NSMutableDictionary dictionary];
-		[self.writerManagedObjectContext.userInfo setObject:bucketList forKey:SPCoreDataBucketListKey];
-	}
-	
-	[bucketList addEntriesFromDictionary:dict];
+    // Associate the bucketList with the writerMOC, so that every NSManagedObject instance can retrieve
+    // the appropiate SPBucket pointer
+    objc_setAssociatedObject(self.writerManagedObjectContext, SPCoreDataBucketListKey, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (NSArray *)exportSchemas {
