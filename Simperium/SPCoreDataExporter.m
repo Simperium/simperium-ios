@@ -34,11 +34,12 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 - (NSString *)simperiumTypeForAttribute:(NSAttributeDescription *)attribute
 {
     // Check for overrides first
-    NSString *override = [[attribute userInfo] objectForKey:@"spOverride"];
-    if (override)
+    NSString *override = attribute.userInfo[@"spOverride"];
+    if (override) {
         return override;
+    }
     
-    switch ([attribute attributeType]) {
+    switch (attribute.attributeType) {
         case NSStringAttributeType: return @"text";
         case NSInteger16AttributeType: return @"int";
         case NSInteger32AttributeType: return @"int";
@@ -49,6 +50,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
         case NSDateAttributeType: return @"date";
         case NSTransformableAttributeType: return @"base64";
         case NSDecimalAttributeType: return @"double";
+        default: return nil;
     }
     return nil;
 }

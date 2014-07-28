@@ -20,7 +20,7 @@
 @property (nonatomic, strong,  readonly) NSPersistentStoreCoordinator	*persistentStoreCoordinator;
 @property (nonatomic, weak,	  readwrite) id<SPStorageObserver>			delegate;
 
-extern NSString* const SPCoreDataBucketListKey;
+extern char* const SPCoreDataBucketListKey;
 extern NSString* const SPCoreDataWorkerContext;
 
 + (BOOL)newCoreDataStack:(NSString *)modelName mainContext:(NSManagedObjectContext **)mainContext model:(NSManagedObjectModel **)model coordinator:(NSPersistentStoreCoordinator **)coordinator;

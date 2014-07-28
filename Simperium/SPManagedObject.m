@@ -15,6 +15,7 @@
 #import "SPGhost.h"
 #import "JSONKit+Simperium.h"
 #import "SPLogger.h"
+#import <objc/runtime.h>
 
 
 
@@ -37,22 +38,21 @@
 
 - (void)configureBucket {
 	
-    NSDictionary *bucketList = nil;
-    NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
-	
     // Get the MOC's Grandpa (writerContext)
-    while (managedObjectContext.parentContext != nil) {
-        managedObjectContext = managedObjectContext.parentContext;
+    NSManagedObjectContext *writerManagedObjectContext = self.managedObjectContext;
+    
+    while (writerManagedObjectContext.parentContext) {
+        writerManagedObjectContext = writerManagedObjectContext.parentContext;
     }
 
 	// Check
-	bucketList = managedObjectContext.userInfo[SPCoreDataBucketListKey];
-	
+    NSDictionary *bucketList = objc_getAssociatedObject(writerManagedObjectContext, SPCoreDataBucketListKey);
+    
     if (!bucketList) {
         NSLog(@"Simperium error: bucket list not loaded. Ensure Simperium is started before any objects are fetched.");
-	}
-	
-    bucket = [bucketList objectForKey:[[self entity] name]];
+    }
+    
+    bucket = bucketList[self.entity.name];
 }
 
 - (void)awakeFromFetch {
