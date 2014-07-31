@@ -62,6 +62,7 @@
         obj = [dict objectForKey: key];
     };
     
+    // Note: For thread safety reasons, let's use the dictionary just from the main thread
     if ([NSThread isMainThread]) {
         block();
     } else {
