@@ -173,6 +173,8 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
     metadata[SPRelationshipsPendingsNewKey] = [SPRelationship serializeToArray:_pendingRelationships.allObjects];
     [metadata removeObjectForKey:SPRelationshipsPendingsLegacyKey];
     storage.metadata = metadata;
+    
+    [storage save];
 }
 
 - (void)reset:(id<SPStorageProvider>)storage {
