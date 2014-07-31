@@ -10,6 +10,19 @@
 #import "SPManagedObject.h"
 #import "SPBucket+Internals.h"
 #import "SPRelationshipResolver.h"
+#import "SPLogger.h"
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsWarn;
+
+
+#pragma mark ====================================================================================
+#pragma mark SPMemberEntity
+#pragma mark ====================================================================================
 
 @implementation SPMemberEntity
 
@@ -63,6 +76,7 @@
         
         // Failsafe
         if (!fromKey || !simperiumKey) {
+            SPLogWarn(@"Simperium couldn't resolve relationship [%@] > [%@] due to a missing key", fromKey, simperiumKey);
             return nil;
         }
         
