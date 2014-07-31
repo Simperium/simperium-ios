@@ -130,7 +130,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 	++_objectVersionsPending;
     
     // Hit the WebSocket
-    SPLogVerbose(@"Simperium re-downloading entity (%@) %@.%@", self.name, simperiumKey, version);
+    SPLogVerbose(@"Simperium downloading entity (%@) %@.%@", self.name, simperiumKey, version);
     NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", self.number, simperiumKey, version];
     [self.webSocketManager send:message];
 }

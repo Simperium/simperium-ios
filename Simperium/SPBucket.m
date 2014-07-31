@@ -255,7 +255,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
 
 - (void)resolvePendingRelationshipsToKeys:(NSSet *)keys {
     for (NSString *key in keys) {
-        [self.relationshipResolver resolvePendingRelationshipsToKey:key bucketName:self.name storage:self.storage];
+        [self.relationshipResolver resolvePendingRelationshipsForKey:key bucketName:self.name storage:self.storage];
 	}
 }
 
