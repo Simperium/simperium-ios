@@ -16,6 +16,11 @@
 
 @interface SPRelationshipResolver ()
 
+
+// Note:
+// The following methods are DEBUG only, since they're being used by the SPRelationshipResolverTests
+// class only, and are intended to be used just to validate inner workings.
+
 #ifdef DEBUG
 
 // Performs a block on the private queue, asynchronously
