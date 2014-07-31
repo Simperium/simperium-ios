@@ -32,7 +32,6 @@
 }
 
 - (SPManagedObject *)objectForKey:(NSString *)key context:(NSManagedObjectContext *)context {
-    // TODO: could possibly just request a fault?
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     
     fetchRequest.entity     = [NSEntityDescription entityForName:self.entityName inManagedObjectContext:context];
