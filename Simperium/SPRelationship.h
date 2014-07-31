@@ -22,7 +22,7 @@
 @property (nonatomic, strong, readonly) NSString *targetKey;
 @property (nonatomic, strong, readonly) NSString *targetBucket;
 
-+ (NSArray *)serializeToArray:(NSArray *)relationships;
++ (NSArray *)serializeFromArray:(NSArray *)relationships;
 
 + (NSArray *)parseFromArray:(NSArray *)rawRelationships;
 + (NSArray *)parseFromLegacyDictionary:(NSDictionary *)rawLegacy;

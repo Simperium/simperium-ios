@@ -72,7 +72,7 @@ static NSString * const SPLegacyPathAttribute           = @"SPPathAttribute";
 
 #pragma mark - Public Helpers
 
-+ (NSArray *)serializeToArray:(NSArray *)relationships {
++ (NSArray *)serializeFromArray:(NSArray *)relationships {
     
     NSMutableArray *serialized = [NSMutableArray array];
     
