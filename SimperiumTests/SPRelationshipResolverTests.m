@@ -103,10 +103,10 @@ static NSInteger SPTestSubIterations    = 10;
     
     for (NSInteger i = 1; i <= SPTestIterations; ++i) {
         SPRelationship *pending = [SPRelationship relationshipFromObjectWithKey:[NSString sp_makeUUID]
-                                                                   andAttribute:SPTestSourceAttribute
-                                                                       inBucket:SPTestSourceBucket
+                                                                      attribute:SPTestSourceAttribute
+                                                                   sourceBucket:SPTestSourceBucket
                                                                 toObjectWithKey:[NSString sp_makeUUID]
-                                                                       inBucket:SPTestTargetBucket];
+                                                                   targetBucket:SPTestTargetBucket];
         [self.resolver addPendingRelationship:pending];
         [relationships addObject:pending];
     }
@@ -135,10 +135,10 @@ static NSInteger SPTestSubIterations    = 10;
 - (void)testResetPendingRelationships {
     for (NSInteger i = 1; i <= SPTestIterations; ++i) {
         SPRelationship *pending = [SPRelationship relationshipFromObjectWithKey:[NSString sp_makeUUID]
-                                                                   andAttribute:SPTestSourceAttribute
-                                                                       inBucket:SPTestSourceBucket
+                                                                      attribute:SPTestSourceAttribute
+                                                                   sourceBucket:SPTestSourceBucket
                                                                 toObjectWithKey:[NSString sp_makeUUID]
-                                                                       inBucket:SPTestTargetBucket];
+                                                                   targetBucket:SPTestTargetBucket];
         [self.resolver addPendingRelationship:pending];
     }
     
@@ -165,16 +165,16 @@ static NSInteger SPTestSubIterations    = 10;
     NSString *secondKey = [NSString sp_makeUUID];
 
     SPRelationship *relationship1 = [SPRelationship relationshipFromObjectWithKey:firstKey
-                                                                     andAttribute:SPTestTargetAttribute1
-                                                                         inBucket:SPTestTargetBucket
+                                                                        attribute:SPTestTargetAttribute1
+                                                                     sourceBucket:SPTestTargetBucket
                                                                   toObjectWithKey:secondKey
-                                                                         inBucket:SPTestSourceBucket];
+                                                                     targetBucket:SPTestSourceBucket];
     
     SPRelationship *relationship2 = [SPRelationship relationshipFromObjectWithKey:firstKey
-                                                                     andAttribute:SPTestTargetAttribute1
-                                                                         inBucket:SPTestTargetBucket
+                                                                        attribute:SPTestTargetAttribute1
+                                                                     sourceBucket:SPTestTargetBucket
                                                                   toObjectWithKey:secondKey
-                                                                         inBucket:SPTestSourceBucket];
+                                                                     targetBucket:SPTestSourceBucket];
     
     [self.resolver addPendingRelationship:relationship1];
     [self.resolver addPendingRelationship:relationship2];
@@ -194,28 +194,28 @@ static NSInteger SPTestSubIterations    = 10;
 
     // Set 4 pendings:  target >> firstSource + secondSource  ||  firstSource >> target  ||  secondSource >> target
     SPRelationship *relationship1 = [SPRelationship relationshipFromObjectWithKey:target.simperiumKey
-                                                                     andAttribute:SPTestTargetAttribute1
-                                                                         inBucket:SPTestTargetBucket
+                                                                        attribute:SPTestTargetAttribute1
+                                                                     sourceBucket:SPTestTargetBucket
                                                                   toObjectWithKey:firstSource.simperiumKey
-                                                                         inBucket:SPTestSourceBucket];
+                                                                     targetBucket:SPTestSourceBucket];
 
     SPRelationship *relationship2 = [SPRelationship relationshipFromObjectWithKey:target.simperiumKey
-                                                                     andAttribute:SPTestTargetAttribute2
-                                                                         inBucket:SPTestTargetBucket
+                                                                        attribute:SPTestTargetAttribute2
+                                                                     sourceBucket:SPTestTargetBucket
                                                                   toObjectWithKey:secondSource.simperiumKey
-                                                                         inBucket:SPTestSourceBucket];
+                                                                     targetBucket:SPTestSourceBucket];
     
     SPRelationship *relationship3 = [SPRelationship relationshipFromObjectWithKey:firstSource.simperiumKey
-                                                                     andAttribute:SPTestSourceAttribute
-                                                                         inBucket:SPTestSourceBucket
+                                                                        attribute:SPTestSourceAttribute
+                                                                     sourceBucket:SPTestSourceBucket
                                                                   toObjectWithKey:target.simperiumKey
-                                                                         inBucket:SPTestTargetBucket];
+                                                                     targetBucket:SPTestTargetBucket];
     
     SPRelationship *relationship4 = [SPRelationship relationshipFromObjectWithKey:secondSource.simperiumKey
-                                                                     andAttribute:SPTestSourceAttribute
-                                                                         inBucket:SPTestSourceBucket
+                                                                        attribute:SPTestSourceAttribute
+                                                                     sourceBucket:SPTestSourceBucket
                                                                   toObjectWithKey:target.simperiumKey
-                                                                         inBucket:SPTestTargetBucket];
+                                                                     targetBucket:SPTestTargetBucket];
     
     [self.resolver addPendingRelationship:relationship1];
     [self.resolver addPendingRelationship:relationship2];
@@ -283,10 +283,10 @@ static NSInteger SPTestSubIterations    = 10;
         
         // Set Relationship: Source >> Target
         SPRelationship *relationship = [SPRelationship relationshipFromObjectWithKey:source.simperiumKey
-                                                                         andAttribute:SPTestSourceAttribute
-                                                                             inBucket:SPTestSourceBucket
-                                                                      toObjectWithKey:target.simperiumKey
-                                                                             inBucket:SPTestTargetBucket];
+                                                                           attribute:SPTestSourceAttribute
+                                                                        sourceBucket:SPTestSourceBucket
+                                                                     toObjectWithKey:target.simperiumKey
+                                                                        targetBucket:SPTestTargetBucket];
         
         [self.resolver addPendingRelationship:relationship];
     }

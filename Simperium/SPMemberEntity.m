@@ -83,10 +83,10 @@ static SPLogLevels logLevel = SPLogLevelsWarn;
         dispatch_async(dispatch_get_main_queue(), ^{
             // Let Simperium store the reference so it can be properly resolved when the object gets synced
             SPRelationship *relationship = [SPRelationship relationshipFromObjectWithKey:fromKey
-                                                                            andAttribute:self.keyName
-                                                                                inBucket:bucket.name
+                                                                               attribute:self.keyName
+                                                                            sourceBucket:bucket.name
                                                                          toObjectWithKey:simperiumKey
-                                                                                inBucket:self.entityName];
+                                                                            targetBucket:self.entityName];
             
             [bucket.relationshipResolver addPendingRelationship:relationship];
             [bucket.relationshipResolver saveWithStorage:bucket.storage];

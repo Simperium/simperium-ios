@@ -28,9 +28,9 @@
 + (NSArray *)parseFromLegacyDictionary:(NSDictionary *)rawLegacy;
 
 + (instancetype)relationshipFromObjectWithKey:(NSString *)sourceKey
-                                 andAttribute:(NSString *)sourceAttribute
-                                     inBucket:(NSString *)sourceBucket
+                                    attribute:(NSString *)sourceAttribute
+                                 sourceBucket:(NSString *)sourceBucket
                               toObjectWithKey:(NSString *)targetKey
-                                     inBucket:(NSString *)targetBucket;
+                                 targetBucket:(NSString *)targetBucket;
 
 @end
