@@ -117,6 +117,8 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
                     targetBucket = bucketName;
                 } else {
                     // Unhandled scenario: There is no way to determine the targetBucket!
+                    SPLogError(@"Simperium Relationship Resolver cannot determine the targetBucket for relationship [%@] > [%@]",
+                               relationship.sourceKey, relationship.targetKey);
                     continue;
                 }
             }
