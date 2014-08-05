@@ -433,8 +433,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         [self.versionsBatch addObject:responseData];
 
         // Batch responses for more efficient processing
-		if ( (self.versionsBatch.count == self.objectVersionsPending && self.objectVersionsPending < SPWebsocketIndexBatchSize) ||
-			 (self.versionsBatch.count % SPWebsocketIndexBatchSize == 0))
+		if ((self.versionsBatch.count == self.objectVersionsPending && self.objectVersionsPending < SPWebsocketIndexBatchSize) ||
+			(self.versionsBatch.count % SPWebsocketIndexBatchSize == 0))
 		{
             [self processVersionsBatchForBucket:bucket];
 		}
@@ -658,11 +658,16 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
     SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
 
+    // Failsafe
+    if (!self.indexing) {
+        return;
+    }
+    
     // All versions were received successfully, so update the lastChangeSignature
-    [bucket setLastChangeSignature:self.pendingLastChangeSignature];
+    bucket.lastChangeSignature      = self.pendingLastChangeSignature;
     self.pendingLastChangeSignature = nil;
-    self.nextMark = nil;
-    self.indexing = NO;
+    self.nextMark                   = nil;
+    self.indexing                   = NO;
 
     // There could be some processing happening on the queue still, so don't start until they're done
     dispatch_async(bucket.processorQueue, ^{
