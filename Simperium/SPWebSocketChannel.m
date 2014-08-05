@@ -351,30 +351,29 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 		SPLogError(@"ERROR: Index response was NOT expected!");
 	}
 	
-    NSDictionary *responseDict = [responseString sp_objectFromJSONString];
-    NSArray *currentIndexArray = responseDict[@"index"];
-    id current = responseDict[@"current"];
+    NSDictionary *responseDict      = [responseString sp_objectFromJSONString];
+    NSArray *currentIndexArray      = responseDict[@"index"];
+    NSString *current               = responseDict[@"current"];
 	
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
     if ([current isKindOfClass:[NSNumber class]]) {
         current = [NSString stringWithFormat:@"%ld", (long)[current integerValue]];
 	}
-    self.pendingLastChangeSignature = [current length] > 0 ? [NSString stringWithFormat:@"%@", current] : nil;
-    self.nextMark = responseDict[@"mark"];
+    self.pendingLastChangeSignature = (current.length > 0) ? [NSString stringWithFormat:@"%@", current] : nil;
+    self.nextMark                   = responseDict[@"mark"];
     
     // Remember all the retrieved data in case there's more to get
     [self.indexArray addObjectsFromArray:currentIndexArray];
 	
-    // If there's another page, get those too (this will repeat until there are none left)
     if (self.nextMark.length > 0) {
+        // If there's another page, get those too (this will repeat until there are none left)
         SPLogVerbose(@"Simperium found another index page mark (%@): %@", self.name, self.nextMark);
         [self requestLatestVersionsForBucket:bucket mark:self.nextMark];
-        return;
+    } else {
+        // Index retrieval is complete, so get all the versions
+        [self requestVersionsForKeys:self.indexArray bucket:bucket];
+        [self.indexArray removeAllObjects];
     }
-	
-    // Index retrieval is complete, so get all the versions
-    [self requestVersionsForKeys:self.indexArray bucket:bucket];
-    [self.indexArray removeAllObjects];
 }
 
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
