@@ -24,10 +24,11 @@
 
 @synthesize lastChangeSignature = _lastChangeSignature;
 
-- (id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
+- (instancetype)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
 relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label remoteName:(NSString *)remoteName clientID:(NSString *)clientID
 {
-    if ((self = [super init])) {
+    self = [super init];
+    if (self) {
         self.name = aSchema.bucketName;
 		self.remoteName = remoteName;
         self.storage = aStorage;

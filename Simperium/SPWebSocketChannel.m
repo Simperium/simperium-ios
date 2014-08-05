@@ -66,8 +66,9 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 @implementation SPWebSocketChannel
 
-- (id)initWithSimperium:(Simperium *)s {
-	if ((self = [super init])) {
+- (instancetype)initWithSimperium:(Simperium *)s {
+    self = [super init];
+	if (self) {
         _simperium      = s;
         _indexArray     = [NSMutableArray arrayWithCapacity:200];
         _changesBatch   = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];

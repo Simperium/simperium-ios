@@ -19,9 +19,10 @@
 
 @implementation SPMemberText
 
-- (id)initFromDictionary:(NSDictionary *)dict
+- (instancetype)initFromDictionary:(NSDictionary *)dict
 {
-    if (self = [super initFromDictionary:dict]) {
+    self = [super initFromDictionary:dict];
+    if (self) {
         _dmp = [[DiffMatchPatch alloc] init];
     }
     return self;

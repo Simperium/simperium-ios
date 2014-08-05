@@ -30,9 +30,10 @@ NSString * const OP_LIST_DMP		= @"dL";
 NSString * const OP_OBJECT			= @"O";
 NSString * const OP_STRING			= @"d";
 
-- (id)initFromDictionary:(NSDictionary *)dict
+- (instancetype)initFromDictionary:(NSDictionary *)dict
 {
-	if ((self = [self init])) {			
+    self = [self init];
+    if (self) {
 		keyName = [[dict objectForKey:@"name"] copy];
 		type = [[dict objectForKey:@"type"] copy];
         valueTransformerName = [[dict objectForKey:@"valueTransformerName"] copy];

@@ -11,8 +11,9 @@
 
 @implementation SPGhost
 
-- (id)initFromDictionary:(NSDictionary *)dict {
-    if ((self = [super init])) {
+- (instancetype)initFromDictionary:(NSDictionary *)dict {
+    self = [super init];
+    if (self) {
         _key        = dict[@"key"];
         _memberData = dict[@"obj"];
         _version    = dict[@"version"];
@@ -25,8 +26,9 @@
 	return self;
 }
 
-- (id)initWithKey:(NSString *)k memberData:(NSMutableDictionary *)data {
-	if ((self = [super init])) {
+- (instancetype)initWithKey:(NSString *)k memberData:(NSMutableDictionary *)data {
+    self = [super init];
+    if (self) {
 		_key        = k;
 		_memberData = data;
 	}

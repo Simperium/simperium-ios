@@ -29,8 +29,9 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
 @implementation SPDiffer
 
-- (id)initWithSchema:(SPSchema *)aSchema {
-    if ((self = [super init])) {
+- (instancetype)initWithSchema:(SPSchema *)aSchema {
+    self = [super init];
+    if (self) {
         self.schema = aSchema;
     }
     

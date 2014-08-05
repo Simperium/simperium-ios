@@ -25,7 +25,7 @@ extern NSString* const SPCoreDataWorkerContext;
 
 + (BOOL)newCoreDataStack:(NSString *)modelName mainContext:(NSManagedObjectContext **)mainContext model:(NSManagedObjectModel **)model coordinator:(NSPersistentStoreCoordinator **)coordinator;
 
-- (id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator;
+- (instancetype)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator;
 
 - (NSArray *)exportSchemas;
 - (void)setBucketList:(NSDictionary *)dict;

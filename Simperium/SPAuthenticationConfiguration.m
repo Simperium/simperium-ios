@@ -28,8 +28,9 @@ static SPAuthenticationConfiguration *gInstance = NULL;
     return(gInstance);
 }
 
-- (id)init {
-    if ((self = [super init])) {
+- (instancetype)init {
+    self = [super init];
+    if (self) {
         _regularFontName = @"HelveticaNeue";
         _mediumFontName = @"HelveticaNeue-Medium";
         

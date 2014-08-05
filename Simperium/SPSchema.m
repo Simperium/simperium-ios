@@ -55,8 +55,9 @@
 }
 
 // Loads an entity's definition (name, members, their types, etc.) from a plist dictionary
-- (id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition {
-    if (self = [super init]) {
+- (instancetype)initWithBucketName:(NSString *)name data:(NSDictionary *)definition {
+    self = [super init];
+    if (self) {
         _bucketName = [name copy];
         NSArray *memberList = [definition valueForKey:@"members"];
         _members = [NSMutableDictionary dictionaryWithCapacity:3];

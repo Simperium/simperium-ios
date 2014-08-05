@@ -26,8 +26,9 @@
 
 @implementation SPThreadsafeMutableSet
 
-- (id)init {
-	if ((self = [super init])) {
+- (instancetype)init {
+    self = [super init];
+	if (self) {
 		self.contents = [NSMutableSet set];
         self.queue = dispatch_queue_create("com.simperium.SPThreadsafeMutableSet", NULL);
 	}

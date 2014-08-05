@@ -26,7 +26,7 @@ static SPLogLevels logLevel = SPLogLevelsWarn;
 
 @implementation SPMemberEntity
 
-- (id)initFromDictionary:(NSDictionary *)dict {
+- (instancetype)initFromDictionary:(NSDictionary *)dict {
     self = [super initFromDictionary:dict];
     if (self) {
         _entityName = dict[@"entityName"];

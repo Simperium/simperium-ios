@@ -56,18 +56,18 @@ static SPLogLevels logLevel						= SPLogLevelsInfo;
 
 #pragma mark - Constructors
 
-- (id)initWithModel:(NSManagedObjectModel *)model
-			context:(NSManagedObjectContext *)context
-		coordinator:(NSPersistentStoreCoordinator *)coordinator {
+- (instancetype)initWithModel:(NSManagedObjectModel *)model
+                      context:(NSManagedObjectContext *)context
+                  coordinator:(NSPersistentStoreCoordinator *)coordinator {
 	
 	return [self initWithModel:model context:context coordinator:coordinator label:@"" bucketOverrides:nil];
 }
 
-- (id)initWithModel:(NSManagedObjectModel *)model
-			context:(NSManagedObjectContext *)context
-		coordinator:(NSPersistentStoreCoordinator *)coordinator
-			  label:(NSString *)label
-    bucketOverrides:(NSDictionary *)bucketOverrides {
+- (instancetype)initWithModel:(NSManagedObjectModel *)model
+                      context:(NSManagedObjectContext *)context
+                  coordinator:(NSPersistentStoreCoordinator *)coordinator
+                        label:(NSString *)label
+              bucketOverrides:(NSDictionary *)bucketOverrides {
 
     self = [super init];
     if (self) {

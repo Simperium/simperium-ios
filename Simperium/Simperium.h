@@ -65,16 +65,16 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
 @interface Simperium : NSObject
 
 // Initializes Simperium: After executing this method, your CoreData Stack will be fully initialized
-- (id)initWithModel:(NSManagedObjectModel *)model
-			context:(NSManagedObjectContext *)context
-		coordinator:(NSPersistentStoreCoordinator *)coordinator;
+- (instancetype)initWithModel:(NSManagedObjectModel *)model
+                      context:(NSManagedObjectContext *)context
+                  coordinator:(NSPersistentStoreCoordinator *)coordinator;
 
 // Initializes Simperium: This constructor allows you to specify custom mappings between local and remote buckets.
-- (id)initWithModel:(NSManagedObjectModel *)model
-			context:(NSManagedObjectContext *)context
-		coordinator:(NSPersistentStoreCoordinator *)coordinator
-			  label:(NSString *)label
-    bucketOverrides:(NSDictionary *)bucketOverrides;
+- (instancetype)initWithModel:(NSManagedObjectModel *)model
+                      context:(NSManagedObjectContext *)context
+                  coordinator:(NSPersistentStoreCoordinator *)coordinator
+                        label:(NSString *)label
+              bucketOverrides:(NSDictionary *)bucketOverrides;
 
 #if TARGET_OS_IPHONE
 // Starts Simperium and displays the auth interface, if needed.

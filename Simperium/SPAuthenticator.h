@@ -36,7 +36,7 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 @property (nonatomic, copy,   readwrite) NSString	*providerString;
 @property (nonatomic, assign,  readonly) BOOL		connected;
 
-- (id)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s;
+- (instancetype)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s;
 - (BOOL)needsAuthentication;
 - (BOOL)authenticateIfNecessary;
 - (void)authenticateWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock;

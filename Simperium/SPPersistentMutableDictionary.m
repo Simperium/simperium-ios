@@ -43,7 +43,7 @@ static SPLogLevels logLevel					= SPLogLevelsError;
 
 @implementation SPPersistentMutableDictionary
 
-- (id)initWithLabel:(NSString *)label {
+- (instancetype)initWithLabel:(NSString *)label {
     self = [super init];
 	if (self) {
 		self.label = label;

@@ -37,8 +37,9 @@ static NSInteger const SPHttpRequestsMaxConcurrentRequests = 3;
 
 @implementation SPHttpRequestQueue
 
-- (id)init {
-    if ((self = [super init])) {
+- (instancetype)init {
+    self = [super init];
+    if (self) {
         self.queueLock = dispatch_queue_create("com.simperium.SPHttpRequestQueue", NULL);
 		self.enabled = true;
 		self.maxConcurrentConnections = SPHttpRequestsMaxConcurrentRequests;

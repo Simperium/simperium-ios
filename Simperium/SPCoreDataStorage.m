@@ -51,8 +51,9 @@ static NSInteger const SPWorkersDone	= 0;
 
 @implementation SPCoreDataStorage
 
-- (id)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator {
-    if (self = [super init]) {
+- (instancetype)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator {
+    self = [super init];
+    if (self) {
 		// Create a writer MOC
 		self.writerManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
 		
@@ -78,8 +79,9 @@ static NSInteger const SPWorkersDone	= 0;
     return self;
 }
 
-- (id)initWithSibling:(SPCoreDataStorage *)aSibling {
-    if (self = [super init]) {
+- (instancetype)initWithSibling:(SPCoreDataStorage *)aSibling {
+    self = [super init];
+    if (self) {
         self.sibling = aSibling;
 		
         // Create an ephemeral, thread-safe context that will push its changes directly to the writer MOC,

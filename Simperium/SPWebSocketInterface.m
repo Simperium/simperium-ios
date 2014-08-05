@@ -72,10 +72,11 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 @implementation SPWebSocketInterface
 
-- (id)initWithSimperium:(Simperium *)s {
-	if ((self = [super init])) {
-        self.simperium  = s;
-        self.channels   = [NSMutableDictionary dictionaryWithCapacity:20];
+- (instancetype)initWithSimperium:(Simperium *)s {
+    self = [super init];
+	if (self) {
+        _simperium  = s;
+        _channels   = [NSMutableDictionary dictionaryWithCapacity:20];
 	}
 	
 	return self;

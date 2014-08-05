@@ -52,11 +52,12 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 @implementation SPChangeProcessor
 
-- (id)initWithLabel:(NSString *)label clientID:(NSString *)clientID {
+- (instancetype)initWithLabel:(NSString *)label clientID:(NSString *)clientID {
     
     NSAssert(clientID, @"ChangeProcessor should be initialized with a valid clientID");
     
-    if ((self = [super init])) {
+    self = [super init];
+    if (self) {
         self.label                          = label;
         self.clientID                       = clientID;
         

@@ -83,8 +83,9 @@ static NSUInteger const SPHttpRequestQueueMaxRetries	= 5;
 
 @implementation SPHttpRequest
 
-- (id)initWithURL:(NSURL*)url {
-	if ((self = [super init])) {
+- (instancetype)initWithURL:(NSURL*)url {
+    self = [super init];
+    if (self) {
 		self.url = url;
 		self.method = SPHttpRequestMethodsGet;
 		self.status	= SPHttpRequestStatusWorking;

@@ -44,9 +44,10 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 	self.webSocket.delegate = nil;
 }
 
-- (id)initWithURLRequest:(NSURLRequest *)request
+- (instancetype)initWithURLRequest:(NSURLRequest *)request
 {
-	if ((self = [super init])) {
+    self = [super init];
+    if (self) {
 		self.webSocket			= [[SRWebSocket alloc] initWithURLRequest:request];
 		self.webSocket.delegate	= self;
 		

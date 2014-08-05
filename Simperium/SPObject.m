@@ -17,14 +17,16 @@
 @synthesize ghostData;
 @synthesize version;
 
-- (id)init {
-    if ((self = [self initWithDictionary:[NSMutableDictionary dictionary]])) {
+- (instancetype)init {
+    self = [self initWithDictionary:[NSMutableDictionary dictionary]];
+    if (self) {
     }
     return self;
 }
 
-- (id)initWithDictionary:(NSMutableDictionary *)dictionary {
-    if ((self = [super init])) {
+- (instancetype)initWithDictionary:(NSMutableDictionary *)dictionary {
+    self = [super init];
+    if (self) {
         self.dict = dictionary;
         [self.dict associateObject:self];
         SPGhost *newGhost = [[SPGhost alloc] init];

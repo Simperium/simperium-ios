@@ -39,7 +39,7 @@ static SPLogLevels logLevel	= SPLogLevelsError;
 
 @implementation SPPersistentMutableSet
 
-- (id)initWithLabel:(NSString *)label {
+- (instancetype)initWithLabel:(NSString *)label {
 	if ((self = [super init])) {
 		self.label		= label;
 		self.contents	= [NSMutableSet setWithCapacity:3];

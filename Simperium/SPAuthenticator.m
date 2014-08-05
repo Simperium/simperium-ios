@@ -59,8 +59,9 @@ static NSString * SPUsername    = @"SPUsername";
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (id)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s {
-    if ((self = [super init])) {
+- (instancetype)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s {
+    self = [super init];
+    if (self) {
         self.delegate	= authDelegate;
         self.simperium	= s;
 		

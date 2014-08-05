@@ -35,13 +35,13 @@ typedef void (^SPBucketForceSyncCompletion)(BOOL signatureUpdated);
 @property (nonatomic,   copy) SPBucketForceSyncCompletion	forceSyncCompletion;
 @property (nonatomic,   copy) NSString						*forceSyncSignature;
 
-- (id)initWithSchema:(SPSchema *)aSchema
-             storage:(id<SPStorageProvider>)aStorage
-	networkInterface:(id<SPNetworkInterface>)netInterface
-relationshipResolver:(SPRelationshipResolver *)resolver
-               label:(NSString *)label
-		  remoteName:(NSString *)remoteName
-            clientID:(NSString *)clientID;
+- (instancetype)initWithSchema:(SPSchema *)aSchema
+                       storage:(id<SPStorageProvider>)aStorage
+              networkInterface:(id<SPNetworkInterface>)netInterface
+          relationshipResolver:(SPRelationshipResolver *)resolver
+                         label:(NSString *)label
+                    remoteName:(NSString *)remoteName
+                      clientID:(NSString *)clientID;
 - (void)validateObjects;
 - (void)unloadAllObjects;
 - (void)resolvePendingRelationshipsToKeys:(NSSet *)keys;

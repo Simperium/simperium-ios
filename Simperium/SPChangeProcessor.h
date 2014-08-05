@@ -44,7 +44,7 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 @property (nonatomic, assign, readonly) int         numKeysForObjectToDelete;
 @property (nonatomic, assign, readonly) BOOL        reachedMaxPendings;
 
-- (id)initWithLabel:(NSString *)label clientID:(NSString *)clientID;
+- (instancetype)initWithLabel:(NSString *)label clientID:(NSString *)clientID;
 
 - (void)reset;
 

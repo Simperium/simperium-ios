@@ -65,8 +65,9 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 
 @implementation SPAuthenticationViewController
 
-- (id)init {
-	if ((self = [super init])) {
+- (instancetype)init {
+    self = [super init];
+    if (self) {
 		_signingIn = NO;
 	}
 	return self;

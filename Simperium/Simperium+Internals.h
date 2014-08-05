@@ -52,11 +52,11 @@
 @property (nonatomic, strong) SPAuthenticationWindowController *authenticationWindowController;
 #endif
 
-- (id)initWithModel:(NSManagedObjectModel *)model
-			context:(NSManagedObjectContext *)context
-		coordinator:(NSPersistentStoreCoordinator *)coordinator
-			  label:(NSString *)label
-    bucketOverrides:(NSDictionary *)bucketOverrides;
+- (instancetype)initWithModel:(NSManagedObjectModel *)model
+                      context:(NSManagedObjectContext *)context
+                  coordinator:(NSPersistentStoreCoordinator *)coordinator
+                        label:(NSString *)label
+              bucketOverrides:(NSDictionary *)bucketOverrides;
 
 - (void)removeRemoteData;
 

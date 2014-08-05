@@ -45,7 +45,7 @@ typedef enum {
 @property (nonatomic, assign, readonly)  SRReadyState				readyState;
 @property (nonatomic, strong, readonly)  NSDate                     *lastSeenTimestamp;
 
-- (id)initWithURLRequest:(NSURLRequest *)request;
+- (instancetype)initWithURLRequest:(NSURLRequest *)request;
 
 - (void)open;
 - (void)close;
