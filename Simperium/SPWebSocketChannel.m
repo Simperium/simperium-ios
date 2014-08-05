@@ -640,13 +640,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             dispatch_async(dispatch_get_main_queue(), ^{
                 // If no requests need to be queued, then all is good; back to processing
                 if (self.objectVersionsPending == 0) {
-                    if (self.nextMark.length > 0) {
-						// More index pages to get
-                        [self requestLatestVersionsForBucket:bucket mark:self.nextMark];
-                    } else {
-						// The entire index has been retrieved
-                        [self allVersionsFinishedForBucket:bucket];
-					}
+                    [self allVersionsFinishedForBucket:bucket];
                 } else {
 					SPLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)self.objectVersionsPending, bucket.name);
 				}
