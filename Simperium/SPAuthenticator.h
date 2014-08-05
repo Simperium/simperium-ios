@@ -33,8 +33,8 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 
 @interface SPAuthenticator : NSObject
 
-@property (nonatomic, copy,   readwrite) NSString	*providerString;
-@property (nonatomic, assign,  readonly) BOOL		connected;
+@property (nonatomic, copy,   readwrite) NSString   *providerString;
+@property (nonatomic, assign,  readonly) BOOL       connected;
 
 - (instancetype)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s;
 - (BOOL)needsAuthentication;

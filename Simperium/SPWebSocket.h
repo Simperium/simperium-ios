@@ -40,9 +40,9 @@ typedef enum {
 
 @interface SPWebSocket : NSObject
 
-@property (nonatomic, assign, readwrite) NSTimeInterval				activityTimeout;
-@property (nonatomic, weak,   readwrite) id<SPWebSocketDelegate>	delegate;
-@property (nonatomic, assign, readonly)  SRReadyState				readyState;
+@property (nonatomic, assign, readwrite) NSTimeInterval             activityTimeout;
+@property (nonatomic, weak,   readwrite) id<SPWebSocketDelegate>    delegate;
+@property (nonatomic, assign, readonly)  SRReadyState               readyState;
 @property (nonatomic, strong, readonly)  NSDate                     *lastSeenTimestamp;
 
 - (instancetype)initWithURLRequest:(NSURLRequest *)request;

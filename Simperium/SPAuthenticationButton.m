@@ -19,7 +19,7 @@ static NSString* const SPAuthenticationHighlightedKey = @"highlighted";
 @synthesize backgroundHighlightColor;
 
 - (void)dealloc {
-	[self removeObserver:self forKeyPath:SPAuthenticationHighlightedKey];
+    [self removeObserver:self forKeyPath:SPAuthenticationHighlightedKey];
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {

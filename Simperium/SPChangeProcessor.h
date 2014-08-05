@@ -37,10 +37,10 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 
 @interface SPChangeProcessor : NSObject
 
-@property (nonatomic, strong, readonly) NSString	*label;
-@property (nonatomic, strong, readonly) NSString	*clientID;
-@property (nonatomic, assign, readonly) int			numChangesPending;
-@property (nonatomic, assign, readonly) int			numKeysForObjectsWithMoreChanges;
+@property (nonatomic, strong, readonly) NSString    *label;
+@property (nonatomic, strong, readonly) NSString    *clientID;
+@property (nonatomic, assign, readonly) int         numChangesPending;
+@property (nonatomic, assign, readonly) int         numKeysForObjectsWithMoreChanges;
 @property (nonatomic, assign, readonly) int         numKeysForObjectToDelete;
 @property (nonatomic, assign, readonly) BOOL        reachedMaxPendings;
 

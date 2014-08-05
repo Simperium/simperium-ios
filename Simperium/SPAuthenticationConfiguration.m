@@ -20,10 +20,10 @@ static SPAuthenticationConfiguration *gInstance = NULL;
 
 + (instancetype)sharedInstance
 {
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken, ^{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
             gInstance = [[self alloc] init];
-	});
+    });
     
     return(gInstance);
 }

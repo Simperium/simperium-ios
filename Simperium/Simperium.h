@@ -34,10 +34,10 @@
 extern NSString * const SimperiumWillSaveNotification;
 
 typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
-	SPSimperiumErrorsMissingAppID,
-	SPSimperiumErrorsMissingAPIKey,
-	SPSimperiumErrorsMissingToken,
-	SPSimperiumErrorsMissingWindow
+    SPSimperiumErrorsMissingAppID,
+    SPSimperiumErrorsMissingAPIKey,
+    SPSimperiumErrorsMissingToken,
+    SPSimperiumErrorsMissingWindow
 };
 
 
@@ -45,9 +45,9 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
 #pragma mark SimperiumDelegate
 #pragma mark ====================================================================================
 
-/**	You can use this delegate to respond to general events and errors.
-	If you want explicit callbacks when objects are changed/added/deleted, you can also use SPBucketDelegate in SPBucket.h. 
-	Standard Core Data notifications are also generated, allowing you to update a `UITableView` (for example) in your `NSFetchedResultsControllerDelegate`.
+/** You can use this delegate to respond to general events and errors.
+    If you want explicit callbacks when objects are changed/added/deleted, you can also use SPBucketDelegate in SPBucket.h.
+    Standard Core Data notifications are also generated, allowing you to update a `UITableView` (for example) in your `NSFetchedResultsControllerDelegate`.
  */
 @protocol SimperiumDelegate <NSObject>
 @optional

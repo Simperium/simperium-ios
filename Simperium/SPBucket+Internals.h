@@ -18,22 +18,22 @@ typedef void (^SPBucketForceSyncCompletion)(BOOL signatureUpdated);
 
 @interface SPBucket ()
 
-@property (nonatomic,   copy) NSString						*name;
-@property (nonatomic,   copy) NSString						*remoteName;
-@property (nonatomic,   copy) NSString						*instanceLabel;
-@property (nonatomic,   copy) NSString						*lastChangeSignature;
-@property (nonatomic, assign) BOOL							exposeNamespace;
-@property (nonatomic,   copy) NSString						*localNamespace;
-@property (nonatomic,   weak) id<SPStorageProvider>			storage;
-@property (nonatomic, strong) id<SPNetworkInterface>		network;
-@property (nonatomic, strong) SPDiffer						*differ;
-@property (nonatomic, strong) SPSchema						*schema;
-@property (nonatomic, strong) SPRelationshipResolver		*relationshipResolver;
-@property (nonatomic, strong) SPChangeProcessor				*changeProcessor;
-@property (nonatomic, strong) SPIndexProcessor				*indexProcessor;
-@property (nonatomic, strong) dispatch_queue_t				processorQueue;
-@property (nonatomic,   copy) SPBucketForceSyncCompletion	forceSyncCompletion;
-@property (nonatomic,   copy) NSString						*forceSyncSignature;
+@property (nonatomic,   copy) NSString                      *name;
+@property (nonatomic,   copy) NSString                      *remoteName;
+@property (nonatomic,   copy) NSString                      *instanceLabel;
+@property (nonatomic,   copy) NSString                      *lastChangeSignature;
+@property (nonatomic, assign) BOOL                          exposeNamespace;
+@property (nonatomic,   copy) NSString                      *localNamespace;
+@property (nonatomic,   weak) id<SPStorageProvider>         storage;
+@property (nonatomic, strong) id<SPNetworkInterface>        network;
+@property (nonatomic, strong) SPDiffer                      *differ;
+@property (nonatomic, strong) SPSchema                      *schema;
+@property (nonatomic, strong) SPRelationshipResolver        *relationshipResolver;
+@property (nonatomic, strong) SPChangeProcessor             *changeProcessor;
+@property (nonatomic, strong) SPIndexProcessor              *indexProcessor;
+@property (nonatomic, strong) dispatch_queue_t              processorQueue;
+@property (nonatomic,   copy) SPBucketForceSyncCompletion   forceSyncCompletion;
+@property (nonatomic,   copy) NSString                      *forceSyncSignature;
 
 - (instancetype)initWithSchema:(SPSchema *)aSchema
                        storage:(id<SPStorageProvider>)aStorage

@@ -26,8 +26,8 @@ extern NSString * const OP_OBJECT;
 extern NSString * const OP_STRING;
 
 @interface SPMember : NSObject {
-	NSString *keyName;
-	NSString *type;
+    NSString *keyName;
+    NSString *type;
     NSString *valueTransformerName;
     id modelDefaultValue;
 }

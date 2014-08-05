@@ -40,12 +40,12 @@ static NSString * SPUsername    = @"SPUsername";
 #pragma mark ====================================================================================
 
 @interface SPAuthenticator()
-@property (nonatomic, strong, readwrite) SPReachability					*reachability;
-@property (nonatomic,   weak, readwrite) id<SPAuthenticatorDelegate>	delegate;
-@property (nonatomic,   weak, readwrite) Simperium						*simperium;
-@property (nonatomic,   copy, readwrite) SucceededBlockType				succeededBlock;
-@property (nonatomic,   copy, readwrite) FailedBlockType				failedBlock;
-@property (nonatomic, assign, readwrite) BOOL							connected;
+@property (nonatomic, strong, readwrite) SPReachability                 *reachability;
+@property (nonatomic,   weak, readwrite) id<SPAuthenticatorDelegate>    delegate;
+@property (nonatomic,   weak, readwrite) Simperium                      *simperium;
+@property (nonatomic,   copy, readwrite) SucceededBlockType             succeededBlock;
+@property (nonatomic,   copy, readwrite) FailedBlockType                failedBlock;
+@property (nonatomic, assign, readwrite) BOOL                           connected;
 @end
 
 
@@ -62,7 +62,7 @@ static NSString * SPUsername    = @"SPUsername";
 - (instancetype)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s {
     self = [super init];
     if (self) {
-        self.delegate	= authDelegate;
+        self.delegate   = authDelegate;
         self.simperium	= s;
 		
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kSPReachabilityChangedNotification object:nil];

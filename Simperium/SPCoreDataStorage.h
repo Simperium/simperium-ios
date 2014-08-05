@@ -14,11 +14,11 @@
 
 @interface SPCoreDataStorage : SPStorage<SPStorageProvider>
 
-@property (nonatomic, strong,  readonly) NSManagedObjectContext			*writerManagedObjectContext;
-@property (nonatomic, strong,  readonly) NSManagedObjectContext			*mainManagedObjectContext;
-@property (nonatomic, strong,  readonly) NSManagedObjectModel			*managedObjectModel;
-@property (nonatomic, strong,  readonly) NSPersistentStoreCoordinator	*persistentStoreCoordinator;
-@property (nonatomic, weak,	  readwrite) id<SPStorageObserver>			delegate;
+@property (nonatomic, strong,  readonly) NSManagedObjectContext         *writerManagedObjectContext;
+@property (nonatomic, strong,  readonly) NSManagedObjectContext         *mainManagedObjectContext;
+@property (nonatomic, strong,  readonly) NSManagedObjectModel           *managedObjectModel;
+@property (nonatomic, strong,  readonly) NSPersistentStoreCoordinator   *persistentStoreCoordinator;
+@property (nonatomic, weak,   readwrite) id<SPStorageObserver>          delegate;
 
 extern char* const SPCoreDataBucketListKey;
 extern NSString* const SPCoreDataWorkerContext;
