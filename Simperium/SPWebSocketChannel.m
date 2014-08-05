@@ -630,21 +630,25 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     NSArray *indexArrayCopy = [currentIndexArray copy];
     dispatch_async(bucket.processorQueue, ^{
         if (self.authenticated) {
-            [bucket.indexProcessor processIndex:indexArrayCopy bucket:bucket versionHandler: ^(NSString *key, NSString *version) {
+            __block NSInteger requestedVersions = 0;
+            
+            [bucket.indexProcessor processIndex:indexArrayCopy bucket:bucket versionHandler:^(NSString *key, NSString *version) {
                 // For each version that is processed, create a network request
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self requestVersion:version forObjectWithKey:key];
                 });
+                
+                ++requestedVersions;
             }];
 
-            dispatch_async(dispatch_get_main_queue(), ^{
-                // If no requests need to be queued, then all is good; back to processing
-                if (self.objectVersionsPending == 0) {
+            // If no requests were queued, then all is good; back to processing
+            if (requestedVersions == 0) {
+                dispatch_async(dispatch_get_main_queue(), ^{
                     [self allVersionsFinishedForBucket:bucket];
-                } else {
-					SPLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)self.objectVersionsPending, bucket.name);
-				}
-            });
+                });   
+            } else {
+                SPLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)requestedVersions, bucket.name);
+            }
         }
     });
 }
