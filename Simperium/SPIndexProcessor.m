@@ -40,7 +40,8 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 #pragma mark ====================================================================================
 
 @interface SPIndexProcessor ()
-@property (nonatomic, strong) NSMutableSet *keysForObjectsWithRebaseDisabled;
+@property (nonatomic, strong) NSMutableSet  *keysForObjectsWithRebaseDisabled;
+@property (nonatomic, strong) NSMutableSet  *keysForObjectsWithPendingReload;
 @end
 
 
@@ -53,7 +54,8 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 - (instancetype)init {
     self = [super init];
     if (self) {
-        self.keysForObjectsWithRebaseDisabled = [NSMutableSet set];
+        _keysForObjectsWithRebaseDisabled   = [NSMutableSet set];
+        _keysForObjectsWithPendingReload    = [NSMutableSet set];
     }
     return self;
 }
@@ -109,13 +111,18 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                 }
                 
                 // Check to see if this entity already exists locally and is up to date
-                id<SPDiffable> object = [objects objectForKey:key];
-                if (object && object.ghost != nil && object.ghost.version != nil && [version isEqualToString:object.ghost.version]) {
+                id<SPDiffable> object   = [objects objectForKey:key];
+                BOOL shouldReload       = [self.keysForObjectsWithPendingReload containsObject:key];
+                
+                if (!shouldReload && object.ghost.version != nil && [version isEqualToString:object.ghost.version]) {
                     continue;
                 }
                 
                 // Allow caller to use the key and version
                 versionHandler(key, version);
+                
+                // Cleanup
+                [self.keysForObjectsWithPendingReload removeObject:key];
             }
             
             // Refault to free up the memory
@@ -321,6 +328,14 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 
 - (void)disableRebaseForObjectWithKey:(NSString *)simperiumKey {
     [self.keysForObjectsWithRebaseDisabled addObject:simperiumKey];
+}
+
+- (void)enableReloadForObjectWithKey:(NSString *)simperiumKey {
+    [self.keysForObjectsWithPendingReload addObject:simperiumKey];
+}
+
+- (void)disableReloadForAllObjects {
+    [self.keysForObjectsWithPendingReload removeAllObjects];
 }
 
 - (NSArray*)exportIndexStatus:(SPBucket *)bucket {

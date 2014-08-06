@@ -251,9 +251,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     self.onLocalChangesSent         = nil;
     self.objectVersionsPending      = 0;
 
-    // Reset disable-rebase mechanism
+    // Reset disable-rebase mechanism + reset reload mechanism
     dispatch_async(bucket.processorQueue, ^{
         [bucket.indexProcessor enableRebaseForAllObjects];
+        [bucket.indexProcessor disableReloadForAllObjects];
     });
     
     // Download the index, on the 1st sync
@@ -326,9 +327,14 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
                 
             } else if (error.code == SPProcessorErrorsReceivedInvalidChange) {
                 
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
-                });
+                // Do not generate reentrant calls: let the index processor handle the reload
+                if (weakSelf.indexing) {
+                    [indexProcessor enableReloadForObjectWithKey:simperiumKey];
+                } else {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
+                    });
+                }
             }
         };
         
