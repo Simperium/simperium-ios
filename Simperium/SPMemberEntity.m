@@ -26,7 +26,7 @@ static SPLogLevels logLevel = SPLogLevelsWarn;
 
 @implementation SPMemberEntity
 
-- (id)initFromDictionary:(NSDictionary *)dict {
+- (instancetype)initFromDictionary:(NSDictionary *)dict {
     self = [super initFromDictionary:dict];
     if (self) {
         _entityName = dict[@"entityName"];
@@ -36,7 +36,7 @@ static SPLogLevels logLevel = SPLogLevelsWarn;
 }
 
 - (id)defaultValue {
-	return nil;
+    return nil;
 }
 
 - (id)simperiumKeyForObject:(id)value {
@@ -103,8 +103,8 @@ static SPLogLevels logLevel = SPLogLevelsWarn;
 - (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
     NSString *otherKey = [self simperiumKeyForObject:otherValue];
     
-	NSAssert([thisValue isKindOfClass:[SPManagedObject class]] && [otherValue isKindOfClass:[SPManagedObject class]],
-			 @"Simperium error: couldn't diff objects because their classes weren't SPManagedObject");
+    NSAssert([thisValue isKindOfClass:[SPManagedObject class]] && [otherValue isKindOfClass:[SPManagedObject class]],
+            @"Simperium error: couldn't diff objects because their classes weren't SPManagedObject");
     
     NSString *thisKey = [self simperiumKeyForObject:thisValue];
     
@@ -113,15 +113,15 @@ static SPLogLevels logLevel = SPLogLevelsWarn;
         return @{ };
     }
     
-	// Construct the diff in the expected format
-	return @{
+    // Construct the diff in the expected format
+    return @{
         OP_OP       : OP_REPLACE,
         OP_VALUE    : otherKey
     };
 }
 
 - (id)applyDiff:(id)thisValue otherValue:(id)otherValue error:(NSError **)error {
-	return otherValue;
+    return otherValue;
 }
 
 @end

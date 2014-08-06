@@ -25,12 +25,6 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
 @implementation SPCoreDataExporter
 
-- (id)init {
-    if ((self = [super init])) {
-    }
-    return self;
-}
-
 - (NSString *)simperiumTypeForAttribute:(NSAttributeDescription *)attribute
 {
     // Check for overrides first

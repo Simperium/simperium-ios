@@ -37,7 +37,7 @@
 
 
 - (void)configureBucket {
-	
+    
     // Get the MOC's Grandpa (writerContext)
     NSManagedObjectContext *writerManagedObjectContext = self.managedObjectContext;
     
@@ -45,7 +45,7 @@
         writerManagedObjectContext = writerManagedObjectContext.parentContext;
     }
 
-	// Check
+    // Check
     NSDictionary *bucketList = objc_getAssociatedObject(writerManagedObjectContext, SPCoreDataBucketListKey);
     
     if (!bucketList) {
@@ -66,13 +66,13 @@
 - (void)awakeFromInsert {
     [super awakeFromInsert];
     [self configureBucket];
-	
-	// Determine if it was a local // remote insert, and call the right 'awake...' method
-	if ([self.managedObjectContext.userInfo[SPCoreDataWorkerContext] boolValue]) {
-		[self awakeFromRemoteInsert];
-	} else {
-		[self awakeFromLocalInsert];
-	}
+    
+    // Determine if it was a local // remote insert, and call the right 'awake...' method
+    if ([self.managedObjectContext.userInfo[SPCoreDataWorkerContext] boolValue]) {
+        [self awakeFromRemoteInsert];
+    } else {
+        [self awakeFromLocalInsert];
+    }
 }
 
 - (void)didTurnIntoFault {
@@ -113,12 +113,12 @@
     NSManagedObjectID *key = [self objectID];
     if ([key isTemporaryID]) {
         return nil;
-	}
+    }
     return [[key URIRepresentation] absoluteString];
 }
 
 - (void)loadMemberData:(NSDictionary *)memberData {    
-	// Copy data for each member from the dictionary
+    // Copy data for each member from the dictionary
     for (NSString *memberKey in [memberData allKeys]) {
         SPMember *member = [bucket.differ.schema memberForKey:memberKey];
         if (member) {
@@ -127,31 +127,31 @@
             // This sets the actual instance data
             [self setValue: data forKey: [member keyName]];
         }
-	}
+    }
 }
 
 - (void)willBeRead {
     // Bit of a hack to force fire the fault
     if ([self isFault]) {
         [self simperiumKey];
-	}
+    }
 }
 
 - (NSDictionary *)dictionary {
-	// Return a dictionary that contains member names as keys and actual member data as values
-	// This can be used for diffing, serialization, networking, etc.
-	
-	NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-	
-	for (SPMember *member in [bucket.differ.schema.members allValues]) {
-		id data = [self valueForKey:[member keyName]];
+    // Return a dictionary that contains member names as keys and actual member data as values
+    // This can be used for diffing, serialization, networking, etc.
+    
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    
+    for (SPMember *member in [bucket.differ.schema.members allValues]) {
+        id data = [self valueForKey:[member keyName]];
         
         // The setValue:forKey:inDictionary: method can perform conversions to JSON-compatible formats
         [member setValue:data forKey:[member keyName] inDictionary:dict];
-	}
-	
-	// Might be beneficial to eventually cache this and only update it when data has changed
-	return dict;
+    }
+    
+    // Might be beneficial to eventually cache this and only update it when data has changed
+    return dict;
 }
 
 - (NSString *)version {
@@ -164,11 +164,11 @@
 
 
 - (void)awakeFromLocalInsert {
-	// Override me if needed!
+    // Override me if needed!
 }
 
 - (void)awakeFromRemoteInsert {
-	// Override me if needed!
+    // Override me if needed!
 }
 
 @end
