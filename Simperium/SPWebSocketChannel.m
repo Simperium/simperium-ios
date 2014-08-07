@@ -663,11 +663,6 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     [self processVersionsBatchForBucket:bucket];
 
     SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
-
-    // Failsafe
-    if (!self.indexing) {
-        return;
-    }
     
     // Paranoid Mode: Don't set the lastChangeSignature, unless it's not nil!
     if (self.pendingLastChangeSignature) {
