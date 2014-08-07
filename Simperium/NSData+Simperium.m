@@ -32,8 +32,7 @@ static const short _base64DecodingTable[256] = {
 
 + (NSData *)sp_decodeBase64WithString:(NSString *)strBase64 {
     if ([NSData instancesRespondToSelector:@selector(initWithBase64EncodedString:options:)]) {
-        return [strBase64 dataUsingEncoding:NSASCIIStringEncoding];
-//        return [[NSData alloc] initWithBase64EncodedString:strBase64 options:NSDataBase64DecodingIgnoreUnknownCharacters];
+        return [[NSData alloc] initWithBase64EncodedString:strBase64 options:0];
     }
     const char * objPointer = [strBase64 cStringUsingEncoding:NSASCIIStringEncoding];
 	if (objPointer == NULL) {
