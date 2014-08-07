@@ -96,7 +96,7 @@ static SPLogLevels logLevel = SPLogLevelsWarn;
 }
 
 - (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self simperiumKeyForObject: value];
+    id convertedValue = [self simperiumKeyForObject:value];
     [dict setValue:convertedValue forKey:key];
 }
 
@@ -114,10 +114,7 @@ static SPLogLevels logLevel = SPLogLevelsWarn;
     }
     
     // Construct the diff in the expected format
-    return @{
-        OP_OP       : OP_REPLACE,
-        OP_VALUE    : otherKey
-    };
+    return [NSDictionary dictionaryWithObjectsAndKeys:OP_REPLACE, OP_OP, otherKey, OP_VALUE, nil];
 }
 
 - (id)applyDiff:(id)thisValue otherValue:(id)otherValue error:(NSError **)error {
