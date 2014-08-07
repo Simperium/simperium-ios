@@ -251,9 +251,10 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     self.onLocalChangesSent         = nil;
     self.objectVersionsPending      = 0;
 
-    // Reset disable-rebase mechanism
+    // Reset disable-rebase mechanism + reset reload mechanism
     dispatch_async(bucket.processorQueue, ^{
         [bucket.indexProcessor enableRebaseForAllObjects];
+        [bucket.indexProcessor disableReloadForAllObjects];
     });
     
     // Download the index, on the 1st sync
@@ -326,9 +327,14 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
                 
             } else if (error.code == SPProcessorErrorsReceivedInvalidChange) {
                 
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
-                });
+                // Do not generate reentrant calls: let the index processor handle the reload
+                if (weakSelf.indexing) {
+                    [indexProcessor enableReloadForObjectWithKey:simperiumKey];
+                } else {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
+                    });
+                }
             }
         };
         
@@ -346,35 +352,34 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 - (void)handleIndexResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
     
     SPLogVerbose(@"Simperium received index (%@): %@", self.name, responseString);
-    
+
     if (self.indexing == false) {
         SPLogError(@"ERROR: Index response was NOT expected!");
     }
     
-    NSDictionary *responseDict = [responseString sp_objectFromJSONString];
-    NSArray *currentIndexArray = responseDict[@"index"];
-    id current = responseDict[@"current"];
+    NSDictionary *responseDict      = [responseString sp_objectFromJSONString];
+    NSArray *currentIndexArray      = responseDict[@"index"];
+    NSString *current               = responseDict[@"current"];
     
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
     if ([current isKindOfClass:[NSNumber class]]) {
         current = [NSString stringWithFormat:@"%ld", (long)[current integerValue]];
     }
     self.pendingLastChangeSignature = [current length] > 0 ? [NSString stringWithFormat:@"%@", current] : nil;
-    self.nextMark = responseDict[@"mark"];
+    self.nextMark                   = responseDict[@"mark"];
     
     // Remember all the retrieved data in case there's more to get
     [self.indexArray addObjectsFromArray:currentIndexArray];
     
-    // If there's another page, get those too (this will repeat until there are none left)
     if (self.nextMark.length > 0) {
+        // If there's another page, get those too (this will repeat until there are none left)
         SPLogVerbose(@"Simperium found another index page mark (%@): %@", self.name, self.nextMark);
         [self requestLatestVersionsForBucket:bucket mark:self.nextMark];
-        return;
+    } else {
+        // Index retrieval is complete, so get all the versions
+        [self requestVersionsForKeys:self.indexArray bucket:bucket];
+        [self.indexArray removeAllObjects];
     }
-    
-    // Index retrieval is complete, so get all the versions
-    [self requestVersionsForKeys:self.indexArray bucket:bucket];
-    [self.indexArray removeAllObjects];
 }
 
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
@@ -631,27 +636,25 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     NSArray *indexArrayCopy = [currentIndexArray copy];
     dispatch_async(bucket.processorQueue, ^{
         if (self.authenticated) {
-            [bucket.indexProcessor processIndex:indexArrayCopy bucket:bucket versionHandler: ^(NSString *key, NSString *version) {
+            __block NSInteger requestedVersions = 0;
+            
+            [bucket.indexProcessor processIndex:indexArrayCopy bucket:bucket versionHandler:^(NSString *key, NSString *version) {
                 // For each version that is processed, create a network request
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self requestVersion:version forObjectWithKey:key];
                 });
+                
+                ++requestedVersions;
             }];
 
-            dispatch_async(dispatch_get_main_queue(), ^{
-                // If no requests need to be queued, then all is good; back to processing
-                if (self.objectVersionsPending == 0) {
-                    if (self.nextMark.length > 0) {
-                        // More index pages to get
-                        [self requestLatestVersionsForBucket:bucket mark:self.nextMark];
-                    } else {
-                        // The entire index has been retrieved
-                        [self allVersionsFinishedForBucket:bucket];
-                    }
-                } else {
-                    SPLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)self.objectVersionsPending, bucket.name);
-                }
-            });
+            // If no requests were queued, then all is good; back to processing
+            if (requestedVersions == 0) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self allVersionsFinishedForBucket:bucket];
+                });   
+            } else {
+                SPLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)requestedVersions, bucket.name);
+            }
         }
     });
 }
@@ -660,12 +663,16 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     [self processVersionsBatchForBucket:bucket];
 
     SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
-
+    
+    // Paranoid Mode: Don't set the lastChangeSignature, unless it's not nil!
+    if (self.pendingLastChangeSignature) {
+        bucket.lastChangeSignature      = self.pendingLastChangeSignature;
+    }
+    
     // All versions were received successfully, so update the lastChangeSignature
-    [bucket setLastChangeSignature:self.pendingLastChangeSignature];
     self.pendingLastChangeSignature = nil;
-    self.nextMark = nil;
-    self.indexing = NO;
+    self.nextMark                   = nil;
+    self.indexing                   = NO;
 
     // There could be some processing happening on the queue still, so don't start until they're done
     dispatch_async(bucket.processorQueue, ^{

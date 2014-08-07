@@ -32,6 +32,9 @@ typedef void(^SPChangeHandlerBlockType)(NSString *key);
 - (void)enableRebaseForObjectWithKey:(NSString *)simperiumKey;
 - (void)disableRebaseForObjectWithKey:(NSString *)simperiumKey;
 
+- (void)enableReloadForObjectWithKey:(NSString *)simperiumKey;
+- (void)disableReloadForAllObjects;
+
 - (NSArray*)exportIndexStatus:(SPBucket *)bucket;
 
 @end
