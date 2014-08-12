@@ -25,7 +25,7 @@
 
 - (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
     id value = [dict objectForKey: key];
-    if (!value)
+    if (!value || [value isEqual:[NSNull null]])
         return nil;
     
 	if ([value isKindOfClass:[NSDate class]])
@@ -33,7 +33,13 @@
 	
 	// Convert from NSNumber to NSDate
 	//NSInteger gmtOffset = [[NSTimeZone localTimeZone] secondsFromGMT];
-	return [NSDate dateWithTimeIntervalSince1970:[(NSString *)value doubleValue]];//-gmtOffset];
+
+    //failsafe
+    if ([value isKindOfClass:[NSString class]]) {
+        return [NSDate dateWithTimeIntervalSince1970:[(NSString *)value doubleValue]];//-gmtOffset];
+    }
+    
+    return value;
 }
 
 - (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
