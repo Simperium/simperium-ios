@@ -35,7 +35,7 @@
 	//NSInteger gmtOffset = [[NSTimeZone localTimeZone] secondsFromGMT];
 
     //failsafe
-    if ([value isKindOfClass:[NSString class]]) {
+    if ([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]]) {
         return [NSDate dateWithTimeIntervalSince1970:[(NSString *)value doubleValue]];//-gmtOffset];
     }
     
