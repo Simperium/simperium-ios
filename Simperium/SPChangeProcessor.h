@@ -16,6 +16,7 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
+typedef void(^SPChangeSuccessHandlerBlockType)(NSString *simperiumKey, NSString *version);
 typedef void(^SPChangeErrorHandlerBlockType)(NSString *simperiumKey, NSString *version, NSError *error);
 typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change);
 
@@ -36,22 +37,22 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 
 @interface SPChangeProcessor : NSObject
 
-@property (nonatomic, strong, readonly) NSString	*label;
-@property (nonatomic, strong, readonly) NSString	*clientID;
-@property (nonatomic, assign, readonly) int			numChangesPending;
-@property (nonatomic, assign, readonly) int			numKeysForObjectsWithMoreChanges;
+@property (nonatomic, strong, readonly) NSString    *label;
+@property (nonatomic, strong, readonly) NSString    *clientID;
+@property (nonatomic, assign, readonly) int         numChangesPending;
+@property (nonatomic, assign, readonly) int         numKeysForObjectsWithMoreChanges;
 @property (nonatomic, assign, readonly) int         numKeysForObjectToDelete;
 @property (nonatomic, assign, readonly) BOOL        reachedMaxPendings;
 
-- (id)initWithLabel:(NSString *)label clientID:(NSString *)clientID;
+- (instancetype)initWithLabel:(NSString *)label clientID:(NSString *)clientID;
 
 - (void)reset;
 
 - (void)notifyOfRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket;
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errorHandler:(SPChangeErrorHandlerBlockType)errorHandler;
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket successHandler:(SPChangeSuccessHandlerBlockType)successHandler errorHandler:(SPChangeErrorHandlerBlockType)errorHandler;
 
 - (void)enqueueObjectForMoreChanges:(NSString *)key bucket:(SPBucket *)bucket;
-- (void)enqueueObjectDeletion:(NSString *)key bucket:(SPBucket *)bucket;
+- (void)enqueueObjectForDeletion:(NSString *)key bucket:(SPBucket *)bucket;
 - (void)enqueueObjectForRetry:(NSString *)key bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData;
 - (void)discardPendingChanges:(NSString *)key bucket:(SPBucket *)bucket;
 

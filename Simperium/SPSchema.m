@@ -21,8 +21,9 @@ NSString * const SPSchemaDefinitionMembersKey = @"members";
 @implementation SPSchema
 
 // Loads an entity's definition (name, members, their types, etc.) from a plist dictionary
-- (id)initWithBucketName:(NSString *)name data:(NSDictionary *)definition {
-    if (self = [super init]) {
+- (instancetype)initWithBucketName:(NSString *)name data:(NSDictionary *)definition {
+    self = [super init];
+    if (self) {
         _bucketName = [name copy];
         NSArray *memberList = [definition valueForKey:SPSchemaDefinitionMembersKey];
         _members = [NSMutableDictionary dictionaryWithCapacity:3];
@@ -39,16 +40,16 @@ NSString * const SPSchemaDefinitionMembersKey = @"members";
 - (void)addMemberForObject:(id)object key:(NSString *)key {
     if (!_dynamic) {
         return;
-	}
+    }
     
     if ([self memberForKey:key]) {
         return;
-	}
+    }
     
     NSString *type = @"unsupported";
     if ([object isKindOfClass:[NSString class]]) {
         type = @"text";
-	} else if ([object isKindOfClass:[NSNumber class]]) {
+    } else if ([object isKindOfClass:[NSNumber class]]) {
         type = @"double";
 	}
 

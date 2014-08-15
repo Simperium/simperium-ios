@@ -31,7 +31,6 @@
 
 @synthesize lastChangeSignature = _lastChangeSignature;
 
-
 - (void)increaseInFlightProcess {
     @synchronized(self) {
         if (_inFlightProcessCount == 0) self.processing = YES;
@@ -67,12 +66,13 @@
     block([finishedBlock copy]);
 }
 
-- (id)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
+- (instancetype)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
 relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label remoteName:(NSString *)remoteName clientID:(NSString *)clientID
 {
-    if ((self = [super init])) {
+    self = [super init];
+    if (self) {
         self.name = aSchema.bucketName;
-		self.remoteName = remoteName;
+        self.remoteName = remoteName;
         self.storage = aStorage;
         self.network = netInterface;
         self.relationshipResolver = resolver;
@@ -238,15 +238,15 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
         NSString *signature = [[NSUserDefaults standardUserDefaults] objectForKey:sigKey];
         _lastChangeSignature = [signature copy];
     }
-	return _lastChangeSignature;
+    return _lastChangeSignature;
 }
 
 - (void)setLastChangeSignature:(NSString *)signature {
-	_lastChangeSignature = [signature copy];
+    _lastChangeSignature = [signature copy];
     
-	// Persist it
-	NSString *sigKey = [NSString stringWithFormat:@"lastChangeSignature-%@", self.instanceLabel];
-	[[NSUserDefaults standardUserDefaults] setObject:_lastChangeSignature forKey: sigKey];
+    // Persist it
+    NSString *sigKey = [NSString stringWithFormat:@"lastChangeSignature-%@", self.instanceLabel];
+    [[NSUserDefaults standardUserDefaults] setObject:_lastChangeSignature forKey: sigKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -285,7 +285,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
         [self.storage stopManagingObjectWithKey:key];
         if (delegateRespondsToSelector) {
             [self.delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeDelete memberNames:nil];
-		}
+        }
     }
 }
 
@@ -325,14 +325,14 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
 
 - (void)resolvePendingRelationshipsToKeys:(NSSet *)keys {
     for (NSString *key in keys) {
-        [self.relationshipResolver resolvePendingRelationshipsToKey:key bucketName:self.name storage:self.storage];
-	}
+        [self.relationshipResolver resolvePendingRelationshipsForKey:key bucketName:self.name storage:self.storage];
+    }
 }
 
 - (void)forceSyncWithCompletion:(SPBucketForceSyncCompletion)completion {
-	self.forceSyncCompletion    = completion;
+    self.forceSyncCompletion    = completion;
     self.forceSyncSignature     = self.lastChangeSignature;
-	[self.network forceSyncBucket:self];
+    [self.network forceSyncBucket:self];
 }
 
 - (BOOL)isForceSyncPending {
@@ -340,7 +340,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
 }
 
 - (void)signalForceSyncComplete {
-	if (!self.forceSyncCompletion) {
+    if (!self.forceSyncCompletion) {
         return;
     }
     
@@ -354,13 +354,13 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
 }
 
 - (NSDictionary*)exportStatus {
-	// This routine shall be used for debugging purposes!
-	NSString* signature = self.lastChangeSignature ?: @"";
-	return @{
-		@"current"	: signature,
-		@"index"	: [self.indexProcessor exportIndexStatus:self],
-		@"pendings"	: [self.changeProcessor exportPendingChanges]
-	};
+    // This routine shall be used for debugging purposes!
+    NSString* signature = self.lastChangeSignature ?: @"";
+    return @{
+        @"current"  : signature,
+        @"index"    : [self.indexProcessor exportIndexStatus:self],
+        @"pendings" : [self.changeProcessor exportPendingChanges]
+    };
 }
 
 @end

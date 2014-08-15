@@ -36,20 +36,15 @@ static NSString * const EmbeddedRelationshipUserInfoKey = @"spEmbed";
 
 @implementation SPCoreDataExporter
 
-- (id)init {
-    if ((self = [super init])) {
-    }
-    return self;
-}
-
 - (NSString *)simperiumTypeForAttribute:(NSAttributeDescription *)attribute
 {
     // Check for overrides first
-    NSString *override = [[attribute userInfo] objectForKey:@"spOverride"];
-    if (override)
+    NSString *override = attribute.userInfo[@"spOverride"];
+    if (override) {
         return override;
+    }
     
-    switch ([attribute attributeType]) {
+    switch (attribute.attributeType) {
         case NSStringAttributeType: return @"text";
         case NSInteger16AttributeType: return @"int";
         case NSInteger32AttributeType: return @"int";
@@ -60,6 +55,7 @@ static NSString * const EmbeddedRelationshipUserInfoKey = @"spEmbed";
         case NSDateAttributeType: return @"date";
         case NSTransformableAttributeType: return @"transformable";
         case NSDecimalAttributeType: return @"double";
+        default: return nil;
     }
     [NSException raise:NSInternalInconsistencyException format:@"Simperium couldn't load member %@ (unsupported type)", attribute.name];
 	return nil;

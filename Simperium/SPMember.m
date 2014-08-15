@@ -17,19 +17,19 @@
 #import "NSData+Simperium.h"
 
 // Operations used for diff and transform
-NSString * const OP_OP				= @"o";
-NSString * const OP_VALUE			= @"v";
-NSString * const OP_REPLACE			= @"r";
-NSString * const OP_LIST_INSERT		= @"+";
-NSString * const OP_LIST_DELETE		= @"-";
-NSString * const OP_OBJECT_ADD		= @"+";
-NSString * const OP_OBJECT_REMOVE	= @"-";
+NSString * const OP_OP              = @"o";
+NSString * const OP_VALUE           = @"v";
+NSString * const OP_REPLACE         = @"r";
+NSString * const OP_LIST_INSERT     = @"+";
+NSString * const OP_LIST_DELETE     = @"-";
+NSString * const OP_OBJECT_ADD      = @"+";
+NSString * const OP_OBJECT_REMOVE   = @"-";
 NSString * const OP_OBJECT_REPLACE  = @"r";
-NSString * const OP_INTEGER			= @"I";
-NSString * const OP_LIST			= @"L";
-NSString * const OP_LIST_DMP		= @"dL";
-NSString * const OP_OBJECT			= @"O";
-NSString * const OP_STRING			= @"d";
+NSString * const OP_INTEGER         = @"I";
+NSString * const OP_LIST            = @"L";
+NSString * const OP_LIST_DMP        = @"dL";
+NSString * const OP_OBJECT          = @"O";
+NSString * const OP_STRING          = @"d";
 
 NSString * const SPMemberDefinitionKeyNameKey = @"name";
 NSString * const SPMemberDefinitionTypeKey = @"type";
@@ -227,8 +227,13 @@ static NSString * const SPOperationTypeKey = @"otype";
                 dispatch_async(dispatch_get_main_queue(), ^{
                     // Let Simperium store the reference so it can be properly resolved when the object gets synced
                     SPBucket *bucket = ((id<SPDiffable>)parentObject).bucket;
-                    [bucket.relationshipResolver addPendingRelationshipToKey:JSONValue fromKey:fromKey bucketName:bucket.name
-                                                               attributeName:self.keyName storage:bucket.storage];
+
+                    SPRelationship *relationship = [SPRelationship relationshipFromObjectWithKey:fromKey
+                                                                                       attribute:self.keyName
+                                                                                    sourceBucket:bucket.name
+                                                                                 toObjectWithKey:JSONValue
+                                                                                    targetBucket:self.entityName];
+                    [bucket.relationshipResolver addPendingRelationship:relationship];
                 });
             }
         }

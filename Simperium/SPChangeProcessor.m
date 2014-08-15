@@ -27,9 +27,8 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static SPLogLevels logLevel			= SPLogLevelsInfo;
-
-static int const SPChangeProcessorMaxPendingChanges	= 200;
+static SPLogLevels logLevel                         = SPLogLevelsInfo;
+static int const SPChangeProcessorMaxPendingChanges = 200;
 
 
 #pragma mark ====================================================================================
@@ -90,25 +89,26 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 }
 
 
-- (id)initWithLabel:(NSString *)label clientID:(NSString *)clientID {
+- (instancetype)initWithLabel:(NSString *)label clientID:(NSString *)clientID {
     
     NSAssert(clientID, @"ChangeProcessor should be initialized with a valid clientID");
     
-    if ((self = [super init])) {
+    self = [super init];
+    if (self) {
         self.label                          = label;
         self.clientID                       = clientID;
         
         self.changesPending                 = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
-
+        
         NSString *moreKey                   = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", label];
         self.keysForObjectsWithMoreChanges  = [SPPersistentMutableSet loadSetWithLabel:moreKey];
 
         NSString *retryKey                  = [NSString stringWithFormat:@"keysForObjectsWithPendingRetry-%@", label];
         self.keysForObjectsWithPendingRetry = [SPPersistentMutableSet loadSetWithLabel:retryKey];
         
-        NSString *deleteKey = [NSString stringWithFormat:@"keysForObjectsToDelete-%@", label];
-        self.keysForObjectsToDelete = [SPPersistentMutableSet loadSetWithLabel:deleteKey];
-		
+        NSString *deleteKey                 = [NSString stringWithFormat:@"keysForObjectsToDelete-%@", label];
+        self.keysForObjectsToDelete         = [SPPersistentMutableSet loadSetWithLabel:deleteKey];
+        
         [self migratePendingChangesIfNeeded];
     }
 
@@ -118,12 +118,12 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 - (void)reset {
     [self.changesPending removeAllObjects];
     [self.keysForObjectsWithMoreChanges removeAllObjects];
-	[self.keysForObjectsWithPendingRetry removeAllObjects];
+    [self.keysForObjectsWithPendingRetry removeAllObjects];
     [self.keysForObjectsToDelete removeAllObjects];
-	
-	[self.changesPending save];
+    
+    [self.changesPending save];
     [self.keysForObjectsWithMoreChanges save];
-	[self.keysForObjectsWithPendingRetry save];
+    [self.keysForObjectsWithPendingRetry save];
     [self.keysForObjectsToDelete save];
 }
 
@@ -193,38 +193,38 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
 - (BOOL)processRemoteDeleteWithKey:(NSString*)simperiumKey bucket:(SPBucket *)bucket objectWasFound:(BOOL)objectWasFound
                              error:(NSError **)error {
+    
+    // REMOVE operation
+    // If the object still exists in our local storage (no matter if this is an ACK, or remote deletion), proceed nuking it
+    if (objectWasFound) {
+        SPLogVerbose(@"Simperium non-local REMOVE ENTITY received");
+        
+        id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
+        [threadSafeStorage beginCriticalSection];
+        
+        id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
+        
+        if (object) {
+            [threadSafeStorage deleteObject:object];
+            [threadSafeStorage save];
+        }
 
-	// REMOVE operation
-	// If the object still exists in our local storage (no matter if this is an ACK, or remote deletion), proceed nuking it
-	if (objectWasFound) {
-		SPLogVerbose(@"Simperium non-local REMOVE ENTITY received");
-		
-		id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
-		[threadSafeStorage beginCriticalSection];
-		
-		id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
-		
-		if (object) {
-			[threadSafeStorage deleteObject:object];
-			[threadSafeStorage save];
-		}
-
-    	[threadSafeStorage finishCriticalSection];
-
-    	dispatch_async(dispatch_get_main_queue(), ^{
-    		NSDictionary *userInfo = @{
-    								   @"bucketName"	: bucket.name,
-    								   @"keys"			: [NSSet setWithObject:simperiumKey]
-    								   };
-    		[[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
-    	});
+        [threadSafeStorage finishCriticalSection];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSDictionary *userInfo = @{
+                                        @"bucketName"   : bucket.name,
+                                        @"keys"         : [NSSet setWithObject:simperiumKey]
+                                    };
+            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
+        });
 
     } else {
-    	dispatch_async(dispatch_get_main_queue(), ^{
-    		// Not really useful except for testing
-    		NSDictionary *userInfo = @{  @"bucketName" : bucket.name };
-    		[[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidAcknowledgeDeleteNotification object:bucket userInfo:userInfo];
-    	});
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Not really useful except for testing
+            NSDictionary *userInfo = @{  @"bucketName" : bucket.name };
+            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidAcknowledgeDeleteNotification object:bucket userInfo:userInfo];
+        });
     }
 
     return YES;
@@ -237,26 +237,27 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 //      - Nuke ProcessorRequestsReindexingNotification. That should be handled by the processRemoteChanges error handler block
 //
 - (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket change:(NSDictionary *)change
-					  acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches error:(NSError **)error {
-
+                      acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches error:(NSError **)error {
+    
     id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
-	[storage beginSafeSection];
-
+    [storage beginSafeSection];
+    
     id<SPDiffable> object = [storage objectForKey:simperiumKey bucketName:bucket.name];
 
     BOOL newlyAdded = NO;
     
     // MODIFY operation
     if (!object) {
-		// If the change was sent by this very same client, and the object isn't available, don't add it.
-		// It Must have been locally deleted before the confirmation got through!
-		if (clientMatches) {
+        // If the change was sent by this very same client, and the object isn't available, don't add it.
+        // It Must have been locally deleted before the confirmation got through!
+        if (clientMatches) {
             if (error) {
                 *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedZombieChange description:nil];
             }
-			[storage finishSafeSection];
-			return NO;
-		}
+            [storage finishSafeSection];
+            return NO;
+        }
+        
         // It doesn't exist yet, so ADD it
         newlyAdded = YES;
 
@@ -276,9 +277,9 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     [object willBeRead];
     
     // Make sure the expected last change matches the actual last change
-    NSString *oldVersion	= [object.ghost version];
-    NSString *startVersion	= change[CH_START_VERSION];
-    NSString *endVersion	= change[CH_END_VERSION];
+    NSString *oldVersion    = [object.ghost version];
+    NSString *startVersion  = change[CH_START_VERSION];
+    NSString *endVersion    = change[CH_END_VERSION];
 
     // Store versions as strings, but if they come off the wire as numbers, then handle that too
     if ([startVersion isKindOfClass:[NSNumber class]]) {
@@ -288,7 +289,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     if ([endVersion isKindOfClass:[NSNumber class]]) {
         endVersion = [NSString stringWithFormat:@"%ld", (long)[endVersion integerValue]];
     }
-	
+    
     // It already exists, now MODIFY it
     if (!object.ghost) {
         SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, simperiumKey);
@@ -356,7 +357,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
                     [object loadMemberData:object.ghost.memberData];
                 } else {
                     SPLogVerbose(@"Simperium transform resulted in empty diff (invalid ack?)");
-    			}
+                }
             }
         }
 
@@ -375,7 +376,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         }
         
         [storage save];
-		
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             NSMutableDictionary *userInfo = [@{
                 @"bucketName" : bucket.name,
@@ -425,8 +426,8 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     id<SPDiffable> object       = [storage objectForKey:key bucketName:bucket.name];
 
     SPLogVerbose(@"Simperium client %@ received change (%@) %@: %@", self.clientID, bucket.name, changeClientID, change);
-	
-	// Process
+    
+    // Process
     BOOL objectWasFound         = (object != nil);
     BOOL clientMatches          = ([changeClientID compare:self.clientID] == NSOrderedSame);
     BOOL remove                 = (operation && [operation compare:CH_REMOVE] == NSOrderedSame);
@@ -443,16 +444,16 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     }
 
     SPLogVerbose(@"Simperium performing change operation: %@", operation);
-	[storage finishSafeSection];
-		
+    [storage finishSafeSection];
+    
     if (remove && (objectWasFound || acknowledged)) {
         return [self processRemoteDeleteWithKey:key bucket:bucket objectWasFound:objectWasFound error:error];
     } else if (operation && [operation compare: CH_MODIFY] == NSOrderedSame) {
         return [self processRemoteModifyWithKey:key bucket:bucket change:change acknowledged:acknowledged clientMatches:clientMatches error:error];
     }
-	
-	// Invalid
-	SPLogError(@"Simperium error (%@), received an invalid change for (%@): %@", bucket.name, key, change);
+    
+    // Invalid
+    SPLogError(@"Simperium error (%@), received an invalid change for (%@): %@", bucket.name, key, change);
     return NO;
 }
 
@@ -471,7 +472,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         NSString *key = [self keyWithoutNamespaces:change bucket:bucket];
         if (![self awaitingAcknowledgementForKey:key]) {
             [changedKeys addObject:key];
-		}
+        }
     }
     
     if (changedKeys.count == 0) {
@@ -479,17 +480,18 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     }
     
     NSDictionary *userInfo = @{
-        @"bucketName"	: bucket.name,
-        @"keys"			: changedKeys
+        @"bucketName"   : bucket.name,
+        @"keys"         : changedKeys
     };
     
     [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorWillChangeObjectsNotification object:bucket userInfo:userInfo];
 }
 
-- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket errorHandler:(SPChangeErrorHandlerBlockType)errorHandler {
+- (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket successHandler:(SPChangeSuccessHandlerBlockType)successHandler errorHandler:(SPChangeErrorHandlerBlockType)errorHandler {
 
     NSAssert([NSThread isMainThread] == NO,            @"This should get called on the processor's queue!");
     NSAssert([bucket isKindOfClass:[SPBucket class]],  @"Invalid Bucket");
+    NSAssert(successHandler,                           @"Please, provide a success handler!");
     NSAssert(errorHandler,                             @"Please, provide an error handler!");
     
     @autoreleasepool {
@@ -512,6 +514,9 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
                 continue;
             }
 
+            // Signal Success
+            successHandler(key, version);
+            
             // Persist LastChangeSignature: do it inside the loop in case something happens to abort the loop
             NSString *changeVersion = change[CH_CHANGE_VERSION];
             
@@ -547,11 +552,11 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     SPLogVerbose(@"Simperium marking object for sending more changes when ready (%@): %@", bucket.name, key);
     [self.keysForObjectsWithMoreChanges addObject:key];
     [self.keysForObjectsWithMoreChanges save];
-    
+
     }];
 }
 
-- (void)enqueueObjectDeletion:(NSString *)key bucket:(SPBucket *)bucket {
+- (void)enqueueObjectForDeletion:(NSString *)key bucket:(SPBucket *)bucket {
     NSAssert( [key isKindOfClass:[NSString class]],         @"Missing key" );
     NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Missing Bucket");
     
@@ -579,19 +584,30 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
         [threadSafeStorage finishSafeSection];
         return;
     }
+    
+    // Hack: Force Fire fault
+    [object simperiumKey];
 
     // Do we need to repost with the whole data?
+    BOOL success = YES;
+    
     if (object && overrideRemoteData) {
-        // Fire fault
-        NSMutableDictionary *newChange = [oldChange mutableCopy];
-        newChange[CH_DATA] = [object dictionary];
-        [self.changesPending setObject:newChange forKey:key];
+        NSDictionary *fullData = [object dictionary];
+        if (fullData) {
+            NSDictionary *newChange = [self createChangeForKey:key operation:CH_MODIFY version:object.ghost.version fullData:fullData];
+            [self.changesPending setObject:newChange forKey:key];
+        } else {
+            [self.changesPending removeObjectForKey:key];
+            success = NO;
+        }
     }
 
     [threadSafeStorage finishSafeSection];
-
-    [self.keysForObjectsWithPendingRetry addObject:key];
-    [self.keysForObjectsWithPendingRetry save];
+    
+    if (success) {
+        [self.keysForObjectsWithPendingRetry addObject:key];
+        [self.keysForObjectsWithPendingRetry save];
+    }
 
     }];
 }
@@ -710,12 +726,12 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 
     }];
     
-	return changes;
+    return changes;
 }
 
 - (void)enumeratePendingChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
 
-	NSInteger pendingCount = self.changesPending.count;
+    NSInteger pendingCount = self.changesPending.count;
     if (pendingCount == 0) {
 		return;
 	}
@@ -740,8 +756,8 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     NSUInteger queueCount = self.keysForObjectsWithMoreChanges.count;
 
     if (queueCount == 0 || limit <= 0) {
-		return;
-	}
+        return;
+    }
 
     [self syncInFlightProcess:^{
 
@@ -760,7 +776,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
             [processedKeys addObject:key];
         }
     }
-
+    
     NSArray *changes = [self processLocalObjectsWithKeys:processedKeys bucket:bucket];
 
     for (NSDictionary *change in changes) {
@@ -784,7 +800,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     
     SPLogVerbose(@"Simperium found %lu objects to delete (%@)", (unsigned long)queueCount, bucket.name);
     
-    NSMutableSet *processedKeys	= [NSMutableSet setWithCapacity:limit];
+    NSMutableSet *processedKeys = [NSMutableSet setWithCapacity:limit];
     
     for (NSString *key in self.keysForObjectsToDelete) {
         
@@ -837,23 +853,23 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 #pragma mark ====================================================================================
 
 - (NSArray*)exportPendingChanges {
-
+    
     // This routine shall be used for debugging purposes!
     NSMutableArray* pendings = [NSMutableArray array];
     for (NSDictionary* change in self.changesPending.allValues) {
-
-    	NSMutableDictionary* export = [NSMutableDictionary dictionary];
-
-    	[export setObject:[change[CH_KEY] copy] forKey:CH_KEY];				// Entity Id
-    	[export setObject:[change[CH_LOCAL_ID] copy] forKey:CH_LOCAL_ID];	// Change Id: ccid
-
-    	// Start Version is not available for newly inserted objects
-    	NSString* startVersion = change[CH_START_VERSION];
-    	if (startVersion) {
-    		[export setObject:[startVersion copy] forKey:CH_START_VERSION];
-    	}
-
-    	[pendings addObject:export];
+        
+        NSMutableDictionary* export = [NSMutableDictionary dictionary];
+        
+        [export setObject:[change[CH_KEY] copy] forKey:CH_KEY];             // Entity Id
+        [export setObject:[change[CH_LOCAL_ID] copy] forKey:CH_LOCAL_ID];   // Change Id: ccid
+        
+        // Start Version is not available for newly inserted objects
+        NSString* startVersion = change[CH_START_VERSION];
+        if (startVersion) {
+            [export setObject:[startVersion copy] forKey:CH_START_VERSION];
+        }
+        
+        [pendings addObject:export];
     }
 
     return pendings;
@@ -877,7 +893,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
 }
 
 - (BOOL)reachedMaxPendings {
-	return (self.changesPending.count >= SPChangeProcessorMaxPendingChanges);
+    return (self.changesPending.count >= SPChangeProcessorMaxPendingChanges);
 }
 
 
@@ -897,14 +913,35 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     return [changeKey stringByReplacingOccurrencesOfString:namespace withString:@""];
 }
 
+- (NSMutableDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version fullData:(NSDictionary *)fullData {    
+    // The change applies to this particular entity instance, so use its unique key as an identifier
+    NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:key forKey:CH_KEY];
+    
+    // Every change must be marked with a unique ID
+    change[CH_LOCAL_ID] = [NSString sp_makeUUID];
+    
+    // Set the change's operation
+    change[CH_OPERATION] = operation;
+    
+    // If it's a modify operation, also include the object's version as the last known version
+    if (operation == CH_MODIFY && version != nil && version.intValue != 0) {
+        change[CH_START_VERSION] = version;
+    }
+    
+    // Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
+    change[CH_DATA] = fullData;
+    
+    return change;
+}
+
 - (NSMutableDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version data:(NSDictionary *)data {
     // The change applies to this particular entity instance, so use its unique key as an identifier
     NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:key forKey:CH_KEY];
-
+    
     // Every change must be marked with a unique ID
     NSString *uuid = [NSString sp_makeUUID];
     [change setObject:uuid forKey: CH_LOCAL_ID];
-
+    
     // Set the change's operation
     [change setObject:operation forKey:CH_OPERATION];
 
@@ -934,7 +971,7 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     
     // No need to go further
     if (pendingJSON == nil) {
-    	return;
+        return;
     }
     
     // Proceed migrating!
@@ -943,10 +980,10 @@ static int const SPChangeProcessorMaxPendingChanges	= 200;
     NSDictionary *pendingDict = [pendingJSON sp_objectFromJSONString];
     
     for (NSString *key in pendingDict.allKeys) {
-    	id change = pendingDict[key];
-    	if (change) {
-    		[self.changesPending setObject:change forKey:key];
-    	}
+        id change = pendingDict[key];
+        if (change) {
+            [self.changesPending setObject:change forKey:key];
+        }
     }
     
     [self.changesPending save];

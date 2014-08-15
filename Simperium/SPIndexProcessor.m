@@ -36,6 +36,16 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 
 
 #pragma mark ====================================================================================
+#pragma mark Private
+#pragma mark ====================================================================================
+
+@interface SPIndexProcessor ()
+@property (nonatomic, strong) NSMutableSet  *keysForObjectsWithRebaseDisabled;
+@property (nonatomic, strong) NSMutableSet  *keysForObjectsWithPendingReload;
+@end
+
+
+#pragma mark ====================================================================================
 #pragma mark SPIndexProcessor
 #pragma mark ====================================================================================
 
@@ -82,6 +92,15 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 }
 
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _keysForObjectsWithRebaseDisabled   = [NSMutableSet set];
+        _keysForObjectsWithPendingReload    = [NSMutableSet set];
+    }
+    return self;
+}
+
 // Process an index of keys from the Simperium service for a particular bucket
 - (void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(SPVersionHandlerBlockType)versionHandler  {
 
@@ -119,8 +138,8 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 
     // Process each batch while being efficient with memory and faulting
     id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
-	[storage beginSafeSection];
-	
+    [storage beginSafeSection];
+    
     for (NSMutableArray *batchList in batchLists) {
         @autoreleasepool {
         // Batch fault the entities for efficiency
@@ -135,13 +154,18 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                 }
 
                 // Check to see if this entity already exists locally and is up to date
-                id<SPDiffable> object = [objects objectForKey:key];
-                if (object && object.ghost != nil && object.ghost.version != nil && [version isEqualToString:object.ghost.version]) {
+                id<SPDiffable> object   = [objects objectForKey:key];
+                BOOL shouldReload       = [self.keysForObjectsWithPendingReload containsObject:key];
+                
+                if (!shouldReload && object.ghost.version != nil && [version isEqualToString:object.ghost.version]) {
                     continue;
                 }
 
                 // Allow caller to use the key and version
                 versionHandler(key, version);
+                
+                // Cleanup
+                [self.keysForObjectsWithPendingReload removeObject:key];
             }
             
             // Refault to free up the memory
@@ -155,10 +179,10 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 }
 
 - (void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket {
-	
-	id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
-	[threadSafeStorage beginCriticalSection];
-	
+    
+    id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
+    [threadSafeStorage beginCriticalSection];
+    
     NSArray *localKeys = [threadSafeStorage objectKeysForBucketName:bucket.name];
     NSMutableSet *localKeySet = [NSMutableSet setWithArray:localKeys];
     [localKeySet minusSet:remoteKeySet];
@@ -182,16 +206,16 @@ typedef NS_ENUM(NSInteger, SPVersion) {
         SPLogVerbose(@"Simperium deleting %ld objects after re-indexing", (long)[keysForDeletedObjects count]);
         [threadSafeStorage save];
         
-		dispatch_async(dispatch_get_main_queue(), ^{
-			NSDictionary *userInfo = @{
-			   @"bucketName"	: bucket.name,
-			   @"keys"			: keysForDeletedObjects
-			 };
-			[[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
-		});
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSDictionary *userInfo = @{
+                @"bucketName"   : bucket.name,
+                @"keys"         : keysForDeletedObjects
+            };
+            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
+        });
     }
-	
-	[threadSafeStorage finishCriticalSection];
+    
+    [threadSafeStorage finishCriticalSection];
 }
 
 // Process actual version data from the Simperium service for a particular bucket
@@ -205,8 +229,8 @@ typedef NS_ENUM(NSInteger, SPVersion) {
     
     @autoreleasepool {
         id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
-		[storage beginSafeSection];
-		
+        [storage beginSafeSection];
+        
         NSMutableSet *addedKeys     = [NSMutableSet setWithCapacity:5];
         NSMutableSet *changedKeys   = [NSMutableSet setWithCapacity:5];
         NSMutableSet *rebasedKeys   = [NSMutableSet setWithCapacity:5];
@@ -252,7 +276,9 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                 SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@", bucket.name, key);
                 
                 // 3. Rebase + apply localDiff
-                if (localDiff.count) {
+                BOOL isRebaseDisabled = [self.keysForObjectsWithRebaseDisabled containsObject:key];
+                
+                if (localDiff.count && !isRebaseDisabled) {
                     
                     // 3.1. Calculate Delta: LocalGhost > RemoteMembers
                     NSDictionary *remoteDiff    = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
@@ -284,7 +310,13 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                     [rebasedKeys addObject:key];
                 }
                 
+                // 4. Keep track of changed Keys
                 [changedKeys addObject:key];
+                
+                // 5. Cleanup
+                if (isRebaseDisabled) {
+                    [self.keysForObjectsWithRebaseDisabled removeObject:key];
+                }
             }
             
             // 4. Update the ghost with the remote member data + version
@@ -297,8 +329,8 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 
         // Store after processing the batch for efficiency
         [storage save];
-		[storage finishSafeSection];
-		
+        [storage finishSafeSection];
+        
         // Signal the changeHandler that the object has untracked changes
         for (NSString *key in rebasedKeys) {
             changeHandler(key);
@@ -317,15 +349,15 @@ typedef NS_ENUM(NSInteger, SPVersion) {
             }
             
             NSDictionary *userInfoAdded = @{
-                @"bucketName"	: bucket.name,
-                @"keys"			: addedKeys
+                @"bucketName"   : bucket.name,
+                @"keys"         : addedKeys
             };
             [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidAddObjectsNotification object:bucket userInfo:userInfoAdded];
 
             for (NSString *key in changedKeys) {
                 NSDictionary *userInfoChanged = @{
-                    @"bucketName"	: bucket.name,
-                    @"keys"			: [NSSet setWithObject:key]
+                    @"bucketName"   : bucket.name,
+                    @"keys"         : [NSSet setWithObject:key]
                 };
                 [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidChangeObjectNotification object:bucket userInfo:userInfoChanged];
             }
@@ -336,19 +368,39 @@ typedef NS_ENUM(NSInteger, SPVersion) {
     }];
 }
 
+- (void)enableRebaseForAllObjects {
+    [self.keysForObjectsWithRebaseDisabled removeAllObjects];
+}
+
+- (void)enableRebaseForObjectWithKey:(NSString *)simperiumKey {
+    [self.keysForObjectsWithRebaseDisabled removeObject:simperiumKey];
+}
+
+- (void)disableRebaseForObjectWithKey:(NSString *)simperiumKey {
+    [self.keysForObjectsWithRebaseDisabled addObject:simperiumKey];
+}
+
+- (void)enableReloadForObjectWithKey:(NSString *)simperiumKey {
+    [self.keysForObjectsWithPendingReload addObject:simperiumKey];
+}
+
+- (void)disableReloadForAllObjects {
+    [self.keysForObjectsWithPendingReload removeAllObjects];
+}
+
 - (NSArray*)exportIndexStatus:(SPBucket *)bucket {
 
-	// This routine shall be used for debugging purposes!
-	id<SPStorageProvider> storage	= bucket.storage;
-	NSSet *localKeys				= [NSSet setWithArray:[storage objectKeysForBucketName:bucket.name]];
-	NSArray *objects				= [storage objectsForKeys:localKeys bucketName:bucket.name];
-	NSMutableArray* index			= [NSMutableArray array];
-	
-	for (id<SPDiffable>object in objects) {
-		[index addObject:@{ [object.simperiumKey copy] : [object.ghost.version copy] ?: @0 }];
-	}
-	
-	return index;
+    // This routine shall be used for debugging purposes!
+    id<SPStorageProvider> storage   = bucket.storage;
+    NSSet *localKeys                = [NSSet setWithArray:[storage objectKeysForBucketName:bucket.name]];
+    NSArray *objects                = [storage objectsForKeys:localKeys bucketName:bucket.name];
+    NSMutableArray* index           = [NSMutableArray array];
+    
+    for (id<SPDiffable>object in objects) {
+        [index addObject:@{ [object.simperiumKey copy] : [object.ghost.version copy] ?: @0 }];
+    }
+    
+    return index;
 }
 
 @end
