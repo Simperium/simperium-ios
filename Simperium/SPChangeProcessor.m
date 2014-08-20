@@ -196,7 +196,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 //      - Split this method into processRemoteModify and processRemoteInsertion
 //      - This method should receive the coreData context + object, so we prevent double fetching
 //      - Once the above are implemented, move the 'begin/finish'SafeSection calls to the caller, and nuke duplicated code, PLEASE!
-//      - Nuke ProcessorRequestsReindexingNotification. That should be handled by the processRemoteChanges error handler block
 //
 - (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket change:(NSDictionary *)change
                       acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches error:(NSError **)error {
@@ -339,6 +338,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         }
         
         [storage save];
+        [storage finishSafeSection];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             NSMutableDictionary *userInfo = [@{
@@ -359,16 +359,17 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
             [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:bucket userInfo:userInfo];
         });
         
-    } else {
-        SPLogWarn(@"Simperium warning: couldn't apply change due to version mismatch (duplicate? start %@, old %@): change %@", startVersion, oldVersion, change);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorRequestsReindexingNotification object:bucket];
-        });
+        return YES;
+    }
+    
+    SPLogWarn(@"Simperium warning: couldn't apply change due to version mismatch (duplicate? start %@, old %@): change %@", startVersion, oldVersion, change);
+    if (error) {
+        *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsClientOutOfSync description:nil];
     }
     
     [storage finishSafeSection];
     
-    return YES;
+    return NO;
 }
 
 - (BOOL)processRemoteChange:(NSDictionary *)change bucket:(SPBucket *)bucket error:(NSError **)error {
