@@ -17,7 +17,6 @@ NSString * const ProcessorDidDeleteObjectKeysNotification       = @"ProcessorDid
 NSString * const ProcessorDidAcknowledgeObjectsNotification     = @"ProcessorDidAcknowledgeObjectsNotification";
 NSString * const ProcessorWillChangeObjectsNotification         = @"ProcessorWillChangeObjectsNotification";
 NSString * const ProcessorDidAcknowledgeDeleteNotification      = @"ProcessorDidAcknowledgeDeleteNotification";
-NSString * const ProcessorRequestsReindexingNotification        = @"ProcessorRequestsReindexingNotification";
 
 
 #pragma mark ====================================================================================

@@ -232,7 +232,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                 
                 // 3. Load the full Remote Member Data
                 [object loadMemberData:data];
-                SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@", bucket.name, key);
+                SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@.%@", bucket.name, key, version);
                 
                 // 4. Be sure to load all members into ghost (since the version results might only contain a subset of members that were changed)
                 ghostData                       = [[object dictionary] mutableCopy];
@@ -251,8 +251,10 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                     
                     if (remoteDiff.count) {
                         // Note: if remoteDiff is empty, there is just no need to rebase!.
+                        SPLogWarn(@"Simperium rebasing local changes for object (%@): %@.%@", bucket.name, key, version);
                         rebaseDiff = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost:localGhost error:&error];
                     } else {
+                        SPLogWarn(@"Simperium rebasing local changes for object (%@): %@.%@", bucket.name, key, version);
                         rebaseDiff = localDiff;
                     }
                     
@@ -263,9 +265,9 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                     
                     // 5.4. Some debugging
                     if (error) {
-                        SPLogWarn(@"Simperium error: could not apply local transformed diff for entity (%@): %@", bucket.name, key);
+                        SPLogWarn(@"Simperium error: could not apply local transformed diff for entity (%@): %@.%@", bucket.name, key, version);
                     } else {
-                        SPLogWarn(@"Simperium successfully updated local entity (%@): %@", bucket.name, key);
+                        SPLogWarn(@"Simperium successfully updated local entity (%@): %@.%@", bucket.name, key, version);
                     }
                     
                     // 5.5. Signal the changeHandler that the object has untracked changes. Do this after saving the storage!
@@ -289,7 +291,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
             // Slight hack to ensure Core Data realizes the object has changed and needs a save
             object.ghostData    = [[object.ghost.dictionary sp_JSONString] copy];
             
-            SPLogVerbose(@"Simperium updating ghost data for object %@ (%@)", object.simperiumKey, bucket.name);
+            SPLogVerbose(@"Simperium updating ghost data for object %@.%@ (%@)", object.simperiumKey, version, bucket.name);
         }
         
         // Store after processing the batch for efficiency
