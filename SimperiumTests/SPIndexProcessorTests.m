@@ -118,12 +118,11 @@ static NSInteger const SPLogLength          = 50;
         NSDecimalNumber *expectedCost   = versionData[NSStringFromSelector(@selector(cost))];
         NSNumber *expectedWarp          = versionData[NSStringFromSelector(@selector(warpSpeed))];
         
-        XCTAssert([config isKindOfClass:[Config class]],            @"Invalid object kind");
-        XCTAssertEqualObjects(config.captainsLog, expectedLog,      @"1Invalid Log");
-        XCTAssertEqualObjects(config.cost, expectedCost,            @"Invalid Cost");
-        XCTAssertEqualObjects(config.warpSpeed, expectedWarp,       @"Invalid Warp");
-        XCTAssertEqualObjects(config.ghost.version, endVersion,     @"Invalid Ghost Version");
-        XCTAssertEqualObjects(config.ghost.memberData, versionData, @"Invalid Ghost MemberData");
+        XCTAssert([config isKindOfClass:[Config class]],                                @"Invalid object kind");
+        XCTAssertEqualObjects(config.captainsLog, expectedLog,                          @"Invalid Log");
+        XCTAssertEqualObjects(config.cost, expectedCost,                                @"Invalid Cost");
+        XCTAssertEqualObjects(config.warpSpeed, expectedWarp,                           @"Invalid Warp");
+        XCTAssertTrue([self isGhostEqualToDictionary:versionData ghost:config.ghost],   @"Invalid Ghost MemberData");
     }
 }
 
@@ -193,7 +192,7 @@ static NSInteger const SPLogLength          = 50;
         NSStringFromSelector(@selector(captainsLog))    : newRemoteLog,
         NSStringFromSelector(@selector(cost))           : newRemoteCost,
         NSStringFromSelector(@selector(warpSpeed))      : newRemoteWarp,
-        NSStringFromSelector(@selector(date))           : [newRemoteDate description]
+        NSStringFromSelector(@selector(date))           : @(newRemoteDate.timeIntervalSince1970)
     };
     
     for (Config *config in configs) {
@@ -236,11 +235,11 @@ static NSInteger const SPLogLength          = 50;
     for (Config *config in configs) {
         NSDictionary *versionData = versionMap[config.simperiumKey];
         
-        XCTAssertEqualObjects(config.captainsLog, newRemoteLog,     @"Invalid Log");
-        XCTAssertEqualObjects(config.cost, newRemoteCost,           @"Invalid Cost");
-        XCTAssertEqualObjects(config.warpSpeed, newRemoteWarp,      @"Invalid Warp");
-        XCTAssertEqualObjects(config.ghost.version, endVersion,     @"Invalid Ghost Version");
-        XCTAssertEqualObjects(config.ghost.memberData, versionData, @"Invalid Ghost MemberData");
+        XCTAssertEqualObjects(config.captainsLog, newRemoteLog,                         @"Invalid Log");
+        XCTAssertEqualObjects(config.cost, newRemoteCost,                               @"Invalid Cost");
+        XCTAssertEqualObjects(config.warpSpeed, newRemoteWarp,                          @"Invalid Warp");
+        XCTAssertEqualObjects(config.ghost.version, endVersion,                         @"Invalid Ghost Version");
+        XCTAssertTrue([self isGhostEqualToDictionary:versionData ghost:config.ghost],   @"Invalid Ghost MemberData");
     }
 }
 
@@ -359,11 +358,11 @@ static NSInteger const SPLogLength          = 50;
     
     [storage refaultObjects:@[config]];
     
-    XCTAssertEqualObjects(config.captainsLog, expectedLog,  @"Invalid Log");
-    XCTAssertEqualObjects(config.cost, expectedCost,        @"Invalid Cost");
-    XCTAssertEqualObjects(config.warpSpeed, expectedWarp,   @"Invalid Warp");
-    XCTAssertEqualObjects(config.ghost.version, endVersion, @"Invalid Ghost Version");
-    XCTAssertEqualObjects(config.ghost.memberData, data,    @"Invalid Ghost MemberData");
+    XCTAssertEqualObjects(config.captainsLog, expectedLog,                  @"Invalid Log");
+    XCTAssertEqualObjects(config.cost, expectedCost,                        @"Invalid Cost");
+    XCTAssertEqualObjects(config.warpSpeed, expectedWarp,                   @"Invalid Warp");
+    XCTAssertEqualObjects(config.ghost.version, endVersion,                 @"Invalid Ghost Version");
+    XCTAssertTrue([self isGhostEqualToDictionary:data ghost:config.ghost],  @"Invalid Ghost MemberData");
 }
 
 - (void)testProcessVersionsWithExistingObjectsAndLocalPendingChangesFailsRebasingAndFavorsLocalData {
@@ -462,10 +461,9 @@ static NSInteger const SPLogLength          = 50;
     //
     
     [storage refaultObjects:@[config]];
-    
-    XCTAssertEqualObjects(config.captainsLog, expectedLog,  @"Invalid Log");
-    XCTAssertEqualObjects(config.ghost.version, endVersion, @"Invalid Ghost Version");
-    XCTAssertEqualObjects(config.ghost.memberData, data,    @"Invalid Ghost MemberData");
+    XCTAssertEqualObjects(config.captainsLog, expectedLog,                  @"Invalid Log");
+    XCTAssertEqualObjects(config.ghost.version, endVersion,                 @"Invalid Ghost Version");
+    XCTAssertTrue([self isGhostEqualToDictionary:data ghost:config.ghost],  @"Invalid Ghost MemberData");
 }
 
 - (void)testProcessVersionsWithExistingObjectsAndLocalPendingChangesWithRebaseDisabled {
@@ -574,10 +572,21 @@ static NSInteger const SPLogLength          = 50;
     
     [storage refaultObjects:@[config]];
     
-    XCTAssertEqualObjects(config.captainsLog, expectedLog,  @"Invalid Log");
-    XCTAssertEqualObjects(config.ghost.version, endVersion, @"Invalid Ghost Version");
-    XCTAssertEqualObjects(config.ghost.memberData, data,    @"Invalid Ghost MemberData");
+    XCTAssertEqualObjects(config.captainsLog, expectedLog,                  @"Invalid Log");
+    XCTAssertEqualObjects(config.ghost.version, endVersion,                 @"Invalid Ghost Version");
+    XCTAssertTrue([self isGhostEqualToDictionary:data ghost:config.ghost],  @"Invalid Ghost MemberData");
 }
 
+
+#pragma mark - Helpers
+
+- (BOOL)isGhostEqualToDictionary:(NSDictionary *)dictionary ghost:(SPGhost *)ghost {
+    for (id key in dictionary.allKeys) {
+        if ([dictionary[key] isEqual:ghost.memberData[key]] == false) {
+            return false;
+        }
+    }
+    return true;
+}
 
 @end
