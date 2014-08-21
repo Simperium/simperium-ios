@@ -603,7 +603,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         }
         
         [bucket.indexProcessor processVersions:batch bucket:bucket changeHandler:^(NSString *key) {
-            // Local version was different, so process it as a local change
+            // Local version was different, so nuke old changes, and recalculate the delta
+            [bucket.changeProcessor discardPendingChanges:key bucket:bucket];
             [bucket.changeProcessor enqueueObjectForMoreChanges:key bucket:bucket];
         }];
         
