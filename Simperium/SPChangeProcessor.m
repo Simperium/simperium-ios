@@ -147,7 +147,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     
     if (error) {
         NSString *wrappedDescription = [NSString stringWithFormat:@"%@ : %d", description, (int)errorCode];
-        *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:wrappedCode description:wrappedDescription];
+        *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:wrappedCode description:wrappedDescription];
     }
     
     return YES;
@@ -213,7 +213,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         // It Must have been locally deleted before the confirmation got through!
         if (clientMatches) {
             if (error) {
-                *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedZombieChange description:nil];
+                *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedZombieChange description:nil];
             }
             [storage finishSafeSection];
             return NO;
@@ -256,7 +256,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     if (!object.ghost) {
         SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, simperiumKey);
         if (error) {
-            *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedUnknownChange description:nil];
+            *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedUnknownChange description:nil];
         }
         [storage finishSafeSection];
         return NO;
@@ -281,7 +281,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         if (![bucket.differ applyGhostDiffFromDictionary:diff toObject:object error:&theError]) {
             SPLogError(@"Simperium error during applyGhostDiff: %@", theError.localizedDescription);
             if (error) {
-                *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
+                *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
             }
             [storage finishSafeSection];
             return NO;
@@ -306,7 +306,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
                 if (theError) {
                     SPLogError(@"Simperium error during diff transform: %@", theError.localizedDescription);
                     if (error) {
-                        *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
+                        *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
                     }
                     [storage finishSafeSection];
                     return NO;
@@ -330,7 +330,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
             if (![bucket.differ applyDiffFromDictionary:diff toObject:object error:&theError]) {
                 SPLogError(@"Simperium error during applyDiff: %@", theError.localizedDescription);
                 if (error) {
-                    *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
+                    *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
                 }
                 [storage finishSafeSection];
                 return NO;
@@ -364,7 +364,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     
     SPLogWarn(@"Simperium warning: couldn't apply change due to version mismatch (duplicate? start %@, old %@): change %@", startVersion, oldVersion, change);
     if (error) {
-        *error = [NSError errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsClientOutOfSync description:nil];
+        *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsClientOutOfSync description:nil];
     }
     
     [storage finishSafeSection];

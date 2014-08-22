@@ -33,7 +33,7 @@ static NSInteger DiffMatchPatchApplyError = -9999;
     }
     
     if (!success && error) {
-        *error = [NSError errorWithDomain:NSStringFromClass([self class])
+        *error = [NSError sp_errorWithDomain:NSStringFromClass([self class])
                                      code:DiffMatchPatchApplyError
                               description:@"Error while applying patch"];
     }
