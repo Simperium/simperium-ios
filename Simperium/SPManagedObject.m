@@ -157,7 +157,7 @@
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     
     for (SPMember *member in [_bucket.differ.schema.members allValues]) {
-        id data = [self valueForKey:[member keyName]];
+        id data = [member JSONValueForMemberOnParentObject:self];
         if (data) dict[member.keyName] = data;
     }
     
