@@ -97,4 +97,6 @@ typedef NS_ENUM(NSUInteger, SPBucketChangeType) {
 // Returns the number of unsynced changes
 - (NSInteger)numChangesPending;
 
+@property (atomic, assign, readonly, getter = isWorking) BOOL working;
+
 @end

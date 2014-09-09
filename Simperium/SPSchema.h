@@ -13,6 +13,8 @@
 @class SPManagedObject;
 @class SPMember;
 
+extern NSString * const SPSchemaDefinitionMembersKey; // Should be the key to an array of SPMemeberDefinitionDictionaries
+
 @interface SPSchema : NSObject
 
 @property (nonatomic, copy)   NSString              *bucketName;
@@ -22,7 +24,6 @@
 
 - (instancetype)initWithBucketName:(NSString *)name data:(NSDictionary *)definition;
 - (SPMember *)memberForKey:(NSString *)memberName;
-- (void)setDefaults:(id<SPDiffable>)object;
 - (void)addMemberForObject:(id)object key:(NSString *)key;
 
 @end

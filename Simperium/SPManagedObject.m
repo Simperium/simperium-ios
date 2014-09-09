@@ -23,7 +23,7 @@
 
 @synthesize ghost;
 @synthesize updateWaiting;
-@synthesize bucket;
+@synthesize bucket = _bucket;
 @dynamic simperiumKey;
 @dynamic ghostData;
 
@@ -51,8 +51,16 @@
     if (!bucketList) {
         NSLog(@"Simperium error: bucket list not loaded. Ensure Simperium is started before any objects are fetched.");
     }
-    
-    bucket = bucketList[self.entity.name];
+
+    _bucket = bucketList[self.entity.name];
+}
+
+- (SPBucket *)bucket
+{
+    if (!_bucket) {
+        [self configureBucket];
+    }
+    return _bucket;
 }
 
 - (void)awakeFromFetch {
@@ -60,6 +68,7 @@
     SPGhost *newGhost = [[SPGhost alloc] initFromDictionary: [self.ghostData sp_objectFromJSONString]];
     self.ghost = newGhost;
     [self.managedObjectContext userInfo];
+	
     [self configureBucket];
 }
 
@@ -85,9 +94,24 @@
     // to a string for storage
     if (ghost.needsSave) {
         // Careful not to use self.ghostData here, which would trigger KVC and cause strange things to happen (since willSave itself is related to Core Data's KVC triggerings). This manifested itself as an erroneous insertion notification being sent to fetchedResultsControllers after an object had been deleted. The underlying cause seemed to be that the deleted object sticks around as a fault, but probably shouldn't.
-        ghostData = [[[ghost dictionary] sp_JSONString] copy];
+        NSString *ghostData = [[[ghost dictionary] sp_JSONString] copy];
+        [self setPrimitiveValue:ghostData forKey:@"ghostData"];
         ghost.needsSave = NO;
     }
+    [super willSave];
+}
+
+- (SPGhost *)ghost
+{
+    if (ghost == nil) {
+        NSString *ghostData = [self ghostData];
+        if (ghostData) {
+            ghost = [[SPGhost alloc] initFromDictionary:[ghostData sp_objectFromJSONString]];
+        } else {
+            ghost = [[SPGhost alloc] initWithKey:self.simperiumKey memberData:nil];
+        }
+    }
+    return ghost;
 }
 
 - (void)setGhostData:(NSString *)aString {
@@ -100,15 +124,6 @@
 }
 
 
-- (void)setSimperiumKey:(NSString *)aString {
-    // Core Data compliant way to update members
-    [self willChangeValueForKey:@"simperiumKey"];
-    // NSString implements NSCopying, so copy the attribute value
-    NSString *newStr = [aString copy];
-    [self setPrimitiveValue:newStr forKey:@"simperiumKey"]; // setPrimitiveContent will make it nil if the string is empty
-    [self didChangeValueForKey:@"simperiumKey"];
-}
-
 - (NSString *)localID {
     NSManagedObjectID *key = [self objectID];
     if ([key isTemporaryID]) {
@@ -120,12 +135,10 @@
 - (void)loadMemberData:(NSDictionary *)memberData {    
     // Copy data for each member from the dictionary
     for (NSString *memberKey in [memberData allKeys]) {
-        SPMember *member = [bucket.differ.schema memberForKey:memberKey];
+        SPMember *member = [self.bucket.differ.schema memberForKey:memberKey];
         if (member) {
-            id data = [member getValueFromDictionary:memberData key:memberKey object:self];
-            
-            // This sets the actual instance data
-            [self setValue: data forKey: [member keyName]];
+            id JSONValue = memberData[memberKey];
+            [member setMemberValueFromJSONValue:JSONValue onParentObject:self];
         }
     }
 }
@@ -143,11 +156,9 @@
     
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     
-    for (SPMember *member in [bucket.differ.schema.members allValues]) {
-        id data = [self valueForKey:[member keyName]];
-        
-        // The setValue:forKey:inDictionary: method can perform conversions to JSON-compatible formats
-        [member setValue:data forKey:[member keyName] inDictionary:dict];
+    for (SPMember *member in [self.bucket.differ.schema.members allValues]) {
+        id data = [member JSONValueForMemberOnParentObject:self];
+        if (data) dict[member.keyName] = data;
     }
     
     // Might be beneficial to eventually cache this and only update it when data has changed
@@ -162,13 +173,55 @@
     return self;
 }
 
-
 - (void)awakeFromLocalInsert {
     // Override me if needed!
 }
 
 - (void)awakeFromRemoteInsert {
     // Override me if needed!
+}
+
+@end
+
+
+@implementation SPManagedObject (HappyInspector)
+
++ (BOOL)simperiumObjectExistsWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context
+{
+    if (!simperiumKey || simperiumKey.length == 0) return nil;
+    NSFetchRequest *fetchRequest = [self fetchRequestForSimperiumObjectWithEntityName:entityName simperiumKey:simperiumKey managedObjectContext:context];
+    return [context countForFetchRequest:fetchRequest error:NULL] != 0;
+}
++ (SPManagedObject *)simperiumObjectWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context faults:(BOOL)allowFaults
+{
+    return [self simperiumObjectWithEntityName:entityName simperiumKey:simperiumKey managedObjectContext:context faults:allowFaults prefetchedRelationships:nil];
+}
++ (SPManagedObject *)simperiumObjectWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context faults:(BOOL)allowFaults prefetchedRelationships:(NSArray *)prefetchedRelationships
+{
+    if (!simperiumKey || simperiumKey.length == 0) return nil;
+    NSFetchRequest *fetchRequest = [self fetchRequestForSimperiumObjectWithEntityName:entityName simperiumKey:simperiumKey managedObjectContext:context];
+    [fetchRequest setReturnsObjectsAsFaults:allowFaults];
+    [fetchRequest setRelationshipKeyPathsForPrefetching:prefetchedRelationships];
+
+    NSError *error;
+    NSArray *items = [context executeFetchRequest:fetchRequest error:&error];
+
+    if ([items count] == 0)
+        return nil;
+
+    return [items objectAtIndex:0];
+
+}
+
++ (NSFetchRequest *)fetchRequestForSimperiumObjectWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context
+{
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:entityName inManagedObjectContext:context];
+    [fetchRequest setEntity:entityDescription];
+    [fetchRequest setFetchLimit:1];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simperiumKey == %@", simperiumKey];
+    [fetchRequest setPredicate:predicate];
+    return fetchRequest;
 }
 
 @end

@@ -148,7 +148,7 @@
     
 	// Initialize!
     NSDictionary *userDict = [responseString sp_objectFromJSONString];
-    
+
     self.token = userDict[@"access_token"];
     XCTAssertTrue(self.token.length > 0, @"invalid token from request: %@", tokenURL);
     

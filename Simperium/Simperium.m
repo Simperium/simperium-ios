@@ -20,6 +20,7 @@
 #import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "SPLogger.h"
+#import "SPBucket+Internals.h"
 
 
 
@@ -460,6 +461,10 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 #if defined(__IPHONE_7_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0)
 
 - (void)backgroundFetchWithCompletion:(SimperiumBackgroundFetchCompletion)completion {
+    [self backgroundFetchWithTimeout:SPBackgroundSyncTimeout completion:completion];
+}
+
+- (void)backgroundFetchWithTimeout:(NSTimeInterval)timeoutSeconds completion:(SimperiumBackgroundFetchCompletion)completion {
     __block UIBackgroundFetchResult result  = UIBackgroundFetchResultNoData;
     dispatch_group_t group                  = dispatch_group_create();
     
@@ -828,6 +833,17 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     
     NSError* error = [NSError errorWithDomain:NSStringFromClass([self class]) code:code userInfo:nil];
     [self.delegate simperium:self didFailWithError:error];
+}
+
+@end
+
+
+@implementation Simperium (HappyInspector)
+
+- (void)processAllLocalObjectsForChanges {
+    for (SPBucket *bucket in [self.buckets allValues]) {
+        [bucket sendAllObjectsWithChanges];
+    }
 }
 
 @end

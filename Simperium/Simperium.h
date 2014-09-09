@@ -101,6 +101,7 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
 #if defined(__IPHONE_7_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0)
 typedef void (^SimperiumBackgroundFetchCompletion)(UIBackgroundFetchResult result);
 - (void)backgroundFetchWithCompletion:(SimperiumBackgroundFetchCompletion)completion;
+- (void)backgroundFetchWithTimeout:(NSTimeInterval)timeout completion:(SimperiumBackgroundFetchCompletion)completion;
 #endif
 
 // Get a particular bucket (which, for Core Data, corresponds to a particular Entity name in your model).
@@ -205,5 +206,19 @@ typedef void (^SimperiumSignoutCompletion)(void);
 #else
 @property (nonatomic, readwrite, weak) NSWindow *window;
 #endif
+
+@property (nonatomic, strong) NSMutableDictionary *buckets;
+
+@end
+
+
+@interface Simperium (HappyInspector)
+
+// This method sends any object with changes. Its performance heavy so don't
+// run it except to troubleshoot sync issues.
+- (void)processAllLocalObjectsForChanges;
+
+// Expose this private method
+- (void)startWithAppID:(NSString *)identifier APIKey:(NSString *)key;
 
 @end

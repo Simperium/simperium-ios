@@ -68,4 +68,7 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 
 - (NSArray *)exportPendingChanges;
 
+@property (atomic, assign, readonly, getter = isProcessingChanges) BOOL processingChanges;
+@property (nonatomic, copy, readwrite) void (^isProcessingChangesUpdated)(BOOL isProcessingChanges);
+
 @end

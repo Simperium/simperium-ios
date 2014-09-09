@@ -49,7 +49,48 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 #pragma mark SPIndexProcessor
 #pragma mark ====================================================================================
 
+@interface SPIndexProcessor () {
+    NSUInteger _inFlightProcessCount;
+}
+
+@property (atomic, assign, readwrite, getter = isProcessingChanges) BOOL processingChanges;
+@end
+
 @implementation SPIndexProcessor
+
+- (void)increaseInFlightProcess {
+    @synchronized(self) {
+        if (_inFlightProcessCount == 0) {
+            self.processingChanges = YES;
+            if (self.isProcessingChangesUpdated) self.isProcessingChangesUpdated(self.processingChanges);
+        }
+        _inFlightProcessCount++;
+    }
+}
+
+- (void)decreaseInFlightProcess {
+    @synchronized(self) {
+        _inFlightProcessCount--;
+        if (_inFlightProcessCount == 0) {
+            self.processingChanges = NO;
+            if (self.isProcessingChangesUpdated) self.isProcessingChangesUpdated(self.processingChanges);
+        }
+    }
+}
+
+
+- (void)syncInFlightProcess:(dispatch_block_t)block {
+    [self increaseInFlightProcess];
+    block();
+    [self decreaseInFlightProcess];
+}
+
+- (void)asyncInFlightProcess:(void (^)(dispatch_block_t processFinished))block {
+    [self increaseInFlightProcess];
+    void (^finishedBlock)() = ^{ [self decreaseInFlightProcess]; };
+    block([finishedBlock copy]);
+}
+
 
 - (instancetype)init {
     self = [super init];
@@ -62,7 +103,9 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 
 // Process an index of keys from the Simperium service for a particular bucket
 - (void)processIndex:(NSArray *)indexArray bucket:(SPBucket *)bucket versionHandler:(SPVersionHandlerBlockType)versionHandler  {
-    
+
+    [self syncInFlightProcess:^{
+
     // indexArray could have thousands of items; break it up into batches to manage memory use
     NSMutableDictionary *indexDict  = [NSMutableDictionary dictionaryWithCapacity:[indexArray count]];
     NSInteger numBatches            = 1 + [indexArray count] / SPIndexProcessorBatchSize;
@@ -70,29 +113,29 @@ typedef NS_ENUM(NSInteger, SPVersion) {
     for (int i = 0; i<numBatches; i++) {
         [batchLists addObject: [NSMutableArray arrayWithCapacity:SPIndexProcessorBatchSize]];
     }
-    
+
     // Build the batches
     int currentBatch = 0;
     NSMutableArray *currentBatchList = [batchLists objectAtIndex:currentBatch];
     for (NSDictionary *dict in indexArray) {
         NSString *key   = [dict objectForKey:@"id"];
         id version      = [dict objectForKey:@"v"];
-        
+
         // Map it for convenience
         [indexDict setObject:version forKey:key];
-        
+
         // Put it in a batch (advancing to next batch if necessary)
         [currentBatchList addObject:key];
         if ([currentBatchList count] == SPIndexProcessorBatchSize) {
             currentBatchList = [batchLists objectAtIndex:++currentBatch];
         }
     }
-    
+
     // Take this opportunity to check for any objects that exist locally but not remotely, and remove them
     // (this can happen after reindexing if the client missed some remote deletion changes)
     NSSet *remoteKeySet = [NSSet setWithArray:[indexDict allKeys]];
     [self reconcileLocalAndRemoteIndex:remoteKeySet bucket:bucket];
-    
+
     // Process each batch while being efficient with memory and faulting
     id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
     [storage beginSafeSection];
@@ -104,12 +147,12 @@ typedef NS_ENUM(NSInteger, SPVersion) {
             
             for (NSString *key in batchList) {
                 id version = indexDict[key];
-                
+
                 // Store versions as strings, but if they come off the wire as numbers, then handle that too
                 if ([version isKindOfClass:[NSNumber class]]) {
                     version = [NSString stringWithFormat:@"%ld", (long)[version integerValue]];
                 }
-                
+
                 // Check to see if this entity already exists locally and is up to date
                 id<SPDiffable> object   = [objects objectForKey:key];
                 BOOL shouldReload       = [self.keysForObjectsWithPendingReload containsObject:key];
@@ -117,7 +160,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                 if (!shouldReload && object.ghost.version != nil && [version isEqualToString:object.ghost.version]) {
                     continue;
                 }
-                
+
                 // Allow caller to use the key and version
                 versionHandler(key, version);
                 
@@ -129,8 +172,10 @@ typedef NS_ENUM(NSInteger, SPVersion) {
             [storage refaultObjects:objects.allValues];
         }
     }
-    
+
     [storage finishSafeSection];
+
+    }];
 }
 
 - (void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket {
@@ -179,6 +224,8 @@ typedef NS_ENUM(NSInteger, SPVersion) {
     NSAssert([versions isKindOfClass:[NSArray class]],  @"Versions should be an array");
     NSAssert([bucket isKindOfClass:[SPBucket class]],   @"Invalid Bucket Pointer");
     NSAssert(changeHandler,                             @"Please, provide a change handler");
+
+    [self asyncInFlightProcess:^(dispatch_block_t processFinished) {
     
     @autoreleasepool {
         id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
@@ -187,7 +234,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
         NSMutableSet *addedKeys     = [NSMutableSet setWithCapacity:5];
         NSMutableSet *changedKeys   = [NSMutableSet setWithCapacity:5];
         NSMutableSet *rebasedKeys   = [NSMutableSet setWithCapacity:5];
-        
+
         // Batch fault all the objects into a dictionary for efficiency
         NSMutableArray *objectKeys  = [NSMutableArray arrayWithCapacity:versions.count];
         for (NSArray *versionData in versions) {
@@ -196,7 +243,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
         }
         
         NSDictionary *objects = [storage faultObjectsForKeys:objectKeys bucketName:bucket.name];
-        
+
         // Process all version data
         for (NSArray *versionData in versions)
         {            
@@ -293,7 +340,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
             
             SPLogVerbose(@"Simperium updating ghost data for object %@.%@ (%@)", object.simperiumKey, version, bucket.name);
         }
-        
+
         // Store after processing the batch for efficiency
         [storage save];
         [storage finishSafeSection];
@@ -302,7 +349,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
         for (NSString *key in rebasedKeys) {
             changeHandler(key);
         }
-        
+
         // Do all main thread work afterwards as well
         dispatch_async(dispatch_get_main_queue(), ^{
             // Manually resolve any pending references to added objects
@@ -328,8 +375,11 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                 };
                 [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidChangeObjectNotification object:bucket userInfo:userInfoChanged];
             }
+            processFinished();
         });    
     }
+
+    }];
 }
 
 - (void)enableRebaseForAllObjects {
@@ -361,7 +411,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
     NSMutableArray* index           = [NSMutableArray array];
     
     for (id<SPDiffable>object in objects) {
-        [index addObject:@{ [object.simperiumKey copy] : [object.ghost.version copy] }];
+        [index addObject:@{ [object.simperiumKey copy] : [object.ghost.version copy] ?: @0 }];
     }
     
     return index;

@@ -194,7 +194,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     self.webSocket                      = newWebSocket;
     self.webSocket.delegate             = self;
     self.open                           = NO;
-    
+
     SPLogVerbose(@"Simperium opening WebSocket connection...");
     [self.webSocket open];
 }
@@ -302,6 +302,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     // Send it (will also schedule another one)
     [self send:@"h:1"];
 }
+
 
 
 #pragma mark - Remote Logging Helpers

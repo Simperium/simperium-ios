@@ -51,3 +51,7 @@ typedef void (^SPBucketForceSyncCompletion)(BOOL signatureUpdated);
 - (NSDictionary*)exportStatus;
 
 @end
+
+@interface SPBucket (HappyInspector)
+- (void)sendAllObjectsWithChanges;
+@end

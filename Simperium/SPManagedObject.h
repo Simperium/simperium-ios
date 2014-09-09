@@ -16,14 +16,10 @@
 @class SPBucket;
 
 @interface SPManagedObject : NSManagedObject <SPDiffable> {
-    // The entity's member data as last seen by the server, stored in dictionary form for diffing
-    // has key, data, and signature
-    SPGhost *ghost;
-    SPBucket *__weak bucket;
-    
-    NSString *simperiumKey;
-    NSString *ghostData;
-    
+	// The entity's member data as last seen by the server, stored in dictionary form for diffing
+	// has key, data, and signature
+	SPGhost *ghost;
+
     // Flagged if changed while waiting for server ack (could be tracked externally instead)
     BOOL updateWaiting;
 }
@@ -38,11 +34,19 @@
 - (NSDictionary *)dictionary;
 - (NSString *)version;
 
-
 // Note: The following methods are meant to be overriden, if needed.
 // Selector 'awakeFromRemoteInsert' will get called just once, right after a remote insertion is performed.
 // From then on, 'awakeFromLocalInsert' will be called each time the object is inserted in a NSManagedObjectContext.
 - (void)awakeFromLocalInsert;
 - (void)awakeFromRemoteInsert;
+
+@end
+
+
+@interface SPManagedObject (HappyInspector)
+
++ (BOOL)simperiumObjectExistsWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context;
++ (SPManagedObject *)simperiumObjectWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context faults:(BOOL)allowFaults;
++ (SPManagedObject *)simperiumObjectWithEntityName:(NSString *)entityName simperiumKey:(NSString *)simperiumKey managedObjectContext:(NSManagedObjectContext *)context faults:(BOOL)allowFaults prefetchedRelationships:(NSArray *)prefetchedRelationships;
 
 @end

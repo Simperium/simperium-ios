@@ -133,7 +133,10 @@ static NSString * SPUsername    = @"SPUsername";
 
 // Perform the actual authentication calls to Simperium
 - (void)authenticateWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock
-{    
+{
+    // Happy Inspector
+    username = [username lowercaseString];
+
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]];
     SPLogInfo(@"Simperium authenticating: %@", [NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]);
     SPLogVerbose(@"Simperium username is %@", username);

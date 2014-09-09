@@ -37,4 +37,7 @@ typedef void(^SPChangeHandlerBlockType)(NSString *key);
 
 - (NSArray*)exportIndexStatus:(SPBucket *)bucket;
 
+@property (atomic, assign, readonly, getter = isProcessingChanges) BOOL processingChanges;
+@property (nonatomic, copy, readwrite) void (^isProcessingChangesUpdated)(BOOL isProcessingChanges);
+
 @end
