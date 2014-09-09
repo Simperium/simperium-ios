@@ -107,7 +107,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
         [nc addObserver:self selector:@selector(objectsAcknowledged:)        name:ProcessorDidAcknowledgeObjectsNotification    object:self];
         [nc addObserver:self selector:@selector(objectsWillChange:)          name:ProcessorWillChangeObjectsNotification        object:self];
         [nc addObserver:self selector:@selector(acknowledgedObjectDeletion:) name:ProcessorDidAcknowledgeDeleteNotification     object:self];
-        [nc addObserver:self selector:@selector(requestLatestVersions)       name:ProcessorRequestsReindexingNotification       object:self];
     }
     
     return self;
@@ -309,10 +308,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
     if ([self.delegate respondsToSelector:@selector(bucketDidAcknowledgeDelete:)]) {
         [self.delegate bucketDidAcknowledgeDelete:self];
     }    
-}
-
-- (void)requestLatestVersions {
-    [self.network requestLatestVersionsForBucket:self];
 }
 
 - (SPSchema *)schema {
