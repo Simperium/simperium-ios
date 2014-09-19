@@ -49,5 +49,6 @@ typedef void (^SPBucketForceSyncCompletion)(BOOL signatureUpdated);
 - (BOOL)isForceSyncPending;
 - (void)signalForceSyncComplete;
 - (NSDictionary*)exportStatus;
+- (NSInteger)numChangesPending;
 
 @end
