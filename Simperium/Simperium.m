@@ -237,8 +237,10 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
     
     _networkEnabled = enabled;
-    if (enabled) {
+    if (enabled && self.authenticationEnabled) {
         [self authenticateIfNecessary];
+    } else if (enabled && self.user.authenticated) {
+        [self startNetworkManagers];
     } else {
         [self stopNetworkManagers];
     }
