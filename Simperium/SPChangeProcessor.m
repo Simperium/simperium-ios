@@ -317,6 +317,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
                 // as another client's change, in other words not properly acknowledged.
                 if (diff.count) {
                     [object loadMemberData:object.ghost.memberData];
+                    [self enqueueObjectForMoreChanges:simperiumKey bucket:bucket];
                 } else {
                     SPLogVerbose(@"Simperium transform resulted in empty diff (invalid ack?)");
                 }
