@@ -17,6 +17,7 @@
 
 #import "NSString+Simperium.h"
 #import "JSONKit+Simperium.h"
+#import "DiffMatchPatch.h"
 
 
 
@@ -159,6 +160,116 @@ static NSUInteger const SPRandomStringLength    = 1000;
         XCTAssertEqualObjects(config.captainsLog, originalTitle,    @"Invalid CaptainsLog");
         XCTAssertFalse([config.ghost.version isEqual:endVersion],   @"Invalid Ghost Version");
     }
+}
+
+
+- (void)testProcessRemoteChangeWithLocalInconsistentState {
+    
+    // ===================================================================================================
+    // Helpers
+    // ===================================================================================================
+    //
+    MockSimperium* s                = [MockSimperium mockSimperium];
+    SPBucket* bucket                = [s bucketForName:NSStringFromClass([Config class])];
+    SPCoreDataStorage* storage      = bucket.storage;
+    DiffMatchPatch *dmp             = [DiffMatchPatch new];
+    NSMutableDictionary *changes    = [NSMutableDictionary dictionary];
+
+    // Note:
+    // Force an Inconsistent State == "Ghost != Member Data" because, for X reason, a remote delta wasn't applied
+    // This particular inconsistency will neutralize new changes coming through. We expect the changeProcessor to
+    // detect this, and fall back to ghost data.
+    //
+    NSString *remoteMemberData		= @"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX NEW NEW";
+    NSString *localGhostData        = @"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n";
+    NSString *localMemberData       = @"";
+    NSMutableArray *rawDiff         = [dmp diff_mainOfOldString:localGhostData andNewString:remoteMemberData];
+    NSString *delta                 = [dmp diff_toDelta:rawDiff];
+
+    
+    // ===================================================================================================
+    // Insert Config
+    // ===================================================================================================
+    //
+    Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+    config.captainsLog              = localGhostData;
+    
+    NSMutableDictionary *memberData = [config.dictionary mutableCopy];
+    SPGhost *ghost                  = [[SPGhost alloc] initWithKey:config.simperiumKey memberData:memberData];
+    ghost.version                   = @"1";
+    config.ghost                    = ghost;
+    config.ghostData                = [memberData sp_JSONString];
+    
+    config.captainsLog              = localMemberData;
+    
+    [s saveWithoutSyncing];
+    
+    NSLog(@"<> Config with invalid state successfully inserted");
+    
+    
+    // ===================================================================================================
+    // Prepare Remote Changes
+    // ===================================================================================================
+    //
+    NSString *changeVersion         = [NSString sp_makeUUID];
+    NSString *startVersion          = config.ghost.version;
+    NSString *endVersion            = [NSString stringWithFormat:@"%d", startVersion.intValue + 1];
+    
+    // Prepare the change itself
+    NSDictionary *change            = @{
+                                        CH_CLIENT_ID        : SPRemoteClientID,
+                                        CH_CHANGE_VERSION   : changeVersion,
+                                        CH_START_VERSION    : startVersion,
+                                        CH_END_VERSION      : endVersion,
+                                        CH_KEY              : config.simperiumKey,
+                                        CH_OPERATION        : CH_MODIFY,
+                                        CH_VALUE            : @{
+                                                NSStringFromSelector(@selector(captainsLog))    : @{
+                                                        CH_OPERATION    : CH_DATA,
+                                                        CH_VALUE        : delta
+                                                        }
+                                                }
+                                    };
+    
+    changes[config.simperiumKey] = change;
+    
+    NSLog(@"<> Successfully generated remote changes");
+    
+    
+    // ===================================================================================================
+    // Process remote changes
+    // ===================================================================================================
+    //
+    StartBlock();
+    
+    dispatch_async(bucket.processorQueue, ^{
+        [bucket.changeProcessor processRemoteChanges:changes.allValues
+                                              bucket:bucket
+                                      successHandler:^(NSString *simperiumKey, NSString *version) { }
+                                        errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
+                                          XCTAssertFalse(true, @"This should not get executed");
+                                        }];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            EndBlock();
+        });
+    });
+    
+    WaitUntilBlockCompletes();
+    
+    NSLog(@"<> Finished processing remote changes");
+    
+    
+    // ===================================================================================================
+    // Verify
+    // ===================================================================================================
+    //
+    
+    // Reload the Object
+    [storage refaultObjects:@[config]];
+    
+    // We expect the error handling code to detect the inconsistency, and fall back to remote data
+    XCTAssertEqual(config.captainsLog, remoteMemberData, @"Inconsistency detected");
 }
 
 @end
