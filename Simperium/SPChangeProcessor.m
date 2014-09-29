@@ -378,27 +378,26 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     NSAssert(self.clientID,                 @"Missing clientID");
     NSAssert(change[CH_ERROR] == nil,       @"This should not be called if the change has an error");
     
-    // Create a new context (to be thread-safe) and fetch the entity from it
+    // Unwrap the change's properties
     NSString *key                   = [self keyWithoutNamespaces:change bucket:bucket];
+    NSString *operation             = change[CH_OPERATION];
+    NSString *changeVersion         = change[CH_CHANGE_VERSION];
+    NSString *changeClientID        = change[CH_CLIENT_ID];
+    
+    // Analyze the change's flags
     id<SPStorageProvider>storage    = [bucket.storage threadSafeStorage];
+
+    BOOL objectWasFound             = ([storage objectForKey:key bucketName:bucket.name] != nil);
+    BOOL clientMatches              = ([changeClientID compare:self.clientID] == NSOrderedSame);
+    BOOL remove                     = (operation && [operation compare:CH_REMOVE] == NSOrderedSame);
+    BOOL modify                     = (operation && [operation compare:CH_MODIFY] == NSOrderedSame);
+    BOOL awaitingAck                = [self awaitingAcknowledgementForKey:key];
+    BOOL acknowledged               = (awaitingAck && clientMatches);
     
-    [storage beginSafeSection];
-    
-    NSString *operation         = change[CH_OPERATION];
-    NSString *changeVersion     = change[CH_CHANGE_VERSION];
-    NSString *changeClientID    = change[CH_CLIENT_ID];
-    id<SPDiffable> object       = [storage objectForKey:key bucketName:bucket.name];
-    
-    SPLogVerbose(@"Simperium client %@ received change (%@) %@: %@", self.clientID, bucket.name, changeClientID, change);
-    
-    // Process
-    BOOL objectWasFound         = (object != nil);
-    BOOL clientMatches          = ([changeClientID compare:self.clientID] == NSOrderedSame);
-    BOOL remove                 = (operation && [operation compare:CH_REMOVE] == NSOrderedSame);
-    BOOL acknowledged           = ([self awaitingAcknowledgementForKey:key] && clientMatches);
+    SPLogVerbose(@"Simperium client %@ received change (%@) %@ [%@] : %@", self.clientID, bucket.name, changeClientID, operation, change);
     
     // If the entity already exists locally, or it's being removed, then check for an ack
-    if (remove || (object && acknowledged && clientMatches)) {
+    if (remove || (objectWasFound && acknowledged && clientMatches)) {
         // TODO: If this isn't a deletion change, but there's a deletion change pending, then ignore this change
         // Change was awaiting acknowledgement; safe now to remove from changesPending
         if (acknowledged) {
@@ -406,19 +405,28 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         }
         [self.changesPending removeObjectForKey:key];
     }
-
-    SPLogVerbose(@"Simperium performing change operation: %@", operation);
-    [storage finishSafeSection];
+    
+    // Process!
+    BOOL success = false;
     
     if (remove && (objectWasFound || acknowledged)) {
-        return [self processRemoteDeleteWithKey:key bucket:bucket objectWasFound:objectWasFound error:error];
-    } else if (operation && [operation compare: CH_MODIFY] == NSOrderedSame) {
-        return [self processRemoteModifyWithKey:key bucket:bucket change:change acknowledged:acknowledged clientMatches:clientMatches error:error];
+        success = [self processRemoteDeleteWithKey:key
+                                            bucket:bucket
+                                    objectWasFound:objectWasFound
+                                             error:error];
+        
+    } else if (modify) {
+        success = [self processRemoteModifyWithKey:key
+                                            bucket:bucket
+                                            change:change
+                                      acknowledged:acknowledged
+                                     clientMatches:clientMatches
+                                             error:error];
+    } else {
+        SPLogError(@"Simperium error (%@), received an invalid change for (%@): %@", bucket.name, key, change);
     }
     
-    // Invalid
-    SPLogError(@"Simperium error (%@), received an invalid change for (%@): %@", bucket.name, key, change);
-    return NO;
+    return success;
 }
 
 
