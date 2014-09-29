@@ -267,21 +267,31 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
     
-    NSAssert( [NSThread isMainThread], @"This should get called on the main thread!" );
+    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
     
-    // Batch-Processing: This will speed up sync'ing of large databases!
-    [self.changesBatch addObjectsFromArray:changes];
-    
-    if ( !_started || bucket.changeProcessor.numChangesPending < SPWebsocketChangesBatchSize || _changesBatch.count % SPWebsocketChangesBatchSize == 0 ) {
-        [self processBatchChanges:_changesBatch bucket:bucket];
-        self.changesBatch = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
-        self.started = YES;
-    }
+    // Batch-Processing:
+    // This will speed up sync'ing of large databases. We should perform this OP in the processorQueue: numChangesPending gets updated there!
+    dispatch_async(bucket.processorQueue, ^{
+        [self.changesBatch addObjectsFromArray:changes];
+
+        BOOL shouldProcess = (!_started || _changesBatch.count % SPWebsocketChangesBatchSize == 0 || bucket.changeProcessor.numChangesPending < SPWebsocketChangesBatchSize);
+        if (!shouldProcess) {
+            return;
+        }
+        
+        NSArray *receivedBatch  = self.changesBatch;
+        self.changesBatch       = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
+        self.started            = YES;
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self processBatchChanges:receivedBatch bucket:bucket];
+        });
+    });
 }
 
 - (void)processBatchChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
     
-    NSAssert( [NSThread isMainThread], @"This should get called on the main thread!" );
+    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
     
     SPLogVerbose(@"Simperium handling changes %@", changes);
     
@@ -475,7 +485,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
 
-    NSAssert( [NSThread isMainThread], @"This method should get called on the main thread" );
+    NSAssert([NSThread isMainThread], @"This method should get called on the main thread");
         
     if (!self.authenticated) {
         return;
@@ -501,7 +511,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)sendChangesForBucket:(SPBucket *)bucket completionBlock:(SPWebSocketSyncedBlockType)completionBlock {
 
-    NSAssert( self.onLocalChangesSent == nil, @"This method should not get called more than once, before completion" );
+    NSAssert(self.onLocalChangesSent == nil, @"This method should not get called more than once, before completion");
     self.onLocalChangesSent = completionBlock;
     [self sendChangesForBucket:bucket];
 }
