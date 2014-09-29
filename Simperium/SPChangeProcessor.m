@@ -194,7 +194,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 // TODO:
 //      - Split this method into processRemoteModify and processRemoteInsertion
-//      - This method should receive the coreData context + object, so we prevent double fetching
 //      - Once the above are implemented, move the 'begin/finish'SafeSection calls to the caller, and nuke duplicated code, PLEASE!
 //
 - (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket change:(NSDictionary *)change
@@ -871,7 +870,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     
     // Every change must be marked with a unique ID
     NSString *uuid = [NSString sp_makeUUID];
-    [change setObject:uuid forKey: CH_LOCAL_ID];
+    [change setObject:uuid forKey:CH_LOCAL_ID];
     
     // Set the change's operation
     [change setObject:operation forKey:CH_OPERATION];
@@ -897,7 +896,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 // This method will migrate any pending changes, from UserDefaults over to SPDictionaryStorage
 //
 - (void)migratePendingChangesIfNeeded {
-    NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", self.label];
+    NSString *pendingKey  = [NSString stringWithFormat:@"changesPending-%@", self.label];
     NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
     
     // No need to go further
