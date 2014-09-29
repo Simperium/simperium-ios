@@ -293,7 +293,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     
     NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
     
-    SPLogVerbose(@"Simperium handling changes %@", changes);
+    SPLogVerbose(@"Simperium handling changes (%@) %@", bucket.name ,changes);
     
     SPChangeProcessor *changeProcessor  = bucket.changeProcessor;
     SPIndexProcessor *indexProcessor    = bucket.indexProcessor;
