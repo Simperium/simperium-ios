@@ -20,6 +20,8 @@
 - (NSUInteger)count;
 - (NSSet *)copyInnerSet;
 
+- (BOOL)containsObject:(id)anObject;
+
 - (void)addObjectsFromArray:(NSArray *)array;
 - (void)minusSet:(NSSet *)otherSet;
 - (void)removeAllObjects;
