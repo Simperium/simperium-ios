@@ -157,8 +157,17 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
     return [self.storage numObjectsForBucketName:self.name predicate:predicate];
 }
 
-- (NSInteger)numChangesPending {
-    return self.changeProcessor.numChangesPending;
+- (void)statsWithCallback:(SPBucketStatsCallback)callback {
+    SPChangeProcessor *processor = self.changeProcessor;
+    dispatch_async(self.processorQueue, ^{
+        NSUInteger numPendingChanges    = processor.numChangesPending;
+        NSUInteger numEnqueuedChanges   = processor.numKeysForObjectsWithMoreChanges;
+        NSUInteger numEnqueuedDeletions = processor.numKeysForObjectToDelete;
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            callback(numPendingChanges, numEnqueuedChanges, numEnqueuedDeletions);
+        });
+    });
 }
 
 - (NSString *)lastChangeSignature {
