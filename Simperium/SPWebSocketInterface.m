@@ -311,7 +311,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     
     SPLogVerbose(@"Simperium (%@) Received Remote LogLevel %d", self.simperium.label, level);
     
-    self.simperium.remoteLoggingEnabled     = (level != SPRemoteLoggingOff);
+    self.simperium.remoteLoggingEnabled  = (level != SPRemoteLoggingOff);
     self.simperium.verboseLoggingEnabled = (level == SPRemoteLoggingVerbose);
 }
 

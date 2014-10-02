@@ -288,6 +288,10 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
     self.forceSyncSignature     = nil;
 }
 
+- (BOOL)hasLocalChangesForKey:(NSString *)key {
+    return [self.changeProcessor hasLocalChangesForKey:key];
+}
+
 - (NSDictionary*)exportStatus {
     // This routine shall be used for debugging purposes!
     NSString* signature = self.lastChangeSignature ?: @"";
