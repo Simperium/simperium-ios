@@ -58,7 +58,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
         [nc addObserver:self selector:@selector(objectsAcknowledged:)        name:ProcessorDidAcknowledgeObjectsNotification    object:self];
         [nc addObserver:self selector:@selector(objectsWillChange:)          name:ProcessorWillChangeObjectsNotification        object:self];
         [nc addObserver:self selector:@selector(acknowledgedObjectDeletion:) name:ProcessorDidAcknowledgeDeleteNotification     object:self];
-        [nc addObserver:self selector:@selector(requestLatestVersions)       name:ProcessorRequestsReindexingNotification       object:self];
     }
     
     return self;
@@ -158,8 +157,17 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
     return [self.storage numObjectsForBucketName:self.name predicate:predicate];
 }
 
-- (NSInteger)numChangesPending {
-    return self.changeProcessor.numChangesPending;
+- (void)statsWithCallback:(SPBucketStatsCallback)callback {
+    SPChangeProcessor *processor = self.changeProcessor;
+    dispatch_async(self.processorQueue, ^{
+        NSUInteger numPendingChanges    = processor.numChangesPending;
+        NSUInteger numEnqueuedChanges   = processor.numKeysForObjectsWithMoreChanges;
+        NSUInteger numEnqueuedDeletions = processor.numKeysForObjectToDelete;
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            callback(numPendingChanges, numEnqueuedChanges, numEnqueuedDeletions);
+        });
+    });
 }
 
 - (NSString *)lastChangeSignature {
@@ -240,10 +248,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
     if ([self.delegate respondsToSelector:@selector(bucketDidAcknowledgeDelete:)]) {
         [self.delegate bucketDidAcknowledgeDelete:self];
     }    
-}
-
-- (void)requestLatestVersions {
-    [self.network requestLatestVersionsForBucket:self];
 }
 
 - (SPSchema *)schema {

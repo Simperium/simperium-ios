@@ -26,8 +26,9 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
     SPProcessorErrorsReceivedZombieChange,      // No need to handle: The backend sent a change for a locally nuked entity
     SPProcessorErrorsReceivedUnknownChange,     // No need to handle: We've received a change for an unknown entity
     SPProcessorErrorsReceivedInvalidChange,     // Should Redownload the Entity: We couldn't apply a remote diff
-    SPProcessorErrorsServerError,               // Should Retry: Catch-all server errors
-    SPProcessorErrorsClientError                // Should Nuke PendingChange: Catch-all client errors
+    SPProcessorErrorsClientOutOfSync,           // We received a change with an SV != local version: Reindex is required
+    SPProcessorErrorsClientError,               // Should Nuke PendingChange: Catch-all client errors
+    SPProcessorErrorsServerError                // Should Retry: Catch-all server errors
 };
 
 

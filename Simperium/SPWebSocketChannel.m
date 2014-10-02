@@ -267,93 +267,98 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)handleRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
     
-    NSAssert( [NSThread isMainThread], @"This should get called on the main thread!" );
+    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
     
-    // Batch-Processing: This will speed up sync'ing of large databases!
-    [self.changesBatch addObjectsFromArray:changes];
-    
-    if ( !_started || _changesBatch.count % SPWebsocketChangesBatchSize == 0 ) {
-        [self processBatchChanges:_changesBatch bucket:bucket];
-        self.changesBatch = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
-        self.started = YES;
-    }
-    else {
-        [bucket.changeProcessor asyncNumChangesPending:^(NSInteger count) {
-            if( count < SPWebsocketChangesBatchSize) {
-                [self processBatchChanges:_changesBatch bucket:bucket];
-                self.changesBatch = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
-            }
-        } limit:SPWebsocketChangesBatchSize];
-    }
+    // Batch-Processing:
+    // This will speed up sync'ing of large databases. We should perform this OP in the processorQueue: numChangesPending gets updated there!
+    dispatch_async(bucket.processorQueue, ^{
+        [self.changesBatch addObjectsFromArray:changes];
+
+        BOOL shouldProcess = (!_started || _changesBatch.count % SPWebsocketChangesBatchSize == 0 || bucket.changeProcessor.numChangesPending < SPWebsocketChangesBatchSize);
+        if (!shouldProcess) {
+            return;
+        }
+        
+        NSArray *receivedBatch  = self.changesBatch;
+        self.changesBatch       = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
+        self.started            = YES;
+        
+        [self processBatchChanges:receivedBatch bucket:bucket];
+    });
 }
 
 - (void)processBatchChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
     
-    NSAssert( [NSThread isMainThread], @"This should get called on the main thread!" );
+    NSAssert([NSThread isMainThread] == false, @"This should NOT get called on the main thread!");
     
-    SPLogVerbose(@"Simperium handling changes %@", changes);
+    SPLogVerbose(@"Simperium handling changes (%@) %@", bucket.name ,changes);
     
     SPChangeProcessor *changeProcessor  = bucket.changeProcessor;
     SPIndexProcessor *indexProcessor    = bucket.indexProcessor;
+    __weak __typeof(self) weakSelf      = self;
     
-    // Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
-    // sync will still work for any unsaved changes.
-    [bucket.storage stashUnsavedObjects];
-    
-    // Notify the delegates on the main thread that we're about to apply remote changes
-    [changeProcessor notifyOfRemoteChanges:changes bucket:bucket];
-    
-    
-    __weak __typeof(self) weakSelf = self;
-    
-    dispatch_async(bucket.processorQueue, ^{
-        if (!self.authenticated) {
-            return;
-        }
-
-        SPChangeSuccessHandlerBlockType successHandler = ^(NSString *simperiumKey, NSString *version) {
-            
-            [indexProcessor enableRebaseForObjectWithKey:simperiumKey];
-        };
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        // Changing entities and saving the context will clear Core Data's updatedObjects. Stash them so
+        // sync will still work for any unsaved changes.
+        [bucket.storage stashUnsavedObjects];
         
-        SPChangeErrorHandlerBlockType errorHandler = ^(NSString *simperiumKey, NSString *version, NSError *error) {
+        // Notify the delegates on the main thread that we're about to apply remote changes
+        [changeProcessor notifyOfRemoteChanges:changes bucket:bucket];
+    });
+    
+    // Failsafe: Don't proceed if we just got deauthenticated
+    if (!self.authenticated) {
+        return;
+    }
+    
+    // Process the changes!
+    SPChangeSuccessHandlerBlockType successHandler = ^(NSString *simperiumKey, NSString *version) {
+        
+        [indexProcessor enableRebaseForObjectWithKey:simperiumKey];
+    };
+    
+    SPChangeErrorHandlerBlockType errorHandler = ^(NSString *simperiumKey, NSString *version, NSError *error) {
+        
+        SPLogError(@"Simperium Received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
+        
+        if (error.code == SPProcessorErrorsClientOutOfSync) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [weakSelf requestLatestVersionsForBucket:bucket];
+            });
             
-            SPLogError(@"Simperium Received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
+        } else if (error.code == SPProcessorErrorsSentDuplicateChange) {
+            [changeProcessor discardPendingChanges:simperiumKey bucket:bucket];
             
-            if (error.code == SPProcessorErrorsSentDuplicateChange) {
-                [changeProcessor discardPendingChanges:simperiumKey bucket:bucket];
-                
-            } else if (error.code == SPProcessorErrorsSentInvalidChange) {
-                [changeProcessor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
-                [indexProcessor disableRebaseForObjectWithKey:simperiumKey];
-                
-            } else if (error.code == SPProcessorErrorsServerError) {
-                [changeProcessor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:NO];
-                
-            } else if (error.code == SPProcessorErrorsClientError) {
-                [changeProcessor discardPendingChanges:simperiumKey bucket:bucket];
-                
-            } else if (error.code == SPProcessorErrorsReceivedInvalidChange) {
-                
-                // Do not generate reentrant calls: let the index processor handle the reload
-                if (weakSelf.indexing) {
-                    [indexProcessor enableReloadForObjectWithKey:simperiumKey];
-                } else {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
-                    });
-                }
+        } else if (error.code == SPProcessorErrorsSentInvalidChange) {
+            [changeProcessor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
+            [indexProcessor disableRebaseForObjectWithKey:simperiumKey];
+            
+        } else if (error.code == SPProcessorErrorsServerError) {
+            [changeProcessor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:NO];
+            
+        } else if (error.code == SPProcessorErrorsClientError) {
+            [changeProcessor discardPendingChanges:simperiumKey bucket:bucket];
+            
+        } else if (error.code == SPProcessorErrorsReceivedInvalidChange) {
+            
+            // Do not generate reentrant calls: let the index processor handle the reload
+            if (weakSelf.indexing) {
+                [indexProcessor enableReloadForObjectWithKey:simperiumKey];
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
+                });
             }
-        };
-        
-        [changeProcessor processRemoteChanges:changes bucket:bucket successHandler:successHandler errorHandler:errorHandler];
-        
+        }
+    };
+    
+    [changeProcessor processRemoteChanges:changes bucket:bucket successHandler:successHandler errorHandler:errorHandler];
+    
 
-        //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
-        //  in the meantime, and send them.
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self sendChangesForBucket:bucket];
-        });
+    //  After remote changes have been processed, check to see if any local changes were attempted (and queued)
+    //  in the meantime, and send them.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self sendChangesForBucket:bucket];
     });
 }
 
@@ -478,7 +483,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket {
 
-    NSAssert( [NSThread isMainThread], @"This method should get called on the main thread" );
+    NSAssert([NSThread isMainThread], @"This method should get called on the main thread");
         
     if (!self.authenticated) {
         return;
@@ -504,7 +509,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 - (void)sendChangesForBucket:(SPBucket *)bucket completionBlock:(SPWebSocketSyncedBlockType)completionBlock {
 
-    NSAssert( self.onLocalChangesSent == nil, @"This method should not get called more than once, before completion" );
+    NSAssert(self.onLocalChangesSent == nil, @"This method should not get called more than once, before completion");
     self.onLocalChangesSent = completionBlock;
     [self sendChangesForBucket:bucket];
 }
@@ -611,7 +616,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         }
         
         [bucket.indexProcessor processVersions:batch bucket:bucket changeHandler:^(NSString *key) {
-            // Local version was different, so process it as a local change
+            // Local version was different, so nuke old changes, and recalculate the delta
+            [bucket.changeProcessor discardPendingChanges:key bucket:bucket];
             [bucket.changeProcessor enqueueObjectForMoreChanges:key bucket:bucket];
         }];
         

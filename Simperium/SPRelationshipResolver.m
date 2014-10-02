@@ -130,6 +130,10 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
                 continue;
             }
 
+            // Ensure the objects are faulted
+            [sourceObject willBeRead];
+            [targetObject willBeRead];
+            
             SPLogVerbose(@"Simperium resolving pending reference for %@.%@=%@",
                          relationship.sourceKey, relationship.sourceAttribute, relationship.targetKey);
             

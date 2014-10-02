@@ -94,7 +94,11 @@ typedef NS_ENUM(NSUInteger, SPBucketChangeType) {
 - (NSInteger)numObjects;
 - (NSInteger)numObjectsForPredicate:(NSPredicate *)predicate;
 
-// Returns the number of unsynced changes
-- (NSInteger)numChangesPending;
+// Retrive Simperium's Sync'ing stats:
+//  - Local Pending Changes:    Number of captured changes, pending to be sent / acknowledged
+//  - Local Enqueued Changes:   Number of objects marked for further processing
+//  - Local Enqueued Deletions: Number of objects marked for deletion
+typedef void(^SPBucketStatsCallback)(NSUInteger localPendingChanges, NSUInteger localEnqueuedChanges, NSUInteger localEnqueuedDeletions);
+- (void)statsWithCallback:(SPBucketStatsCallback)callback;
 
 @end

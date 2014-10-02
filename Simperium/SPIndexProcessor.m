@@ -204,6 +204,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
             NSString *key                   = versionData[SPVersionKey];
             NSString *version               = versionData[SPVersionNumber];
             NSDictionary *data              = versionData[SPVersionData];
+            NSMutableDictionary *ghostData  = nil;
             
             // Process the Object's Member Data
             id<SPDiffable> object           = objects[key];
@@ -214,70 +215,83 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                 object.bucket   = bucket; // set it manually since it won't be set automatically yet
                 [object loadMemberData:data];
                 
+                ghostData       = [[object dictionary] mutableCopy];
+                
                 [addedKeys addObject:key];
                 SPLogVerbose(@"Simperium added object from index (%@): %@", bucket.name, object.simperiumKey);
                 
             // The object exists. Let's attempt to rebase local pending changes
             } else {
 
-                // 1. Calculate Delta: LocalGhost > LocalMembers
-                SPGhost *localGhost         = [object.ghost copy];
-                NSDictionary *localDiff     = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
+                // 1. Failsafe: Make sure that the object is in memory
+                [object willBeRead];
+
+                // 2. Calculate Delta: LocalGhost > LocalMembers
+                SPGhost *localGhost             = [object.ghost copy];
+                NSDictionary *localDiff         = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
                 
-                // 2. Load the full Remote Member Data
+                // 3. Load the full Remote Member Data
                 [object loadMemberData:data];
-                SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@", bucket.name, key);
+                SPLogWarn(@"Simperium successfully reloaded local entity (%@): %@.%@", bucket.name, key, version);
                 
-                // 3. Rebase + apply localDiff
+                // 4. Be sure to load all members into ghost (since the version results might only contain a subset of members that were changed)
+                ghostData                       = [[object dictionary] mutableCopy];
+
+                // 5. Rebase + apply localDiff
                 BOOL isRebaseDisabled = [self.keysForObjectsWithRebaseDisabled containsObject:key];
                 
                 if (localDiff.count && !isRebaseDisabled) {
                     
-                    // 3.1. Calculate Delta: LocalGhost > RemoteMembers
+                    // 5.1. Calculate Delta: LocalGhost > RemoteMembers
                     NSDictionary *remoteDiff    = [bucket.differ diffFromDictionary:localGhost.memberData toObject:object];
                     
-                    // 3.2. Transform localDiff: LocalGhost >> RemoteMembers >> LocalDiff (equivalent to git rebase)
+                    // 5.2. Transform localDiff: LocalGhost >> RemoteMembers >> LocalDiff (equivalent to git rebase)
                     NSError *error              = nil;
                     NSDictionary *rebaseDiff    = nil;
                     
                     if (remoteDiff.count) {
                         // Note: if remoteDiff is empty, there is just no need to rebase!.
+                        SPLogWarn(@"Simperium rebasing local changes for object (%@): %@.%@", bucket.name, key, version);
                         rebaseDiff = [bucket.differ transform:object diff:localDiff oldDiff:remoteDiff oldGhost:localGhost error:&error];
                     } else {
+                        SPLogWarn(@"Simperium rebasing local changes for object (%@): %@.%@", bucket.name, key, version);
                         rebaseDiff = localDiff;
                     }
                     
-                    // 3.3. Attempt to apply the Local Transformed Diff
+                    // 5.3. Attempt to apply the Local Transformed Diff
                     if (!error && rebaseDiff.count) {
                         [bucket.differ applyDiffFromDictionary:rebaseDiff toObject:object error:&error];
                     }
                     
-                    // 3.4. Some debugging
+                    // 5.4. Some debugging
                     if (error) {
-                        SPLogWarn(@"Simperium error: could not apply local transformed diff for entity (%@): %@", bucket.name, key);
+                        SPLogWarn(@"Simperium error: could not apply local transformed diff for entity (%@): %@.%@", bucket.name, key, version);
                     } else {
-                        SPLogWarn(@"Simperium successfully updated local entity (%@): %@", bucket.name, key);
+                        SPLogWarn(@"Simperium successfully updated local entity (%@): %@.%@", bucket.name, key, version);
                     }
                     
-                    // 3.5. Signal the changeHandler that the object has untracked changes. Do this after saving the storage!
+                    // 5.5. Signal the changeHandler that the object has untracked changes. Do this after saving the storage!
                     [rebasedKeys addObject:key];
                 }
                 
-                // 4. Keep track of changed Keys
+                // 6. Keep track of changed Keys
                 [changedKeys addObject:key];
                 
-                // 5. Cleanup
+                // 7. Cleanup
                 if (isRebaseDisabled) {
                     [self.keysForObjectsWithRebaseDisabled removeObject:key];
                 }
             }
             
-            // 4. Update the ghost with the remote member data + version
-            SPGhost *ghost  = [[SPGhost alloc] initWithKey:object.simperiumKey memberData:[data mutableCopy]];
-            ghost.version   = version;
-            object.ghost    = ghost;
+            // Update the ghost with the remote member data + version
+            SPGhost *ghost      = [[SPGhost alloc] initWithKey:object.simperiumKey memberData:ghostData];
+            ghost.version       = version;
+            object.ghost        = ghost;
+
+            // Slight hack to ensure Core Data realizes the object has changed and needs a save
+            object.ghostData    = [[object.ghost.dictionary sp_JSONString] copy];
             
-            SPLogVerbose(@"Simperium updating ghost data for object %@ (%@)", object.simperiumKey, bucket.name);
+            SPLogVerbose(@"Simperium updating ghost data for object %@.%@ (%@)", object.simperiumKey, version, bucket.name);
         }
         
         // Store after processing the batch for efficiency
