@@ -98,7 +98,7 @@ typedef NS_ENUM(NSUInteger, SPBucketChangeType) {
 //  - Local Pending Changes:    Number of captured changes, pending to be sent / acknowledged
 //  - Local Enqueued Changes:   Number of objects marked for further processing
 //  - Local Enqueued Deletions: Number of objects marked for deletion
-typedef void(^SPBucketStatsCallback)(NSUInteger localPendingChanges, NSUInteger localEnqueuedChanges, NSUInteger localEnqueuedDeletions);
+typedef void(^SPBucketStatsCallback)(SPBucket *bucket, NSUInteger localPendingChanges, NSUInteger localEnqueuedChanges, NSUInteger localEnqueuedDeletions);
 - (void)statsWithCallback:(SPBucketStatsCallback)callback;
 
 @end
