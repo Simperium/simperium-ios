@@ -165,7 +165,7 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
         NSUInteger numEnqueuedDeletions = processor.numKeysForObjectToDelete;
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            callback(numPendingChanges, numEnqueuedChanges, numEnqueuedDeletions);
+            callback(self, numPendingChanges, numEnqueuedChanges, numEnqueuedDeletions);
         });
     });
 }
