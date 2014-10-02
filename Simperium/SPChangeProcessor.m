@@ -787,8 +787,15 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 
 #pragma mark ====================================================================================
-#pragma mark Remote Logging
+#pragma mark Helpers
 #pragma mark ====================================================================================
+
+- (BOOL)hasLocalChangesForKey:(NSString *)key {
+    
+    return  [self.changesPending                containsObjectForKey:key] ||
+            [self.keysForObjectsToDelete        containsObject:key]       ||
+            [self.keysForObjectsWithMoreChanges containsObject:key];
+}
 
 - (NSArray*)exportPendingChanges {
     

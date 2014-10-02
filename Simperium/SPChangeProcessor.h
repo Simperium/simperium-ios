@@ -66,6 +66,7 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 - (void)enumerateQueuedDeletionsForBucket:(SPBucket*)bucket block:(SPChangeEnumerationBlockType)block;
 - (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
 
+- (BOOL)hasLocalChangesForKey:(NSString *)key;
 - (NSArray *)exportPendingChanges;
 
 @end
