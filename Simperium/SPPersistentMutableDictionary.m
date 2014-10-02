@@ -65,26 +65,41 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
     return count;
 }
 
+- (void)asyncCountWithCompletion:(void (^)(NSInteger))completion limit:(NSInteger)limit {
+    [self.managedObjectContext performBlock:^() {
+		NSError *error;
+        NSFetchRequest *request = [self requestForEntity];
+        request.fetchLimit = limit;
+		int count = [self.managedObjectContext countForFetchRequest:request error:&error];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(count);
+        });
+		SPLogOnError(error);
+	}];
+}
+
 - (BOOL)containsObjectForKey:(id)aKey {
-    if (aKey == nil) {
-        return false;
-    }
-    
-    // Do we have a cache hit?
-    __block BOOL exists = ([self.cache objectForKey:aKey] != nil);
-    if (exists) {
-        return exists;
-    }
-    
-    // Fault to Core Data
-    [self.managedObjectContext performBlockAndWait:^{
-        NSError *error = nil;
-        exists = ([self.managedObjectContext countForFetchRequest:[self requestForEntityWithKey:aKey] error:&error] > 0);
-        SPLogOnError(error);
-    }];
-    
-    // Done
-    return exists;
+	if (aKey == nil) {
+		return false;
+	}
+	
+	// Do we have a cache hit?
+	__block BOOL exists = ([self.cache objectForKey:aKey] != nil);
+	if (exists) {
+		return exists;
+	}
+	
+	// Fault to Core Data
+	[self.managedObjectContext performBlockAndWait:^{
+		NSError *error = nil;
+        NSFetchRequest *request = [self requestForEntityWithKey:aKey];
+        request.fetchLimit = 1;
+		exists = ([self.managedObjectContext countForFetchRequest:request error:&error] > 0);
+		SPLogOnError(error);
+	}];
+	
+	// Done
+	return exists;
 }
 
 - (id)objectForKey:(id)aKey {

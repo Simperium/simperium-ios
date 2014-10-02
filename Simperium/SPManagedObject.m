@@ -29,7 +29,7 @@
 
 - (void)simperiumSetValue:(id)value forKey:(NSString *)key {
     [self willChangeValueForKey:key];
-    [self setValue:value forKey:key];
+    [self safeSetValue:value forKey:key];
     [self didChangeValueForKey:key];
 }
 
@@ -133,7 +133,7 @@
             
             // This sets the actual instance data
             [self willChangeValueForKey:member.keyName];
-            [self setValue:data forKey:member.keyName];
+            [self safeSetValue:data forKey:[member keyName]];
             [self didChangeValueForKey:member.keyName];
         }
     }
@@ -179,5 +179,60 @@
 - (void)awakeFromRemoteInsert {
     // Override me if needed!
 }
+
+- (void)safeSetValue:(id)value forKey:(NSString*)key {
+    // first we get the objc_property_t that corresponds to the key
+    unsigned int propertyCount;
+    objc_property_t *properties = class_copyPropertyList([self class], &propertyCount);
+    objc_property_t property;
+    for (int i=0; i<propertyCount; i++) {
+        objc_property_t propertyi = properties[i];
+        const char *propertyName = property_getName(propertyi);
+        NSString *keyName = [NSString stringWithUTF8String:propertyName];
+        if([keyName isEqualToString:key]) {
+            property = propertyi;
+        }
+    }
+    free(properties);
+    
+    if (!property) {
+        // property doesn't exist, we can't set it
+        return;
+    }
+    
+    if (value) {
+        char *typeEncoding = NULL;
+        typeEncoding = property_copyAttributeValue(property, "T");
+        switch (typeEncoding[0]) {
+            case '@': {
+                // We get the class of the property
+                Class class = nil;
+                if (strlen(typeEncoding) >= 3) {
+                    char *className = strndup(typeEncoding+2, strlen(typeEncoding)-3);
+                    class = NSClassFromString([NSString stringWithUTF8String:className]);
+                }
+                
+                //We check for type mismatch
+                if ([value isKindOfClass:class]) {
+                    [self setValue:value forKey:key];
+                }
+                else {
+                    NSLog(@"Simperium error: type mismatch");
+                    // TODO: handle exception
+                }
+            }
+                
+            default: {
+                break;
+            }
+        }
+        free(typeEncoding);
+    }
+    else {
+        [self setValue:value forKey:key];
+    }
+
+}
+
 
 @end

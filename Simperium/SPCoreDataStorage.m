@@ -13,6 +13,7 @@
 #import "SPSchema.h"
 #import "SPThreadsafeMutableSet.h"
 #import "SPLogger.h"
+#import "SPBucket.h"
 #import <objc/runtime.h>
 
 
@@ -290,13 +291,13 @@ static NSInteger const SPWorkersDone    = 0;
 - (void)deleteObject:(id<SPDiffable>)object {
     SPManagedObject *managedObject = (SPManagedObject *)object;
     [managedObject.managedObjectContext deleteObject:managedObject];
-    
-    // NOTE:
-    // 'mergeChangesFromContextDidSaveNotification' calls 'deleteObject' in the receiver context. As a result,
-    // remote deletions will be posted as local deletions. Let's prevent that!
-    if (self.sibling) {
-        [self.sibling.remotelyDeletedKeys addObject:managedObject.simperiumKey];
-    }
+	
+	// NOTE:
+	// 'mergeChangesFromContextDidSaveNotification' calls 'deleteObject' in the receiver context. As a result,
+	// remote deletions will be posted as local deletions. Let's prevent that!
+	if (self.sibling) {
+		[self.sibling.remotelyDeletedKeys addObject:[NSString stringWithFormat:@"%@-%@", managedObject.bucket.name, managedObject.simperiumKey]];
+	}
 }
 
 - (void)deleteAllObjectsForBucketName:(NSString *)bucketName {
@@ -443,24 +444,26 @@ static NSInteger const SPWorkersDone    = 0;
     // when storing changes that come off the wire
     if (![self.delegate objectsShouldSync]) {
         return;
-    }
-    
-    // Filter remotely deleted objects
-    NSDictionary *userInfo  = notification.userInfo;
-    NSMutableSet *locallyDeleted = [NSMutableSet set];
-    for (SPManagedObject* mainMO in userInfo[NSDeletedObjectsKey]) {
-        if ([mainMO isKindOfClass:[SPManagedObject class]] == NO) {
-            continue;
-        }
-        if ([self.remotelyDeletedKeys containsObject:mainMO.simperiumKey] == NO) {
-            // We'll need to post it
-            [locallyDeleted addObject:mainMO];
-        } else {
-            // Cleanup!
-            [self.remotelyDeletedKeys removeObject:mainMO.simperiumKey];
-        }
-    }
-    
+
+	}
+	
+	// Filter remotely deleted objects
+	NSDictionary *userInfo	= notification.userInfo;
+	NSMutableSet *locallyDeleted = [NSMutableSet set];
+	for (SPManagedObject* mainMO in userInfo[NSDeletedObjectsKey]) {
+        NSString *composedKey = [NSString stringWithFormat:@"%@-%@", mainMO.bucket.name, mainMO.simperiumKey];
+		if ([mainMO isKindOfClass:[SPManagedObject class]] == NO) {
+			continue;
+		}
+		if ([self.remotelyDeletedKeys containsObject:composedKey] == NO) {
+			// We'll need to post it
+			[locallyDeleted addObject:mainMO];
+		} else {
+			// Cleanup!
+			[self.remotelyDeletedKeys removeObject:composedKey];
+		}
+	}
+	
     // Sync all changes
     [self.delegate storage:self updatedObjects:userInfo[NSUpdatedObjectsKey] insertedObjects:userInfo[NSInsertedObjectsKey] deletedObjects:locallyDeleted];
 }

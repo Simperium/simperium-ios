@@ -31,7 +31,7 @@
 #pragma mark ====================================================================================
 
 static int const SPWebsocketIndexPageSize           = 500;
-static int const SPWebsocketIndexBatchSize          = 10;
+static int const SPWebsocketIndexBatchSize          = 20;
 static int const SPWebsocketErrorAuthFailed         = 401;
 static int const SPWebsocketChangesBatchSize        = 20;
 static NSString* const SPWebsocketErrorMark         = @"{";

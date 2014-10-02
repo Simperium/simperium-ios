@@ -69,4 +69,6 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 - (BOOL)hasLocalChangesForKey:(NSString *)key;
 - (NSArray *)exportPendingChanges;
 
+- (void)asyncNumChangesPending:(void(^)(NSInteger))completion limit:(NSInteger)limit;
+
 @end

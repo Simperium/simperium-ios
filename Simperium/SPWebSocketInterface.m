@@ -243,6 +243,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 }
 
 - (void)stop:(SPBucket *)bucket {
+    
     SPWebSocketChannel *channel = [self channelForName:bucket.name];
     channel.authenticated       = NO;
     channel.webSocketManager    = nil;

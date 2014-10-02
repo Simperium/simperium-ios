@@ -9,7 +9,7 @@
 #import "SPAuthenticationViewController.h"
 #import "SPAuthenticator.h"
 #import "SPHttpRequest.h"
-#import <Simperium/Simperium.h>
+#import "Simperium.h"
 #import "JSONKit+Simperium.h"
 #import "SPAuthenticationButton.h"
 #import "SPAuthenticationConfiguration.h"

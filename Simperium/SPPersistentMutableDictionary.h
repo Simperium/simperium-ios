@@ -19,6 +19,7 @@
 @property (nonatomic, strong, readonly) NSString *label;
 
 - (NSInteger)count;
+- (void)asyncCountWithCompletion:(void (^)(NSInteger))completion limit:(NSInteger)limit;
 - (BOOL)containsObjectForKey:(id)aKey;
 
 - (id)objectForKey:(NSString*)aKey;
