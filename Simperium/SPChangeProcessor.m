@@ -211,9 +211,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         // If the change was sent by this very same client, and the object isn't available, don't add it.
         // It Must have been locally deleted before the confirmation got through!
         if (clientMatches) {
-            if (error) {
-                *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedZombieChange description:nil];
-            }
+            SPLogVerbose(@"Simperium received an acknowledgement for an entity that was already deleted (%@): %@", bucket.name, simperiumKey);
             [storage finishSafeSection];
             return NO;
         }
@@ -253,7 +251,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     
     // It already exists, now MODIFY it
     if (!object.ghost) {
-        SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, simperiumKey);
+        SPLogWarn(@"Simperium warning: received change for an entity with no Ghost Reference (%@): %@", bucket.name, simperiumKey);
         if (error) {
             *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedUnknownChange description:nil];
         }
@@ -364,7 +362,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     
     SPLogWarn(@"Simperium warning: couldn't apply change due to version mismatch (duplicate? start %@, old %@): change %@", startVersion, oldVersion, change);
     if (error) {
-        *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsClientOutOfSync description:nil];
+        *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsClientOutOfSync];
     }
     
     [storage finishSafeSection];
@@ -476,13 +474,17 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
             NSError *error      = nil;
 
             if ([self processRemoteError:change bucket:bucket error:&error]) {
-                errorHandler(key, version, error);
+                if (error) {
+                    errorHandler(key, version, error);
+                }
                 continue;
             }
             
             // Process Changes: this is necessary even if it's an ack, so the ghost data gets set accordingly
             if (![self processRemoteChange:change bucket:bucket error:&error]) {
-                errorHandler(key, version, error);
+                if (error) {
+                    errorHandler(key, version, error);
+                }
                 continue;
             }
 

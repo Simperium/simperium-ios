@@ -319,7 +319,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     
     SPChangeErrorHandlerBlockType errorHandler = ^(NSString *simperiumKey, NSString *version, NSError *error) {
         
-        SPLogError(@"Simperium Received Error [%@] for object with key [%@]", error.localizedDescription, simperiumKey);
+        SPLogError(@"Simperium Error [%@] while processing changes for object [%@][%@]", error.localizedDescription, bucket.name, simperiumKey);
         
         if (error.code == SPProcessorErrorsClientOutOfSync) {
             dispatch_async(dispatch_get_main_queue(), ^{
