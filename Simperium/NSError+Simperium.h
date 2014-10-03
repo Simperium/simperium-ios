@@ -11,6 +11,7 @@
 
 @interface NSError ()
 
-+ (NSError*)sp_errorWithDomain:(NSString*)errorDomain code:(NSInteger)errorCode description:(NSString*)description;
++ (NSError *)sp_errorWithDomain:(NSString*)errorDomain code:(NSInteger)errorCode;
++ (NSError *)sp_errorWithDomain:(NSString*)errorDomain code:(NSInteger)errorCode description:(NSString*)description;
 
 @end
