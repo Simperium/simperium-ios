@@ -180,4 +180,8 @@
     // Override me if needed!
 }
 
+- (NSString *)namespacedSimperiumKey {
+    return [NSString stringWithFormat:@"%@.%@", self.bucket.name, self.simperiumKey];
+}
+
 @end

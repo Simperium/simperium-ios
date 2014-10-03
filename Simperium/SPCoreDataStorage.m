@@ -295,7 +295,7 @@ static NSInteger const SPWorkersDone    = 0;
     // 'mergeChangesFromContextDidSaveNotification' calls 'deleteObject' in the receiver context. As a result,
     // remote deletions will be posted as local deletions. Let's prevent that!
     if (self.sibling) {
-        [self.sibling.remotelyDeletedKeys addObject:managedObject.simperiumKey];
+        [self.sibling.remotelyDeletedKeys addObject:managedObject.namespacedSimperiumKey];
     }
 }
 
@@ -452,12 +452,12 @@ static NSInteger const SPWorkersDone    = 0;
         if ([mainMO isKindOfClass:[SPManagedObject class]] == NO) {
             continue;
         }
-        if ([self.remotelyDeletedKeys containsObject:mainMO.simperiumKey] == NO) {
+        if ([self.remotelyDeletedKeys containsObject:mainMO.namespacedSimperiumKey] == NO) {
             // We'll need to post it
             [locallyDeleted addObject:mainMO];
         } else {
             // Cleanup!
-            [self.remotelyDeletedKeys removeObject:mainMO.simperiumKey];
+            [self.remotelyDeletedKeys removeObject:mainMO.namespacedSimperiumKey];
         }
     }
     
