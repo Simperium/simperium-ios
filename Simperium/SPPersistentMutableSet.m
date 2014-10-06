@@ -88,6 +88,14 @@ static SPLogLevels logLevel = SPLogLevelsError;
     return count;
 }
 
+- (BOOL)containsObject:(id)anObject {
+    __block BOOL exists;
+    dispatch_sync(self.setQueue, ^{
+        exists = [self.contents containsObject:anObject];
+    });
+    return exists;
+}
+
 - (void)addObjectsFromArray:(NSArray *)array {
     dispatch_async(self.setQueue, ^{
         [self.contents addObjectsFromArray:array];

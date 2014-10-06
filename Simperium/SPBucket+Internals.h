@@ -48,6 +48,7 @@ typedef void (^SPBucketForceSyncCompletion)(BOOL signatureUpdated);
 - (void)forceSyncWithCompletion:(SPBucketForceSyncCompletion)completion;
 - (BOOL)isForceSyncPending;
 - (void)signalForceSyncComplete;
+- (BOOL)hasLocalChangesForKey:(NSString *)key;
 - (NSDictionary*)exportStatus;
 
 @end

@@ -28,7 +28,9 @@
 @dynamic ghostData;
 
 - (void)simperiumSetValue:(id)value forKey:(NSString *)key {
+    [self willChangeValueForKey:key];
     [self setValue:value forKey:key];
+    [self didChangeValueForKey:key];
 }
 
 - (id)simperiumValueForKey:(NSString *)key {
@@ -124,8 +126,15 @@
         if (member) {
             id data = [member getValueFromDictionary:memberData key:memberKey object:self];
             
+            // NSManagedObject disables automatic key-value observing (KVO) change notifications for modeled
+            // properties, and the primitive accessor methods do not invoke the access and change
+            // notification methods. For that reason, we need to manually hit willChange/didChange, so we
+            // make sure the fields are marked as updated, internally by CoreData.
+            
             // This sets the actual instance data
-            [self setValue: data forKey: [member keyName]];
+            [self willChangeValueForKey:member.keyName];
+            [self setValue:data forKey:member.keyName];
+            [self didChangeValueForKey:member.keyName];
         }
     }
 }
@@ -169,6 +178,10 @@
 
 - (void)awakeFromRemoteInsert {
     // Override me if needed!
+}
+
+- (NSString *)namespacedSimperiumKey {
+    return [NSString stringWithFormat:@"%@.%@", self.bucket.name, self.simperiumKey];
 }
 
 @end

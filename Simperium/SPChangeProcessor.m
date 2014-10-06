@@ -194,7 +194,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 // TODO:
 //      - Split this method into processRemoteModify and processRemoteInsertion
-//      - This method should receive the coreData context + object, so we prevent double fetching
 //      - Once the above are implemented, move the 'begin/finish'SafeSection calls to the caller, and nuke duplicated code, PLEASE!
 //
 - (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket change:(NSDictionary *)change
@@ -212,9 +211,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         // If the change was sent by this very same client, and the object isn't available, don't add it.
         // It Must have been locally deleted before the confirmation got through!
         if (clientMatches) {
-            if (error) {
-                *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedZombieChange description:nil];
-            }
+            SPLogVerbose(@"Simperium received an acknowledgement for an entity that was already deleted (%@): %@", bucket.name, simperiumKey);
             [storage finishSafeSection];
             return NO;
         }
@@ -254,7 +251,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     
     // It already exists, now MODIFY it
     if (!object.ghost) {
-        SPLogWarn(@"Simperium warning: received change for unknown entity (%@): %@", bucket.name, simperiumKey);
+        SPLogWarn(@"Simperium warning: received change for an entity with no Ghost Reference (%@): %@", bucket.name, simperiumKey);
         if (error) {
             *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedUnknownChange description:nil];
         }
@@ -317,6 +314,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
                 // as another client's change, in other words not properly acknowledged.
                 if (diff.count) {
                     [object loadMemberData:object.ghost.memberData];
+                    [self enqueueObjectForMoreChanges:simperiumKey bucket:bucket];
                 } else {
                     SPLogVerbose(@"Simperium transform resulted in empty diff (invalid ack?)");
                 }
@@ -364,7 +362,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     
     SPLogWarn(@"Simperium warning: couldn't apply change due to version mismatch (duplicate? start %@, old %@): change %@", startVersion, oldVersion, change);
     if (error) {
-        *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsClientOutOfSync description:nil];
+        *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsClientOutOfSync];
     }
     
     [storage finishSafeSection];
@@ -378,27 +376,26 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     NSAssert(self.clientID,                 @"Missing clientID");
     NSAssert(change[CH_ERROR] == nil,       @"This should not be called if the change has an error");
     
-    // Create a new context (to be thread-safe) and fetch the entity from it
+    // Unwrap the change's properties
     NSString *key                   = [self keyWithoutNamespaces:change bucket:bucket];
+    NSString *operation             = change[CH_OPERATION];
+    NSString *changeVersion         = change[CH_CHANGE_VERSION];
+    NSString *changeClientID        = change[CH_CLIENT_ID];
+    
+    // Analyze the change's flags
     id<SPStorageProvider>storage    = [bucket.storage threadSafeStorage];
+
+    BOOL objectWasFound             = ([storage objectForKey:key bucketName:bucket.name] != nil);
+    BOOL clientMatches              = ([changeClientID compare:self.clientID] == NSOrderedSame);
+    BOOL remove                     = (operation && [operation compare:CH_REMOVE] == NSOrderedSame);
+    BOOL modify                     = (operation && [operation compare:CH_MODIFY] == NSOrderedSame);
+    BOOL awaitingAck                = [self awaitingAcknowledgementForKey:key];
+    BOOL acknowledged               = (awaitingAck && clientMatches);
     
-    [storage beginSafeSection];
-    
-    NSString *operation         = change[CH_OPERATION];
-    NSString *changeVersion     = change[CH_CHANGE_VERSION];
-    NSString *changeClientID    = change[CH_CLIENT_ID];
-    id<SPDiffable> object       = [storage objectForKey:key bucketName:bucket.name];
-    
-    SPLogVerbose(@"Simperium client %@ received change (%@) %@: %@", self.clientID, bucket.name, changeClientID, change);
-    
-    // Process
-    BOOL objectWasFound         = (object != nil);
-    BOOL clientMatches          = ([changeClientID compare:self.clientID] == NSOrderedSame);
-    BOOL remove                 = (operation && [operation compare:CH_REMOVE] == NSOrderedSame);
-    BOOL acknowledged           = ([self awaitingAcknowledgementForKey:key] && clientMatches);
+    SPLogVerbose(@"Simperium client %@ received change (%@) %@ [%@] : %@", self.clientID, bucket.name, changeClientID, operation, change);
     
     // If the entity already exists locally, or it's being removed, then check for an ack
-    if (remove || (object && acknowledged && clientMatches)) {
+    if (remove || (objectWasFound && acknowledged && clientMatches)) {
         // TODO: If this isn't a deletion change, but there's a deletion change pending, then ignore this change
         // Change was awaiting acknowledgement; safe now to remove from changesPending
         if (acknowledged) {
@@ -406,19 +403,28 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         }
         [self.changesPending removeObjectForKey:key];
     }
-
-    SPLogVerbose(@"Simperium performing change operation: %@", operation);
-    [storage finishSafeSection];
+    
+    // Process!
+    BOOL success = false;
     
     if (remove && (objectWasFound || acknowledged)) {
-        return [self processRemoteDeleteWithKey:key bucket:bucket objectWasFound:objectWasFound error:error];
-    } else if (operation && [operation compare: CH_MODIFY] == NSOrderedSame) {
-        return [self processRemoteModifyWithKey:key bucket:bucket change:change acknowledged:acknowledged clientMatches:clientMatches error:error];
+        success = [self processRemoteDeleteWithKey:key
+                                            bucket:bucket
+                                    objectWasFound:objectWasFound
+                                             error:error];
+        
+    } else if (modify) {
+        success = [self processRemoteModifyWithKey:key
+                                            bucket:bucket
+                                            change:change
+                                      acknowledged:acknowledged
+                                     clientMatches:clientMatches
+                                             error:error];
+    } else {
+        SPLogError(@"Simperium error (%@), received an invalid change for (%@): %@", bucket.name, key, change);
     }
     
-    // Invalid
-    SPLogError(@"Simperium error (%@), received an invalid change for (%@): %@", bucket.name, key, change);
-    return NO;
+    return success;
 }
 
 
@@ -468,13 +474,17 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
             NSError *error      = nil;
 
             if ([self processRemoteError:change bucket:bucket error:&error]) {
-                errorHandler(key, version, error);
+                if (error) {
+                    errorHandler(key, version, error);
+                }
                 continue;
             }
             
             // Process Changes: this is necessary even if it's an ack, so the ghost data gets set accordingly
             if (![self processRemoteChange:change bucket:bucket error:&error]) {
-                errorHandler(key, version, error);
+                if (error) {
+                    errorHandler(key, version, error);
+                }
                 continue;
             }
 
@@ -779,8 +789,15 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 
 #pragma mark ====================================================================================
-#pragma mark Remote Logging
+#pragma mark Helpers
 #pragma mark ====================================================================================
+
+- (BOOL)hasLocalChangesForKey:(NSString *)key {
+    
+    return  [self.changesPending                containsObjectForKey:key] ||
+            [self.keysForObjectsToDelete        containsObject:key]       ||
+            [self.keysForObjectsWithMoreChanges containsObject:key];
+}
 
 - (NSArray*)exportPendingChanges {
     
@@ -870,7 +887,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     
     // Every change must be marked with a unique ID
     NSString *uuid = [NSString sp_makeUUID];
-    [change setObject:uuid forKey: CH_LOCAL_ID];
+    [change setObject:uuid forKey:CH_LOCAL_ID];
     
     // Set the change's operation
     [change setObject:operation forKey:CH_OPERATION];
@@ -896,7 +913,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 // This method will migrate any pending changes, from UserDefaults over to SPDictionaryStorage
 //
 - (void)migratePendingChangesIfNeeded {
-    NSString *pendingKey = [NSString stringWithFormat:@"changesPending-%@", self.label];
+    NSString *pendingKey  = [NSString stringWithFormat:@"changesPending-%@", self.label];
     NSString *pendingJSON = [[NSUserDefaults standardUserDefaults] objectForKey:pendingKey];
     
     // No need to go further

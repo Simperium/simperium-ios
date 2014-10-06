@@ -10,7 +10,6 @@
 
 
 @interface SPManagedObject (Internals)
-
+@property (nonatomic, copy, readonly) NSString *namespacedSimperiumKey;
 - (void)configureBucket;
-
 @end
