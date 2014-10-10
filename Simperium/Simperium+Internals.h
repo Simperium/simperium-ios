@@ -45,6 +45,7 @@
 @property (nonatomic, assign) BOOL                      dynamicSchemaEnabled;
 @property (nonatomic, assign) BOOL                      shouldSignIn;
 @property (nonatomic, assign) BOOL                      authenticationEnabled;
+@property (nonatomic, assign) BOOL                      logoutInProgress;
 
 #if TARGET_OS_IPHONE
 @property (nonatomic, strong) SPAuthenticationViewController *authenticationViewController;
