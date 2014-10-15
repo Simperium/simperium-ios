@@ -129,6 +129,10 @@ typedef void (^SimperiumBackgroundFetchCompletion)(UIBackgroundFetchResult resul
 typedef void (^SimperiumSignoutCompletion)(void);
 - (void)signOutAndRemoveLocalData:(BOOL)remove completion:(SimperiumSignoutCompletion)completion;
 
+// Removes all of the sync'ing metadata. This helper method may be used after a faulty core data migration, to ensure
+// sync'ing consistency: next time Simperium is authenticated, it will resync the entire database again.
+- (void)resetMetadata;
+
 // Shares an object with a particular user's email address (forthcoming).
 //- (void)shareObject:(SPManagedObject *)object withEmail:(NSString *)email;
 
