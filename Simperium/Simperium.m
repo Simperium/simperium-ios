@@ -204,6 +204,12 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
     
     SPLogInfo(@"Simperium starting network managers...");
+    
+    // If this gets executed before a logout is complete, make sure this gets logged
+    if (self.logoutInProgress) {
+        SPLogError(@"Simperium Error: there is a pending logout operation that hasn't been fulfilled");
+    }
+    
     // Finally, start the network managers to start syncing data
     for (SPBucket *bucket in [self.buckets allValues]) {
         [bucket.network start:bucket];
@@ -541,7 +547,16 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     // Reset Simperium: Don't start network managers again; expect app to handle that
     [self stopNetworkManagers];
     
+    // Clear the token and user
+    [self.authenticator reset];
+    self.user = nil;
+    
+    // We just logged out. Let's display SignIn fields next time!
+    self.shouldSignIn = YES;
+    
     // Reset the network manager and processors; any enqueued tasks will get skipped
+    self.logoutInProgress = YES;
+    
     dispatch_group_t group = dispatch_group_create();
     
     for (SPBucket *bucket in self.buckets.allValues) {
@@ -564,22 +579,32 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
             self.skipContextProcessing = NO;
         }
 
-        // Clear the token and user
-        [self.authenticator reset];
-        self.user = nil;
-
-        // We just logged out. Let's display SignIn fields next time!
-        self.shouldSignIn = YES;
-
         // Hit the delegate + callback
         if ([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
             [self.delegate simperiumDidLogout:self];
         }
         
+        self.logoutInProgress = NO;
+        
         if (completion) {
             completion();
         }
     });
+}
+
+- (void)resetMetadata {
+    // If the user is already logged, you should use signOut instead
+    if (self.user.authenticated) {
+        SPLogError(@"Simperium error: cannot reset metadata with the user already logged in.");
+        return;
+    }
+    
+    SPLogInfo(@"Simperium nuking Sync'ing Metadata...");
+    
+    for (SPBucket *bucket in self.buckets.allValues) {
+        [bucket unloadAllObjects];
+        [bucket.network reset:bucket completion:nil];
+    }
 }
 
 
