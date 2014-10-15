@@ -592,6 +592,21 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     });
 }
 
+- (void)resetMetadata {
+    // If the user is already logged, you should use signOut instead
+    if (self.user.authenticated) {
+        SPLogError(@"Simperium error: cannot reset metadata with the user already logged in.");
+        return;
+    }
+    
+    SPLogInfo(@"Simperium nuking Sync'ing Metadata...");
+    
+    for (SPBucket *bucket in self.buckets.allValues) {
+        [bucket unloadAllObjects];
+        [bucket.network reset:bucket completion:nil];
+    }
+}
+
 
 #pragma mark ====================================================================================
 #pragma mark Properties
