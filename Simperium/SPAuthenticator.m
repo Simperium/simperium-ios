@@ -12,7 +12,7 @@
 #import "SPUser.h"
 #import "SPAuthenticator.h"
 #import "JSONKit+Simperium.h"
-#import "STKeychain.h"
+#import "SSKeychain.h"
 #import "SPReachability.h"
 #import "SPHttpRequest.h"
 #import "SPHttpRequestQueue.h"
@@ -65,6 +65,8 @@ static NSString * SPUsername    = @"SPUsername";
         self.delegate   = authDelegate;
         self.simperium  = s;
         
+        [SSKeychain setAccessibilityType:kSecAttrAccessibleAlways];
+        
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kSPReachabilityChangedNotification object:nil];
         self.reachability = [SPReachability reachabilityForInternetConnection];
         self.connected = self.reachability.currentReachabilityStatus != NotReachable;
@@ -82,7 +84,7 @@ static NSString * SPUsername    = @"SPUsername";
     NSString *token     = nil;
     
     if (username) {
-        token = [STKeychain getPasswordForUsername:username andServiceName:self.simperium.appID error:nil];
+        token = [SSKeychain passwordForService:self.simperium.appID account:username error:nil];
     }
     
     return (username.length == 0 || token.length == 0);
@@ -101,7 +103,7 @@ static NSString * SPUsername    = @"SPUsername";
     
     if (username) {
         NSError *error = nil;
-        token = [STKeychain getPasswordForUsername:username andServiceName:self.simperium.appID error:&error];
+        token = [SSKeychain passwordForService:self.simperium.appID account:username error:nil];
         
         if (error) {
             SPLogError(@"Simperium couldn't retrieve token from keychain. Error: %@", error);
@@ -196,7 +198,7 @@ static NSString * SPUsername    = @"SPUsername";
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     NSError *error = nil;
-    BOOL success = [STKeychain storeUsername:username andPassword:token forServiceName:self.simperium.appID updateExisting:YES error:&error];
+    BOOL success = [SSKeychain setPassword:token forService:self.simperium.appID account:username error:&error];
     
     if (success == NO) {
         SPLogError(@"Simperium couldn't store token in the keychain. Error: %@", error);
@@ -276,7 +278,7 @@ static NSString * SPUsername    = @"SPUsername";
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     if (username && username.length > 0) {
-        [STKeychain deleteItemForUsername:username andServiceName:self.simperium.appID error:nil];
+        [SSKeychain deletePasswordForService:self.simperium.appID account:username error:nil];
     }
 }
 
