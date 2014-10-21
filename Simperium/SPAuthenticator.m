@@ -103,7 +103,7 @@ static NSString * SPUsername    = @"SPUsername";
     
     if (username) {
         NSError *error = nil;
-        token = [SSKeychain passwordForService:self.simperium.appID account:username error:nil];
+        token = [SSKeychain passwordForService:self.simperium.appID account:username error:&error];
         
         if (error) {
             SPLogError(@"Simperium couldn't retrieve token from keychain. Error: %@", error);
