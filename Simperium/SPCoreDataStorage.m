@@ -115,9 +115,9 @@ static NSInteger const SPWorkersDone    = 0;
 }
 
 - (void)setBucketList:(NSDictionary *)dict {
-    // Associate the bucketList with the writerMOC, so that every NSManagedObject instance can retrieve
-    // the appropiate SPBucket pointer
-    objc_setAssociatedObject(self.writerManagedObjectContext, SPCoreDataBucketListKey, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    // Associate the bucketList with the persistentStoreCoordinator:
+    // Every NSManagedObject instance will be able to retrieve the appropiate SPBucket pointer
+    objc_setAssociatedObject(self.persistentStoreCoordinator, SPCoreDataBucketListKey, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (NSArray *)exportSchemas {
