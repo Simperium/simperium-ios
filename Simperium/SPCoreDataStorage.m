@@ -280,10 +280,6 @@ static NSInteger const SPWorkersDone    = 0;
     
     object.simperiumKey = key ? key : [NSString sp_makeUUID];
     
-    // Populate with member data if applicable
-//  if (memberData)
-//      [entity loadMemberData: memberData manager: self];
-    
     return object;
 }
 
