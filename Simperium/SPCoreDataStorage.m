@@ -88,17 +88,16 @@ static NSInteger const SPWorkersDone    = 0;
         // and will also post the changes to the MainQueue
         self.mainManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
         self.mainManagedObjectContext.userInfo[SPCoreDataWorkerContext] = @(true);
-        
-        self.writerManagedObjectContext = aSibling.writerManagedObjectContext;
-        
-        // Wire the Thread Confined Context, directly to the writer MOC
-        self.mainManagedObjectContext.parentContext = self.writerManagedObjectContext;
+        self.mainManagedObjectContext.persistentStoreCoordinator = aSibling.persistentStoreCoordinator;
         
         // Simperium's context always trumps the app's local context (potentially stomping in-memory changes)
         [self.mainManagedObjectContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
         
         // For efficiency
         [self.mainManagedObjectContext setUndoManager:nil];
+        
+        // Keep a reference to the writerContext
+        self.writerManagedObjectContext = aSibling.writerManagedObjectContext;
         
         // Shared mutex
         self.mutex = aSibling.mutex;
@@ -504,9 +503,6 @@ static NSInteger const SPWorkersDone    = 0;
         
         // Proceed with the regular merge. This should trigger a contextDidChange note
         [mainMOC mergeChangesFromContextDidSaveNotification:notification];
-        
-        // Note: Once the changes have been merged to the mainMOC, let's persist to "disk"!
-        [self saveWriterContext];
     }];
 }
 
