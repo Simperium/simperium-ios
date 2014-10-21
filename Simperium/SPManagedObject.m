@@ -40,15 +40,9 @@
 
 - (void)configureBucket {
     
-    // Get the MOC's Grandpa (writerContext)
-    NSManagedObjectContext *writerManagedObjectContext = self.managedObjectContext;
-    
-    while (writerManagedObjectContext.parentContext) {
-        writerManagedObjectContext = writerManagedObjectContext.parentContext;
-    }
-
-    // Check
-    NSDictionary *bucketList = objc_getAssociatedObject(writerManagedObjectContext, SPCoreDataBucketListKey);
+    // Load the Bucket List
+    NSPersistentStoreCoordinator *persistentStoreCoordinator = self.managedObjectContext.persistentStoreCoordinator;
+    NSDictionary *bucketList = objc_getAssociatedObject(persistentStoreCoordinator, SPCoreDataBucketListKey);
     
     if (!bucketList) {
         NSLog(@"Simperium error: bucket list not loaded. Ensure Simperium is started before any objects are fetched.");
@@ -61,7 +55,6 @@
     [super awakeFromFetch];
     SPGhost *newGhost = [[SPGhost alloc] initFromDictionary: [self.ghostData sp_objectFromJSONString]];
     self.ghost = newGhost;
-    [self.managedObjectContext userInfo];
     [self configureBucket];
 }
 

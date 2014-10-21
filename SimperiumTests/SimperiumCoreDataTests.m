@@ -28,6 +28,7 @@ static NSTimeInterval const kRemoteTestTimeout = 10;
 
 static NSString* const kInsertedKey	= @"inserted";
 static NSString* const kUpdatedKey = @"updated";
+static NSString* const kRefreshedKey = @"refreshed";
 static NSString* const kDeletedKey = @"deleted";
 
 
@@ -203,12 +204,10 @@ static NSString* const kDeletedKey = @"deleted";
 
 	// Prepare everything we need
 	NSManagedObjectContext *followerMainMOC	= follower.simperium.managedObjectContext;
-	NSManagedObjectContext *followerWriterMOC = follower.simperium.writerManagedObjectContext;
 		
 	// Listen to the follower MainMOC changes & WriterMOC save notifications
 	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
 	[nc addObserver:self selector:@selector(handleContextNote:) name:NSManagedObjectContextObjectsDidChangeNotification object:followerMainMOC];
-	[nc addObserver:self selector:@selector(handleContextNote:) name:NSManagedObjectContextDidSaveNotification object:followerWriterMOC];
 	
 	
 	// ====================================================================================
@@ -232,10 +231,7 @@ static NSString* const kDeletedKey = @"deleted";
 	[self waitFor:kRemoteTestTimeout];
 
 	NSArray *mainInserted = [[self changesForContext:followerMainMOC] objectForKey:kInsertedKey];
-	NSArray *writerInserted = [[self changesForContext:followerWriterMOC] objectForKey:kInsertedKey];
-	
 	XCTAssertTrue( (mainInserted.count == kObjectsCount), @"The follower's mainMOC didn't get the new objects");
-	XCTAssertTrue( (writerInserted.count == kObjectsCount), @"The follower's writerMOC didn't persist the new objects");
 	
 	
 	// ====================================================================================
@@ -258,10 +254,10 @@ static NSString* const kDeletedKey = @"deleted";
 	
 	[self waitFor:kRemoteTestTimeout];
 	
-	NSArray *mainUpdated = [self changesForContext:followerWriterMOC][kUpdatedKey];
-	XCTAssertTrue( (mainUpdated.count == objects.count), @"Error Updating Objects" );
+	NSArray *mainRefreshed = [self changesForContext:followerMainMOC][kRefreshedKey];
+	XCTAssertTrue( (mainRefreshed.count == objects.count), @"Error Updating Objects" );
 	
-	for (Config* config in mainUpdated) {
+	for (Config* config in mainRefreshed) {
 		XCTAssertTrue([config.warpSpeed isEqual:@(31337)], @"Update Test Failed");
 		XCTAssertTrue([config.shieldsUp isEqual:@(YES)],	@"Update Test Failed");
 		XCTAssertTrue([config.shieldPercent isEqual:@(100)],	@"Update Test Failed");
@@ -287,10 +283,7 @@ static NSString* const kDeletedKey = @"deleted";
 	[self waitFor:kRemoteTestTimeout];
 	
 	NSArray *mainDeleted = [[self changesForContext:followerMainMOC] objectForKey:kDeletedKey];
-	NSArray *writerDeleted = [[self changesForContext:followerWriterMOC] objectForKey:kDeletedKey];
-	
 	XCTAssertTrue( (mainDeleted.count == kObjectsCount), @"The follower's mainMOC failed to delete objects");
-	XCTAssertTrue( (writerDeleted.count == kObjectsCount), @"The follower's writerMOC failed to delete objects");
 		
     NSLog(@"%@ end", self.name);
 }
@@ -310,6 +303,7 @@ static NSString* const kDeletedKey = @"deleted";
 		changes[kInsertedKey] = [NSMutableArray array];
 		changes[kUpdatedKey] = [NSMutableArray array];
 		changes[kDeletedKey] = [NSMutableArray array];
+		changes[kRefreshedKey] = [NSMutableArray array];
 		self.changesByContext[wrappedSender] = changes;
 	}
 	
@@ -318,7 +312,8 @@ static NSString* const kDeletedKey = @"deleted";
 	NSSet* receivedInserts = userInfo[kInsertedKey];
 	NSSet* receivedUpdates = userInfo[kUpdatedKey];
 	NSSet* receivedDeletions = userInfo[kDeletedKey];
-	
+	NSSet* receivedRefreshed = userInfo[kRefreshedKey];
+    
 	if (receivedInserts) {
 		NSMutableArray* inserted = changes[kInsertedKey];
 		[inserted addObjectsFromArray:[receivedInserts allObjects]];
@@ -333,6 +328,11 @@ static NSString* const kDeletedKey = @"deleted";
 		NSMutableArray* deleted = changes[kDeletedKey];
 		[deleted addObjectsFromArray:[receivedDeletions allObjects]];
 	}
+
+    if (receivedRefreshed) {
+        NSMutableArray* refreshed = changes[kRefreshedKey];
+        [refreshed addObjectsFromArray:[receivedRefreshed allObjects]];
+    }
 }
 
 - (NSDictionary*)changesForContext:(NSManagedObjectContext*)context {

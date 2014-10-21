@@ -88,17 +88,16 @@ static NSInteger const SPWorkersDone    = 0;
         // and will also post the changes to the MainQueue
         self.mainManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
         self.mainManagedObjectContext.userInfo[SPCoreDataWorkerContext] = @(true);
-        
-        self.writerManagedObjectContext = aSibling.writerManagedObjectContext;
-        
-        // Wire the Thread Confined Context, directly to the writer MOC
-        self.mainManagedObjectContext.parentContext = self.writerManagedObjectContext;
+        self.mainManagedObjectContext.persistentStoreCoordinator = aSibling.persistentStoreCoordinator;
         
         // Simperium's context always trumps the app's local context (potentially stomping in-memory changes)
         [self.mainManagedObjectContext setMergePolicy:NSMergeByPropertyObjectTrumpMergePolicy];
         
         // For efficiency
         [self.mainManagedObjectContext setUndoManager:nil];
+        
+        // Keep a reference to the writerContext
+        self.writerManagedObjectContext = aSibling.writerManagedObjectContext;
         
         // Shared mutex
         self.mutex = aSibling.mutex;
@@ -115,9 +114,9 @@ static NSInteger const SPWorkersDone    = 0;
 }
 
 - (void)setBucketList:(NSDictionary *)dict {
-    // Associate the bucketList with the writerMOC, so that every NSManagedObject instance can retrieve
-    // the appropiate SPBucket pointer
-    objc_setAssociatedObject(self.writerManagedObjectContext, SPCoreDataBucketListKey, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    // Associate the bucketList with the persistentStoreCoordinator:
+    // Every NSManagedObject instance will be able to retrieve the appropiate SPBucket pointer
+    objc_setAssociatedObject(self.persistentStoreCoordinator, SPCoreDataBucketListKey, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (NSArray *)exportSchemas {
@@ -279,10 +278,6 @@ static NSInteger const SPWorkersDone    = 0;
                                                             inManagedObjectContext:self.mainManagedObjectContext];
     
     object.simperiumKey = key ? key : [NSString sp_makeUUID];
-    
-    // Populate with member data if applicable
-//  if (memberData)
-//      [entity loadMemberData: memberData manager: self];
     
     return object;
 }
@@ -508,9 +503,6 @@ static NSInteger const SPWorkersDone    = 0;
         
         // Proceed with the regular merge. This should trigger a contextDidChange note
         [mainMOC mergeChangesFromContextDidSaveNotification:notification];
-        
-        // Note: Once the changes have been merged to the mainMOC, let's persist to "disk"!
-        [self saveWriterContext];
     }];
 }
 
@@ -663,65 +655,3 @@ static NSInteger const SPWorkersDone    = 0;
 }
 
 @end
-
-
-// Unused code for dividing up changes per bucket (ugly)
-//    // Divvy up according to buckets; this is necessary to avoid each object maintaining a reference back to its bucket, which doesn't
-//    // work well with multiple Simperium instances
-//    // On iOS5, bucket references on objects could work via userInfo on NSManagedObjectContext instead
-//    NSMutableDictionary *bucketLists = [NSMutableDictionary dictionaryWithCapacity:5];
-//
-//    // This code is awful
-//    for (id<SPDiffable>object in insertedObjects) {
-//        NSString *bucketName = [self nameForEntityClass:[object class]];
-//        NSMutableDictionary *objectLists = [bucketLists objectForKey:bucketName];
-//        if (!objectLists) {
-//            // Create a dict to hold all inserted, updated and deleted objects for that bucket
-//            objectLists = [NSMutableDictionary dictionaryWithCapacity:3];
-//            [bucketLists setObject:objectLists forKey:bucketName];
-//        }
-//        
-//        NSMutableArray *bucketObjects = [objectLists objectForKey:@"insertedObjects"];
-//        if (!bucketObjects) {
-//            // Create an array in the dict
-//            bucketObjects = [NSMutableArray arrayWithCapacity:3];
-//            [objectLists setObject:bucketObjects forKey:@"insertedObjects"];
-//        }
-//        [bucketObjects addObject:object];
-//    }
-//
-//    for (id<SPDiffable>object in updatedObjects) {
-//        NSString *bucketName = [self nameForEntityClass:[object class]];
-//        NSMutableDictionary *objectLists = [bucketLists objectForKey:bucketName];
-//        if (!objectLists) {
-//            // Create a dict to hold all inserted, updated and deleted objects for that bucket
-//            objectLists = [NSMutableDictionary dictionaryWithCapacity:3];
-//            [bucketLists setObject:objectLists forKey:bucketName];
-//        }
-//        
-//        NSMutableArray *bucketObjects = [objectLists objectForKey:@"updatedObjects"];
-//        if (!bucketObjects) {
-//            // Create an array in the dict
-//            bucketObjects = [NSMutableArray arrayWithCapacity:3];
-//            [objectLists setObject:bucketObjects forKey:@"updatedObjects"];
-//        }
-//        [bucketObjects addObject:object];
-//    }
-//    
-//    for (id<SPDiffable>object in deletedObjects) {
-//        NSString *bucketName = [self nameForEntityClass:[object class]];
-//        NSMutableDictionary *objectLists = [bucketLists objectForKey:bucketName];
-//        if (!objectLists) {
-//            // Create a dict to hold all inserted, updated and deleted objects for that bucket
-//            objectLists = [NSMutableDictionary dictionaryWithCapacity:3];
-//            [bucketLists setObject:objectLists forKey:bucketName];
-//        }
-//        
-//        NSMutableArray *bucketObjects = [objectLists objectForKey:@"deletedObjects"];
-//        if (!bucketObjects) {
-//            // Create an array in the dict
-//            bucketObjects = [NSMutableArray arrayWithCapacity:3];
-//            [objectLists setObject:bucketObjects forKey:@"deletedObjects"];
-//        }
-//        [bucketObjects addObject:object];
-//    }

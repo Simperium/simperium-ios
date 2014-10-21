@@ -25,6 +25,21 @@ static NSInteger const kStressIterations	= 100;
 
 @implementation SPCoreDataStorageTests
 
+- (void)testBucketListMechanism {
+    MockSimperium* s                        = [MockSimperium mockSimperium];
+
+    NSManagedObjectContext *mainContext     = s.managedObjectContext;
+    NSManagedObjectContext *derivedContext  = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    derivedContext.parentContext            = mainContext;
+    
+    NSString *entityName                    = NSStringFromClass([Post class]);
+    Post *mainPost                          = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:mainContext];
+    Post *nestedPost                        = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:derivedContext];
+
+    XCTAssertNotNil(mainPost.bucket,    @"Missing bucket in main context");
+    XCTAssertNotNil(nestedPost.bucket,  @"Missing bucket in nested context");
+}
+
 - (void)testStress {
 	for (NSInteger i = 0; ++i <= kStressIterations; ) {
 		NSLog(@"<> Stress Iteration %ld", (long)i);
