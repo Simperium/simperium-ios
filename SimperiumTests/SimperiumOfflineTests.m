@@ -273,8 +273,7 @@
     [followerBucket deleteObject:followerConfig];
     [follower.simperium save];
     
-    follower.expectedAdditions  = 1;
-    follower.expectedDeletions  = 1;
+    follower.expectedAcknowledgments = 1;
     [follower connect];
     XCTAssertTrue([self waitForCompletion:4.0 farmArray:@[ follower ]], @"timed out (adding)");
     
