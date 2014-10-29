@@ -186,7 +186,7 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // Returns the current SPAuthenticator instance
 @property (nonatomic, readwrite, strong) SPAuthenticator *authenticator;
 
-// Returns a flag indicating if there is network access
+// Returns a flag indicating if the network is not accessible
 @property (nonatomic, readonly, assign) BOOL requiresConnection;
 
 // Returns a string describing the network status
