@@ -483,9 +483,21 @@ static NSInteger const SPWorkersDone    = 0;
 # pragma mark Children MOC Notification Handlers
 
 - (void)childrenContextDidSave:(NSNotification*)notification {
-    // Move the changes to the main MOC. This will NOT trigger main MOC's hasChanges flag.
-    // NOTE: setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
-    // Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
+    //  NOTE:
+    //  On OSX Yosemite we're observing scenarios in which a NSManagedObject instance is updated in a worker MOC,
+    //  and yet, it doesn't get refreshed on the mainMOC, even after merging the changes.
+    //  This doesn't happen in iOS, but as a safety measure, let's run this snippet anyways.
+
+    NSManagedObjectContext *writerMOC = self.writerManagedObjectContext;
+    [writerMOC performBlockAndWait:^{
+        [writerMOC mergeChangesFromContextDidSaveNotification:notification];
+    }];
+    
+    //  NOTE II:
+    //  Setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
+    //  Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
+    //  Let's, instead, merge the changes into the mainMOC. This will NOT trigger main MOC's hasChanges flag.
+    
     NSManagedObjectContext* mainMOC = self.sibling.mainManagedObjectContext;
     [mainMOC performBlockAndWait:^{
         

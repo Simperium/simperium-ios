@@ -666,7 +666,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 }
 
 - (BOOL)requiresConnection {
-    return (self.reachability.currentReachabilityStatus != NotReachable);
+    return (self.reachability.currentReachabilityStatus == NotReachable);
 }
 - (NSString *)networkStatus {
     return self.network.status;

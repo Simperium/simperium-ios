@@ -1,0 +1,12 @@
+﻿/* SSKeychainQuery */
+"SSKeychainErrorBadArguments" = "Some of the arguments were invalid";
+"errSecUnimplemented" = "Function or operation not implemented";
+"errSecParam" = "One or more parameters passed to a function were not valid";
+"errSecAllocate" = "Failed to allocate memory";
+"errSecNotAvailable" = "No keychain is available. You may need to restart your computer";
+"errSecDuplicateItem" = "The specified item already exists in the keychain";
+"errSecItemNotFound" = "The specified item could not be found in the keychain";
+"errSecInteractionNotAllowed" = "User interaction is not allowed";
+"errSecDecode" = "Unable to decode the provided data";
+"errSecAuthFailed" = "The user name or passphrase you entered is not correct";
+"errSecDefault" = "Refer to SecBase.h for description";

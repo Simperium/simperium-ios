@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Simperium"
-  s.version      = "0.7.2"
+  s.version      = "0.7.3"
   s.summary      = "Simperium libraries."
   s.description  = "Simperium is a simple way for developers to move data as it changes, instantly and automatically."
   s.homepage     = "https://github.com/Simperium/simperium-ios"
@@ -16,15 +16,7 @@ Pod::Spec.new do |s|
   s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*'
   s.osx.source_files = 'Simperium-OSX/**/*.{h,m}'
 
-  s.exclude_files = 'External/STKeychain/*'
   s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}', 'Simperium/SPTOSViewController.{h,m}', 'Simperium/SPAuthenticationButton.{h,m}'
-  
-  # Importing non-arc files
-
-  s.subspec 'STKeychain' do |keychain|
-    keychain.source_files = 'External/STKeychain/*'
-    keychain.requires_arc = false
-  end
 
   # If you do not explicitly set the list of public header files,
   # all headers of source_files will be made public.
