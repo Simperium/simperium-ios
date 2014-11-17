@@ -65,7 +65,9 @@ static NSString * SPUsername    = @"SPUsername";
         self.delegate   = authDelegate;
         self.simperium  = s;
         
+#if TARGET_OS_IPHONE
         [SSKeychain setAccessibilityType:kSecAttrAccessibleAlways];
+#endif
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kSPReachabilityChangedNotification object:nil];
         self.reachability = [SPReachability reachabilityForInternetConnection];
