@@ -159,9 +159,14 @@
 		B58EC3251885B74100ED37E5 /* SPThreadsafeMutableSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B58EC3221885B74100ED37E5 /* SPThreadsafeMutableSetTests.m */; };
 		B59AAC95185B90F000B557D3 /* SPThreadsafeMutableSet.h in Headers */ = {isa = PBXBuildFile; fileRef = B59AAC93185B90F000B557D3 /* SPThreadsafeMutableSet.h */; };
 		B59AAC96185B90F000B557D3 /* SPThreadsafeMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = B59AAC94185B90F000B557D3 /* SPThreadsafeMutableSet.m */; };
-		B59C751F186DAB0E003A1C8D /* DeletionCascadeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B59C751E186DAB0E003A1C8D /* DeletionCascadeTest.m */; };
 		B59C7523186DAB42003A1C8D /* DiffMatchPatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B59C7522186DAB42003A1C8D /* DiffMatchPatchTest.m */; };
 		B59C7525186DAB70003A1C8D /* SPBucket+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B59C7524186DAB70003A1C8D /* SPBucket+Internals.h */; };
+		B59D9F131A1A49BB00941154 /* SPIndexProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B59D9F121A1A49BB00941154 /* SPIndexProcessorTests.m */; };
+		B59D9F151A1A49DD00941154 /* SPWebSocketInterfaceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B59D9F141A1A49DD00941154 /* SPWebSocketInterfaceTests.m */; };
+		B59D9F171A1A49E800941154 /* SPCoreDataStorageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B59D9F161A1A49E800941154 /* SPCoreDataStorageTests.m */; };
+		B59D9F191A1A49F800941154 /* SPMemberJSONTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B59D9F181A1A49F800941154 /* SPMemberJSONTests.m */; };
+		B59D9F1B1A1A4A0900941154 /* NSStringSimperiumTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B59D9F1A1A1A4A0900941154 /* NSStringSimperiumTest.m */; };
+		B59D9F1D1A1A4A1A00941154 /* SPRelationshipResolverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B59D9F1C1A1A4A1A00941154 /* SPRelationshipResolverTests.m */; };
 		B5C18F6A18FD7BC500D51D1F /* NSError+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5C18F6818FD7BC500D51D1F /* NSError+Simperium.h */; };
 		B5C18F6B18FD7BC500D51D1F /* NSError+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C18F6918FD7BC500D51D1F /* NSError+Simperium.m */; };
 		B5D581BF183565A700B08996 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5D581BE183565A700B08996 /* XCTest.framework */; };
@@ -171,7 +176,6 @@
 		B5D581D9183565E300B08996 /* MockWebSocketChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581D5183565E300B08996 /* MockWebSocketChannel.m */; };
 		B5D581DA183565E300B08996 /* MockWebSocketInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581D7183565E300B08996 /* MockWebSocketInterface.m */; };
 		B5D581DF183565FB00B08996 /* DiffMatchPatchArrayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581DC183565FB00B08996 /* DiffMatchPatchArrayTests.m */; };
-		B5D581E0183565FB00B08996 /* RemoteDebugTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D581DD183565FB00B08996 /* RemoteDebugTests.m */; };
 		B5D581E31835661800B08996 /* Simperium-OSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 268EDEC9155F06D5006B566F /* Simperium-OSX.framework */; };
 		B5E03DA5182C236200412572 /* JSONKit+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5E03DA3182C236200412572 /* JSONKit+Simperium.h */; };
 		B5E03DA6182C236200412572 /* JSONKit+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5E03DA4182C236200412572 /* JSONKit+Simperium.m */; };
@@ -353,9 +357,14 @@
 		B58EC3221885B74100ED37E5 /* SPThreadsafeMutableSetTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPThreadsafeMutableSetTests.m; path = ../../SimperiumTests/SPThreadsafeMutableSetTests.m; sourceTree = "<group>"; };
 		B59AAC93185B90F000B557D3 /* SPThreadsafeMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPThreadsafeMutableSet.h; path = ../../Simperium/SPThreadsafeMutableSet.h; sourceTree = "<group>"; };
 		B59AAC94185B90F000B557D3 /* SPThreadsafeMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPThreadsafeMutableSet.m; path = ../../Simperium/SPThreadsafeMutableSet.m; sourceTree = "<group>"; };
-		B59C751E186DAB0E003A1C8D /* DeletionCascadeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DeletionCascadeTest.m; path = ../../SimperiumTests/DeletionCascadeTest.m; sourceTree = "<group>"; };
 		B59C7522186DAB42003A1C8D /* DiffMatchPatchTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DiffMatchPatchTest.m; path = ../../SimperiumTests/DiffMatchPatchTest.m; sourceTree = "<group>"; };
 		B59C7524186DAB70003A1C8D /* SPBucket+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SPBucket+Internals.h"; path = "../../Simperium/SPBucket+Internals.h"; sourceTree = "<group>"; };
+		B59D9F121A1A49BB00941154 /* SPIndexProcessorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPIndexProcessorTests.m; path = ../../SimperiumTests/SPIndexProcessorTests.m; sourceTree = "<group>"; };
+		B59D9F141A1A49DD00941154 /* SPWebSocketInterfaceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocketInterfaceTests.m; path = ../../SimperiumTests/SPWebSocketInterfaceTests.m; sourceTree = "<group>"; };
+		B59D9F161A1A49E800941154 /* SPCoreDataStorageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPCoreDataStorageTests.m; path = ../../SimperiumTests/SPCoreDataStorageTests.m; sourceTree = "<group>"; };
+		B59D9F181A1A49F800941154 /* SPMemberJSONTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMemberJSONTests.m; path = ../../SimperiumTests/SPMemberJSONTests.m; sourceTree = "<group>"; };
+		B59D9F1A1A1A4A0900941154 /* NSStringSimperiumTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSStringSimperiumTest.m; path = ../../SimperiumTests/NSStringSimperiumTest.m; sourceTree = "<group>"; };
+		B59D9F1C1A1A4A1A00941154 /* SPRelationshipResolverTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPRelationshipResolverTests.m; path = ../../SimperiumTests/SPRelationshipResolverTests.m; sourceTree = "<group>"; };
 		B5C18F6818FD7BC500D51D1F /* NSError+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSError+Simperium.h"; path = "../../Simperium/NSError+Simperium.h"; sourceTree = "<group>"; };
 		B5C18F6918FD7BC500D51D1F /* NSError+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSError+Simperium.m"; path = "../../Simperium/NSError+Simperium.m"; sourceTree = "<group>"; };
 		B5D581BD183565A700B08996 /* UnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -372,7 +381,6 @@
 		B5D581D6183565E300B08996 /* MockWebSocketInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MockWebSocketInterface.h; path = ../../SimperiumTests/MockWebSocketInterface.h; sourceTree = "<group>"; };
 		B5D581D7183565E300B08996 /* MockWebSocketInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MockWebSocketInterface.m; path = ../../SimperiumTests/MockWebSocketInterface.m; sourceTree = "<group>"; };
 		B5D581DC183565FB00B08996 /* DiffMatchPatchArrayTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DiffMatchPatchArrayTests.m; path = ../../SimperiumTests/DiffMatchPatchArrayTests.m; sourceTree = "<group>"; };
-		B5D581DD183565FB00B08996 /* RemoteDebugTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RemoteDebugTests.m; path = ../../SimperiumTests/RemoteDebugTests.m; sourceTree = "<group>"; };
 		B5E03DA3182C236200412572 /* JSONKit+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "JSONKit+Simperium.h"; path = "../../Simperium/JSONKit+Simperium.h"; sourceTree = "<group>"; };
 		B5E03DA4182C236200412572 /* JSONKit+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "JSONKit+Simperium.m"; path = "../../Simperium/JSONKit+Simperium.m"; sourceTree = "<group>"; };
 		B5E811491994060D002C5546 /* SPRelationship.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPRelationship.h; path = ../../Simperium/SPRelationship.h; sourceTree = "<group>"; };
@@ -716,14 +724,18 @@
 		B5D581E21835660000B08996 /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
-				B59C7522186DAB42003A1C8D /* DiffMatchPatchTest.m */,
-				B5D581DC183565FB00B08996 /* DiffMatchPatchArrayTests.m */,
-				B59C751E186DAB0E003A1C8D /* DeletionCascadeTest.m */,
+				B59D9F121A1A49BB00941154 /* SPIndexProcessorTests.m */,
 				B5F43C32194F578E00495590 /* SPChangeProcessorTests.m */,
-				B5D581DD183565FB00B08996 /* RemoteDebugTests.m */,
 				B58EC3201885B74100ED37E5 /* SPPersistentMutableDictionaryTests.m */,
 				B58EC3211885B74100ED37E5 /* SPPersistentMutableSetTests.m */,
 				B58EC3221885B74100ED37E5 /* SPThreadsafeMutableSetTests.m */,
+				B59D9F141A1A49DD00941154 /* SPWebSocketInterfaceTests.m */,
+				B59D9F161A1A49E800941154 /* SPCoreDataStorageTests.m */,
+				B59D9F181A1A49F800941154 /* SPMemberJSONTests.m */,
+				B59D9F1A1A1A4A0900941154 /* NSStringSimperiumTest.m */,
+				B59D9F1C1A1A4A1A00941154 /* SPRelationshipResolverTests.m */,
+				B59C7522186DAB42003A1C8D /* DiffMatchPatchTest.m */,
+				B5D581DC183565FB00B08996 /* DiffMatchPatchArrayTests.m */,
 			);
 			name = UnitTests;
 			sourceTree = "<group>";
@@ -1014,18 +1026,22 @@
 				B5D581DA183565E300B08996 /* MockWebSocketInterface.m in Sources */,
 				B5D581D9183565E300B08996 /* MockWebSocketChannel.m in Sources */,
 				B5F43C33194F578E00495590 /* SPChangeProcessorTests.m in Sources */,
+				B59D9F1B1A1A4A0900941154 /* NSStringSimperiumTest.m in Sources */,
 				B5D581DF183565FB00B08996 /* DiffMatchPatchArrayTests.m in Sources */,
 				B59C7523186DAB42003A1C8D /* DiffMatchPatchTest.m in Sources */,
 				B5D581D8183565E300B08996 /* MockSimperium.m in Sources */,
 				B56B16521835682500E45C98 /* Post.m in Sources */,
 				B58EC3231885B74100ED37E5 /* SPPersistentMutableDictionaryTests.m in Sources */,
-				B5D581E0183565FB00B08996 /* RemoteDebugTests.m in Sources */,
+				B59D9F1D1A1A4A1A00941154 /* SPRelationshipResolverTests.m in Sources */,
 				B56B16511835682500E45C98 /* Config.m in Sources */,
 				B58EC3251885B74100ED37E5 /* SPThreadsafeMutableSetTests.m in Sources */,
-				B59C751F186DAB0E003A1C8D /* DeletionCascadeTest.m in Sources */,
+				B59D9F191A1A49F800941154 /* SPMemberJSONTests.m in Sources */,
 				B56B16541835682500E45C98 /* TestObject.m in Sources */,
 				B58EC3241885B74100ED37E5 /* SPPersistentMutableSetTests.m in Sources */,
+				B59D9F131A1A49BB00941154 /* SPIndexProcessorTests.m in Sources */,
+				B59D9F171A1A49E800941154 /* SPCoreDataStorageTests.m in Sources */,
 				B56B16501835682500E45C98 /* PostComment.m in Sources */,
+				B59D9F151A1A49DD00941154 /* SPWebSocketInterfaceTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
