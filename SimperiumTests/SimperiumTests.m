@@ -13,7 +13,7 @@
 #import "Config.h"
 #import "Farm.h"
 #import "SPBucket.h"
-#import "STKeychain.h"
+#import "SSKeychain.h"
 #import "SPAuthenticator.h"
 #import "SPHttpRequest.h"
 #import "SPHttpRequestQueue.h"
@@ -154,7 +154,7 @@
     
     [[NSUserDefaults standardUserDefaults] setObject:USERNAME forKey:@"SPUsername"];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    [STKeychain storeUsername:@"SPUsername" andPassword:self.token forServiceName:APP_ID updateExisting:YES error:nil];
+    [SSKeychain passwordForService:APP_ID account:@"SPUsername" error:nil];
 
     NSLog(@"auth token is %@", self.token);
 }
