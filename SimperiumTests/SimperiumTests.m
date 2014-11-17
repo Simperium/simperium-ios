@@ -154,7 +154,7 @@
     
     [[NSUserDefaults standardUserDefaults] setObject:USERNAME forKey:@"SPUsername"];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    [SSKeychain passwordForService:APP_ID account:@"SPUsername" error:nil];
+    [SSKeychain setPassword:self.token forService:APP_ID account:@"SPUsername"];
 
     NSLog(@"auth token is %@", self.token);
 }
