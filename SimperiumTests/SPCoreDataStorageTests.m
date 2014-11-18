@@ -12,12 +12,17 @@
 #import "Post.h"
 #import "PostComment.h"
 #import "SPCoreDataStorage.h"
+#import "SPStorageObserverAdapter.h"
 #import "SPBucket+Internals.h"
 
 
-static NSInteger const kNumberOfPosts		= 10;
-static NSInteger const kCommentsPerPost		= 50;
-static NSInteger const kStressIterations	= 100;
+
+
+static NSInteger const kNumberOfPosts                   = 10;
+static NSInteger const kCommentsPerPost                 = 50;
+static NSInteger const kStressIterations                = 100;
+static NSInteger const kRaceConditionNumberOfEntities   = 1000;
+static NSTimeInterval const kExpectationTimeout         = 60.0;
 
 @interface SPCoreDataStorageTests : XCTestCase
 
@@ -191,5 +196,47 @@ static NSInteger const kStressIterations	= 100;
 	WaitUntilBlockCompletes();
 }
 
+- (void)testInsertedEntitiesAreImmediatelyAvailableInWorkerContexts
+{
+    // Setup an InMemory Core Data Stack
+    NSManagedObjectContext* context				= [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+    NSManagedObjectModel* model					= [NSManagedObjectModel mergedModelFromBundles:[NSBundle allBundles]];
+    NSPersistentStoreCoordinator* coordinator   = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
+    
+    [coordinator addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:nil];
+    
+    NSString *postBucketName                    = NSStringFromClass([Post class]);
+    XCTestExpectation *expectation              = [self expectationWithDescription:@"Insertion Callback Expectation"];
+    
+    // SPCoreDataStorage: Setup
+    SPCoreDataStorage* storage  = [[SPCoreDataStorage alloc] initWithModel:model mainContext:context coordinator:coordinator];
+
+    // SPStorageObserverAdapter: Make sure that the inserted objects are there, if query'ed
+    SPStorageObserverAdapter *adapter           = [SPStorageObserverAdapter new];
+    storage.delegate                            = adapter;
+    
+    adapter.callback = ^(NSSet *inserted, NSSet *updated, NSSet *deleted) {
+        XCTAssert(inserted.count == kRaceConditionNumberOfEntities, @"Missing inserted entity");
+        
+        id<SPStorageProvider> threadsafeStorage = [storage threadSafeStorage];
+        XCTAssertNotNil(threadsafeStorage, @"Missing Threadsafe Storage");
+        
+        for (SPManagedObject *mainMO in inserted) {
+            NSManagedObject *localMO = [threadsafeStorage objectForKey:mainMO.simperiumKey bucketName:postBucketName];
+            XCTAssertNotNil(localMO, @"Missing Object");
+        }
+        [expectation fulfill];
+    };
+    
+    // Proceed inserting [kRaceConditionNumberOfEntities] entities
+    for (NSInteger i = 0; ++i <= kRaceConditionNumberOfEntities; ) {
+        [storage insertNewObjectForBucketName:postBucketName simperiumKey:nil];
+    }
+    [storage save];
+    
+    [self waitForExpectationsWithTimeout:kExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"SPCoreDataStorage's delegate method was never executed");
+    }];
+}
 
 @end
