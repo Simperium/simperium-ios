@@ -434,33 +434,17 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 #pragma mark - Main MOC Notification Handlers
 
 - (void)mainContextDidSave:(NSNotification *)notification {
-    // Now that the changes have been pushed to the writerMOC, persist to disk
-    [self saveWriterContext];
-    
-    // This bypass allows saving to be performed without triggering a sync, as is needed
-    // when storing changes that come off the wire
-    if (![self.delegate objectsShouldSync]) {
-        return;
-    }
-    
-    // Filter remotely deleted objects
-    NSDictionary *userInfo  = notification.userInfo;
-    NSMutableSet *locallyDeleted = [NSMutableSet set];
-    for (SPManagedObject* mainMO in userInfo[NSDeletedObjectsKey]) {
-        if ([mainMO isKindOfClass:[SPManagedObject class]] == NO) {
-            continue;
-        }
-        if ([self.remotelyDeletedKeys containsObject:mainMO.namespacedSimperiumKey] == NO) {
-            // We'll need to post it
-            [locallyDeleted addObject:mainMO];
-        } else {
-            // Cleanup!
-            [self.remotelyDeletedKeys removeObject:mainMO.namespacedSimperiumKey];
-        }
-    }
-    
-    // Sync all changes
-    [self.delegate storage:self updatedObjects:userInfo[NSUpdatedObjectsKey] insertedObjects:userInfo[NSInsertedObjectsKey] deletedObjects:locallyDeleted];
+    // Save the writerMOC's changes
+    [self saveWriterContextWithCallback:^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Notify the listeners about this change
+            NSDictionary *userInfo  = notification.userInfo;
+            
+            [self notifyOfUpdatedObjects:userInfo[NSUpdatedObjectsKey]
+                         insertedObjects:userInfo[NSInsertedObjectsKey]
+                          deletedObjects:userInfo[NSDeletedObjectsKey]];
+        });
+    }];
 }
 
 - (void)mainContextObjectsDidChange:(NSNotification *)notification {
@@ -530,6 +514,29 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 #pragma mark - Delegate Helpers
 
+- (void)notifyOfUpdatedObjects:(NSSet *)updatedObjects insertedObjects:(NSSet *)insertedObjects deletedObjects:(NSSet *)deletedObjects {
+    // This bypass allows saving to be performed without triggering a sync, as is needed
+    // when storing changes that come off the wire
+    if (!self.delegate.objectsShouldSync) {
+        return;
+    }
+    
+    // Filter remotely deleted objects
+    NSMutableSet *locallyDeleted = [NSMutableSet set];
+    for (SPManagedObject* mainMO in deletedObjects) {
+        if ([mainMO isKindOfClass:[SPManagedObject class]] == NO) {
+            continue;
+        }
+        if ([self.remotelyDeletedKeys containsObject:mainMO.namespacedSimperiumKey] == NO) {
+            [locallyDeleted addObject:mainMO];
+        } else {
+            [self.remotelyDeletedKeys removeObject:mainMO.namespacedSimperiumKey];
+        }
+    }
+    
+    // Sync all changes
+    [self.delegate storage:self updatedObjects:updatedObjects insertedObjects:insertedObjects deletedObjects:locallyDeleted];
+}
 
 
 #pragma mark - Writer MOC Helpers
