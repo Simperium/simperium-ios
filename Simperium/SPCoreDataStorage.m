@@ -381,7 +381,8 @@ static NSInteger const SPWorkersDone    = 0;
 
 
 // CD specific
-# pragma mark Stashing and unstashing entities
+#pragma mark - Stashing and unstashing entities
+
 - (NSArray *)allUpdatedAndInsertedObjects {
     NSMutableSet *unsavedEntities = [NSMutableSet setWithCapacity:3];
     
@@ -404,7 +405,7 @@ static NSInteger const SPWorkersDone    = 0;
 }
 
 
-# pragma mark Main MOC + Children MOC Notification Handlers
+#pragma mark - Main MOC + Children MOC Notification Handlers
 
 - (void)managedContextWillSave:(NSNotification*)notification {
     NSManagedObjectContext *context = (NSManagedObjectContext *)notification.object;
@@ -428,7 +429,7 @@ static NSInteger const SPWorkersDone    = 0;
 }
 
 
-# pragma mark Main MOC Notification Handlers
+#pragma mark - Main MOC Notification Handlers
 
 - (void)mainContextDidSave:(NSNotification *)notification {
     // Now that the changes have been pushed to the writerMOC, persist to disk
@@ -480,7 +481,7 @@ static NSInteger const SPWorkersDone    = 0;
 }
 
 
-# pragma mark Children MOC Notification Handlers
+#pragma mark - Children MOC Notification Handlers
 
 - (void)childrenContextDidSave:(NSNotification*)notification {
     //  NOTE:
@@ -525,7 +526,7 @@ static NSInteger const SPWorkersDone    = 0;
 }
 
 
-# pragma mark Writer MOC Helpers
+#pragma mark - Delegate Helpers
 
 - (void)saveWriterContext {
     [self.writerManagedObjectContext performBlock:^{
