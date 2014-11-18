@@ -44,6 +44,8 @@ static NSInteger const SPWorkersDone    = 0;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
 
+typedef void (^SPCoreDataStorageSaveCallback)(void);
+
 
 #pragma mark ====================================================================================
 #pragma mark SPCoreDataStorage
@@ -528,7 +530,11 @@ static NSInteger const SPWorkersDone    = 0;
 
 #pragma mark - Delegate Helpers
 
-- (void)saveWriterContext {
+
+
+#pragma mark - Writer MOC Helpers
+
+- (void)saveWriterContextWithCallback:(SPCoreDataStorageSaveCallback)callback {
     [self.writerManagedObjectContext performBlock:^{
         @try {
             NSError *error = nil;
@@ -537,6 +543,10 @@ static NSInteger const SPWorkersDone    = 0;
             }
         } @catch (NSException *exception) {
             NSLog(@"Simperium exception while persisting writer context's changes: %@", exception.userInfo ? : exception.reason);
+        }
+        
+        if (callback) {
+            callback();
         }
     }];
 }
