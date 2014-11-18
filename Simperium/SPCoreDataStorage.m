@@ -44,6 +44,8 @@ static NSInteger const SPWorkersDone    = 0;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
 
+typedef void (^SPCoreDataStorageSaveCallback)(void);
+
 
 #pragma mark ====================================================================================
 #pragma mark SPCoreDataStorage
@@ -381,7 +383,8 @@ static NSInteger const SPWorkersDone    = 0;
 
 
 // CD specific
-# pragma mark Stashing and unstashing entities
+#pragma mark - Stashing and unstashing entities
+
 - (NSArray *)allUpdatedAndInsertedObjects {
     NSMutableSet *unsavedEntities = [NSMutableSet setWithCapacity:3];
     
@@ -404,7 +407,7 @@ static NSInteger const SPWorkersDone    = 0;
 }
 
 
-# pragma mark Main MOC + Children MOC Notification Handlers
+#pragma mark - Main MOC + Children MOC Notification Handlers
 
 - (void)managedContextWillSave:(NSNotification*)notification {
     NSManagedObjectContext *context = (NSManagedObjectContext *)notification.object;
@@ -428,36 +431,20 @@ static NSInteger const SPWorkersDone    = 0;
 }
 
 
-# pragma mark Main MOC Notification Handlers
+#pragma mark - Main MOC Notification Handlers
 
 - (void)mainContextDidSave:(NSNotification *)notification {
-    // Now that the changes have been pushed to the writerMOC, persist to disk
-    [self saveWriterContext];
-    
-    // This bypass allows saving to be performed without triggering a sync, as is needed
-    // when storing changes that come off the wire
-    if (![self.delegate objectsShouldSync]) {
-        return;
-    }
-    
-    // Filter remotely deleted objects
-    NSDictionary *userInfo  = notification.userInfo;
-    NSMutableSet *locallyDeleted = [NSMutableSet set];
-    for (SPManagedObject* mainMO in userInfo[NSDeletedObjectsKey]) {
-        if ([mainMO isKindOfClass:[SPManagedObject class]] == NO) {
-            continue;
-        }
-        if ([self.remotelyDeletedKeys containsObject:mainMO.namespacedSimperiumKey] == NO) {
-            // We'll need to post it
-            [locallyDeleted addObject:mainMO];
-        } else {
-            // Cleanup!
-            [self.remotelyDeletedKeys removeObject:mainMO.namespacedSimperiumKey];
-        }
-    }
-    
-    // Sync all changes
-    [self.delegate storage:self updatedObjects:userInfo[NSUpdatedObjectsKey] insertedObjects:userInfo[NSInsertedObjectsKey] deletedObjects:locallyDeleted];
+    // Save the writerMOC's changes
+    [self saveWriterContextWithCallback:^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Notify the listeners about this change
+            NSDictionary *userInfo  = notification.userInfo;
+            
+            [self notifyOfUpdatedObjects:userInfo[NSUpdatedObjectsKey]
+                         insertedObjects:userInfo[NSInsertedObjectsKey]
+                          deletedObjects:userInfo[NSDeletedObjectsKey]];
+        });
+    }];
 }
 
 - (void)mainContextObjectsDidChange:(NSNotification *)notification {
@@ -480,7 +467,7 @@ static NSInteger const SPWorkersDone    = 0;
 }
 
 
-# pragma mark Children MOC Notification Handlers
+#pragma mark - Children MOC Notification Handlers
 
 - (void)childrenContextDidSave:(NSNotification*)notification {
     //  NOTE:
@@ -525,9 +512,36 @@ static NSInteger const SPWorkersDone    = 0;
 }
 
 
-# pragma mark Writer MOC Helpers
+#pragma mark - Delegate Helpers
 
-- (void)saveWriterContext {
+- (void)notifyOfUpdatedObjects:(NSSet *)updatedObjects insertedObjects:(NSSet *)insertedObjects deletedObjects:(NSSet *)deletedObjects {
+    // This bypass allows saving to be performed without triggering a sync, as is needed
+    // when storing changes that come off the wire
+    if (!self.delegate.objectsShouldSync) {
+        return;
+    }
+    
+    // Filter remotely deleted objects
+    NSMutableSet *locallyDeleted = [NSMutableSet set];
+    for (SPManagedObject* mainMO in deletedObjects) {
+        if ([mainMO isKindOfClass:[SPManagedObject class]] == NO) {
+            continue;
+        }
+        if ([self.remotelyDeletedKeys containsObject:mainMO.namespacedSimperiumKey] == NO) {
+            [locallyDeleted addObject:mainMO];
+        } else {
+            [self.remotelyDeletedKeys removeObject:mainMO.namespacedSimperiumKey];
+        }
+    }
+    
+    // Sync all changes
+    [self.delegate storage:self updatedObjects:updatedObjects insertedObjects:insertedObjects deletedObjects:locallyDeleted];
+}
+
+
+#pragma mark - Writer MOC Helpers
+
+- (void)saveWriterContextWithCallback:(SPCoreDataStorageSaveCallback)callback {
     [self.writerManagedObjectContext performBlock:^{
         @try {
             NSError *error = nil;
@@ -536,6 +550,10 @@ static NSInteger const SPWorkersDone    = 0;
             }
         } @catch (NSException *exception) {
             NSLog(@"Simperium exception while persisting writer context's changes: %@", exception.userInfo ? : exception.reason);
+        }
+        
+        if (callback) {
+            callback();
         }
     }];
 }
