@@ -169,6 +169,7 @@
 		797D270119F1B72700DEF569 /* SSKeychainQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 797D26FD19F1B72700DEF569 /* SSKeychainQuery.m */; };
 		B51397F11947612B004C1416 /* SPChangeProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B51397F01947612B004C1416 /* SPChangeProcessorTests.m */; };
 		B52674721858EC4800A89D7A /* Simperium+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B52674701858EC4800A89D7A /* Simperium+Internals.h */; };
+		B53F75A91A1BAB4600C0DDFB /* SPStorageObserverAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = B53F75A81A1BAB4600C0DDFB /* SPStorageObserverAdapter.m */; };
 		B5549FE318457F72007EA226 /* SPThreadsafeMutableSet.h in Headers */ = {isa = PBXBuildFile; fileRef = B5549FE118457F72007EA226 /* SPThreadsafeMutableSet.h */; };
 		B5549FE418457F72007EA226 /* SPThreadsafeMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = B5549FE218457F72007EA226 /* SPThreadsafeMutableSet.m */; };
 		B5549FE6184581BF007EA226 /* SPThreadsafeMutableSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5549FE5184581BF007EA226 /* SPThreadsafeMutableSetTests.m */; };
@@ -412,6 +413,8 @@
 		797D26FD19F1B72700DEF569 /* SSKeychainQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSKeychainQuery.m; sourceTree = "<group>"; };
 		B51397F01947612B004C1416 /* SPChangeProcessorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPChangeProcessorTests.m; sourceTree = "<group>"; };
 		B52674701858EC4800A89D7A /* Simperium+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Simperium+Internals.h"; sourceTree = "<group>"; };
+		B53F75A71A1BAB4600C0DDFB /* SPStorageObserverAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStorageObserverAdapter.h; sourceTree = "<group>"; };
+		B53F75A81A1BAB4600C0DDFB /* SPStorageObserverAdapter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStorageObserverAdapter.m; sourceTree = "<group>"; };
 		B5549FE118457F72007EA226 /* SPThreadsafeMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = SPThreadsafeMutableSet.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		B5549FE218457F72007EA226 /* SPThreadsafeMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPThreadsafeMutableSet.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		B5549FE5184581BF007EA226 /* SPThreadsafeMutableSetTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPThreadsafeMutableSetTests.m; sourceTree = "<group>"; };
@@ -722,6 +725,7 @@
 		264CD911135DFD7A00C51BAD /* SimperiumTests */ = {
 			isa = PBXGroup;
 			children = (
+				B53F75AA1A1BAB4B00C0DDFB /* Adapters */,
 				B565ECAB1832941100D162FF /* Extensions */,
 				B5ECEA271831154E00B9289A /* Mocks */,
 				2673D71F147A00B300B7B6B3 /* Models */,
@@ -880,6 +884,15 @@
 				797D26FD19F1B72700DEF569 /* SSKeychainQuery.m */,
 			);
 			path = SSKeychain;
+			sourceTree = "<group>";
+		};
+		B53F75AA1A1BAB4B00C0DDFB /* Adapters */ = {
+			isa = PBXGroup;
+			children = (
+				B53F75A71A1BAB4600C0DDFB /* SPStorageObserverAdapter.h */,
+				B53F75A81A1BAB4600C0DDFB /* SPStorageObserverAdapter.m */,
+			);
+			name = Adapters;
 			sourceTree = "<group>";
 		};
 		B565ECAB1832941100D162FF /* Extensions */ = {
@@ -1313,6 +1326,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B53F75A91A1BAB4600C0DDFB /* SPStorageObserverAdapter.m in Sources */,
 				B565ECA31832643000D162FF /* TestObject.m in Sources */,
 				B57FA3AE190052C800957205 /* MockStorage.m in Sources */,
 				B5C6300D186321E0008C42B7 /* DiffMatchPatchArrayTests.m in Sources */,
