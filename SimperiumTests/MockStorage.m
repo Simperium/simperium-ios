@@ -104,8 +104,14 @@ static NSInteger const SPWorkersDone = 0;
     // Load the bucket
     NSMutableDictionary *bucket = self.storage[bucketName];
     if (!bucket) {
-        bucket = [NSMutableDictionary dictionary];
-        self.storage[bucketName] = bucket;
+        // Old School double check after lock, to improve performance
+        @synchronized(self) {
+            bucket = self.storage[bucketName];
+            if (!bucket) {
+                bucket = [NSMutableDictionary dictionary];
+                self.storage[bucketName] = bucket;
+            }
+        }
     }
     
     // Insert
