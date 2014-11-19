@@ -54,7 +54,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     }];
 }
 
-- (void)testStress {
+- (void)testStressUpsertingWhileDeletingRootEntities {
 	for (NSInteger i = 0; ++i <= kStressIterations; ) {
 		NSLog(@"<> Stress Iteration %ld", (long)i);
 		
@@ -236,20 +236,15 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     }];
 }
 
-- (void)testDeletedEntitySimperiumKeyIsAccessible {
+- (void)testKeysForDeletedEntitiesIsAccessible {
     
     NSString *postBucketName                    = NSStringFromClass([Post class]);
     XCTestExpectation *expectation              = [self expectationWithDescription:@"Insertion Callback Expgiectation"];
     
     // SPStorageObserverAdapter: Make sure that the inserted objects are there, if query'ed
     SPStorageObserverAdapter *adapter           = [SPStorageObserverAdapter new];
-    self.storage.delegate                       = adapter;
     
     adapter.willSaveCallback = ^(NSSet *inserted, NSSet *updated, NSSet *deleted) {
-        if (inserted.count) {
-            return;
-        }
-        
         XCTAssert(deleted.count == kRaceConditionNumberOfEntities, @"Missing inserted entity");
         
         for (SPManagedObject *mainMO in deleted) {
@@ -262,9 +257,11 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     for (NSInteger i = 0; ++i <= kRaceConditionNumberOfEntities; ) {
         [self.storage insertNewObjectForBucketName:postBucketName simperiumKey:nil];
     }
+    
     [self.storage save];
     
     // Nuke the entities
+    self.storage.delegate = adapter;
     [self.storage deleteAllObjectsForBucketName:postBucketName];
     [self.storage save];
     
