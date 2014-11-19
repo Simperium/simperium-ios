@@ -13,6 +13,11 @@
 
 typedef void (^SPStorageObserverCallback)(NSSet *inserted, NSSet *updated, NSSet *deleted);
 
+#pragma mark ====================================================================================
+#pragma mark SPStorageObserverAdapter
+#pragma mark ====================================================================================
+
+// Note: This class was designed only for Unit Testing purposes. By all means, do *NOT* use this in live code.
 @interface SPStorageObserverAdapter : NSObject <SPStorageObserver>
 @property (nonatomic,   copy) SPStorageObserverCallback willSaveCallback;
 @property (nonatomic,   copy) SPStorageObserverCallback didSaveCallback;
