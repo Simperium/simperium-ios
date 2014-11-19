@@ -12,23 +12,6 @@
 
 @implementation SPStorage
 
-
-- (void)stashUnsavedObjects {
-    
-}
-
-- (NSArray *)stashedObjects {
-    return [stashedObjects allObjects];
-}
-
-- (void)unstashUnsavedObjects {
-    [stashedObjects removeAllObjects];
-}
-
-- (void)unloadAllObjects {
-    [stashedObjects removeAllObjects];
-}
-
 - (void)stopManagingObjectWithKey:(NSString *)key
 {    
     // TODO: check pendingReferences as well just in case? And the stash...    
