@@ -147,7 +147,20 @@ static NSInteger const SPWorkersDone = 0;
     // No-Op
 }
 
-- (NSArray *)stashedObjects {
+- (NSSet *)stashedObjects {
+    // No-Op
+    return nil;
+}
+
+- (NSSet *)deletedObjects {
+    // No-Op
+    return nil;
+}
+- (NSSet *)insertedObjects {
+    // No-Op
+    return nil;
+}
+- (NSSet *)updatedObjects {
     // No-Op
     return nil;
 }
