@@ -11,17 +11,18 @@
 
 @implementation SPStorageObserverAdapter
 
-- (instancetype)init {
-    if (self = [super init]) {
-        _objectsShouldSync = true;
+- (void)storageWillSave:(id<SPStorageProvider>)storage
+{
+    if (self.willSaveCallback) {
+        self.willSaveCallback(storage.insertedObjects, storage.updatedObjects, storage.deletedObjects);
     }
-    return self;
+    
 }
 
-- (void)storage:(SPStorage *)storage updatedObjects:(NSSet *)updatedObjects insertedObjects:(NSSet *)insertedObjects deletedObjects:(NSSet *)deletedObjects
+- (void)storageDidSave:(id<SPStorageProvider>)storage
 {
-    if (self.callback) {
-        self.callback(insertedObjects, updatedObjects, deletedObjects);
+    if (self.didSaveCallback) {
+        self.didSaveCallback(storage.insertedObjects, storage.updatedObjects, storage.deletedObjects);
     }
 }
 

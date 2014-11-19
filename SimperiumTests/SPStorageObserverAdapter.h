@@ -14,6 +14,6 @@
 typedef void (^SPStorageObserverCallback)(NSSet *inserted, NSSet *updated, NSSet *deleted);
 
 @interface SPStorageObserverAdapter : NSObject <SPStorageObserver>
-@property (nonatomic,   copy) SPStorageObserverCallback callback;
-@property (nonatomic, assign) BOOL                      objectsShouldSync;
+@property (nonatomic,   copy) SPStorageObserverCallback willSaveCallback;
+@property (nonatomic,   copy) SPStorageObserverCallback didSaveCallback;
 @end

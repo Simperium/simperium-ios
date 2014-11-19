@@ -160,7 +160,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     XCTestExpectation *updateExpectation = [self expectationWithDescription:@"Update Expectation"];
 	
     SPStorageObserverAdapter *adapter = [SPStorageObserverAdapter new];
-    adapter.callback = ^(NSSet *inserted, NSSet *updated, NSSet *deleted) {
+    adapter.didSaveCallback = ^(NSSet *inserted, NSSet *updated, NSSet *deleted) {
         dispatch_async(commentBucket.processorQueue, ^{
             for (NSString* simperiumKey in postKeys) {
                 id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
@@ -208,7 +208,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     SPBucket *postBucket                        = [self.simperium bucketForName:NSStringFromClass([Post class])];
     XCTestExpectation *expectation              = [self expectationWithDescription:@"Insertion Callback Expgiectation"];
     
-    adapter.callback = ^(NSSet *inserted, NSSet *updated, NSSet *deleted) {
+    adapter.didSaveCallback = ^(NSSet *inserted, NSSet *updated, NSSet *deleted) {
         XCTAssert(inserted.count == kRaceConditionNumberOfEntities, @"Missing inserted entity");
         
         dispatch_async(postBucket.processorQueue, ^{
@@ -245,7 +245,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     SPStorageObserverAdapter *adapter           = [SPStorageObserverAdapter new];
     self.storage.delegate                       = adapter;
     
-    adapter.callback = ^(NSSet *inserted, NSSet *updated, NSSet *deleted) {
+    adapter.willSaveCallback = ^(NSSet *inserted, NSSet *updated, NSSet *deleted) {
         if (inserted.count) {
             return;
         }
