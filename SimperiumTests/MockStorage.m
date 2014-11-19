@@ -17,18 +17,19 @@ static NSInteger const SPWorkersDone = 0;
 
 @interface MockStorage ()
 @property (nonatomic, strong) NSMutableDictionary   *storage;
-@property (nonatomic, strong) NSMutableDictionary   *metadata;
 @property (nonatomic, strong) NSConditionLock       *mutex;
 @end
 
 
 @implementation MockStorage
 
+@synthesize metadata = _metadata;
+
 - (instancetype)init {
     if ((self = [super init])) {
-        self.storage    = [NSMutableDictionary dictionary];
-        self.metadata   = [NSMutableDictionary dictionary];
-		self.mutex      = [[NSConditionLock alloc] initWithCondition:SPWorkersDone];
+        _storage    = [NSMutableDictionary dictionary];
+        _metadata   = [NSMutableDictionary dictionary];
+		_mutex      = [[NSConditionLock alloc] initWithCondition:SPWorkersDone];
     }
     return self;
 }
@@ -103,8 +104,14 @@ static NSInteger const SPWorkersDone = 0;
     // Load the bucket
     NSMutableDictionary *bucket = self.storage[bucketName];
     if (!bucket) {
-        bucket = [NSMutableDictionary dictionary];
-        self.storage[bucketName] = bucket;
+        // Old School double check after lock, to improve performance
+        @synchronized(self) {
+            bucket = self.storage[bucketName];
+            if (!bucket) {
+                bucket = [NSMutableDictionary dictionary];
+                self.storage[bucketName] = bucket;
+            }
+        }
     }
     
     // Insert
@@ -147,7 +154,20 @@ static NSInteger const SPWorkersDone = 0;
     // No-Op
 }
 
-- (NSArray *)stashedObjects {
+- (NSSet *)stashedObjects {
+    // No-Op
+    return nil;
+}
+
+- (NSSet *)deletedObjects {
+    // No-Op
+    return nil;
+}
+- (NSSet *)insertedObjects {
+    // No-Op
+    return nil;
+}
+- (NSSet *)updatedObjects {
     // No-Op
     return nil;
 }

@@ -5,12 +5,25 @@
 //  Created by Michael Johnston on 11-11-17.
 //  Copyright (c) 2011 Simperium. All rights reserved.
 //
+
 #import "SPDiffable.h"
 
 
 
+#pragma mark ====================================================================================
+#pragma mark SPStorageProvider
+#pragma mark ====================================================================================
+
 @protocol SPStorageProvider <NSObject>
 
+// Properties
+@property (nonatomic, copy,  readonly) NSSet        *stashedObjects;
+@property (nonatomic, copy,  readonly) NSSet        *insertedObjects;
+@property (nonatomic, copy,  readonly) NSSet        *updatedObjects;
+@property (nonatomic, copy,  readonly) NSSet        *deletedObjects;
+@property (nonatomic, copy, readwrite) NSDictionary *metadata;
+
+// Helpers
 - (BOOL)save;
 - (NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate;
 - (NSArray *)objectKeysForBucketName:(NSString *)bucketName;
@@ -26,15 +39,14 @@
 - (void)deleteAllObjectsForBucketName:(NSString *)bucketName;
 - (void)validateObjectsForBucketName:(NSString *)bucketName;
 - (void)stopManagingObjectWithKey:(NSString *)key;
-- (id<SPStorageProvider>)threadSafeStorage;
-- (void)setMetadata:(NSDictionary *)metadata;
-- (NSDictionary *)metadata;
+
+// Stashing
 - (void)stashUnsavedObjects;
-- (NSArray *)stashedObjects;
 - (void)unstashUnsavedObjects;
 - (void)unloadAllObjects;
 
 // Synchronization
+- (id<SPStorageProvider>)threadSafeStorage;
 - (void)beginSafeSection;
 - (void)finishSafeSection;
 - (void)beginCriticalSection;

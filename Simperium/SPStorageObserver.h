@@ -6,7 +6,15 @@
 //  Copyright (c) 2011 Simperium. All rights reserved.
 //
 
+#import "SPStorageProvider.h"
+
+
+
+#pragma mark ====================================================================================
+#pragma mark SPStorageObserver
+#pragma mark ====================================================================================
+
 @protocol SPStorageObserver <NSObject>
-- (BOOL)objectsShouldSync;
-- (void)storage:(SPStorage *)storage updatedObjects:(NSSet *)updatedObjects insertedObjects:(NSSet *)insertedObjects deletedObjects:(NSSet *)deletedObjects;
+- (void)storageWillSave:(id<SPStorageProvider>)storage;
+- (void)storageDidSave:(id<SPStorageProvider>)storage;
 @end

@@ -581,10 +581,20 @@ static NSInteger const SPLogLength          = 50;
 #pragma mark - Helpers
 
 - (BOOL)isGhostEqualToDictionary:(NSDictionary *)dictionary ghost:(SPGhost *)ghost {
+    id dictionaryObject = nil;
+    id ghostObject      = nil;
+    
     for (id key in dictionary.allKeys) {
-        if ([dictionary[key] isEqual:ghost.memberData[key]] == false) {
-            return false;
+        dictionaryObject = dictionary[key];
+        ghostObject      = ghost.memberData[key];
+        
+        if (![dictionaryObject isKindOfClass:[NSDate class]]) {
+            return [dictionaryObject isEqual:ghostObject];
         }
+        
+        // Special treatment for NSDate: compare timeIntervals since 1970. isEqual fails randomly!
+        return (((NSDate *)dictionaryObject).timeIntervalSince1970 == ((NSDate *)ghostObject).timeIntervalSince1970);
+
     }
     return true;
 }

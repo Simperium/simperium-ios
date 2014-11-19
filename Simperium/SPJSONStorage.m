@@ -23,6 +23,11 @@
 @end
 
 
+@interface SPJSONStorage ()
+@property (nonatomic, strong, readwrite) NSSet *privateUpdatedObjects;
+@end
+
+
 @implementation SPJSONStorage
 @synthesize objects;
 @synthesize allObjects;
@@ -290,8 +295,7 @@
 //    NSLog(@"Simperium managing %u %@ object instances", [results count], entityName); 
 }
 
-- (BOOL)save
-{
+- (BOOL)save {
     // This needs to write all objects to disk in a thread-safe way, perhaps asynchronously since it can be
     // triggered from the main thread and could take awhile
     
@@ -302,25 +306,58 @@
         NSArray *objectsAsList = [objectDict allValues];
         [updatedObjects addObjectsFromArray:objectsAsList];
     }
-    [delegate storage:self updatedObjects:updatedObjects insertedObjects:nil deletedObjects:nil];
 
+    self.privateUpdatedObjects = updatedObjects;
+    [delegate storageWillSave:self];
+    
+    [delegate storageDidSave:self];
+    self.privateUpdatedObjects = nil;
+    
     return NO;
 }
 
+- (NSSet *)insertedObjects {
+    return nil;
+}
+
+- (NSSet *)updatedObjects {
+    return [self.privateUpdatedObjects copy];
+}
+
+- (NSSet *)deletedObjects {
+    return nil;
+}
+
+- (NSSet *)stashedObjects {
+    return nil;
+}
+
+- (void)stashUnsavedObjects {
+    // NO-OP
+}
+
+- (void)unstashUnsavedObjects {
+    // NO-OP
+}
+
+- (void)unloadAllObjects {
+    // NO-OP
+}
+
 - (void)beginSafeSection {
-    
+    // NO-OP
 }
 
 - (void)finishSafeSection {
-    
+    // NO-OP
 }
 
 - (void)beginCriticalSection {
-    
+    // NO-OP
 }
 
 - (void)finishCriticalSection {
-    
+    // NO-OP
 }
 
 @end

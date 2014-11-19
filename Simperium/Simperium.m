@@ -408,41 +408,44 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 #pragma mark SPStorageObserver
 #pragma mark ====================================================================================
 
-- (void)storage:(id<SPStorageProvider>)storage updatedObjects:(NSSet *)updatedObjects insertedObjects:(NSSet *)insertedObjects deletedObjects:(NSSet *)deletedObjects {
-    // This is automatically called by an SPStorage instance when data is locally changed and then saved
+- (void)storageWillSave:(id<SPStorageProvider>)storage {
+    if (!self.objectsShouldSync) {
+        return;
+    }
+    
+    // Process deletions before the Save OP is complete. Otherwise the simperiumKey might not be accessible!
+    for (id<SPDiffable>deletedObject in storage.deletedObjects) {
+        if ([[deletedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
+            [deletedObject.bucket.network sendObjectDeletion:deletedObject];
+            [deletedObject.bucket.storage stopManagingObjectWithKey:deletedObject.simperiumKey];
+        }
+    }
+}
 
-    // First deal with stashed objects (which are known to need a sync)
-    NSMutableSet *unsavedObjects = [[storage stashedObjects] copy];
-
+- (void)storageDidSave:(id<SPStorageProvider>)storage {
+    if (!self.objectsShouldSync) {
+        return;
+    }
+    
     // Unstash since they're about to be sent
+    NSSet *stashedObjects = storage.stashedObjects;
     [storage unstashUnsavedObjects];
     
-    for (id<SPDiffable>object in unsavedObjects) {
+    for (id<SPDiffable>object in stashedObjects) {
         if ( [[object class] conformsToProtocol:@protocol(SPDiffable)] ) {
             [object.bucket.network sendObjectChanges: object];
         }
     }
     
-    // Send changes for all unsaved, inserted and updated objects
-    // The changes will automatically get batched and synced in the next tick
-    
-    for (id<SPDiffable>insertedObject in insertedObjects) {
+    for (id<SPDiffable>insertedObject in storage.insertedObjects) {
         if ([[insertedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
             [insertedObject.bucket.network sendObjectChanges: insertedObject];
         }
     }
     
-    for (id<SPDiffable>updatedObject in updatedObjects) {
+    for (id<SPDiffable>updatedObject in storage.updatedObjects) {
         if ([[updatedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
             [updatedObject.bucket.network sendObjectChanges: updatedObject];
-        }
-    }
-    
-    // Send changes for all deleted objects
-    for (id<SPDiffable>deletedObject in deletedObjects) {
-        if ([[deletedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
-            [deletedObject.bucket.network sendObjectDeletion: deletedObject];
-            [deletedObject.bucket.storage stopManagingObjectWithKey:deletedObject.simperiumKey];
         }
     }
 }
