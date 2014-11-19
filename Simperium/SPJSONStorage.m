@@ -290,10 +290,10 @@
 //    NSLog(@"Simperium managing %u %@ object instances", [results count], entityName); 
 }
 
-- (BOOL)save
-{
+- (BOOL)save {
     // This needs to write all objects to disk in a thread-safe way, perhaps asynchronously since it can be
     // triggered from the main thread and could take awhile
+    [delegate storageWillSave:self];
     
     // Sync all changes
     // Fake it for now by trying to send all objects
@@ -302,25 +302,38 @@
         NSArray *objectsAsList = [objectDict allValues];
         [updatedObjects addObjectsFromArray:objectsAsList];
     }
-    [delegate storage:self updatedObjects:updatedObjects insertedObjects:nil deletedObjects:nil];
+    
+    [delegate storageDidSave:self];
 
     return NO;
 }
 
+- (void)stashUnsavedObjects {
+    // NO-OP
+}
+
+- (void)unstashUnsavedObjects {
+    // NO-OP
+}
+
+- (void)unloadAllObjects {
+    // NO-OP
+}
+
 - (void)beginSafeSection {
-    
+    // NO-OP
 }
 
 - (void)finishSafeSection {
-    
+    // NO-OP
 }
 
 - (void)beginCriticalSection {
-    
+    // NO-OP
 }
 
 - (void)finishCriticalSection {
-    
+    // NO-OP
 }
 
 @end
