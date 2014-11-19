@@ -40,6 +40,7 @@ static NSInteger const SPWorkersDone    = 0;
 @property (nonatomic, strong, readwrite) SPThreadsafeMutableSet         *remotelyDeletedKeys;
 @property (nonatomic, weak,   readwrite) SPCoreDataStorage              *sibling;
 @property (nonatomic, strong, readwrite) NSConditionLock                *mutex;
+@property (nonatomic, strong, readwrite) NSMutableSet                   *privateStashedObjects;
 - (void)addObserversForMainContext:(NSManagedObjectContext *)context;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
@@ -59,13 +60,13 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
         // Create a writer MOC
         self.writerManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
         
-        stashedObjects = [NSMutableSet setWithCapacity:3];
-        self.classMappings = [NSMutableDictionary dictionary];
-        self.remotelyDeletedKeys = [SPThreadsafeMutableSet set];
+        self.privateStashedObjects      = [NSMutableSet setWithCapacity:3];
+        self.classMappings              = [NSMutableDictionary dictionary];
+        self.remotelyDeletedKeys        = [SPThreadsafeMutableSet set];
         
         self.persistentStoreCoordinator = coordinator;
-        self.managedObjectModel = model;
-        self.mainManagedObjectContext = mainContext;
+        self.managedObjectModel         = model;
+        self.mainManagedObjectContext   = mainContext;
         
         [self.mainManagedObjectContext setMergePolicy:NSMergeByPropertyStoreTrumpMergePolicy];
         
@@ -400,10 +401,18 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 - (void)stashUnsavedObjects {
     NSArray *entitiesToStash = [self allUpdatedAndInsertedObjects];
     
-    if ([entitiesToStash count] > 0) {
+    if (entitiesToStash.count > 0) {
         SPLogVerbose(@"Simperium stashing changes for %lu entities", (unsigned long)[entitiesToStash count]);
-        [stashedObjects addObjectsFromArray: entitiesToStash];
+        [self.privateStashedObjects addObjectsFromArray:entitiesToStash];
     }
+}
+
+- (void)unstashUnsavedObjects {
+    [self.privateStashedObjects removeAllObjects];
+}
+
+- (void)unloadAllObjects {
+    [self.privateStashedObjects removeAllObjects];
 }
 
 
