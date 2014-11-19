@@ -41,6 +41,9 @@ static NSInteger const SPWorkersDone    = 0;
 @property (nonatomic, weak,   readwrite) SPCoreDataStorage              *sibling;
 @property (nonatomic, strong, readwrite) NSConditionLock                *mutex;
 @property (nonatomic, strong, readwrite) NSMutableSet                   *privateStashedObjects;
+@property (nonatomic, strong, readwrite) NSSet                          *privateInsertedObjects;
+@property (nonatomic, strong, readwrite) NSSet                          *privateUpdatedObjects;
+@property (nonatomic, strong, readwrite) NSSet                          *privateDeletedObjects;
 - (void)addObserversForMainContext:(NSManagedObjectContext *)context;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
@@ -372,6 +375,9 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     return YES;
 }
 
+
+#pragma mark - Public Properties
+
 - (void)setMetadata:(NSDictionary *)metadata {
     NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores firstObject];
     [self.persistentStoreCoordinator setMetadata:metadata forPersistentStore:store];
@@ -380,6 +386,22 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 - (NSDictionary *)metadata {
     NSPersistentStore *store = [self.persistentStoreCoordinator.persistentStores firstObject];
     return [store metadata];
+}
+
+- (NSSet *)stashedObjects {
+    return [self.privateStashedObjects copy];
+}
+
+- (NSSet *)insertedObjects {
+    return [self.privateInsertedObjects copy];
+}
+
+- (NSSet *)updatedObjects {
+    return [self.privateUpdatedObjects copy];
+}
+
+- (NSSet *)deletedObjects {
+    return [self.privateDeletedObjects copy];
 }
 
 
@@ -443,15 +465,23 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 #pragma mark - Main MOC Notification Handlers
 
 - (void)mainContextDidSave:(NSNotification *)notification {
+    // Expose the affected objects via the public properties
+    NSDictionary *userInfo      = notification.userInfo;
+    self.privateDeletedObjects  = [self filterRemotelyDeletedObjects:userInfo[NSDeletedObjectsKey]];
+    self.privateInsertedObjects = userInfo[NSInsertedObjectsKey];
+    self.privateUpdatedObjects  = userInfo[NSUpdatedObjectsKey];
+    
+    [self.delegate storageWillSave:self];
+    
     // Save the writerMOC's changes
     [self saveWriterContextWithCallback:^{
         dispatch_async(dispatch_get_main_queue(), ^{
-            // Notify the listeners about this change
-            NSDictionary *userInfo  = notification.userInfo;
+            [self.delegate storageDidSave:self];
             
-            [self notifyOfUpdatedObjects:userInfo[NSUpdatedObjectsKey]
-                         insertedObjects:userInfo[NSInsertedObjectsKey]
-                          deletedObjects:userInfo[NSDeletedObjectsKey]];
+            // Cleanup
+            self.privateDeletedObjects  = nil;
+            self.privateInsertedObjects = nil;
+            self.privateUpdatedObjects  = nil;
         });
     }];
 }
@@ -523,14 +553,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 #pragma mark - Delegate Helpers
 
-- (void)notifyOfUpdatedObjects:(NSSet *)updatedObjects insertedObjects:(NSSet *)insertedObjects deletedObjects:(NSSet *)deletedObjects {
-    // This bypass allows saving to be performed without triggering a sync, as is needed
-    // when storing changes that come off the wire
-    if (!self.delegate.objectsShouldSync) {
-        return;
-    }
-    
-    // Filter remotely deleted objects
+- (NSSet *)filterRemotelyDeletedObjects:(NSSet *)deletedObjects {
     NSMutableSet *locallyDeleted = [NSMutableSet set];
     for (SPManagedObject* mainMO in deletedObjects) {
         if ([mainMO isKindOfClass:[SPManagedObject class]] == NO) {
@@ -543,8 +566,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
         }
     }
     
-    // Sync all changes
-    [self.delegate storage:self updatedObjects:updatedObjects insertedObjects:insertedObjects deletedObjects:locallyDeleted];
+    return locallyDeleted;
 }
 
 
