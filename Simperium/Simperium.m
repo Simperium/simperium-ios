@@ -437,13 +437,13 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         }
     }
     
-    for (id<SPDiffable>insertedObject in storage.updatedObjects) {
+    for (id<SPDiffable>insertedObject in storage.insertedObjects) {
         if ([[insertedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
             [insertedObject.bucket.network sendObjectChanges: insertedObject];
         }
     }
     
-    for (id<SPDiffable>updatedObject in storage.insertedObjects) {
+    for (id<SPDiffable>updatedObject in storage.updatedObjects) {
         if ([[updatedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
             [updatedObject.bucket.network sendObjectChanges: updatedObject];
         }
