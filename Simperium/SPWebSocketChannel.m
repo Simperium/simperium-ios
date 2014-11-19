@@ -142,7 +142,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 #pragma mark ====================================================================================
 
 - (void)sendObjectDeletion:(id<SPDiffable>)object {
-    NSString *key = object.simperiumKey;
+    NSString *key       = object.simperiumKey;
+    SPBucket *bucket    = object.bucket;
     if (key == nil) {
         SPLogWarn(@"Simperium received DELETION request for nil key");
         return;
@@ -159,7 +160,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             SPChangeProcessor *processor = object.bucket.changeProcessor;
 
             if (_indexing || !_authenticated || processor.reachedMaxPendings) {
-                [processor enqueueObjectForDeletion:key bucket:object.bucket];
+                [processor enqueueObjectForDeletion:key bucket:bucket];
             } else {
                 NSSet *wrappedKey   = [NSSet setWithObject:key];
                 NSArray *changes    = [processor processLocalDeletionsWithKeys:wrappedKey];
@@ -172,7 +173,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 }
 
 - (void)sendObjectChanges:(id<SPDiffable>)object {
-    NSString *key = object.simperiumKey;
+    NSString *key       = object.simperiumKey;
+    SPBucket *bucket    = object.bucket;
     if (key == nil) {
         SPLogWarn(@"Simperium tried to send changes for an object with a nil simperiumKey (%@)", self.name);
         return;
@@ -186,7 +188,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             SPChangeProcessor *processor = object.bucket.changeProcessor;
             
             if (_indexing || !_authenticated || processor.reachedMaxPendings) {
-                [processor enqueueObjectForMoreChanges:key bucket:object.bucket];
+                [processor enqueueObjectForMoreChanges:key bucket:bucket];
             } else {
                 NSSet *wrappedKey = [NSSet setWithObject:key];
                 NSArray *changes = [processor processLocalObjectsWithKeys:wrappedKey bucket:object.bucket];
