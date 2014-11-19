@@ -17,18 +17,19 @@ static NSInteger const SPWorkersDone = 0;
 
 @interface MockStorage ()
 @property (nonatomic, strong) NSMutableDictionary   *storage;
-@property (nonatomic, strong) NSMutableDictionary   *metadata;
 @property (nonatomic, strong) NSConditionLock       *mutex;
 @end
 
 
 @implementation MockStorage
 
+@synthesize metadata = _metadata;
+
 - (instancetype)init {
     if ((self = [super init])) {
-        self.storage    = [NSMutableDictionary dictionary];
-        self.metadata   = [NSMutableDictionary dictionary];
-		self.mutex      = [[NSConditionLock alloc] initWithCondition:SPWorkersDone];
+        _storage    = [NSMutableDictionary dictionary];
+        _metadata   = [NSMutableDictionary dictionary];
+		_mutex      = [[NSConditionLock alloc] initWithCondition:SPWorkersDone];
     }
     return self;
 }
