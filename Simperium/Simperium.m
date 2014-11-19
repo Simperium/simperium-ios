@@ -413,6 +413,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         return;
     }
     
+    // Process deletions before the Save OP is complete. Otherwise the simperiumKey might not be accessible!
     for (id<SPDiffable>deletedObject in storage.deletedObjects) {
         if ([[deletedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
             [deletedObject.bucket.network sendObjectDeletion:deletedObject];
