@@ -23,6 +23,11 @@
 @end
 
 
+@interface SPJSONStorage ()
+@property (nonatomic, strong, readwrite) NSSet *privateUpdatedObjects;
+@end
+
+
 @implementation SPJSONStorage
 @synthesize objects;
 @synthesize allObjects;
@@ -293,7 +298,6 @@
 - (BOOL)save {
     // This needs to write all objects to disk in a thread-safe way, perhaps asynchronously since it can be
     // triggered from the main thread and could take awhile
-    [delegate storageWillSave:self];
     
     // Sync all changes
     // Fake it for now by trying to send all objects
@@ -302,10 +306,30 @@
         NSArray *objectsAsList = [objectDict allValues];
         [updatedObjects addObjectsFromArray:objectsAsList];
     }
+
+    self.privateUpdatedObjects = updatedObjects;
+    [delegate storageWillSave:self];
     
     [delegate storageDidSave:self];
-
+    self.privateUpdatedObjects = nil;
+    
     return NO;
+}
+
+- (NSSet *)insertedObjects {
+    return nil;
+}
+
+- (NSSet *)updatedObjects {
+    return [self.privateUpdatedObjects copy];
+}
+
+- (NSSet *)deletedObjects {
+    return nil;
+}
+
+- (NSSet *)stashedObjects {
+    return nil;
 }
 
 - (void)stashUnsavedObjects {
