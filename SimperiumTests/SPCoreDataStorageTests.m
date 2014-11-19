@@ -153,43 +153,47 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
 			PostComment* comment = [self.storage insertNewObjectForBucketName:commentBucket.name simperiumKey:nil];
 			comment.content = [NSString stringWithFormat:@"Comment [%ld]", (long)j];
 			[post addCommentsObject:comment];
-			[commentKeys addObject:comment.simperiumKey];
 		}
 	}
-
-	[self.storage save];
 	
-	// Update Comments
+	// Update Comments when the saveOP is effectively ready
     XCTestExpectation *updateExpectation = [self expectationWithDescription:@"Update Expectation"];
 	
-	dispatch_async(commentBucket.processorQueue, ^{
-		for (NSString* simperiumKey in postKeys) {
-			id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
-			[threadSafeStorage beginSafeSection];
-			
-			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
-			for (PostComment* comment in post.comments) {
-				comment.content = [NSString stringWithFormat:@"Updated Comment"];
-			}
-
-			// Delete Posts
-			dispatch_async(postBucket.processorQueue, ^{
-				id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
+    SPStorageObserverAdapter *adapter = [SPStorageObserverAdapter new];
+    adapter.callback = ^(NSSet *inserted, NSSet *updated, NSSet *deleted) {
+        dispatch_async(commentBucket.processorQueue, ^{
+            for (NSString* simperiumKey in postKeys) {
+                id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
+                [threadSafeStorage beginSafeSection];
                 
-				[threadSafeStorage beginCriticalSection];
-				[threadSafeStorage deleteAllObjectsForBucketName:postBucket.name];
-				[threadSafeStorage finishCriticalSection];
-			});
-			
-			[threadSafeStorage save];
-			[threadSafeStorage finishSafeSection];
-		}
+                Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
+                for (PostComment* comment in post.comments) {
+                    comment.content = [NSString stringWithFormat:@"Updated Comment"];
+                }
 
-        dispatch_async(postBucket.processorQueue, ^{
-            [updateExpectation fulfill];
+                // Delete Posts
+                dispatch_async(postBucket.processorQueue, ^{
+                    id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
+                    
+                    [threadSafeStorage beginCriticalSection];
+                    [threadSafeStorage deleteAllObjectsForBucketName:postBucket.name];
+                    [threadSafeStorage finishCriticalSection];
+                });
+                
+                [threadSafeStorage save];
+                [threadSafeStorage finishSafeSection];
+            }
+
+            dispatch_async(postBucket.processorQueue, ^{
+                [updateExpectation fulfill];
+            });
         });
-	});
-	
+    };
+    
+    // Save, and wait for the process to be ready!
+    self.storage.delegate = adapter;
+	[self.storage save];
+    
     [self waitForExpectationsWithTimeout:kExpectationTimeout handler:^(NSError *error) {
         XCTAssertNil(error, @"SPCoreDataStorage's delegate method was never executed");
     }];
