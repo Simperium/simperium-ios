@@ -408,13 +408,13 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 #pragma mark SPStorageObserver
 #pragma mark ====================================================================================
 
-- (void)storageWillSave:(id<SPStorageProvider>)storage {
+- (void)storageWillSave:(id<SPStorageProvider>)storage deletedObjects:(NSSet *)deletedObjects {
     if (!self.objectsShouldSync) {
         return;
     }
     
     // Process deletions before the Save OP is complete. Otherwise the simperiumKey might not be accessible!
-    for (id<SPDiffable>deletedObject in storage.deletedObjects) {
+    for (id<SPDiffable>deletedObject in deletedObjects) {
         if ([[deletedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
             [deletedObject.bucket.network sendObjectDeletion:deletedObject];
             [deletedObject.bucket.storage stopManagingObjectWithKey:deletedObject.simperiumKey];
@@ -422,7 +422,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
 }
 
-- (void)storageDidSave:(id<SPStorageProvider>)storage {
+- (void)storageDidSave:(id<SPStorageProvider>)storage insertedObjects:(NSSet *)insertedObjects updatedObjects:(NSSet *)updatedObjects {
     if (!self.objectsShouldSync) {
         return;
     }
@@ -437,13 +437,13 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         }
     }
     
-    for (id<SPDiffable>insertedObject in storage.insertedObjects) {
+    for (id<SPDiffable>insertedObject in insertedObjects) {
         if ([[insertedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
             [insertedObject.bucket.network sendObjectChanges: insertedObject];
         }
     }
     
-    for (id<SPDiffable>updatedObject in storage.updatedObjects) {
+    for (id<SPDiffable>updatedObject in updatedObjects) {
         if ([[updatedObject class] conformsToProtocol:@protocol(SPDiffable)]) {
             [updatedObject.bucket.network sendObjectChanges: updatedObject];
         }

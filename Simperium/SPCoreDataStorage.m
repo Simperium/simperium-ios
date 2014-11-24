@@ -41,9 +41,6 @@ static NSInteger const SPWorkersDone    = 0;
 @property (nonatomic, weak,   readwrite) SPCoreDataStorage              *sibling;
 @property (nonatomic, strong, readwrite) NSConditionLock                *mutex;
 @property (nonatomic, strong, readwrite) NSMutableSet                   *privateStashedObjects;
-@property (nonatomic, strong, readwrite) NSSet                          *privateInsertedObjects;
-@property (nonatomic, strong, readwrite) NSSet                          *privateUpdatedObjects;
-@property (nonatomic, strong, readwrite) NSSet                          *privateDeletedObjects;
 - (void)addObserversForMainContext:(NSManagedObjectContext *)context;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
@@ -392,18 +389,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     return [self.privateStashedObjects copy];
 }
 
-- (NSSet *)insertedObjects {
-    return [self.privateInsertedObjects copy];
-}
-
-- (NSSet *)updatedObjects {
-    return [self.privateUpdatedObjects copy];
-}
-
-- (NSSet *)deletedObjects {
-    return [self.privateDeletedObjects copy];
-}
-
 
 // CD specific
 #pragma mark - Stashing and unstashing entities
@@ -466,22 +451,15 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (void)mainContextDidSave:(NSNotification *)notification {
     // Expose the affected objects via the public properties
-    NSDictionary *userInfo      = notification.userInfo;
-    self.privateDeletedObjects  = [self filterRemotelyDeletedObjects:userInfo[NSDeletedObjectsKey]];
-    self.privateInsertedObjects = userInfo[NSInsertedObjectsKey];
-    self.privateUpdatedObjects  = userInfo[NSUpdatedObjectsKey];
+    NSDictionary *userInfo  = notification.userInfo;
+    NSSet *deletedObjects   = [self filterRemotelyDeletedObjects:userInfo[NSDeletedObjectsKey]];
     
-    [self.delegate storageWillSave:self];
+    [self.delegate storageWillSave:self deletedObjects:deletedObjects];
     
     // Save the writerMOC's changes
     [self saveWriterContextWithCallback:^{
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self.delegate storageDidSave:self];
-            
-            // Cleanup
-            self.privateDeletedObjects  = nil;
-            self.privateInsertedObjects = nil;
-            self.privateUpdatedObjects  = nil;
+            [self.delegate storageDidSave:self insertedObjects:userInfo[NSInsertedObjectsKey] updatedObjects:userInfo[NSUpdatedObjectsKey]];
         });
     }];
 }
