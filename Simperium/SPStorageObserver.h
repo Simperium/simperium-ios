@@ -15,6 +15,6 @@
 #pragma mark ====================================================================================
 
 @protocol SPStorageObserver <NSObject>
-- (void)storageWillSave:(id<SPStorageProvider>)storage;
-- (void)storageDidSave:(id<SPStorageProvider>)storage;
+- (void)storageWillSave:(id<SPStorageProvider>)storage deletedObjects:(NSSet *)deletedObjects;
+- (void)storageDidSave:(id<SPStorageProvider>)storage insertedObjects:(NSSet *)insertedObjects updatedObjects:(NSSet *)updatedObjects;
 @end
