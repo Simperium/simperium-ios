@@ -270,4 +270,33 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     }];
 }
 
+- (void)testMultipleContextSaveDontMissEntities {
+    
+    NSString *postBucketName                    = NSStringFromClass([Post class]);
+    XCTestExpectation *expectation              = [self expectationWithDescription:@"Insertion Callback Expgiectation"];
+    
+    // SPStorageObserverAdapter: Make sure that the inserted objects are there, if query'ed
+    SPStorageObserverAdapter *adapter           = [SPStorageObserverAdapter new];
+    self.storage.delegate                       = adapter;
+
+    __block NSInteger insertCount               = 0;
+    
+    adapter.didSaveCallback = ^(NSSet *inserted, NSSet *updated) {
+        insertCount += inserted.count;
+        if (insertCount == kStressIterations) {
+            [expectation fulfill];
+        }
+    };
+    
+    // Proceed inserting [kRaceConditionNumberOfEntities] entities
+    for (NSInteger i = 0; ++i <= kStressIterations; ) {
+        [self.storage insertNewObjectForBucketName:postBucketName simperiumKey:nil];
+        [self.storage save];
+    }
+    
+    [self waitForExpectationsWithTimeout:kExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Inserted Objects never reached DidSave Callback");
+    }];
+}
+
 @end
