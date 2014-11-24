@@ -23,10 +23,6 @@
 @end
 
 
-@interface SPJSONStorage ()
-@property (nonatomic, strong, readwrite) NSSet *privateUpdatedObjects;
-@end
-
 
 @implementation SPJSONStorage
 @synthesize objects;
@@ -307,25 +303,10 @@
         [updatedObjects addObjectsFromArray:objectsAsList];
     }
 
-    self.privateUpdatedObjects = updatedObjects;
-    [delegate storageWillSave:self];
-    
-    [delegate storageDidSave:self];
-    self.privateUpdatedObjects = nil;
+    [delegate storageWillSave:self deletedObjects:nil];
+    [delegate storageDidSave:self insertedObjects:nil updatedObjects:updatedObjects];
     
     return NO;
-}
-
-- (NSSet *)insertedObjects {
-    return nil;
-}
-
-- (NSSet *)updatedObjects {
-    return [self.privateUpdatedObjects copy];
-}
-
-- (NSSet *)deletedObjects {
-    return nil;
 }
 
 - (NSSet *)stashedObjects {
