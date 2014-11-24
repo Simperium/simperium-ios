@@ -18,9 +18,6 @@
 
 // Properties
 @property (nonatomic, copy,  readonly) NSSet        *stashedObjects;
-@property (nonatomic, copy,  readonly) NSSet        *insertedObjects;
-@property (nonatomic, copy,  readonly) NSSet        *updatedObjects;
-@property (nonatomic, copy,  readonly) NSSet        *deletedObjects;
 @property (nonatomic, copy, readwrite) NSDictionary *metadata;
 
 // Helpers
