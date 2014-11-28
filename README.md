@@ -1,6 +1,6 @@
 simperium-ios
 =============
-[![Build Status](http://img.shields.io/travis/Simperium/simperium-ios.svg?branch=develop)](https://travis-ci.org/Simperium/simperium-ios)
+[![Build Status](http://img.shields.io/travis/Simperium/simperium-ios.svg?branch=develop&style=flat)](https://travis-ci.org/Simperium/simperium-ios)
 [![Pod Version](http://img.shields.io/cocoapods/v/Simperium.svg?style=flat)](http://www.github.com/Simperium/simperium-ios)
 [![Pod Platform](http://img.shields.io/cocoapods/p/Simperium.svg?style=flat)](http://www.simperium.com)
 [![Pod Platform](http://img.shields.io/cocoapods/p/Simperium-OSX.svg?style=flat)](http://www.simperium.com)
