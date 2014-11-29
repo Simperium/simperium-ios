@@ -240,7 +240,9 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.changeButton.frame.size.height + self.changeButton.frame.origin.y)];
     footerView.contentMode = UIViewContentModeTopLeft;
     [footerView setUserInteractionEnabled:YES];
-    [footerView addSubview:_termsButton];
+    if ([[SPAuthenticationConfiguration sharedInstance] showTOSButton]) {
+        [footerView addSubview:_termsButton];
+    }
     if ([[SPAuthenticationConfiguration sharedInstance] showForgotPasswordButton]) {
         [footerView addSubview:_forgotPasswordButton];
     }
