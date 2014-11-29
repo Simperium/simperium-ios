@@ -33,6 +33,7 @@ static SPAuthenticationConfiguration *gInstance = NULL;
     if (self) {
         _regularFontName = @"HelveticaNeue";
         _mediumFontName = @"HelveticaNeue-Medium";
+        _showTOSButton = YES;
         
 #if TARGET_OS_IPHONE
 #else
