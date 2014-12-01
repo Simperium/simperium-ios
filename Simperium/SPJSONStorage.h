@@ -10,18 +10,12 @@
 #import "SPStorageObserver.h"
 #import "SPStorageProvider.h"
 
-@interface SPJSONStorage : SPStorage<SPStorageProvider> {
-    id<SPStorageObserver> delegate;
-    NSMutableDictionary *objects;
-    NSMutableDictionary *allObjects;
-    NSMutableArray *objectList;
-    dispatch_queue_t storageQueue;
-}
+@interface SPJSONStorage : SPStorage<SPStorageProvider>
 
-@property (nonatomic, strong) NSMutableDictionary *objects;
-@property (nonatomic, strong) NSMutableDictionary *ghosts;
-@property (nonatomic, strong) NSMutableArray *objectList;
-@property (nonatomic, strong) NSMutableDictionary *allObjects;
+@property (nonatomic, strong) NSMutableDictionary   *objects;
+@property (nonatomic, strong) NSMutableDictionary   *ghosts;
+@property (nonatomic, strong) NSMutableArray        *objectList;
+@property (nonatomic, strong) NSMutableDictionary   *allObjects;
 
 - (instancetype)initWithDelegate:(id<SPStorageObserver>)aDelegate;
 

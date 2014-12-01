@@ -24,29 +24,30 @@
 
 
 
+@interface SPJSONStorage ()
+@property (nonatomic,   weak) id<SPStorageObserver> delegate;
+@property (nonatomic, strong) dispatch_queue_t      storageQueue;
+@end
+
+
 @implementation SPJSONStorage
-@synthesize objects;
-@synthesize allObjects;
-@synthesize objectList;
-@synthesize ghosts;
 
 - (instancetype)initWithDelegate:(id<SPStorageObserver>)aDelegate
 {
     self = [super init];
     if (self) {
-        delegate = aDelegate;
-        self.objects = [NSMutableDictionary dictionaryWithCapacity:10];
-        self.ghosts = [NSMutableDictionary dictionaryWithCapacity:10];
-        self.allObjects = [NSMutableDictionary dictionaryWithCapacity:10];
-        self.objectList = [NSMutableArray arrayWithCapacity:10];
+        _delegate   = aDelegate;
+        _objects    = [NSMutableDictionary dictionaryWithCapacity:10];
+        _ghosts     = [NSMutableDictionary dictionaryWithCapacity:10];
+        _allObjects = [NSMutableDictionary dictionaryWithCapacity:10];
+        _objectList = [NSMutableArray arrayWithCapacity:10];
         
         NSString *queueLabel = @"com.simperium.JSONstorage";
-        storageQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
+        _storageQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
         
-        NSError *error;
+        NSError *error = nil;
         [NSMutableDictionary jr_swizzleMethod:@selector(setObject:forKey:) withMethod:@selector(simperiumSetObject:forKey:) error:&error];
         [NSMutableDictionary jr_swizzleMethod:@selector(setValue:forKey:) withMethod:@selector(simperiumSetValue:forKey:) error:&error];
-
     }
     
     return self;
@@ -55,7 +56,7 @@
 
 - (void)object:(id)object forKey:(NSString *)simperiumKey didChangeValue:(id)value forKey:(NSString *)key {
     // Update the schema if applicable
-    SPObject *spObject = [allObjects objectForKey:simperiumKey];
+    SPObject *spObject = [_allObjects objectForKey:simperiumKey];
     [spObject.bucket.differ.schema addMemberForObject:value key:key];
     
     // TODO: track the change here so saving can be smart    
@@ -67,16 +68,17 @@
 }
 
 - (NSMutableDictionary *)objectDictionaryForBucketName:(NSString *)bucketName {
-    return [objects objectForKey:bucketName];
+    return [_objects objectForKey:bucketName];
 }
 
 - (id)objectForKey:(NSString *)key bucketName:(NSString *)bucketName {
     __block id<SPDiffable>object = nil;
     
-    dispatch_sync(storageQueue, ^{
-        NSDictionary *objectDict = [objects objectForKey:bucketName];
-        if (objectDict)
+    dispatch_sync(_storageQueue, ^{
+        NSDictionary *objectDict = [_objects objectForKey:bucketName];
+        if (objectDict) {
             object = [objectDict objectForKey:key];
+        }
     });
     
     return object;
@@ -85,15 +87,16 @@
 - (NSArray *)objectsForKeys:(NSSet *)keys bucketName:(NSString *)bucketName
 {
     __block NSArray *someObjects = nil;
-    dispatch_sync(storageQueue, ^{
-        NSDictionary *objectDict = [objects objectForKey:bucketName];
+    dispatch_sync(_storageQueue, ^{
+        NSDictionary *objectDict = [_objects objectForKey:bucketName];
         if (objectDict) {
             someObjects = [objectDict objectsForKeys:[keys allObjects] notFoundMarker:[NSNull null]];
         }
     });
     
-    if (!someObjects)
-        someObjects = [NSArray array];
+    if (!someObjects) {
+        someObjects = @[];
+    }
     
     return someObjects;
 }
@@ -105,18 +108,19 @@
 - (NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
 { 
     __block NSArray *bucketObjects = nil;
-    dispatch_sync(storageQueue, ^{
-        NSDictionary *objectDict = [objects objectForKey:bucketName];
+    dispatch_sync(_storageQueue, ^{
+        NSDictionary *objectDict = [_objects objectForKey:bucketName];
         if (objectDict) {
-            bucketObjects = [objects allValues];
+            bucketObjects = [_objects allValues];
             
             if (predicate)
                 bucketObjects = [bucketObjects filteredArrayUsingPredicate:predicate];
         }
     });
     
-    if (!bucketObjects)
-        bucketObjects = [NSArray array];
+    if (!bucketObjects) {
+        bucketObjects = @[];
+    }
     return bucketObjects;
 }
 
@@ -135,10 +139,11 @@
 - (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
 {
     __block NSInteger count = 0;
-    dispatch_sync(storageQueue, ^{
-        NSDictionary *objectDict = [objects objectForKey:bucketName];
-        if (objectDict)
+    dispatch_sync(_storageQueue, ^{
+        NSDictionary *objectDict = [_objects objectForKey:bucketName];
+        if (objectDict) {
             count = [[[objectDict allValues] filteredArrayUsingPredicate:predicate] count];
+        }
     });
     return count;
 }
@@ -147,9 +152,10 @@
     // Batch fault a bunch of objects for efficiency
     // All objects are already in memory, for now at least...
     NSArray *objectsAsList = [self objectsForKeys:[NSSet setWithArray:keys] bucketName:bucketName];
-    NSMutableDictionary *objectDict = [NSMutableDictionary dictionaryWithCapacity:[objectList count]];
-    for (id<SPDiffable>object in objectsAsList)
+    NSMutableDictionary *objectDict = [NSMutableDictionary dictionaryWithCapacity:_objectList.count];
+    for (id<SPDiffable>object in objectsAsList) {
         [objectDict setObject:object forKey:object.simperiumKey];
+    }
     return objectDict;
 }
 
@@ -163,18 +169,19 @@
 {
     id<SPDiffable>object = [[SPObject alloc] init];
     
-    if (!key)
+    if (!key) {
         key = [NSString sp_makeUUID];
-    
-    dispatch_sync(storageQueue, ^{
-        NSMutableDictionary *objectDict = [objects objectForKey:bucketName];
+    }
+        
+    dispatch_sync(_storageQueue, ^{
+        NSMutableDictionary *objectDict = [_objects objectForKey:bucketName];
         if (!objectDict) {
             objectDict = [NSMutableDictionary dictionaryWithCapacity:3];
-            [objects setObject:objectDict forKey:bucketName];
+            [_objects setObject:objectDict forKey:bucketName];
         }
         object.simperiumKey = key;
         [objectDict setObject:object forKey:key];
-        [allObjects setObject:object forKey:key];
+        [_allObjects setObject:object forKey:key];
     });
     
     return object;
@@ -184,16 +191,16 @@
     // object should be a dictionary
     id<SPDiffable>object = [[SPObject alloc] initWithDictionary:dict];
 
-    dispatch_sync(storageQueue, ^{
-        NSMutableDictionary *objectDict = [objects objectForKey:bucketName];
+    dispatch_sync(_storageQueue, ^{
+        NSMutableDictionary *objectDict = [_objects objectForKey:bucketName];
         if (!objectDict) {
             objectDict = [NSMutableDictionary dictionaryWithCapacity:3];
-            [objects setObject:objectDict forKey:bucketName];
+            [_objects setObject:objectDict forKey:bucketName];
         }
         NSString *key = [NSString sp_makeUUID];
         object.simperiumKey = key;   
         [objectDict setObject:object forKey:key];
-        [allObjects setObject:objects forKey:key];
+        [_allObjects setObject:_objects forKey:key];
     });
 }
 
@@ -295,16 +302,16 @@
     // This needs to write all objects to disk in a thread-safe way, perhaps asynchronously since it can be
     // triggered from the main thread and could take awhile
     
-    // Sync all changes
-    // Fake it for now by trying to send all objects
+    // Sync all changes: Fake it for now by trying to send all objects
     NSMutableSet *updatedObjects = [NSMutableSet set];
-    for (NSDictionary *objectDict in [objects allValues]) {
+    
+    for (NSDictionary *objectDict in _objects.allValues) {
         NSArray *objectsAsList = [objectDict allValues];
         [updatedObjects addObjectsFromArray:objectsAsList];
     }
 
-    [delegate storageWillSave:self deletedObjects:nil];
-    [delegate storageDidSave:self insertedObjects:nil updatedObjects:updatedObjects];
+    [_delegate storageWillSave:self deletedObjects:nil];
+    [_delegate storageDidSave:self insertedObjects:nil updatedObjects:updatedObjects];
     
     return NO;
 }
