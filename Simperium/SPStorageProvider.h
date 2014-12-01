@@ -17,11 +17,14 @@
 @protocol SPStorageProvider <NSObject>
 
 // Properties
-@property (nonatomic, copy,  readonly) NSSet        *stashedObjects;
 @property (nonatomic, copy, readwrite) NSDictionary *metadata;
+@property (nonatomic, copy,  readonly) NSSet        *stashedObjects;
+
+// Persistance
+- (BOOL)save;
+- (void)commitPendingOperations:(void (^)())completion;
 
 // Helpers
-- (BOOL)save;
 - (NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate;
 - (NSArray *)objectKeysForBucketName:(NSString *)bucketName;
 - (id)objectForKey:(NSString *)key bucketName:(NSString *)bucketName;

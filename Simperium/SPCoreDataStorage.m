@@ -355,6 +355,13 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     NSLog(@"Simperium managing %lu %@ object instances", (unsigned long)[results count], bucketName);
 }
 
+- (void)commitPendingOperations:(void (^)())completion {
+    NSAssert(completion, @"Please, provide a completion handler");
+    
+    // Let's make sure that pending blocks dispatched to the writer's queue are ready
+    [self.writerManagedObjectContext performBlock:completion];
+}
+
 - (BOOL)save {
     // Standard way to save an NSManagedObjectContext
     NSError *error = nil;
