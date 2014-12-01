@@ -584,6 +584,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     // Reset the network manager and processors; any enqueued tasks will get skipped
     self.logoutInProgress = YES;
     
+    // Once every changeProcessor queue is drained: proceed nuking the database (if needed)
     dispatch_group_t group = dispatch_group_create();
     
     for (SPBucket *bucket in self.buckets.allValues) {
@@ -595,28 +596,35 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         }];
     }
     
-    // Once every changeProcessor queue has been effectively, hit the completion callback
     dispatch_group_notify(group, dispatch_get_main_queue(), ^(void) {
-        
-        // Now delete all local content; no more changes will be coming in at this point
-        if (remove) {
-            SPLogInfo(@"Simperium clearing local data...");
-            self.skipContextProcessing = YES;
-            [self.buckets.allValues makeObjectsPerformSelector:@selector(deleteAllObjects)];
-            self.skipContextProcessing = NO;
-        }
-
-        // Hit the delegate + callback
-        if ([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
-            [self.delegate simperiumDidLogout:self];
-        }
-        
-        self.logoutInProgress = NO;
-        
-        if (completion) {
-            completion();
-        }
+        [self _finishSignout:remove completion:completion];
     });
+}
+
+- (void)_finishSignout:(BOOL)remove completion:(SimperiumSignoutCompletion)completion {
+    
+    // Now delete all local content; no more changes will be coming in at this point
+    if (remove) {
+        SPLogInfo(@"Simperium removing all entities...");
+        self.skipContextProcessing = YES;
+        [self.buckets.allValues makeObjectsPerformSelector:@selector(deleteAllObjects)];
+    }
+    
+    // Wait until any pending Save OP is ready
+    [self.coreDataStorage commitPendingOperations:^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
+                [self.delegate simperiumDidLogout:self];
+            }
+            
+            if (completion) {
+                completion();
+            }
+            
+            self.logoutInProgress       = NO;
+            self.skipContextProcessing  = NO;
+        });
+    }];
 }
 
 - (void)resetMetadata {
