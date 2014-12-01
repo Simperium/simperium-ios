@@ -564,6 +564,11 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         return;
     }
     
+    if (self.logoutInProgress) {
+        SPLogError(@"Error: Simperium is already logging out");
+        return;
+    }
+    
     SPLogInfo(@"Simperium logging out...");
     
     // Reset Simperium: Don't start network managers again; expect app to handle that
