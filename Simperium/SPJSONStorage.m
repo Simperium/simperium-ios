@@ -316,6 +316,13 @@
     return NO;
 }
 
+- (void)commitPendingOperations:(void (^)())completion {
+    NSAssert(completion, @"Please, provide a completion handler");
+    
+    // NO-OP
+    completion();
+}
+
 - (NSSet *)stashedObjects {
     return nil;
 }
