@@ -15,19 +15,16 @@
 #import "Config.h"
 
 
+
+#pragma mark ====================================================================================
+#pragma mark SPWebSocketInterfaceTests
+#pragma mark ====================================================================================
+
 @interface SPWebSocketInterfaceTests : XCTestCase
 
 @end
 
 @implementation SPWebSocketInterfaceTests
-
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
 
 - (void)testRemoteLoglevelMessage {
 	//	log:<log level>

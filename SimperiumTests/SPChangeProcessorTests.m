@@ -178,9 +178,6 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     // Helpers
     // ===================================================================================================
     //
-    MockSimperium* s                = [MockSimperium mockSimperium];
-    SPBucket* bucket                = [s bucketForName:NSStringFromClass([Config class])];
-    SPCoreDataStorage* storage      = bucket.storage;
     DiffMatchPatch *dmp             = [DiffMatchPatch new];
     NSMutableDictionary *changes    = [NSMutableDictionary dictionary];
 
@@ -200,7 +197,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     // Insert Config
     // ===================================================================================================
     //
-    Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+    Config* config                  = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
     config.captainsLog              = localGhostData;
     
     NSMutableDictionary *memberData = [config.dictionary mutableCopy];
@@ -211,7 +208,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     
     config.captainsLog              = localMemberData;
     
-    [s saveWithoutSyncing];
+    [_simperium saveWithoutSyncing];
     
     NSLog(@"<> Config with invalid state successfully inserted");
     
@@ -251,13 +248,13 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     //
     XCTestExpectation *expectation = [self expectationWithDescription:@"Process Expectation"];
     
-    dispatch_async(bucket.processorQueue, ^{
-        [bucket.changeProcessor processRemoteChanges:changes.allValues
-                                              bucket:bucket
-                                      successHandler:^(NSString *simperiumKey, NSString *version) { }
-                                        errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
-                                          XCTAssertFalse(true, @"This should not get executed");
-                                        }];
+    dispatch_async(_configBucket.processorQueue, ^{
+        [_configBucket.changeProcessor processRemoteChanges:changes.allValues
+                                                     bucket:_configBucket
+                                             successHandler:^(NSString *simperiumKey, NSString *version) { }
+                                               errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
+                                                   XCTAssertFalse(true, @"This should not get executed");
+                                               }];
         
         [expectation fulfill];
     });
@@ -275,7 +272,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     //
     
     // Reload the Object
-    [storage refaultObjects:@[config]];
+    [_storage refaultObjects:@[config]];
     
     // We expect the error handling code to detect the inconsistency, and fall back to remote data
     
