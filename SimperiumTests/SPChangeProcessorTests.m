@@ -7,9 +7,12 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "XCTestCase+Simperium.h"
+
 #import "MockSimperium.h"
+#import "Simperium+Internals.h"
 #import "SPBucket+Internals.h"
+
+#import "XCTestCase+Simperium.h"
 #import "SPGhost.h"
 #import "SPChangeProcessor.h"
 #import "SPCoreDataStorage.h"
@@ -25,9 +28,10 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSInteger const SPNumberOfEntities       = 100;
-static NSString * const SPRemoteClientID        = @"OSX-Remote!";
-static NSUInteger const SPRandomStringLength    = 1000;
+static NSInteger const SPNumberOfEntities           = 100;
+static NSString * const SPRemoteClientID            = @"OSX-Remote!";
+static NSUInteger const SPRandomStringLength        = 1000;
+static NSTimeInterval const SPExpectationTimeout    = 60.0;
 
 
 #pragma mark ====================================================================================
@@ -35,10 +39,18 @@ static NSUInteger const SPRandomStringLength    = 1000;
 #pragma mark ====================================================================================
 
 @interface SPChangeProcessorTests : XCTestCase
-
+@property (nonatomic, strong) Simperium*            simperium;
+@property (nonatomic, strong) SPCoreDataStorage*    storage;
+@property (nonatomic, strong) SPBucket*             configBucket;
 @end
 
 @implementation SPChangeProcessorTests
+
+- (void)setUp {
+    self.simperium      = [MockSimperium mockSimperium];
+    self.storage        = _simperium.coreDataStorage;
+    self.configBucket   = [_simperium bucketForName:NSStringFromClass([Config class])];
+}
 
 - (void)testProcessRemoteChangeWithInvalidDelta {
     
@@ -46,9 +58,6 @@ static NSUInteger const SPRandomStringLength    = 1000;
 	// Helpers
     // ===================================================================================================
     //
-	MockSimperium* s                    = [MockSimperium mockSimperium];
-	SPBucket* bucket                    = [s bucketForName:NSStringFromClass([Config class])];
-	SPCoreDataStorage* storage          = bucket.storage;
 	NSMutableArray* configs             = [NSMutableArray array];
     NSMutableDictionary *changes        = [NSMutableDictionary dictionary];
     NSMutableDictionary *originalLogs   = [NSMutableDictionary dictionary];
@@ -62,7 +71,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
         NSString *originalLog           = [NSString sp_randomStringOfLength:SPRandomStringLength];
         
         // New post please!
-		Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+		Config* config                  = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
 		config.captainsLog              = originalLog;
         
         // Manually Intialize SPGhost: we're not relying on the backend to confirm these additions!
@@ -80,7 +89,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
 		[configs addObject:config];
 	}
     
-	[storage save];
+	[_storage save];
     
     NSLog(@"<> Successfully inserted %d objects", (int)SPNumberOfEntities);
     
@@ -121,28 +130,28 @@ static NSUInteger const SPRandomStringLength    = 1000;
     // Process remote changes
     // ===================================================================================================
     //
-	StartBlock();
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Process Expectation"];
     
-    dispatch_async(bucket.processorQueue, ^{
+    dispatch_async(_configBucket.processorQueue, ^{
         __block NSInteger errorCount = 0;
-        [bucket.changeProcessor processRemoteChanges:changes.allValues
-                                              bucket:bucket
-                                      successHandler:^(NSString *simperiumKey, NSString *version) {
-                                          XCTAssertFalse(true, @"This should not get executed");
-                                        }
-                                        errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
-                                            XCTAssertTrue(error.code == SPProcessorErrorsReceivedInvalidChange, @"Invalid error code");
-                                            ++errorCount;
-                                        }];
+        [_configBucket.changeProcessor processRemoteChanges:changes.allValues
+                                                     bucket:_configBucket
+                                             successHandler:^(NSString *simperiumKey, NSString *version) {
+                                                 XCTAssertFalse(true, @"This should not get executed");
+                                             }
+                                               errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
+                                                   XCTAssertTrue(error.code == SPProcessorErrorsReceivedInvalidChange, @"Invalid error code");
+                                                   ++errorCount;
+                                               }];
         
         XCTAssertTrue(errorCount == changes.count, @"Missed an error?");
-        
-		dispatch_async(dispatch_get_main_queue(), ^{
-			EndBlock();
-		});
+        [expectation fulfill];
     });
     
-	WaitUntilBlockCompletes();
+
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
     
     NSLog(@"<> Finished processing remote changes");
     
@@ -240,7 +249,7 @@ static NSUInteger const SPRandomStringLength    = 1000;
     // Process remote changes
     // ===================================================================================================
     //
-    StartBlock();
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Process Expectation"];
     
     dispatch_async(bucket.processorQueue, ^{
         [bucket.changeProcessor processRemoteChanges:changes.allValues
@@ -250,12 +259,12 @@ static NSUInteger const SPRandomStringLength    = 1000;
                                           XCTAssertFalse(true, @"This should not get executed");
                                         }];
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            EndBlock();
-        });
+        [expectation fulfill];
     });
     
-    WaitUntilBlockCompletes();
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
     
     NSLog(@"<> Finished processing remote changes");
     
