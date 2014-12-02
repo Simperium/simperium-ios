@@ -248,6 +248,100 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     XCTAssertNotEqual(config.captainsLog, remoteMemberData, @"Inconsistency detected");
 }
 
+- (void)testProcessRemoteChangeWithLocalPendingChange {
+    
+    // ===================================================================================================
+    // Helpers
+    // ===================================================================================================
+    //
+    DiffMatchPatch *dmp             = [DiffMatchPatch new];
+    NSMutableDictionary *changes    = [NSMutableDictionary dictionary];
+    
+    // Note:
+    // Force an Inconsistent State == "Ghost != Member Data" because, for X reason, a remote delta wasn't applied
+    // This particular inconsistency will neutralize new changes coming through. We expect the changeProcessor to
+    // detect this, and fall back to ghost data.
+    //
+    NSString *remoteMemberData		= @"Line 1\nLine 2\n";
+    NSString *localGhostData        = @"Line 1\n";
+    NSString *localMemberData       = @"Line 1\nLine 3";
+    NSString *expectedMemberData    = @"Line 1\nLine 2\nLine 3";
+    NSMutableArray *rawDiff         = [dmp diff_mainOfOldString:localGhostData andNewString:remoteMemberData];
+    NSString *delta                 = [dmp diff_toDelta:rawDiff];
+    
+    
+    // ===================================================================================================
+    // Insert Config
+    // ===================================================================================================
+    //
+    Config* config                  = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
+    config.captainsLog              = localGhostData;
+    [config test_simulateGhostData];
+    
+    config.captainsLog              = localMemberData;
+    
+    [_simperium saveWithoutSyncing];
+    [_storage test_waitUntilSaveCompletes];
+    
+    
+    // ===================================================================================================
+    // Prepare Remote Changes
+    // ===================================================================================================
+    //
+    NSString *changeVersion         = [NSString sp_makeUUID];
+    NSString *startVersion          = config.ghost.version;
+    NSString *endVersion            = [NSString stringWithFormat:@"%d", startVersion.intValue + 1];
+    
+    // Prepare the change itself
+    changes[config.simperiumKey]    = @{
+                                        CH_CLIENT_ID        : SPRemoteClientID,
+                                        CH_CHANGE_VERSION   : changeVersion,
+                                        CH_START_VERSION    : startVersion,
+                                        CH_END_VERSION      : endVersion,
+                                        CH_KEY              : config.simperiumKey,
+                                        CH_OPERATION        : CH_MODIFY,
+                                        CH_VALUE            : @{
+                                                NSStringFromSelector(@selector(captainsLog))    : @{
+                                                        CH_OPERATION    : CH_DATA,
+                                                        CH_VALUE        : delta
+                                                        }
+                                                }
+                                        };
+    
+    
+    // ===================================================================================================
+    // Process remote changes
+    // ===================================================================================================
+    //
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Process Expectation"];
+    
+    dispatch_async(_configBucket.processorQueue, ^{
+        [_configBucket.changeProcessor processRemoteChanges:changes.allValues
+                                                     bucket:_configBucket
+                                             successHandler:^(NSString *simperiumKey, NSString *version) { }
+                                               errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
+                                                   XCTAssertFalse(true, @"This should not get executed");
+                                               }];
+        
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
+    
+    // ===================================================================================================
+    // Verify
+    // ===================================================================================================
+    //
+    
+    // Reload the Object
+    [_storage refaultObjects:@[config]];
+    
+    // We expect the error handling code to detect the inconsistency, and fall back to remote data
+    XCTAssertNotEqual(config.captainsLog, expectedMemberData, @"Inconsistency detected");
+}
+
 - (void)testEnumeratePendingChanges {
     
     // ===================================================================================================
