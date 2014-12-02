@@ -238,6 +238,10 @@
         case NSFetchedResultsChangeDelete:
             [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
             break;
+            
+        case NSFetchedResultsChangeMove:
+        case NSFetchedResultsChangeUpdate:
+            break;
     }
 }
 
@@ -310,8 +314,8 @@
     // If appropriate, configure the new managed object.
     todo.title = @"";
     todo.done = [NSNumber numberWithBool:NO];
-    int numRows = [self tableView:self.tableView numberOfRowsInSection:0];
-    todo.order = [NSNumber numberWithInt: numRows];
+    NSInteger numRows = [self tableView:self.tableView numberOfRowsInSection:0];
+    todo.order = @(numRows);
     
     [self save];
 
