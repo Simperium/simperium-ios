@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Simperium. All rights reserved.
 //
 
-#import <Simperium/Simperium.h>
+#import "Simperium.h"
 
 
 
