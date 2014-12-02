@@ -16,25 +16,27 @@
 #import "SPBucket.h"
 
 
+
 #pragma mark ====================================================================================
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSString *SPTestSourceBucket     = @"SPMockSource";
-static NSString *SPTestSourceAttribute  = @"sourceAttribute";
+static NSString *SPTestSourceBucket                 = @"SPMockSource";
+static NSString *SPTestSourceAttribute              = @"sourceAttribute";
 
-static NSString *SPTestTargetBucket     = @"SPMockTarget";
-static NSString *SPTestTargetAttribute1 = @"targetAttribute1";
-static NSString *SPTestTargetAttribute2 = @"targetAttribute2";
+static NSString *SPTestTargetBucket                 = @"SPMockTarget";
+static NSString *SPTestTargetAttribute1             = @"targetAttribute1";
+static NSString *SPTestTargetAttribute2             = @"targetAttribute2";
 
-static NSString *SPLegacyPathKey        = @"SPPathKey";
-static NSString *SPLegacyPathBucket     = @"SPPathBucket";
-static NSString *SPLegacyPathAttribute  = @"SPPathAttribute";
-static NSString *SPLegacyPendingsKey    = @"SPPendingReferences";
+static NSString *SPLegacyPathKey                    = @"SPPathKey";
+static NSString *SPLegacyPathBucket                 = @"SPPathBucket";
+static NSString *SPLegacyPathAttribute              = @"SPPathAttribute";
+static NSString *SPLegacyPendingsKey                = @"SPPendingReferences";
 
-static NSInteger SPTestStressIterations = 1000;
-static NSInteger SPTestIterations       = 100;
-static NSInteger SPTestSubIterations    = 10;
+static NSInteger SPTestStressIterations             = 1000;
+static NSInteger SPTestIterations                   = 100;
+static NSInteger SPTestSubIterations                = 10;
+static NSTimeInterval const SPExpectationTimeout    = 60.0;
 
 
 #pragma mark ====================================================================================
@@ -345,7 +347,8 @@ static NSInteger SPTestSubIterations    = 10;
     });
     
     // Wait for completion and verify
-    StartBlock();
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Resolver Expectation"];
+    
 	dispatch_group_notify(group, dispatch_get_main_queue(), ^ {
         
         NSLog(@">> Begins checking integrity");
@@ -357,30 +360,32 @@ static NSInteger SPTestSubIterations    = 10;
         }
 
         XCTAssertTrue([self.resolver countPendingRelationships] == 0, @"Inconsistency detected");
-        EndBlock();
+        [expectation fulfill];
     });
     
-    WaitUntilBlockCompletes();
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
 }
 
 
 #pragma mark - Helpers
 
 - (void)waitUntilResolverFinishes {
-    StartBlock();
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Resolver Expectation"];
     
     // Perform on the Resolver's private queue
     [self.resolver performBlock:^{
         
         // And once here, go back to the main thread: CoreData needs time to merge!
         dispatch_async(dispatch_get_main_queue(), ^{
-            
-            // Now we're ready
-            EndBlock();
+            [expectation fulfill];
         });
     }];
     
-    WaitUntilBlockCompletes();
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
 }
 
 @end

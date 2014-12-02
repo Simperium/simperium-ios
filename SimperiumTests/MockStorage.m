@@ -205,4 +205,8 @@ static NSInteger const SPWorkersDone = 0;
 	[_mutex unlock];
 }
 
+- (void)commitPendingOperations:(void (^)())completion {
+    completion();
+}
+
 @end

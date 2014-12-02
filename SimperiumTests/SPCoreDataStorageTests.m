@@ -7,24 +7,33 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "XCTestCase+Simperium.h"
+
 #import "MockSimperium.h"
 #import "Simperium+Internals.h"
-#import "Post.h"
-#import "PostComment.h"
-#import "SPCoreDataStorage.h"
-#import "SPStorageObserverAdapter.h"
 #import "SPBucket+Internals.h"
 
+#import "Post.h"
+#import "PostComment.h"
+
+#import "SPCoreDataStorage.h"
+#import "SPStorageObserverAdapter.h"
 
 
 
-static NSInteger const kNumberOfPosts                   = 10;
-static NSInteger const kCommentsPerPost                 = 50;
-static NSInteger const kStressIterations                = 100;
-static NSInteger const kRaceConditionNumberOfEntities   = 1000;
-static NSTimeInterval const kExpectationTimeout         = 60.0;
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
 
+static NSInteger const SPNumberOfPosts                   = 10;
+static NSInteger const SPCommentsPerPost                 = 50;
+static NSInteger const SPStressIterations                = 100;
+static NSInteger const SPRaceConditionNumberOfEntities   = 1000;
+static NSTimeInterval const SPExpectationTimeout         = 60.0;
+
+
+#pragma mark ====================================================================================
+#pragma mark SPCoreDataStorageTests
+#pragma mark ====================================================================================
 
 @interface SPCoreDataStorageTests : XCTestCase
 @property (nonatomic, strong) Simperium*            simperium;
@@ -55,7 +64,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
 }
 
 - (void)testStressUpsertingWhileDeletingRootEntities {
-	for (NSInteger i = 0; ++i <= kStressIterations; ) {
+	for (NSInteger i = 0; ++i <= SPStressIterations; ) {
 		NSLog(@"<> Stress Iteration %ld", (long)i);
 		
 		NSDate *reference = [NSDate date];
@@ -77,7 +86,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
 	NSMutableArray* commentKeys		= [NSMutableArray array];
 	
 	// Insert Posts
-	for (NSInteger i = 0; ++i <= kNumberOfPosts; ) {
+	for (NSInteger i = 0; ++i <= SPNumberOfPosts; ) {
 		Post* post = [self.storage insertNewObjectForBucketName:postBucket.name simperiumKey:nil];
 		post.title = [NSString stringWithFormat:@"Post [%ld]", (long)i];
 		[postKeys addObject:post.simperiumKey];
@@ -95,7 +104,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
 		for (NSString* simperiumKey in postKeys) {
 			
 			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
-			for (NSInteger j = 0; ++j <= kCommentsPerPost; ) {
+			for (NSInteger j = 0; ++j <= SPCommentsPerPost; ) {
 				PostComment* comment = [threadSafeStorage insertNewObjectForBucketName:commentBucket.name simperiumKey:nil];
 				comment.content = [NSString stringWithFormat:@"Comment [%ld]", (long)j];
 				[post addCommentsObject:comment];
@@ -130,7 +139,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
         [deleteExpectation fulfill];
 	});
 	
-    [self waitForExpectationsWithTimeout:kExpectationTimeout handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
         XCTAssertNil(error, @"Expectations Timeout");
     }];
 }
@@ -143,13 +152,13 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
 	NSMutableArray* postKeys		= [NSMutableArray array];
 	
 	// Insert Posts
-	for (NSInteger i = 0; ++i <= kNumberOfPosts; ) {
+	for (NSInteger i = 0; ++i <= SPNumberOfPosts; ) {
 		Post* post = [self.storage insertNewObjectForBucketName:postBucket.name simperiumKey:nil];
 		post.title = [NSString stringWithFormat:@"Post [%ld]", (long)i];
 		[postKeys addObject:post.simperiumKey];
 		
 		// Insert Comments
-		for (NSInteger j = 0; ++j <= kCommentsPerPost; ) {
+		for (NSInteger j = 0; ++j <= SPCommentsPerPost; ) {
 			PostComment* comment = [self.storage insertNewObjectForBucketName:commentBucket.name simperiumKey:nil];
 			comment.content = [NSString stringWithFormat:@"Comment [%ld]", (long)j];
 			[post addCommentsObject:comment];
@@ -194,7 +203,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     self.storage.delegate = adapter;
 	[self.storage save];
     
-    [self waitForExpectationsWithTimeout:kExpectationTimeout handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
         XCTAssertNil(error, @"SPCoreDataStorage's delegate method was never executed");
     }];
 }
@@ -209,7 +218,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     XCTestExpectation *expectation              = [self expectationWithDescription:@"Insertion Callback Expgiectation"];
     
     adapter.didSaveCallback = ^(NSSet *inserted, NSSet *updated) {
-        XCTAssert(inserted.count == kRaceConditionNumberOfEntities, @"Missing inserted entity");
+        XCTAssert(inserted.count == SPRaceConditionNumberOfEntities, @"Missing inserted entity");
         
         dispatch_async(postBucket.processorQueue, ^{
             id<SPStorageProvider> threadsafeStorage = [self.storage threadSafeStorage];
@@ -226,12 +235,12 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     };
     
     // Proceed inserting [kRaceConditionNumberOfEntities] entities
-    for (NSInteger i = 0; ++i <= kRaceConditionNumberOfEntities; ) {
+    for (NSInteger i = 0; ++i <= SPRaceConditionNumberOfEntities; ) {
         [self.storage insertNewObjectForBucketName:postBucket.name simperiumKey:nil];
     }
     [self.storage save];
     
-    [self waitForExpectationsWithTimeout:kExpectationTimeout handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
         XCTAssertNil(error, @"SPCoreDataStorage's delegate method was never executed");
     }];
 }
@@ -245,7 +254,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     SPStorageObserverAdapter *adapter           = [SPStorageObserverAdapter new];
     
     adapter.willSaveCallback = ^(NSSet *deleted) {
-        XCTAssert(deleted.count == kRaceConditionNumberOfEntities, @"Missing inserted entity");
+        XCTAssert(deleted.count == SPRaceConditionNumberOfEntities, @"Missing inserted entity");
         
         for (SPManagedObject *mainMO in deleted) {
             XCTAssertNotNil(mainMO.simperiumKey, @"SimperiumKey is not accessible");
@@ -254,7 +263,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     };
     
     // Proceed inserting [kRaceConditionNumberOfEntities] entities
-    for (NSInteger i = 0; ++i <= kRaceConditionNumberOfEntities; ) {
+    for (NSInteger i = 0; ++i <= SPRaceConditionNumberOfEntities; ) {
         [self.storage insertNewObjectForBucketName:postBucketName simperiumKey:nil];
     }
     
@@ -265,7 +274,7 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     [self.storage deleteAllObjectsForBucketName:postBucketName];
     [self.storage save];
     
-    [self waitForExpectationsWithTimeout:kExpectationTimeout handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
         XCTAssertNil(error, @"SPCoreDataStorage's delegate method was never executed");
     }];
 }
@@ -283,18 +292,18 @@ static NSTimeInterval const kExpectationTimeout         = 60.0;
     
     adapter.didSaveCallback = ^(NSSet *inserted, NSSet *updated) {
         insertCount += inserted.count;
-        if (insertCount == kStressIterations) {
+        if (insertCount == SPStressIterations) {
             [expectation fulfill];
         }
     };
     
     // Proceed inserting [kRaceConditionNumberOfEntities] entities
-    for (NSInteger i = 0; ++i <= kStressIterations; ) {
+    for (NSInteger i = 0; ++i <= SPStressIterations; ) {
         [self.storage insertNewObjectForBucketName:postBucketName simperiumKey:nil];
         [self.storage save];
     }
     
-    [self waitForExpectationsWithTimeout:kExpectationTimeout handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
         XCTAssertNil(error, @"Inserted Objects never reached DidSave Callback");
     }];
 }

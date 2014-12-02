@@ -16,8 +16,10 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSUInteger const SPSetIterations		= 10000;
-static NSUInteger const SPConcurrentWorkers	= 100;
+static NSUInteger const SPSetIterations             = 10000;
+static NSUInteger const SPConcurrentWorkers         = 100;
+static NSTimeInterval const SPExpectationTimeout    = 60.0;
+
 
 #pragma mark ====================================================================================
 #pragma mark SPThreadsafeMutableSetTests
@@ -70,7 +72,7 @@ static NSUInteger const SPConcurrentWorkers	= 100;
 	}
 	
 	// Remember: Since it's a set, we should have 'SPSetIterations' objects
-	StartBlock();
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Expectation"];
 	
 	dispatch_group_notify(group, dispatch_get_main_queue(), ^{
 		XCTAssert(set.count == SPSetIterations, @"Thread safety issue");
@@ -82,10 +84,12 @@ static NSUInteger const SPConcurrentWorkers	= 100;
 		}
 
 		XCTAssertTrue(set.count == 0, @"The set should be empty!");
-		EndBlock();
+        [expectation fulfill];
 	});
 	
-	WaitUntilBlockCompletes();
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
 }
 
 @end
