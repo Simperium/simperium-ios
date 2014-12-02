@@ -63,12 +63,12 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 	// Helpers
     // ===================================================================================================
     //
-	NSMutableArray* configs             = [NSMutableArray array];
+    NSMutableArray* configs             = [NSMutableArray array];
     NSMutableDictionary *changes        = [NSMutableDictionary dictionary];
     NSMutableDictionary *originalLogs   = [NSMutableDictionary dictionary];
     
     // ===================================================================================================
-	// Insert SPNumberOfEntities Configs
+    // Insert SPNumberOfEntities Configs
     // ===================================================================================================
     //
 	for (NSInteger i = 0; ++i <= SPNumberOfEntities; ) {
