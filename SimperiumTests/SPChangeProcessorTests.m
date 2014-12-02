@@ -50,6 +50,9 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     self.simperium      = [MockSimperium mockSimperium];
     self.storage        = _simperium.coreDataStorage;
     self.configBucket   = [_simperium bucketForName:NSStringFromClass([Config class])];
+    
+    // Make sure that we're not picking up old enqueued changes
+    [self.configBucket.changeProcessor reset];
 }
 
 - (void)testProcessRemoteChangeWithInvalidDelta {
@@ -279,6 +282,43 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     // TODO:
     // Implement a recovery mechanism
     XCTAssertNotEqual(config.captainsLog, remoteMemberData, @"Inconsistency detected");
+}
+
+- (void)testEnumerateQueuedDeletions {
+    
+    // ===================================================================================================
+    // Enqueue SPNumberOfEntities Deletions
+    // ===================================================================================================
+    //
+    SPChangeProcessor *processor    = self.configBucket.changeProcessor;
+    
+    NSMutableSet *keys              = [NSMutableSet set];
+    
+    for (NSInteger i = 0; ++i <= SPNumberOfEntities; ) {
+        NSString *simperiumKey = [NSString sp_makeUUID];
+        [processor enqueueObjectForDeletion:simperiumKey bucket:_configBucket];
+        [keys addObject:simperiumKey];
+    }
+    
+    // ===================================================================================================
+    // Verify the Enqueued Deletions
+    // ===================================================================================================
+    //
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Process Expectation"];
+
+    [processor enumerateQueuedDeletionsForBucket:self.configBucket block:^(NSDictionary *change) {
+        NSString *simperiumKey = change[CH_KEY];
+        [keys removeObject:simperiumKey];
+        
+        if (keys.count == 0) {
+            [expectation fulfill];
+        }
+    }];
+
+    
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
 }
 
 @end
