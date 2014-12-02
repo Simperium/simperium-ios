@@ -15,7 +15,6 @@
 #import "SPManagedObject+Mock.h"
 #import "SPCoreDataStorage+Mock.h"
 
-#import "XCTestCase+Simperium.h"
 #import "SPGhost.h"
 #import "SPChangeProcessor.h"
 #import "SPCoreDataStorage.h"
@@ -68,22 +67,18 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     NSMutableDictionary *changes        = [NSMutableDictionary dictionary];
     NSMutableDictionary *originalLogs   = [NSMutableDictionary dictionary];
     
-    
     // ===================================================================================================
-	// Insert Config
+	// Insert SPNumberOfEntities Configs
     // ===================================================================================================
     //
 	for (NSInteger i = 0; ++i <= SPNumberOfEntities; ) {
-        NSString *originalLog           = [NSString sp_randomStringOfLength:SPRandomStringLength];
-        
-        // New post please!
-		Config* config                  = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
-		config.captainsLog              = originalLog;
+        // New Config!
+		Config* config                      = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
+		config.captainsLog                  = [NSString sp_randomStringOfLength:SPRandomStringLength];
         [config test_simulateGhostData];
 
         // Keep a copy of the original title
-        NSString *key                   = config.simperiumKey;
-        originalLogs[key]               = originalLog;
+        originalLogs[config.simperiumKey]   = config.captainsLog;
         
         // And keep a reference to the post
 		[configs addObject:config];
@@ -91,40 +86,31 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     
 	[_storage save];
     
-    NSLog(@"<> Successfully inserted %d objects", (int)SPNumberOfEntities);
-    
-    
     // ===================================================================================================
     // Prepare Remote Changes
     // ===================================================================================================
     //
     for (Config *config in configs) {
-        NSString *changeVersion     = [NSString sp_makeUUID];
-        NSString *startVersion      = config.ghost.version;
-        NSString *endVersion        = [NSString stringWithFormat:@"%d", startVersion.intValue + 1];
-        NSString *delta             = @"An invalid delta here!";
+        NSString *changeVersion         = [NSString sp_makeUUID];
+        NSString *startVersion          = config.ghost.version;
+        NSString *endVersion            = [NSString stringWithFormat:@"%d", startVersion.intValue + 1];
+        NSString *delta                 = @"An invalid delta here!";
         
-        // Prepare the change itself
-        NSDictionary *change    = @{
-                                    CH_CLIENT_ID        : SPRemoteClientID,
-                                    CH_CHANGE_VERSION   : changeVersion,
-                                    CH_START_VERSION    : startVersion,
-                                    CH_END_VERSION      : endVersion,
-                                    CH_KEY              : config.simperiumKey,
-                                    CH_OPERATION        : CH_MODIFY,
-                                    CH_VALUE            : @{
-                                            NSStringFromSelector(@selector(captainsLog))    : @{
-                                                    CH_OPERATION    : CH_DATA,
-                                                    CH_VALUE        : delta
-                                            }
-                                        }
-                                    };
-        
-        changes[config.simperiumKey] = change;
+        changes[config.simperiumKey]    = @{
+                                            CH_CLIENT_ID        : SPRemoteClientID,
+                                            CH_CHANGE_VERSION   : changeVersion,
+                                            CH_START_VERSION    : startVersion,
+                                            CH_END_VERSION      : endVersion,
+                                            CH_KEY              : config.simperiumKey,
+                                            CH_OPERATION        : CH_MODIFY,
+                                            CH_VALUE            : @{
+                                                    NSStringFromSelector(@selector(captainsLog))    : @{
+                                                            CH_OPERATION    : CH_DATA,
+                                                            CH_VALUE        : delta
+                                                    }
+                                                }
+                                        };
     }
-    
-    NSLog(@"<> Successfully generated remote changes");
-    
     
     // ===================================================================================================
     // Process remote changes
@@ -153,8 +139,6 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
         XCTAssertNil(error, @"Expectations Timeout");
     }];
     
-    NSLog(@"<> Finished processing remote changes");
-    
     
     // ===================================================================================================
     // Verify if the changeProcessor actually did its job
@@ -165,7 +149,6 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
         NSString *endVersion    = change[CH_END_VERSION];
         NSString *originalTitle = originalLogs[config.simperiumKey];
         
-        // THE check!
         XCTAssertEqualObjects(config.captainsLog, originalTitle,    @"Invalid CaptainsLog");
         XCTAssertFalse([config.ghost.version isEqual:endVersion],   @"Invalid Ghost Version");
     }
@@ -204,8 +187,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.captainsLog              = localMemberData;
     
     [_simperium saveWithoutSyncing];
-    
-    NSLog(@"<> Config with invalid state successfully inserted");
+    [_storage test_waitUntilSaveCompletes];
     
     
     // ===================================================================================================
@@ -217,7 +199,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     NSString *endVersion            = [NSString stringWithFormat:@"%d", startVersion.intValue + 1];
     
     // Prepare the change itself
-    NSDictionary *change            = @{
+    changes[config.simperiumKey]    = @{
                                         CH_CLIENT_ID        : SPRemoteClientID,
                                         CH_CHANGE_VERSION   : changeVersion,
                                         CH_START_VERSION    : startVersion,
@@ -231,10 +213,6 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
                                                         }
                                                 }
                                     };
-    
-    changes[config.simperiumKey] = change;
-    
-    NSLog(@"<> Successfully generated remote changes");
     
     
     // ===================================================================================================
@@ -258,9 +236,6 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
         XCTAssertNil(error, @"Expectations Timeout");
     }];
     
-    NSLog(@"<> Finished processing remote changes");
-    
-    
     // ===================================================================================================
     // Verify
     // ===================================================================================================
@@ -270,10 +245,55 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     [_storage refaultObjects:@[config]];
     
     // We expect the error handling code to detect the inconsistency, and fall back to remote data
-    
-    // TODO:
-    // Implement a recovery mechanism
     XCTAssertNotEqual(config.captainsLog, remoteMemberData, @"Inconsistency detected");
+}
+
+- (void)testEnumeratePendingChanges {
+    
+    // ===================================================================================================
+    // Insert SPNumberOfEntities Configs
+    // ===================================================================================================
+    //
+    SPChangeProcessor *processor        = self.configBucket.changeProcessor;
+    NSMutableSet *keys                  = [NSMutableSet set];
+    
+    for (NSInteger i = 0; ++i <= SPNumberOfEntities; ) {
+        Config* config                  = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
+        config.captainsLog              = [NSString sp_randomStringOfLength:SPRandomStringLength];
+        [keys addObject:config.simperiumKey];
+    }
+    
+    [_storage save];
+    [_storage test_waitUntilSaveCompletes];
+    
+    // ===================================================================================================
+    // Process the changes
+    // ===================================================================================================
+    //
+    dispatch_async(self.configBucket.processorQueue, ^{
+        [self.configBucket.changeProcessor processLocalObjectsWithKeys:keys bucket:_configBucket];
+    });
+    
+    // ===================================================================================================
+    // Enumerate Pending Changes
+    // ===================================================================================================
+    //
+    XCTestExpectation *expectation      = [self expectationWithDescription:@"Process Expectation"];
+    
+    dispatch_async(self.configBucket.processorQueue, ^{
+        [processor enumeratePendingChangesForBucket:self.configBucket block:^(NSDictionary *change) {
+            NSString *simperiumKey = change[CH_KEY];
+            [keys removeObject:simperiumKey];
+            
+            if (keys.count == 0) {
+                [expectation fulfill];
+            }
+        }];
+    });
+    
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
 }
 
 - (void)testEnumerateQueuedDeletions {
@@ -333,7 +353,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     [_storage save];
     
     // ===================================================================================================
-    // Verify the Enqueued Deletions
+    // Verify the Enqueued Changes
     // ===================================================================================================
     //
     XCTestExpectation *expectation      = [self expectationWithDescription:@"Process Expectation"];
@@ -392,7 +412,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     });
     
     // ===================================================================================================
-    // Verify the Enqueued Deletions
+    // Verify the Enqueued Retries
     // ===================================================================================================
     //
     XCTestExpectation *expectation      = [self expectationWithDescription:@"Process Expectation"];
@@ -400,17 +420,16 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     dispatch_async(self.configBucket.processorQueue, ^{
         [processor enumerateRetryChangesForBucket:self.configBucket block:^(NSDictionary *change) {
             NSDictionary *fullData = change[CH_DATA];
+            XCTAssertNil(fullData, @"The changeset should not carry the full data");
+            
             NSString *simperiumKey = change[CH_KEY];
             [keys removeObject:simperiumKey];
-            
-            XCTAssertNil(fullData, @"The changeset should not carry the full data");
             
             if (keys.count == 0) {
                 [expectation fulfill];
             }
         }];
     });
-    
     
     [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
         XCTAssertNil(error, @"Expectations Timeout");
@@ -436,7 +455,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     [_storage test_waitUntilSaveCompletes];
     
     // ===================================================================================================
-    // Verify the Enqueued Deletions
+    // Enqueue the objects for Retry
     // ===================================================================================================
     //
     dispatch_async(self.configBucket.processorQueue, ^{
@@ -446,7 +465,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     });
     
     // ===================================================================================================
-    // Verify the Enqueued Deletions
+    // Enumerate objects for Retry
     // ===================================================================================================
     //
     XCTestExpectation *expectation      = [self expectationWithDescription:@"Process Expectation"];
@@ -454,17 +473,16 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     dispatch_async(self.configBucket.processorQueue, ^{
         [processor enumerateRetryChangesForBucket:self.configBucket block:^(NSDictionary *change) {
             NSDictionary *fullData = change[CH_DATA];
+            XCTAssertNotNil(fullData, @"The changeset should not carry the full data");
+            
             NSString *simperiumKey = change[CH_KEY];
             [keys removeObject:simperiumKey];
-            
-            XCTAssertNotNil(fullData, @"The changeset should not carry the full data");
             
             if (keys.count == 0) {
                 [expectation fulfill];
             }
         }];
     });
-    
     
     [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
         XCTAssertNil(error, @"Expectations Timeout");
