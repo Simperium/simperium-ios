@@ -11,7 +11,9 @@
 #import "MockSimperium.h"
 #import "Simperium+Internals.h"
 #import "SPBucket+Internals.h"
+
 #import "SPManagedObject+Mock.h"
+#import "SPCoreDataStorage+Mock.h"
 
 #import "XCTestCase+Simperium.h"
 #import "SPGhost.h"
@@ -197,12 +199,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     //
     Config* config                  = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
     config.captainsLog              = localGhostData;
-    
-    NSMutableDictionary *memberData = [config.dictionary mutableCopy];
-    SPGhost *ghost                  = [[SPGhost alloc] initWithKey:config.simperiumKey memberData:memberData];
-    ghost.version                   = @"1";
-    config.ghost                    = ghost;
-    config.ghostData                = [memberData sp_JSONString];
+    [config test_simulateGhostData];
     
     config.captainsLog              = localMemberData;
     
@@ -345,6 +342,122 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
         [processor enumerateQueuedChangesForBucket:self.configBucket block:^(NSDictionary *change) {
             NSString *simperiumKey = change[CH_KEY];
             [keys removeObject:simperiumKey];
+            
+            if (keys.count == 0) {
+                [expectation fulfill];
+            }
+        }];
+    });
+    
+    
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
+}
+
+- (void)testEnumerateRetryChangesWithoutOverridingRemoteData {
+    
+    // ===================================================================================================
+    // Insert SPNumberOfEntities Configs
+    // ===================================================================================================
+    //
+    SPChangeProcessor *processor        = self.configBucket.changeProcessor;
+    NSMutableSet *keys                  = [NSMutableSet set];
+    
+    for (NSInteger i = 0; ++i <= SPNumberOfEntities; ) {
+        Config* config                  = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
+        config.captainsLog              = [NSString sp_randomStringOfLength:SPRandomStringLength];
+        [keys addObject:config.simperiumKey];
+    }
+    
+    [_storage save];
+    [_storage test_waitUntilSaveCompletes];
+
+    // ===================================================================================================
+    // Generate Changesets
+    // ===================================================================================================
+    //
+    dispatch_async(self.configBucket.processorQueue, ^{
+        [processor processLocalObjectsWithKeys:keys bucket:_configBucket];
+    });
+    
+    // ===================================================================================================
+    // Enqueue for Retry
+    // ===================================================================================================
+    //
+    dispatch_async(self.configBucket.processorQueue, ^{
+        for (NSString *simperiumKey in keys) {
+            [processor enqueueObjectForRetry:simperiumKey bucket:_configBucket overrideRemoteData:false];
+        }
+    });
+    
+    // ===================================================================================================
+    // Verify the Enqueued Deletions
+    // ===================================================================================================
+    //
+    XCTestExpectation *expectation      = [self expectationWithDescription:@"Process Expectation"];
+    
+    dispatch_async(self.configBucket.processorQueue, ^{
+        [processor enumerateRetryChangesForBucket:self.configBucket block:^(NSDictionary *change) {
+            NSDictionary *fullData = change[CH_DATA];
+            NSString *simperiumKey = change[CH_KEY];
+            [keys removeObject:simperiumKey];
+            
+            XCTAssertNil(fullData, @"The changeset should not carry the full data");
+            
+            if (keys.count == 0) {
+                [expectation fulfill];
+            }
+        }];
+    });
+    
+    
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
+}
+
+- (void)testEnumerateRetryChangesOverridingRemoteData {
+    
+    // ===================================================================================================
+    // Insert SPNumberOfEntities Configs
+    // ===================================================================================================
+    //
+    SPChangeProcessor *processor        = self.configBucket.changeProcessor;
+    NSMutableSet *keys                  = [NSMutableSet set];
+    
+    for (NSInteger i = 0; ++i <= SPNumberOfEntities; ) {
+        Config* config                  = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
+        config.captainsLog              = [NSString sp_randomStringOfLength:SPRandomStringLength];
+        [keys addObject:config.simperiumKey];
+    }
+    
+    [_storage save];
+    [_storage test_waitUntilSaveCompletes];
+    
+    // ===================================================================================================
+    // Verify the Enqueued Deletions
+    // ===================================================================================================
+    //
+    dispatch_async(self.configBucket.processorQueue, ^{
+        for (NSString *simperiumKey in keys) {
+            [processor enqueueObjectForRetry:simperiumKey bucket:_configBucket overrideRemoteData:true];
+        }
+    });
+    
+    // ===================================================================================================
+    // Verify the Enqueued Deletions
+    // ===================================================================================================
+    //
+    XCTestExpectation *expectation      = [self expectationWithDescription:@"Process Expectation"];
+    
+    dispatch_async(self.configBucket.processorQueue, ^{
+        [processor enumerateRetryChangesForBucket:self.configBucket block:^(NSDictionary *change) {
+            NSDictionary *fullData = change[CH_DATA];
+            NSString *simperiumKey = change[CH_KEY];
+            [keys removeObject:simperiumKey];
+            
+            XCTAssertNotNil(fullData, @"The changeset should not carry the full data");
             
             if (keys.count == 0) {
                 [expectation fulfill];
