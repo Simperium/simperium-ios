@@ -11,6 +11,7 @@
 #import "MockSimperium.h"
 #import "Simperium+Internals.h"
 #import "SPBucket+Internals.h"
+#import "SPManagedObject+Mock.h"
 
 #import "XCTestCase+Simperium.h"
 #import "SPGhost.h"
@@ -76,14 +77,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
         // New post please!
 		Config* config                  = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
 		config.captainsLog              = originalLog;
-        
-        // Manually Intialize SPGhost: we're not relying on the backend to confirm these additions!
-        NSMutableDictionary *memberData = [config.dictionary mutableCopy];
-        SPGhost *ghost                  = [[SPGhost alloc] initWithKey:config.simperiumKey memberData:memberData];
-        ghost.version                   = @"1";
-        config.ghost                    = ghost;
-        config.ghostData                = [memberData sp_JSONString];
-        
+        [config test_simulateGhostData];
+
         // Keep a copy of the original title
         NSString *key                   = config.simperiumKey;
         originalLogs[key]               = originalLog;
@@ -315,6 +310,48 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
         }
     }];
 
+    
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
+}
+
+- (void)testEnumerateQueuedChanges {
+    
+    // ===================================================================================================
+    // Insert SPNumberOfEntities Configs
+    // ===================================================================================================
+    //
+    SPChangeProcessor *processor        = self.configBucket.changeProcessor;
+    NSMutableSet *keys                  = [NSMutableSet set];
+    
+    for (NSInteger i = 0; ++i <= SPNumberOfEntities; ) {
+        Config* config                  = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
+        config.captainsLog              = [NSString sp_randomStringOfLength:SPRandomStringLength];
+        
+        [processor enqueueObjectForMoreChanges:config.simperiumKey bucket:_configBucket];
+        [keys addObject:config.simperiumKey];
+    }
+    
+    [_storage save];
+    
+    // ===================================================================================================
+    // Verify the Enqueued Deletions
+    // ===================================================================================================
+    //
+    XCTestExpectation *expectation      = [self expectationWithDescription:@"Process Expectation"];
+    
+    dispatch_async(self.configBucket.processorQueue, ^{
+        [processor enumerateQueuedChangesForBucket:self.configBucket block:^(NSDictionary *change) {
+            NSString *simperiumKey = change[CH_KEY];
+            [keys removeObject:simperiumKey];
+            
+            if (keys.count == 0) {
+                [expectation fulfill];
+            }
+        }];
+    });
+    
     
     [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
         XCTAssertNil(error, @"Expectations Timeout");
