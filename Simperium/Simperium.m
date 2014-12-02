@@ -744,10 +744,14 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [self.authenticator reset];
     self.user.authToken = nil;
     
-    if (self.authenticationEnabled) {
-        // Delay it a touch to avoid issues with storyboard-driven UIs
-        [self performSelector:@selector(delayedOpenAuthViewController) withObject:nil afterDelay:0.1];
+    [self failWithErrorCode:SPSimperiumErrorsInvalidToken];
+    
+    if (!self.authenticationEnabled) {
+        return;
     }
+    
+    // Delay it a touch to avoid issues with storyboard-driven UIs
+    [self performSelector:@selector(delayedOpenAuthViewController) withObject:nil afterDelay:0.1];
 }
 
 - (BOOL)authenticateIfNecessary {
