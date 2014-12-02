@@ -37,7 +37,8 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
     SPSimperiumErrorsMissingAppID,
     SPSimperiumErrorsMissingAPIKey,
     SPSimperiumErrorsMissingToken,
-    SPSimperiumErrorsMissingWindow
+    SPSimperiumErrorsMissingWindow,
+    SPSimperiumErrorsInvalidToken
 };
 
 
