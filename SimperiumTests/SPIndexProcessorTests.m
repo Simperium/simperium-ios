@@ -24,9 +24,10 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSInteger const SPNumberOfEntities   = 100;
-static NSInteger const SPKeyLength          = 10;
-static NSInteger const SPLogLength          = 50;
+static NSInteger const SPNumberOfEntities           = 100;
+static NSInteger const SPKeyLength                  = 10;
+static NSInteger const SPLogLength                  = 50;
+static NSTimeInterval const SPExpectationTimeout    = 60.0;
 
 
 #pragma mark ====================================================================================
@@ -86,7 +87,7 @@ static NSInteger const SPLogLength          = 50;
     // Process remote changes
     // ===================================================================================================
     //
-	StartBlock();
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Index Processor Expectation"];
     
     dispatch_async(bucket.processorQueue, ^{
         
@@ -94,12 +95,12 @@ static NSInteger const SPLogLength          = 50;
             XCTAssert(false, @"This should not get called");
         }];
         
-		dispatch_async(dispatch_get_main_queue(), ^{
-			EndBlock();
-		});
+        [expectation fulfill];
     });
     
-	WaitUntilBlockCompletes();
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
     
     NSLog(@"<> Finished processing versions");
     
@@ -208,7 +209,7 @@ static NSInteger const SPLogLength          = 50;
     // Process remote changes
     // ===================================================================================================
     //
-	StartBlock();
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Index Processor Expectation"];
     
     dispatch_async(bucket.processorQueue, ^{
         
@@ -216,12 +217,12 @@ static NSInteger const SPLogLength          = 50;
             XCTAssert(false, @"This should not get called");
         }];
         
-		dispatch_async(dispatch_get_main_queue(), ^{
-			EndBlock();
-		});
+        [expectation fulfill];
     });
     
-	WaitUntilBlockCompletes();
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
     
     NSLog(@"<> Finished processing versions");
     
@@ -333,7 +334,7 @@ static NSInteger const SPLogLength          = 50;
     // Process remote changes
     // ===================================================================================================
     //
-	StartBlock();
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Index Processor Expectation"];
     
     dispatch_async(bucket.processorQueue, ^{
         
@@ -341,12 +342,12 @@ static NSInteger const SPLogLength          = 50;
             XCTAssertEqualObjects(key, config.simperiumKey, @"Invalid key received");
         }];
         
-		dispatch_async(dispatch_get_main_queue(), ^{
-			EndBlock();
-		});
+        [expectation fulfill];
     });
     
-	WaitUntilBlockCompletes();
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
     
     NSLog(@"<> Finished processing versions");
     
@@ -437,7 +438,7 @@ static NSInteger const SPLogLength          = 50;
     // Process remote changes
     // ===================================================================================================
     //
-	StartBlock();
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Index Processor Expectation"];
     
     dispatch_async(bucket.processorQueue, ^{
         
@@ -445,12 +446,12 @@ static NSInteger const SPLogLength          = 50;
             XCTAssertEqualObjects(key, config.simperiumKey, @"Invalid key received");
         }];
         
-		dispatch_async(dispatch_get_main_queue(), ^{
-			EndBlock();
-		});
+        [expectation fulfill];
     });
     
-	WaitUntilBlockCompletes();
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
     
     NSLog(@"<> Finished processing versions");
     
@@ -461,6 +462,7 @@ static NSInteger const SPLogLength          = 50;
     //
     
     [storage refaultObjects:@[config]];
+    
     XCTAssertEqualObjects(config.captainsLog, expectedLog,                  @"Invalid Log");
     XCTAssertEqualObjects(config.ghost.version, endVersion,                 @"Invalid Ghost Version");
     XCTAssertTrue([self isGhostEqualToDictionary:data ghost:config.ghost],  @"Invalid Ghost MemberData");
@@ -547,7 +549,7 @@ static NSInteger const SPLogLength          = 50;
     // Process remote changes
     // ===================================================================================================
     //
-	StartBlock();
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Index Processor Expectation"];
     
     dispatch_async(bucket.processorQueue, ^{
         
@@ -555,12 +557,12 @@ static NSInteger const SPLogLength          = 50;
             XCTAssertTrue(true, @"This should not get called");
         }];
         
-		dispatch_async(dispatch_get_main_queue(), ^{
-			EndBlock();
-		});
+        [expectation fulfill];
     });
     
-	WaitUntilBlockCompletes();
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
     
     NSLog(@"<> Finished processing versions");
     
