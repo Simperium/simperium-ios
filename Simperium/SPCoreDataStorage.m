@@ -41,6 +41,8 @@ static NSInteger const SPWorkersDone    = 0;
 @property (nonatomic, weak,   readwrite) SPCoreDataStorage              *sibling;
 @property (nonatomic, strong, readwrite) NSConditionLock                *mutex;
 @property (nonatomic, strong, readwrite) NSMutableSet                   *privateStashedObjects;
+- (void)addObserversForMainContext:(NSManagedObjectContext *)context;
+- (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
 
 typedef void (^SPCoreDataStorageSaveCallback)(void);
@@ -74,8 +76,9 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
         // The new writer MOC will be the only one with direct access to the persistentStoreCoordinator
         self.writerManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
         self.mainManagedObjectContext.parentContext = self.writerManagedObjectContext;
+
+        [self addObserversForMainContext:self.mainManagedObjectContext];
     }
-    
     return self;
 }
 
@@ -103,7 +106,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
         self.mutex = aSibling.mutex;
         
         // An observer is expected to handle merges for otherContext when the threaded context is saved
-        [self startListeningWorker];
+        [self addObserversForChildrenContext:self.mainManagedObjectContext];
     }
     
     return self;
@@ -218,7 +221,8 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     return objectKeys;
 }
 
-- (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate {
+- (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
+{
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:[NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext]];
     [request setIncludesSubentities:NO]; //Omit subentities. Default is YES (i.e. include subentities) 
@@ -393,6 +397,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 
+// CD specific
 #pragma mark - Stashing and unstashing entities
 
 - (NSArray *)allUpdatedAndInsertedObjects {
@@ -452,11 +457,13 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 #pragma mark - Main MOC Notification Handlers
 
 - (void)mainContextDidSave:(NSNotification *)notification {
+    // Expose the affected objects via the public properties
     NSDictionary *userInfo  = notification.userInfo;
     NSSet *deletedObjects   = [self filterRemotelyDeletedObjects:userInfo[NSDeletedObjectsKey]];
     
     [self.delegate storageWillSave:self deletedObjects:deletedObjects];
-
+    
+    // Save the writerMOC's changes
     [self saveWriterContextWithCallback:^{
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.delegate storageDidSave:self insertedObjects:userInfo[NSInsertedObjectsKey] updatedObjects:userInfo[NSUpdatedObjectsKey]];
@@ -471,9 +478,16 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     for (NSManagedObject *insertedObject in insertedObjects) {
         if ([insertedObject isKindOfClass:[SPManagedObject class]]) {
             SPManagedObject *object = (SPManagedObject *)insertedObject;
-            [self configureInsertedObject:object];
+            [self configureInsertedObject: object];
         }
     }
+}
+
+- (void)addObserversForMainContext:(NSManagedObjectContext *)moc {
+    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:moc];
+    [nc addObserver:self selector:@selector(mainContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:moc];
+    [nc addObserver:self selector:@selector(mainContextObjectsDidChange:) name:NSManagedObjectContextObjectsDidChangeNotification object:moc];
 }
 
 
@@ -515,31 +529,10 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     }];
 }
 
-
-#pragma mark - Notification Helpers
-
-- (void)startListeningChanges {
-    NSAssert(self.mainManagedObjectContext.concurrencyType == NSMainQueueConcurrencyType, @"You shouldn't call this for child MOCs");
-    
-    // Failsafe: prevent double hooks, no matter what
-    [self stopListeningChanges];
-    
-    // Now hook up to the notifications!
+- (void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(managedContextWillSave:)      name:NSManagedObjectContextWillSaveNotification         object:_mainManagedObjectContext];
-    [nc addObserver:self selector:@selector(mainContextDidSave:)          name:NSManagedObjectContextDidSaveNotification          object:_mainManagedObjectContext];
-    [nc addObserver:self selector:@selector(mainContextObjectsDidChange:) name:NSManagedObjectContextObjectsDidChangeNotification object:_mainManagedObjectContext];
-}
-
-- (void)startListeningWorker {
-    NSAssert(self.mainManagedObjectContext.concurrencyType == NSConfinementConcurrencyType, @"You shouldn't call this for the main MOCs");
-    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:_mainManagedObjectContext];
-    [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification  object:_mainManagedObjectContext];
-}
-
-- (void)stopListeningChanges {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:context];
+    [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:context];
 }
 
 
