@@ -41,8 +41,6 @@ static NSInteger const SPWorkersDone    = 0;
 @property (nonatomic, weak,   readwrite) SPCoreDataStorage              *sibling;
 @property (nonatomic, strong, readwrite) NSConditionLock                *mutex;
 @property (nonatomic, strong, readwrite) NSMutableSet                   *privateStashedObjects;
-- (void)addObserversForMainContext:(NSManagedObjectContext *)context;
-- (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
 
 typedef void (^SPCoreDataStorageSaveCallback)(void);
@@ -76,8 +74,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
         // The new writer MOC will be the only one with direct access to the persistentStoreCoordinator
         self.writerManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
         self.mainManagedObjectContext.parentContext = self.writerManagedObjectContext;
-
-        [self addObserversForMainContext:self.mainManagedObjectContext];
     }
     return self;
 }
@@ -106,7 +102,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
         self.mutex = aSibling.mutex;
         
         // An observer is expected to handle merges for otherContext when the threaded context is saved
-        [self addObserversForChildrenContext:self.mainManagedObjectContext];
+        [self startListeningWorker];
     }
     
     return self;
@@ -396,7 +392,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 
-// CD specific
 #pragma mark - Stashing and unstashing entities
 
 - (NSArray *)allUpdatedAndInsertedObjects {
@@ -480,13 +475,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     }
 }
 
-- (void)addObserversForMainContext:(NSManagedObjectContext *)moc {
-    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:moc];
-    [nc addObserver:self selector:@selector(mainContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:moc];
-    [nc addObserver:self selector:@selector(mainContextObjectsDidChange:) name:NSManagedObjectContextObjectsDidChangeNotification object:moc];
-}
-
 
 #pragma mark - Children MOC Notification Handlers
 
@@ -526,10 +514,31 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     }];
 }
 
-- (void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
+
+#pragma mark - Notification Helpers
+
+- (void)startListeningChanges {
+    NSAssert(self.mainManagedObjectContext.concurrencyType == NSMainQueueConcurrencyType, @"You shouldn't call this for child MOCs");
+    
+    // Failsafe: prevent double hooks, no matter what
+    [self stopListeningChanges];
+    
+    // Now hook up to the notifications!
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:context];
-    [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:context];
+    [nc addObserver:self selector:@selector(managedContextWillSave:)      name:NSManagedObjectContextWillSaveNotification         object:_mainManagedObjectContext];
+    [nc addObserver:self selector:@selector(mainContextDidSave:)          name:NSManagedObjectContextDidSaveNotification          object:_mainManagedObjectContext];
+    [nc addObserver:self selector:@selector(mainContextObjectsDidChange:) name:NSManagedObjectContextObjectsDidChangeNotification object:_mainManagedObjectContext];
+}
+
+- (void)startListeningWorker {
+    NSAssert(self.mainManagedObjectContext.concurrencyType == NSConfinementConcurrencyType, @"You shouldn't call this for the main MOCs");
+    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:_mainManagedObjectContext];
+    [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification  object:_mainManagedObjectContext];
+}
+
+- (void)stopListeningChanges {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 
