@@ -684,7 +684,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     
     // Paranoid Mode: Don't set the lastChangeSignature, unless it's not nil!
     if (self.pendingLastChangeSignature) {
-        bucket.lastChangeSignature      = self.pendingLastChangeSignature;
+        bucket.lastChangeSignature  = self.pendingLastChangeSignature;
     }
     
     // All versions were received successfully, so update the lastChangeSignature

@@ -280,6 +280,16 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     return bucketList;
 }
 
+- (void)startStorageNotifications {
+    [self.coreDataStorage startListeningChanges];
+    [self.JSONStorage startListeningChanges];
+}
+
+- (void)stopStorageNotifications {
+    [self.coreDataStorage stopListeningChanges];
+    [self.JSONStorage stopListeningChanges];
+}
+
 - (void)validateObjectsIfNecessary {
     if (!self.validatesObjects) {
         return;
@@ -394,6 +404,9 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     self.appID      = identifier;
     self.APIKey     = key;
     self.rootURL    = SPBaseURL;
+    
+    // Start Listening for Storage Changes
+    [self startStorageNotifications];
     
     // With everything configured, all objects can now be validated. This will pick up any objects that aren't yet
     // known to Simperium (for the case where you're adding Simperium to an existing app).
@@ -623,6 +636,8 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
             
             self.logoutInProgress       = NO;
             self.skipContextProcessing  = NO;
+            
+            [self stopStorageNotifications];
         });
     }];
 }
