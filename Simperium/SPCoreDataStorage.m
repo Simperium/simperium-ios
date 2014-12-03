@@ -221,8 +221,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     return objectKeys;
 }
 
-- (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
-{
+- (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate {
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:[NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext]];
     [request setIncludesSubentities:NO]; //Omit subentities. Default is YES (i.e. include subentities) 
@@ -457,13 +456,11 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 #pragma mark - Main MOC Notification Handlers
 
 - (void)mainContextDidSave:(NSNotification *)notification {
-    // Expose the affected objects via the public properties
     NSDictionary *userInfo  = notification.userInfo;
     NSSet *deletedObjects   = [self filterRemotelyDeletedObjects:userInfo[NSDeletedObjectsKey]];
     
     [self.delegate storageWillSave:self deletedObjects:deletedObjects];
-    
-    // Save the writerMOC's changes
+
     [self saveWriterContextWithCallback:^{
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.delegate storageDidSave:self insertedObjects:userInfo[NSInsertedObjectsKey] updatedObjects:userInfo[NSUpdatedObjectsKey]];
@@ -478,7 +475,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     for (NSManagedObject *insertedObject in insertedObjects) {
         if ([insertedObject isKindOfClass:[SPManagedObject class]]) {
             SPManagedObject *object = (SPManagedObject *)insertedObject;
-            [self configureInsertedObject: object];
+            [self configureInsertedObject:object];
         }
     }
 }
