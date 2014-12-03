@@ -20,10 +20,6 @@
 @property (nonatomic, copy, readwrite) NSDictionary *metadata;
 @property (nonatomic, copy,  readonly) NSSet        *stashedObjects;
 
-// Setup
-- (void)startListeningChanges;
-- (void)stopListeningChanges;
-
 // Persistance
 - (BOOL)save;
 - (void)commitPendingOperations:(void (^)())completion;

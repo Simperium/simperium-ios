@@ -355,12 +355,4 @@
     // NO-OP
 }
 
-- (void)startListeningChanges {
-    // NO-OP
-}
-
-- (void)stopListeningChanges {
-    // NO-OP
-}
-
 @end
