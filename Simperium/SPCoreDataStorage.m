@@ -75,6 +75,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
         self.writerManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
         self.mainManagedObjectContext.parentContext = self.writerManagedObjectContext;
     }
+    
     return self;
 }
 
