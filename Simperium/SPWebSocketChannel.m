@@ -682,10 +682,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
     SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
     
-    // Paranoid Mode: Don't set the lastChangeSignature, unless it's not nil!
-    if (self.pendingLastChangeSignature) {
-        bucket.lastChangeSignature      = self.pendingLastChangeSignature;
-    }
+    // Update the Bucket's lastChangeSignature
+    bucket.lastChangeSignature      = self.pendingLastChangeSignature;
     
     // All versions were received successfully, so update the lastChangeSignature
     self.pendingLastChangeSignature = nil;
