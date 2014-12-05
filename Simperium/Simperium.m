@@ -703,12 +703,21 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 - (BOOL)requiresConnection {
     return (self.reachability.currentReachabilityStatus == NotReachable);
 }
+
 - (NSString *)networkStatus {
     return self.network.status;
 }
 
 - (NSDate *)networkLastSeenTime {
     return self.network.lastSeenTime;
+}
+
+- (NSUInteger)bytesSent {
+    return self.network.bytesSent;
+}
+
+- (NSUInteger)bytesReceived {
+    return self.network.bytesReceived;
 }
 
 

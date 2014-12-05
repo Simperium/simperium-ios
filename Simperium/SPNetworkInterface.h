@@ -19,6 +19,8 @@ typedef void (^SPNetworkInterfaceResetCompletion)(void);
 
 @property (nonatomic, readonly) NSString    *status;
 @property (nonatomic, readonly) NSDate      *lastSeenTime;
+@property (nonatomic, readonly) NSUInteger  bytesSent;
+@property (nonatomic, readonly) NSUInteger  bytesReceived;
 
 - (void)start:(SPBucket *)bucket;
 - (void)stop:(SPBucket *)bucket;

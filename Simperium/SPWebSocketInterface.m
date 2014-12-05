@@ -466,6 +466,14 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     return self.webSocket.lastSeenTimestamp;
 }
 
+- (NSUInteger)bytesReceived {
+    return self.webSocket.bytesReceived;
+}
+
+- (NSUInteger)bytesSent {
+    return self.webSocket.bytesSent;
+}
+
 
 #pragma mark Static Helpers:
 #pragma mark MockWebSocketInterface relies on this mechanism to register itself, while running the Unit Testing target
