@@ -121,7 +121,7 @@ typedef void (^SimperiumBackgroundFetchCompletion)(UIBackgroundFetchResult resul
 - (BOOL)saveWithoutSyncing;
 
 #if !TARGET_OS_IPHONE
-// Support for OSX delayed app termination: Ensure local changes have a chance to fully save
+// Support for OSX delayed app termination: Ensure local changes have a chance to fully save.
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
 #endif
 
@@ -184,17 +184,23 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // Remote Bucket Name Overrides!
 @property (nonatomic, readonly, copy) NSDictionary *bucketOverrides;
 
-// Returns the current SPAuthenticator instance
+// Returns the current SPAuthenticator instance.
 @property (nonatomic, readwrite, strong) SPAuthenticator *authenticator;
 
-// Returns a flag indicating if the network is not accessible
+// Returns a flag indicating if the network is not accessible.
 @property (nonatomic, readonly, assign) BOOL requiresConnection;
 
-// Returns a string describing the network status
+// Returns a string describing the network status.
 @property (nonatomic, readonly, strong) NSString *networkStatus;
 
-// Returns the timestamp of the last message received by the backend
+// Returns the timestamp of the last message received by the backend.
 @property (nonatomic, readonly, strong) NSDate *networkLastSeenTime;
+
+// Returns the number of bytes sent per session.
+@property (nonatomic, readonly, assign) NSUInteger bytesSent;
+
+// Returns the number of bytes received per session.
+@property (nonatomic, readonly, assign) NSUInteger bytesReceived;
 
 
 // You can implement your own subclass of SPAuthenticationViewController (iOS) or
