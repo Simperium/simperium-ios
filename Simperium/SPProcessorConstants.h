@@ -20,26 +20,6 @@ extern NSString * const ProcessorDidAcknowledgeDeleteNotification;
 
 
 #pragma mark ====================================================================================
-#pragma mark Changeset Keys
-#pragma mark ====================================================================================
-
-extern NSString * const CH_KEY;
-extern NSString * const CH_ADD;
-extern NSString * const CH_REMOVE;
-extern NSString * const CH_MODIFY;
-extern NSString * const CH_OPERATION;
-extern NSString * const CH_VALUE;
-extern NSString * const CH_START_VERSION;
-extern NSString * const CH_END_VERSION;
-extern NSString * const CH_CHANGE_VERSION;
-extern NSString * const CH_LOCAL_ID;
-extern NSString * const CH_CLIENT_ID;
-extern NSString * const CH_ERROR;
-extern NSString * const CH_DATA;
-extern NSString * const CH_EMPTY;
-
-
-#pragma mark ====================================================================================
 #pragma mark Changeset Errors
 #pragma mark ====================================================================================
 
