@@ -11,6 +11,7 @@
 #import "MockSimperium.h"
 #import "Simperium+Internals.h"
 #import "SPBucket+Internals.h"
+#import "SPChange+Internals.h"
 
 #import "SPManagedObject+Mock.h"
 #import "SPCoreDataStorage+Mock.h"
@@ -375,9 +376,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     XCTestExpectation *expectation      = [self expectationWithDescription:@"Process Expectation"];
     
     dispatch_async(self.configBucket.processorQueue, ^{
-        [processor enumeratePendingChangesForBucket:self.configBucket block:^(NSDictionary *change) {
-            NSString *simperiumKey = change[CH_KEY];
-            [keys removeObject:simperiumKey];
+        [processor enumeratePendingChangesForBucket:self.configBucket block:^(SPChange *change) {
+            [keys removeObject:change.simperiumKey];
             
             if (keys.count == 0) {
                 [expectation fulfill];
@@ -412,9 +412,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     //
     XCTestExpectation *expectation = [self expectationWithDescription:@"Process Expectation"];
 
-    [processor enumerateQueuedDeletionsForBucket:self.configBucket block:^(NSDictionary *change) {
-        NSString *simperiumKey = change[CH_KEY];
-        [keys removeObject:simperiumKey];
+    [processor enumerateQueuedDeletionsForBucket:self.configBucket block:^(SPChange *change) {
+        [keys removeObject:change.simperiumKey];
         
         if (keys.count == 0) {
             [expectation fulfill];
@@ -453,9 +452,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     XCTestExpectation *expectation      = [self expectationWithDescription:@"Process Expectation"];
     
     dispatch_async(self.configBucket.processorQueue, ^{
-        [processor enumerateQueuedChangesForBucket:self.configBucket block:^(NSDictionary *change) {
-            NSString *simperiumKey = change[CH_KEY];
-            [keys removeObject:simperiumKey];
+        [processor enumerateQueuedChangesForBucket:self.configBucket block:^(SPChange *change) {
+            [keys removeObject:change.simperiumKey];
             
             if (keys.count == 0) {
                 [expectation fulfill];
@@ -512,12 +510,10 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     XCTestExpectation *expectation      = [self expectationWithDescription:@"Process Expectation"];
     
     dispatch_async(self.configBucket.processorQueue, ^{
-        [processor enumerateRetryChangesForBucket:self.configBucket block:^(NSDictionary *change) {
-            NSDictionary *fullData = change[CH_DATA];
-            XCTAssertNil(fullData, @"The changeset should not carry the full data");
+        [processor enumerateRetryChangesForBucket:self.configBucket block:^(SPChange *change) {
+            XCTAssertNil(change.data, @"The changeset should not carry the full data");
             
-            NSString *simperiumKey = change[CH_KEY];
-            [keys removeObject:simperiumKey];
+            [keys removeObject:change.simperiumKey];
             
             if (keys.count == 0) {
                 [expectation fulfill];
@@ -565,12 +561,10 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     XCTestExpectation *expectation      = [self expectationWithDescription:@"Process Expectation"];
     
     dispatch_async(self.configBucket.processorQueue, ^{
-        [processor enumerateRetryChangesForBucket:self.configBucket block:^(NSDictionary *change) {
-            NSDictionary *fullData = change[CH_DATA];
-            XCTAssertNotNil(fullData, @"The changeset should not carry the full data");
+        [processor enumerateRetryChangesForBucket:self.configBucket block:^(SPChange *change) {
+            XCTAssertNotNil(change.data, @"The changeset should not carry the full data");
             
-            NSString *simperiumKey = change[CH_KEY];
-            [keys removeObject:simperiumKey];
+            [keys removeObject:change.simperiumKey];
             
             if (keys.count == 0) {
                 [expectation fulfill];
