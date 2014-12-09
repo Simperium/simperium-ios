@@ -37,19 +37,6 @@ static NSString * const CH_EMPTY            = @"EMPTY";
 
 @interface SPChange (Internals)
 
-@property (nonatomic, strong, readwrite) NSString       *clientID;
-@property (nonatomic, strong, readwrite) NSString       *simperiumKey;
-@property (nonatomic, strong, readwrite) NSString       *changeID;
-@property (nonatomic, strong, readwrite) NSString       *changeVersion;
-
-@property (nonatomic, strong, readwrite) NSString       *startVersion;
-@property (nonatomic, strong, readwrite) NSString       *endVersion;
-
-@property (nonatomic, strong, readwrite) NSString       *operation;
-@property (nonatomic, strong, readwrite) NSDictionary   *value;
-@property (nonatomic, strong, readwrite) NSDictionary   *data;
-@property (nonatomic, strong, readwrite) NSNumber       *errorCode;
-
-@property (nonatomic, strong, readwrite) NSString       *namespacelessKey;
+- (instancetype)initWithDictionary:(NSDictionary *)dictionary localNamespace:(NSString *)localNamespace;
 
 @end

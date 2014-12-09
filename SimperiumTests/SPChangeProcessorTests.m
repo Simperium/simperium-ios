@@ -97,20 +97,22 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
         NSString *endVersion            = [NSString stringWithFormat:@"%d", startVersion.intValue + 1];
         NSString *delta                 = @"An invalid delta here!";
         
-        changes[config.simperiumKey]    = @{
-                                            CH_CLIENT_ID        : SPRemoteClientID,
-                                            CH_CHANGE_VERSION   : changeVersion,
-                                            CH_START_VERSION    : startVersion,
-                                            CH_END_VERSION      : endVersion,
-                                            CH_KEY              : config.simperiumKey,
-                                            CH_OPERATION        : CH_MODIFY,
-                                            CH_VALUE            : @{
-                                                    NSStringFromSelector(@selector(captainsLog))    : @{
-                                                            CH_OPERATION    : CH_DATA,
-                                                            CH_VALUE        : delta
-                                                    }
-                                                }
-                                        };
+        NSDictionary *rawChange         = @{
+            CH_CLIENT_ID        : SPRemoteClientID,
+            CH_CHANGE_VERSION   : changeVersion,
+            CH_START_VERSION    : startVersion,
+            CH_END_VERSION      : endVersion,
+            CH_KEY              : config.simperiumKey,
+            CH_OPERATION        : CH_MODIFY,
+            CH_VALUE            : @{
+                    NSStringFromSelector(@selector(captainsLog))    : @{
+                            CH_OPERATION    : CH_DATA,
+                            CH_VALUE        : delta
+                    }
+                }
+        };
+        
+        changes[config.simperiumKey]    = [SPChange changeWithDictionary:rawChange localNamespace:nil];
     }
     
     // ===================================================================================================
@@ -146,8 +148,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     // ===================================================================================================
     //
     for (Config *config in configs) {
-        NSDictionary *change    = changes[config.simperiumKey];
-        NSString *endVersion    = change[CH_END_VERSION];
+        SPChange *change        = changes[config.simperiumKey];
+        NSString *endVersion    = change.endVersion;
         NSString *originalTitle = originalLogs[config.simperiumKey];
         
         XCTAssertEqualObjects(config.captainsLog, originalTitle,    @"Invalid CaptainsLog");
@@ -200,21 +202,22 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     NSString *endVersion            = [NSString stringWithFormat:@"%d", startVersion.intValue + 1];
     
     // Prepare the change itself
-    changes[config.simperiumKey]    = @{
-                                        CH_CLIENT_ID        : SPRemoteClientID,
-                                        CH_CHANGE_VERSION   : changeVersion,
-                                        CH_START_VERSION    : startVersion,
-                                        CH_END_VERSION      : endVersion,
-                                        CH_KEY              : config.simperiumKey,
-                                        CH_OPERATION        : CH_MODIFY,
-                                        CH_VALUE            : @{
-                                                NSStringFromSelector(@selector(captainsLog))    : @{
-                                                        CH_OPERATION    : CH_DATA,
-                                                        CH_VALUE        : delta
-                                                        }
-                                                }
-                                    };
+    NSDictionary *rawChange         = @{
+        CH_CLIENT_ID        : SPRemoteClientID,
+        CH_CHANGE_VERSION   : changeVersion,
+        CH_START_VERSION    : startVersion,
+        CH_END_VERSION      : endVersion,
+        CH_KEY              : config.simperiumKey,
+        CH_OPERATION        : CH_MODIFY,
+        CH_VALUE            : @{
+                NSStringFromSelector(@selector(captainsLog))    : @{
+                        CH_OPERATION    : CH_DATA,
+                        CH_VALUE        : delta
+                        }
+                }
+    };
     
+    changes[config.simperiumKey]    = [SPChange changeWithDictionary:rawChange localNamespace:nil];
     
     // ===================================================================================================
     // Process remote changes
@@ -294,20 +297,22 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     NSString *endVersion            = [NSString stringWithFormat:@"%d", startVersion.intValue + 1];
     
     // Prepare the change itself
-    changes[config.simperiumKey]    = @{
-                                        CH_CLIENT_ID        : SPRemoteClientID,
-                                        CH_CHANGE_VERSION   : changeVersion,
-                                        CH_START_VERSION    : startVersion,
-                                        CH_END_VERSION      : endVersion,
-                                        CH_KEY              : config.simperiumKey,
-                                        CH_OPERATION        : CH_MODIFY,
-                                        CH_VALUE            : @{
-                                                NSStringFromSelector(@selector(captainsLog))    : @{
-                                                        CH_OPERATION    : CH_DATA,
-                                                        CH_VALUE        : delta
-                                                        }
-                                                }
-                                        };
+    NSDictionary *rawChange = @{
+        CH_CLIENT_ID        : SPRemoteClientID,
+        CH_CHANGE_VERSION   : changeVersion,
+        CH_START_VERSION    : startVersion,
+        CH_END_VERSION      : endVersion,
+        CH_KEY              : config.simperiumKey,
+        CH_OPERATION        : CH_MODIFY,
+        CH_VALUE            : @{
+                NSStringFromSelector(@selector(captainsLog))    : @{
+                        CH_OPERATION    : CH_DATA,
+                        CH_VALUE        : delta
+                        }
+                }
+    };
+    
+    changes[config.simperiumKey]    = [SPChange changeWithDictionary:rawChange localNamespace:nil];
     
     
     // ===================================================================================================

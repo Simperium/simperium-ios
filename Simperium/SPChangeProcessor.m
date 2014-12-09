@@ -737,11 +737,11 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         [processedKeys addObject:key];
     }
     
-    NSArray *rawChanges = [self processLocalDeletionsWithKeys:processedKeys];
+    NSArray *changes = [self processLocalDeletionsWithKeys:processedKeys];
     
-    for (NSDictionary *rawChange in rawChanges) {
-        SPChange *parsed = [SPChange changeWithDictionary:rawChange localNamespace:bucket.localNamespace];
-        block(parsed);
+    for (SPChange *change in changes) {
+        NSParameterAssert([change isKindOfClass:[SPChange class]]);
+        block(change);
     }
     
     [self.keysForObjectsToDelete minusSet:processedKeys];
