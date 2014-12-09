@@ -9,6 +9,7 @@
 #import "SPChange.h"
 #import "SPProcessorConstants.h"
 #import "NSString+Simperium.h"
+#import "JSONKit+Simperium.h"
 
 
 
@@ -73,6 +74,7 @@ static NSString * const CH_EMPTY            = @"EMPTY";
     self = [super init];
     if (self) {
         _simperiumKey       = key;
+        _namespacelessKey   = key;
         _changeID           = [NSString sp_makeUUID];
         _startVersion       = startVersion;
         _operation          = operation;
@@ -82,6 +84,9 @@ static NSString * const CH_EMPTY            = @"EMPTY";
     
     return self;
 }
+
+
+#pragma mark - Derived Properties
 
 - (BOOL)isAddOperation {
     return [self.operation isEqualToString:CH_ADD];
@@ -99,13 +104,41 @@ static NSString * const CH_EMPTY            = @"EMPTY";
     return self.errorCode != nil;
 }
 
-- (NSDictionary *)toDictionary {
-#warning TODO: Implement Me
-//    if (operation == CH_MODIFY && version != nil && [version intValue] != 0) {
-//        [change setObject: version forKey: CH_START_VERSION];
-//    }
-    return nil;
+
+#pragma mark - Serialization
+
+- (NSDictionary *)toDictionary {    
+    // The change applies to this particular entity instance, so use its unique key as an identifier
+    NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:self.simperiumKey forKey:CH_KEY];
+    
+    // Every change must be marked with a unique ID
+    change[CH_LOCAL_ID] = self.changeID;
+
+    // Set the change's operation
+    change[CH_OPERATION] = self.operation;
+
+    // Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
+    if (self.data) {
+        change[CH_DATA] = self.data;
+    }
+
+    // Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
+    if (self.value) {
+        change[CH_VALUE] = self.value;
+    }
+
+    // If it's a modify operation, also include the object's version as the last known version
+    if (self.isModifyOperation && self.startVersion.intValue != 0) {
+        change[CH_START_VERSION] = self.startVersion;
+    }
+    
+    return change;
 }
+
+- (NSString *)toJsonString {
+    return [self.toDictionary sp_JSONString];
+}
+
 
 #pragma mark - Private Helpers
 
@@ -131,7 +164,7 @@ static NSString * const CH_EMPTY            = @"EMPTY";
 }
 
 
-#pragma mark - Static Helpers
+#pragma mark - Builders
 
 + (SPChange *)modifyChangeWithKey:(NSString *)key startVersion:(NSString *)startVersion value:(NSDictionary *)value {
     return [[SPChange alloc] initWithKey:key operation:CH_MODIFY startVersion:startVersion value:value data:nil];
@@ -149,6 +182,9 @@ static NSString * const CH_EMPTY            = @"EMPTY";
     return [[SPChange alloc] initWithKey:key operation:CH_EMPTY startVersion:nil value:nil data:nil];
 }
 
+
+#pragma mark - Parsers
+
 + (SPChange *)changeWithDictionary:(NSDictionary *)dictionary localNamespace:(NSString *)localNamespace {
     return [[SPChange alloc] initWithDictionary:dictionary localNamespace:localNamespace];
 }
@@ -164,51 +200,3 @@ static NSString * const CH_EMPTY            = @"EMPTY";
 }
 
 @end
-
-
-#warning Cleanup
-
-//- (NSDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version fullData:(NSDictionary *)fullData {
-//    // The change applies to this particular entity instance, so use its unique key as an identifier
-//    NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:key forKey:CH_KEY];
-//
-//    // Every change must be marked with a unique ID
-//    change[CH_LOCAL_ID] = [NSString sp_makeUUID];
-//
-//    // Set the change's operation
-//    change[CH_OPERATION] = operation;
-//
-//    // If it's a modify operation, also include the object's version as the last known version
-//    if (operation == CH_MODIFY && version != nil && version.intValue != 0) {
-//        change[CH_START_VERSION] = version;
-//    }
-//
-//    // Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
-//    change[CH_DATA] = fullData;
-//
-//    return change;
-//}
-//
-//- (NSDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version data:(NSDictionary *)data {
-//    // The change applies to this particular entity instance, so use its unique key as an identifier
-//    NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:key forKey:CH_KEY];
-//
-//    // Every change must be marked with a unique ID
-//    NSString *uuid = [NSString sp_makeUUID];
-//    [change setObject:uuid forKey:CH_LOCAL_ID];
-//
-//    // Set the change's operation
-//    [change setObject:operation forKey:CH_OPERATION];
-//
-//    // Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
-//    if (data) {
-//        [change setObject:data forKey:CH_VALUE];
-//    }
-//
-//    // If it's a modify operation, also include the object's version as the last known version
-//    if (operation == CH_MODIFY && version != nil && [version intValue] != 0) {
-//        [change setObject: version forKey: CH_START_VERSION];
-//    }
-//
-//    return change;
-//}

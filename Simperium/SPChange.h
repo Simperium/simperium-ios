@@ -39,6 +39,10 @@
 - (BOOL)isModifyOperation;
 - (BOOL)hasErrors;
 
+// Serialization
+- (NSDictionary *)toDictionary;
+- (NSString *)toJsonString;
+
 // Builders
 + (SPChange *)modifyChangeWithKey:(NSString *)key startVersion:(NSString *)startVersion value:(NSDictionary *)value;
 + (SPChange *)modifyChangeWithKey:(NSString *)key startVersion:(NSString *)startVersion data:(NSDictionary *)data;
