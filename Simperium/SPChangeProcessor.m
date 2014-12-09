@@ -192,10 +192,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     return YES;
 }
 
-// TODO:
-//      - Split this method into processRemoteModify and processRemoteInsertion
-//      - Once the above are implemented, move the 'begin/finish'SafeSection calls to the caller, and nuke duplicated code, PLEASE!
-//
 - (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket change:(NSDictionary *)change
                       acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches error:(NSError **)error {
     
@@ -382,7 +378,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     NSString *changeVersion         = change[CH_CHANGE_VERSION];
     NSString *changeClientID        = change[CH_CLIENT_ID];
     
-    // Analyze the change's flags
     id<SPStorageProvider>storage    = [bucket.storage threadSafeStorage];
 
     BOOL objectWasFound             = ([storage objectForKey:key bucketName:bucket.name] != nil);
@@ -708,8 +703,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     }
 
     SPLogVerbose(@"Simperium found %lu objects with more changes to send (%@)", (unsigned long)queueCount, bucket.name);
-    
-    // Filter out keys with pending changes: prevents a potential mutation of keysForObjectsWithMoreChanges in processLocalObjectWithKey:later:
     NSMutableSet *processedKeys = [NSMutableSet setWithCapacity:limit];
     
     for (NSString *key in self.keysForObjectsWithMoreChanges) {
