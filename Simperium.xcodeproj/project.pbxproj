@@ -189,6 +189,7 @@
 		B597DD59183128FE005E95D7 /* SPWebSocketInterfaceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B597DD58183128FE005E95D7 /* SPWebSocketInterfaceTests.m */; };
 		B59A42F41A31FE8C00E4DC28 /* SPChange.h in Headers */ = {isa = PBXBuildFile; fileRef = B59A42F21A31FE8C00E4DC28 /* SPChange.h */; };
 		B59A42F51A31FE8C00E4DC28 /* SPChange.m in Sources */ = {isa = PBXBuildFile; fileRef = B59A42F31A31FE8C00E4DC28 /* SPChange.m */; };
+		B59C78801A37B16000067CE0 /* SPChange+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B59C787E1A37B16000067CE0 /* SPChange+Internals.h */; };
 		B59D9F2D1A1A4BD300941154 /* SSKeychain.m in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FB19F1B72700DEF569 /* SSKeychain.m */; settings = {ATTRIBUTES = (Public, ); }; };
 		B59D9F2E1A1A4BD300941154 /* SSKeychainQuery.m in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FD19F1B72700DEF569 /* SSKeychainQuery.m */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5A19D5918806BBC0059AA36 /* SPWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A19D5718806BBC0059AA36 /* SPWebSocket.h */; };
@@ -434,6 +435,7 @@
 		B597DD58183128FE005E95D7 /* SPWebSocketInterfaceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPWebSocketInterfaceTests.m; sourceTree = "<group>"; };
 		B59A42F21A31FE8C00E4DC28 /* SPChange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPChange.h; sourceTree = "<group>"; };
 		B59A42F31A31FE8C00E4DC28 /* SPChange.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPChange.m; sourceTree = "<group>"; };
+		B59C787E1A37B16000067CE0 /* SPChange+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPChange+Internals.h"; sourceTree = "<group>"; };
 		B5A0136A18312852003D4620 /* UnitTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "UnitTests-Info.plist"; sourceTree = "<group>"; };
 		B5A0136C1831285A003D4620 /* IntegrationTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "IntegrationTests-Info.plist"; sourceTree = "<group>"; };
 		B5A19D5718806BBC0059AA36 /* SPWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWebSocket.h; sourceTree = "<group>"; };
@@ -609,6 +611,7 @@
 				269A7F3D147355D100CB29EE /* SPChangeProcessor.h */,
 				269A7F3E147355D100CB29EE /* SPChangeProcessor.m */,
 				B59A42F21A31FE8C00E4DC28 /* SPChange.h */,
+				B59C787E1A37B16000067CE0 /* SPChange+Internals.h */,
 				B59A42F31A31FE8C00E4DC28 /* SPChange.m */,
 				269A7F4214743A9C00CB29EE /* SPIndexProcessor.h */,
 				269A7F4314743A9C00CB29EE /* SPIndexProcessor.m */,
@@ -1057,6 +1060,7 @@
 				B5AC545E1857917800608CAC /* SPBucket+Internals.h in Headers */,
 				46DD15CA179A6F4B0093678C /* SPMemberJSONList.h in Headers */,
 				466EB41617BC45F5005F7599 /* SPAuthenticationValidator.h in Headers */,
+				B59C78801A37B16000067CE0 /* SPChange+Internals.h in Headers */,
 				466EB41A17BC4890005F7599 /* SPAuthenticationButton.h in Headers */,
 				B5F65F7A1847DE0100CEF48D /* SPManagedObject+Internals.h in Headers */,
 				460A505F17DE96350070F02B /* SPProcessorConstants.h in Headers */,
