@@ -57,19 +57,19 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     
     self = [super init];
     if (self) {
-        self.label                          = label;
-        self.clientID                       = clientID;
+        _label                          = label;
+        _clientID                       = clientID;
         
-        self.changesPending                 = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
+        _changesPending                 = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
         
-        NSString *moreKey                   = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", label];
-        self.keysForObjectsWithMoreChanges  = [SPPersistentMutableSet loadSetWithLabel:moreKey];
+        NSString *moreKey               = [NSString stringWithFormat:@"keysForObjectsWithMoreChanges-%@", label];
+        _keysForObjectsWithMoreChanges  = [SPPersistentMutableSet loadSetWithLabel:moreKey];
         
-        NSString *retryKey                  = [NSString stringWithFormat:@"keysForObjectsWithPendingRetry-%@", label];
-        self.keysForObjectsWithPendingRetry = [SPPersistentMutableSet loadSetWithLabel:retryKey];
+        NSString *retryKey              = [NSString stringWithFormat:@"keysForObjectsWithPendingRetry-%@", label];
+        _keysForObjectsWithPendingRetry = [SPPersistentMutableSet loadSetWithLabel:retryKey];
         
-        NSString *deleteKey                 = [NSString stringWithFormat:@"keysForObjectsToDelete-%@", label];
-        self.keysForObjectsToDelete         = [SPPersistentMutableSet loadSetWithLabel:deleteKey];
+        NSString *deleteKey             = [NSString stringWithFormat:@"keysForObjectsToDelete-%@", label];
+        _keysForObjectsToDelete         = [SPPersistentMutableSet loadSetWithLabel:deleteKey];
         
         [self migratePendingChangesIfNeeded];
     }
