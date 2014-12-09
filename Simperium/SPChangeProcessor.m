@@ -516,8 +516,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     [threadSafeStorage beginSafeSection];
     
     id<SPDiffable>object    = [threadSafeStorage objectForKey:key bucketName:bucket.name];
-    SPChange *oldChange     = [self.changesPending objectForKey:key];
-#warning FIXME
+    NSDictionary *rawChange = [self.changesPending objectForKey:key];
+    SPChange *oldChange     = [SPChange changeWithDictionary:rawChange localNamespace:bucket.localNamespace];
     
     // Was the object remotely nuked?
     if (!object && !oldChange.isRemoveOperation) {
@@ -535,8 +535,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     if (object && overrideRemoteData) {
         NSDictionary *data = [object dictionary];
         if (data) {
-            NSDictionary *newChange = [SPChange modifyChangeWithKey:key startVersion:object.ghost.version data:data];
-            [self.changesPending setObject:newChange forKey:key];
+            SPChange *newChange = [SPChange modifyChangeWithKey:key startVersion:object.ghost.version data:data];
+            [self.changesPending setObject:newChange.toDictionary forKey:key];
         } else {
             [self.changesPending removeObjectForKey:key];
             success = NO;
@@ -601,8 +601,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         if (newData.count == 0) {
             SPLogVerbose(@"Simperium warning: no difference in call to sendChanges (%@): %@", bucket.name, object.simperiumKey);
         } else {
-            NSDictionary *change = [SPChange modifyChangeWithKey:object.simperiumKey startVersion:object.ghost.version value:newData];
-            [self.changesPending setObject:change forKey:object.simperiumKey];
+            SPChange *change = [SPChange modifyChangeWithKey:object.simperiumKey startVersion:object.ghost.version value:newData];
+            [self.changesPending setObject:change.toDictionary forKey:object.simperiumKey];
             [changes addObject:change];
         }
     }
@@ -631,8 +631,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     for (NSString *key in keys) {
         NSAssert([key isKindOfClass:[NSString class]], nil);
         
-        NSDictionary *change = [SPChange removeChangeWithKey:key];
-        [self.changesPending setObject:change forKey:key];
+        SPChange *change = [SPChange removeChangeWithKey:key];
+        [self.changesPending setObject:change.toDictionary forKey:key];
         [changes addObject:change];
     }
     
@@ -647,7 +647,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     for (SPBucket *bucket in buckets) {
         NSAssert([bucket isKindOfClass:[SPBucket class]], nil);
         
-        NSDictionary *change = [SPChange emptyChangeWithKey:bucket.name];
+        SPChange *change = [SPChange emptyChangeWithKey:bucket.name];
         [changes addObject:change];
     }
     
@@ -671,9 +671,10 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     SPLogVerbose(@"Simperium found %lu objects with pending changes to send (%@)", (unsigned long)pendingCount, bucket.name);
 
     for (NSString *key in self.changesPending.allKeys) {
-        NSDictionary* change = [self.changesPending objectForKey:key];
-        if (change) {
-            block(change);
+        NSDictionary *rawChange = [self.changesPending objectForKey:key];
+        SPChange *parsedChange  = [SPChange changeWithDictionary:rawChange localNamespace:bucket.localNamespace];
+        if (parsedChange) {
+            block(parsedChange);
         }
     }
 }
@@ -705,7 +706,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     
     NSArray *changes = [self processLocalObjectsWithKeys:processedKeys bucket:bucket];
     
-    for (NSDictionary *change in changes) {
+    for (SPChange *change in changes) {
+        NSAssert([change isKindOfClass:[SPChange class]], @"Invalid Kind");
         block(change);
     }
     
@@ -735,10 +737,11 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         [processedKeys addObject:key];
     }
     
-    NSArray *changes = [self processLocalDeletionsWithKeys:processedKeys];
+    NSArray *rawChanges = [self processLocalDeletionsWithKeys:processedKeys];
     
-    for (NSDictionary *change in changes) {
-        block(change);
+    for (NSDictionary *rawChange in rawChanges) {
+        SPChange *parsed = [SPChange changeWithDictionary:rawChange localNamespace:bucket.localNamespace];
+        block(parsed);
     }
     
     [self.keysForObjectsToDelete minusSet:processedKeys];
@@ -758,9 +761,10 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     NSMutableSet *processedKeys = [NSMutableSet set];
     
     for (NSString *key in self.keysForObjectsWithPendingRetry) {
-        NSDictionary* change = [self.changesPending objectForKey:key];
-        if (change) {
-            block(change);
+        NSDictionary* rawChange = [self.changesPending objectForKey:key];
+        SPChange *parsed        = [SPChange changeWithDictionary:rawChange localNamespace:bucket.localNamespace];
+        if (parsed) {
+            block(parsed);
         }
         
         [processedKeys addObject:key];
@@ -790,9 +794,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     // This routine shall be used for debugging purposes!
     NSMutableArray* pendings = [NSMutableArray array];
     
-#warning FIXME
-    for (SPChange* change in self.changesPending.allValues) {
-        [pendings addObject:change.toDictionary];
+    for (NSDictionary* rawChange in self.changesPending.allValues) {
+        [pendings addObject:rawChange];
     }
     
     return pendings;

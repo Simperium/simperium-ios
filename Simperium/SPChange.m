@@ -186,6 +186,11 @@ static NSString * const CH_EMPTY            = @"EMPTY";
 #pragma mark - Parsers
 
 + (SPChange *)changeWithDictionary:(NSDictionary *)dictionary localNamespace:(NSString *)localNamespace {
+    // Do not parse if there's nothing!
+    if (!dictionary) {
+        return nil;
+    }
+    
     return [[SPChange alloc] initWithDictionary:dictionary localNamespace:localNamespace];
 }
 
