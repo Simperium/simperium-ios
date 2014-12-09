@@ -399,7 +399,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         [self.changesPending removeObjectForKey:key];
     }
     
-    // Process!
     BOOL success = false;
     
     if (remove && (objectWasFound || acknowledged)) {
@@ -510,7 +509,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 
 #pragma mark ====================================================================================
-#pragma mark Change Helpers
+#pragma mark Enqueue Helpers
 #pragma mark ====================================================================================
 
 - (void)enqueueObjectForMoreChanges:(NSString *)key bucket:(SPBucket *)bucket {
@@ -677,6 +676,11 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     return changes;
 }
 
+
+#pragma mark ====================================================================================
+#pragma mark Enumeration Helpers
+#pragma mark ====================================================================================
+
 - (void)enumeratePendingChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
 
     NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
@@ -809,7 +813,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (NSArray*)exportPendingChanges {
-    
     // This routine shall be used for debugging purposes!
     NSMutableArray* pendings = [NSMutableArray array];
     for (NSDictionary* change in self.changesPending.allValues) {
@@ -854,7 +857,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 
 #pragma mark ====================================================================================
-#pragma mark Private Helpers: Changeset Generation + metadata
+#pragma mark Private Helpers
 #pragma mark ====================================================================================
 
 // Note:
