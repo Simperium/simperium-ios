@@ -429,7 +429,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 - (void)notifyOfRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
     
-    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
+    NSAssert([NSThread isMainThread],                   @"This should get called on the main thread!");
+    NSAssert([bucket isKindOfClass:[SPBucket class]],   @"Invalid Bucket");
     
     NSMutableSet *changedKeys = [NSMutableSet setWithCapacity:changes.count];
 
@@ -513,8 +514,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 #pragma mark ====================================================================================
 
 - (void)enqueueObjectForMoreChanges:(NSString *)key bucket:(SPBucket *)bucket {
-    NSAssert( [key isKindOfClass:[NSString class]],         @"Missing key" );
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Missing Bucket");
+    NSParameterAssert([key isKindOfClass:[NSString class]]);
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     
     SPLogVerbose(@"Simperium marking object for sending more changes when ready (%@): %@", bucket.name, key);
     [self.keysForObjectsWithMoreChanges addObject:key];
@@ -522,8 +523,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)enqueueObjectForDeletion:(NSString *)key bucket:(SPBucket *)bucket {
-    NSAssert( [key isKindOfClass:[NSString class]],         @"Missing key" );
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Missing Bucket");
+    NSParameterAssert([key isKindOfClass:[NSString class]]);
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     
     SPLogVerbose(@"Simperium marking object for deletion when ready (%@): %@", bucket.name, key);
     [self.keysForObjectsToDelete addObject:key];
@@ -532,8 +533,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 - (void)enqueueObjectForRetry:(NSString *)key bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData {
     
-    NSAssert( [key isKindOfClass:[NSString class]],     @"Missing change" );
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],  @"Missing Bucket");
+    NSParameterAssert([key isKindOfClass:[NSString class]]);
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     
     id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
     [threadSafeStorage beginSafeSection];
@@ -575,8 +576,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 - (void)discardPendingChanges:(NSString *)key bucket:(SPBucket *)bucket {
     
-    NSAssert( [key isKindOfClass:[NSString class]],     @"Missing change" );
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],  @"Missing Bucket");
+    NSParameterAssert([key isKindOfClass:[NSString class]]);
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     
     [self.changesPending removeObjectForKey:key];
 }
@@ -678,6 +679,9 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 - (void)enumeratePendingChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
 
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
+    NSParameterAssert(block != nil);
+    
     NSInteger pendingCount = self.changesPending.count;
     if (pendingCount == 0) {
         return;
@@ -694,6 +698,9 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)enumerateQueuedChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
+    
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
+    NSParameterAssert(block != nil);
     
     NSInteger limit = MAX( SPChangeProcessorMaxPendingChanges - self.changesPending.count, 0);
     NSUInteger queueCount = self.keysForObjectsWithMoreChanges.count;
@@ -728,15 +735,17 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 - (void)enumerateQueuedDeletionsForBucket:(SPBucket*)bucket block:(SPChangeEnumerationBlockType)block {
     
-    NSInteger limit = MAX( SPChangeProcessorMaxPendingChanges - self.changesPending.count, 0);
-    NSUInteger queueCount = self.keysForObjectsToDelete.count;
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
+    NSParameterAssert(block != nil);
+    
+    NSInteger limit         = MAX( SPChangeProcessorMaxPendingChanges - self.changesPending.count, 0);
+    NSUInteger queueCount   = self.keysForObjectsToDelete.count;
     
     if (queueCount == 0 || limit <= 0) {
         return;
     }
     
     SPLogVerbose(@"Simperium found %lu objects to delete (%@)", (unsigned long)queueCount, bucket.name);
-    
     NSMutableSet *processedKeys = [NSMutableSet setWithCapacity:limit];
     
     for (NSString *key in self.keysForObjectsToDelete) {
@@ -758,6 +767,9 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
+    
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
+    NSParameterAssert(block != nil);
     
     NSInteger retryCount = self.keysForObjectsWithPendingRetry.count;
     if (retryCount == 0) {
