@@ -78,15 +78,15 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)reset {
-    [self.changesPending removeAllObjects];
-    [self.keysForObjectsWithMoreChanges removeAllObjects];
-    [self.keysForObjectsWithPendingRetry removeAllObjects];
-    [self.keysForObjectsToDelete removeAllObjects];
+    [self.changesPending                    removeAllObjects];
+    [self.keysForObjectsWithMoreChanges     removeAllObjects];
+    [self.keysForObjectsWithPendingRetry    removeAllObjects];
+    [self.keysForObjectsToDelete            removeAllObjects];
     
-    [self.changesPending save];
-    [self.keysForObjectsWithMoreChanges save];
-    [self.keysForObjectsWithPendingRetry save];
-    [self.keysForObjectsToDelete save];
+    [self.changesPending                    save];
+    [self.keysForObjectsWithMoreChanges     save];
+    [self.keysForObjectsWithPendingRetry    save];
+    [self.keysForObjectsToDelete            save];
 }
 
 
@@ -96,8 +96,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 - (BOOL)processRemoteError:(NSDictionary *)change bucket:(SPBucket *)bucket error:(NSError **)error {
 
-    NSAssert([change isKindOfClass:[NSDictionary class]],  @"Empty change");
-    NSAssert([bucket isKindOfClass:[SPBucket class]],      @"Empty Bucket");
+    NSAssert([change isKindOfClass:[SPChange class]],  @"Empty change");
+    NSAssert([bucket isKindOfClass:[SPBucket class]],  @"Empty Bucket");
 
     if (!change[CH_ERROR]) {
         return NO;
@@ -175,9 +175,9 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         
         dispatch_async(dispatch_get_main_queue(), ^{
             NSDictionary *userInfo = @{
-                                        @"bucketName"   : bucket.name,
-                                        @"keys"         : [NSSet setWithObject:simperiumKey]
-                                    };
+                @"bucketName"   : bucket.name,
+                @"keys"         : [NSSet setWithObject:change.namespacelessKey]
+            };
             [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
         });
 
@@ -792,6 +792,10 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
             [self.keysForObjectsWithMoreChanges containsObject:key];
 }
 
+- (BOOL)awaitingAcknowledgementForKey:(NSString *)key {
+    return [self.changesPending containsObjectForKey:key];
+}
+
 - (NSArray*)exportPendingChanges {
     
     // This routine shall be used for debugging purposes!
@@ -896,10 +900,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     }
     
     return change;
-}
-
-- (BOOL)awaitingAcknowledgementForKey:(NSString *)key {
-    return [self.changesPending containsObjectForKey:key];
 }
 
 // Note: We've moved changesPending collection to SPDictionaryStorage class, which will help to lower memory requirements.
