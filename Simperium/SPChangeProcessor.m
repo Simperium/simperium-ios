@@ -556,9 +556,9 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     BOOL success = YES;
     
     if (object && overrideRemoteData) {
-        NSDictionary *fullData = [object dictionary];
-        if (fullData) {
-            NSDictionary *newChange = [self createChangeForKey:key operation:CH_MODIFY version:object.ghost.version fullData:fullData];
+        NSDictionary *data = [object dictionary];
+        if (data) {
+            NSDictionary *newChange = [SPChange modifyChangeWithKey:key startVersion:object.ghost.version data:data];
             [self.changesPending setObject:newChange forKey:key];
         } else {
             [self.changesPending removeObjectForKey:key];
@@ -624,7 +624,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         if (newData.count == 0) {
             SPLogVerbose(@"Simperium warning: no difference in call to sendChanges (%@): %@", bucket.name, object.simperiumKey);
         } else {
-            NSDictionary *change = [self createChangeForKey:object.simperiumKey operation:CH_MODIFY version:object.ghost.version data:newData];
+            NSDictionary *change = [SPChange modifyChangeWithKey:object.simperiumKey startVersion:object.ghost.version value:newData];
             [self.changesPending setObject:change forKey:object.simperiumKey];
             [changes addObject:change];
         }
@@ -654,7 +654,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     for (NSString *key in keys) {
         NSAssert([key isKindOfClass:[NSString class]], nil);
         
-        NSDictionary *change = [self createChangeForKey:key operation:CH_REMOVE version:nil data:nil];
+        NSDictionary *change = [SPChange removeChangeWithKey:key];
         [self.changesPending setObject:change forKey:key];
         [changes addObject:change];
     }
@@ -670,7 +670,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     for (SPBucket *bucket in buckets) {
         NSAssert([bucket isKindOfClass:[SPBucket class]], nil);
         
-        NSDictionary *change = [self createChangeForKey:bucket.name operation:CH_EMPTY version:nil data:nil];
+        NSDictionary *change = [SPChange emptyChangeWithKey:bucket.name];
         [changes addObject:change];
     }
     
@@ -857,65 +857,10 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 #pragma mark Private Helpers: Changeset Generation + metadata
 #pragma mark ====================================================================================
 
-- (NSString *)keyWithoutNamespaces:(NSDictionary *)change bucket:(SPBucket *)bucket {
-    
-    NSString *changeKey = change[CH_KEY];
-    if (!bucket.exposeNamespace) {
-        return changeKey;
-    }
-    
-    // Proceed removing our local namespace
-    NSString *namespace = [bucket.localNamespace stringByAppendingString:@"/"];
-    return [changeKey stringByReplacingOccurrencesOfString:namespace withString:@""];
-}
-
-- (NSMutableDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version fullData:(NSDictionary *)fullData {    
-    // The change applies to this particular entity instance, so use its unique key as an identifier
-    NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:key forKey:CH_KEY];
-    
-    // Every change must be marked with a unique ID
-    change[CH_LOCAL_ID] = [NSString sp_makeUUID];
-    
-    // Set the change's operation
-    change[CH_OPERATION] = operation;
-    
-    // If it's a modify operation, also include the object's version as the last known version
-    if (operation == CH_MODIFY && version != nil && version.intValue != 0) {
-        change[CH_START_VERSION] = version;
-    }
-    
-    // Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
-    change[CH_DATA] = fullData;
-    
-    return change;
-}
-
-- (NSMutableDictionary *)createChangeForKey:(NSString *)key operation:(NSString *)operation version:(NSString *)version data:(NSDictionary *)data {
-    // The change applies to this particular entity instance, so use its unique key as an identifier
-    NSMutableDictionary *change = [NSMutableDictionary dictionaryWithObject:key forKey:CH_KEY];
-    
-    // Every change must be marked with a unique ID
-    NSString *uuid = [NSString sp_makeUUID];
-    [change setObject:uuid forKey:CH_LOCAL_ID];
-    
-    // Set the change's operation
-    [change setObject:operation forKey:CH_OPERATION];
-    
-    // Set the data as the value for the operation (e.g. a diff dictionary for modify operations)
-    if (data) {
-        [change setObject:data forKey:CH_VALUE];
-    }
-    
-    // If it's a modify operation, also include the object's version as the last known version
-    if (operation == CH_MODIFY && version != nil && [version intValue] != 0) {
-        [change setObject: version forKey: CH_START_VERSION];
-    }
-    
-    return change;
-}
-
-// Note: We've moved changesPending collection to SPDictionaryStorage class, which will help to lower memory requirements.
-// This method will migrate any pending changes, from UserDefaults over to SPDictionaryStorage
+// Note:
+// =====
+// We've moved changesPending collection to SPDictionaryStorage class, which will help to lower memory requirements.
+// This method will migrate any pending changes, from UserDefaults over to SPPersistentMutableDictionary
 //
 - (void)migratePendingChangesIfNeeded {
     NSString *pendingKey  = [NSString stringWithFormat:@"changesPending-%@", self.label];
