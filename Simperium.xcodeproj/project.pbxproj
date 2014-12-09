@@ -187,6 +187,8 @@
 		B58B22E51905A1B200190E90 /* SPRelationship.h in Headers */ = {isa = PBXBuildFile; fileRef = B58B22E31905A1B200190E90 /* SPRelationship.h */; };
 		B58B22E61905A1B200190E90 /* SPRelationship.m in Sources */ = {isa = PBXBuildFile; fileRef = B58B22E41905A1B200190E90 /* SPRelationship.m */; };
 		B597DD59183128FE005E95D7 /* SPWebSocketInterfaceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B597DD58183128FE005E95D7 /* SPWebSocketInterfaceTests.m */; };
+		B59A42F41A31FE8C00E4DC28 /* SPChange.h in Headers */ = {isa = PBXBuildFile; fileRef = B59A42F21A31FE8C00E4DC28 /* SPChange.h */; };
+		B59A42F51A31FE8C00E4DC28 /* SPChange.m in Sources */ = {isa = PBXBuildFile; fileRef = B59A42F31A31FE8C00E4DC28 /* SPChange.m */; };
 		B59D9F2D1A1A4BD300941154 /* SSKeychain.m in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FB19F1B72700DEF569 /* SSKeychain.m */; settings = {ATTRIBUTES = (Public, ); }; };
 		B59D9F2E1A1A4BD300941154 /* SSKeychainQuery.m in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FD19F1B72700DEF569 /* SSKeychainQuery.m */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5A19D5918806BBC0059AA36 /* SPWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A19D5718806BBC0059AA36 /* SPWebSocket.h */; };
@@ -430,6 +432,8 @@
 		B58B22E31905A1B200190E90 /* SPRelationship.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPRelationship.h; sourceTree = "<group>"; };
 		B58B22E41905A1B200190E90 /* SPRelationship.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPRelationship.m; sourceTree = "<group>"; };
 		B597DD58183128FE005E95D7 /* SPWebSocketInterfaceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPWebSocketInterfaceTests.m; sourceTree = "<group>"; };
+		B59A42F21A31FE8C00E4DC28 /* SPChange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPChange.h; sourceTree = "<group>"; };
+		B59A42F31A31FE8C00E4DC28 /* SPChange.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPChange.m; sourceTree = "<group>"; };
 		B5A0136A18312852003D4620 /* UnitTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "UnitTests-Info.plist"; sourceTree = "<group>"; };
 		B5A0136C1831285A003D4620 /* IntegrationTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "IntegrationTests-Info.plist"; sourceTree = "<group>"; };
 		B5A19D5718806BBC0059AA36 /* SPWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWebSocket.h; sourceTree = "<group>"; };
@@ -604,6 +608,8 @@
 				460A505C17DE96350070F02B /* SPProcessorConstants.m */,
 				269A7F3D147355D100CB29EE /* SPChangeProcessor.h */,
 				269A7F3E147355D100CB29EE /* SPChangeProcessor.m */,
+				B59A42F21A31FE8C00E4DC28 /* SPChange.h */,
+				B59A42F31A31FE8C00E4DC28 /* SPChange.m */,
 				269A7F4214743A9C00CB29EE /* SPIndexProcessor.h */,
 				269A7F4314743A9C00CB29EE /* SPIndexProcessor.m */,
 				26B733EE15E585620081CF4A /* SPRelationshipResolver.h */,
@@ -985,6 +991,7 @@
 				2622FD2D147F32A500C8EEB4 /* SPNetworkInterface.h in Headers */,
 				26C93A6D14F850EA00BE99F5 /* SPAuthenticationViewController.h in Headers */,
 				26563AE414FC3BDE0081C8C1 /* SPAuthenticator.h in Headers */,
+				B59A42F41A31FE8C00E4DC28 /* SPChange.h in Headers */,
 				267CE8FE156C0FD20028801C /* SPBucket.h in Headers */,
 				267CE900156C0FD20028801C /* SPDiffable.h in Headers */,
 				267CE90D156C351B0028801C /* SPStorageProvider.h in Headers */,
@@ -1244,6 +1251,7 @@
 				B5EB869B1822E34F007450FF /* SPLogger.m in Sources */,
 				B5E03D99182C115100412572 /* JSONKit+Simperium.m in Sources */,
 				264CD93D135DFE6D00C51BAD /* SPManagedObject.m in Sources */,
+				B59A42F51A31FE8C00E4DC28 /* SPChange.m in Sources */,
 				264CD941135DFE6D00C51BAD /* SPEnvironment.m in Sources */,
 				B5EC2C2618858E3E0067E3B8 /* SPPersistentMutableSet.m in Sources */,
 				264CD943135DFE6D00C51BAD /* SPGhost.m in Sources */,
