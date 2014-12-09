@@ -94,16 +94,16 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 #pragma mark Private Helpers: Remote changes
 #pragma mark ====================================================================================
 
-- (BOOL)processRemoteError:(NSDictionary *)change bucket:(SPBucket *)bucket error:(NSError **)error {
+- (BOOL)processRemoteError:(SPChange *)change bucket:(SPBucket *)bucket error:(NSError **)error {
 
     NSAssert([change isKindOfClass:[SPChange class]],  @"Empty change");
     NSAssert([bucket isKindOfClass:[SPBucket class]],  @"Empty Bucket");
 
-    if (!change[CH_ERROR]) {
-        return NO;
+    if (!change.hasErrors) {
+        return false;
     }
     
-    long errorCode          = [change[CH_ERROR] integerValue];
+    long errorCode          = change.errorCode.integerValue;
     long wrappedCode        = SPProcessorErrorsClientError;
     NSString *description   = @"";
     
