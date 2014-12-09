@@ -94,10 +94,10 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 #pragma mark Private Helpers: Remote changes
 #pragma mark ====================================================================================
 
-- (BOOL)processRemoteError:(SPChange *)change bucket:(SPBucket *)bucket error:(NSError **)error {
 
-    NSAssert([change isKindOfClass:[SPChange class]],  @"Empty change");
-    NSAssert([bucket isKindOfClass:[SPBucket class]],  @"Empty Bucket");
+- (BOOL)processRemoteError:(SPChange *)change bucket:(SPBucket *)bucket error:(NSError **)error {
+    NSParameterAssert([change isKindOfClass:[SPChange class]]);
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
 
     if (!change.hasErrors) {
         return false;
@@ -154,6 +154,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (BOOL)processRemoteDelete:(SPChange *)change bucket:(SPBucket *)bucket objectWasFound:(BOOL)objectWasFound error:(NSError **)error {
+    NSParameterAssert([change isKindOfClass:[SPChange class]]);
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     
     // REMOVE operation
     // If the object still exists in our local storage (no matter if this is an ACK, or remote deletion), proceed nuking it
@@ -192,6 +194,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (BOOL)processRemoteModify:(SPChange *)change bucket:(SPBucket *)bucket acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches error:(NSError **)error {
+    NSParameterAssert([change isKindOfClass:[SPChange class]]);
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     
     id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
     [storage beginSafeSection];
@@ -356,10 +360,9 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (BOOL)processRemoteChange:(SPChange *)change bucket:(SPBucket *)bucket error:(NSError **)error {
-    
     NSAssert([NSThread isMainThread] == NO, @"This should not get called on the main thread");
-    NSAssert(self.clientID,                 @"Missing clientID");
-    NSAssert(change.errorCode == nil,       @"This should not be called if the change has an error");
+    NSParameterAssert(self.clientID);
+    NSParameterAssert(change.errorCode == nil);
     
     id<SPStorageProvider>storage    = [bucket.storage threadSafeStorage];
 
@@ -406,7 +409,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 #pragma mark ====================================================================================
 
 - (void)notifyOfRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
-    
     NSAssert([NSThread isMainThread],                   @"This should get called on the main thread!");
     NSAssert([bucket isKindOfClass:[SPBucket class]],   @"Invalid Bucket");
     
@@ -433,7 +435,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)processRemoteChanges:(NSArray *)changes bucket:(SPBucket *)bucket successHandler:(SPChangeSuccessHandlerBlockType)successHandler errorHandler:(SPChangeErrorHandlerBlockType)errorHandler {
-
     NSAssert([NSThread isMainThread] == NO,            @"This should get called on the processor's queue!");
     NSAssert([bucket isKindOfClass:[SPBucket class]],  @"Invalid Bucket");
     NSAssert(successHandler,                           @"Please, provide a success handler!");
@@ -508,7 +509,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)enqueueObjectForRetry:(NSString *)key bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData {
-    
     NSParameterAssert([key isKindOfClass:[NSString class]]);
     NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     
@@ -552,7 +552,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)discardPendingChanges:(NSString *)key bucket:(SPBucket *)bucket {
-    
     NSParameterAssert([key isKindOfClass:[NSString class]]);
     NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     
@@ -565,6 +564,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 #pragma mark ====================================================================================
 
 - (NSArray *)processLocalObjectsWithKeys:(NSSet *)keys bucket:(SPBucket *)bucket {
+    NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     
     NSMutableArray *changes         = [NSMutableArray arrayWithCapacity:keys.count];
     NSMutableSet *keysNotFound      = [keys mutableCopy];
@@ -642,8 +642,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (NSArray *)processLocalBucketsDeletion:(NSSet *)buckets {
-    
     NSMutableArray *changes = [NSMutableArray array];
+    
     for (SPBucket *bucket in buckets) {
         NSAssert([bucket isKindOfClass:[SPBucket class]], nil);
         
@@ -660,7 +660,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 #pragma mark ====================================================================================
 
 - (void)enumeratePendingChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
-
     NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     NSParameterAssert(block != nil);
     
@@ -680,7 +679,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)enumerateQueuedChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
-    
     NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     NSParameterAssert(block != nil);
     
@@ -716,7 +714,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)enumerateQueuedDeletionsForBucket:(SPBucket*)bucket block:(SPChangeEnumerationBlockType)block {
-    
     NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     NSParameterAssert(block != nil);
     
@@ -749,7 +746,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block {
-    
     NSParameterAssert([bucket isKindOfClass:[SPBucket class]]);
     NSParameterAssert(block != nil);
     
@@ -830,7 +826,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 // Note:
 // =====
-// We've moved changesPending collection to SPDictionaryStorage class, which will help to lower memory requirements.
+// We've moved changesPending collection to SPPersistentMutableDictionary class, which will help to lower memory requirements.
 // This method will migrate any pending changes, from UserDefaults over to SPPersistentMutableDictionary
 //
 - (void)migratePendingChangesIfNeeded {
