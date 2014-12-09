@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "SPProcessorConstants.h"
+#import "SPChange.h"
 
 
 @class SPBucket;
@@ -18,17 +19,7 @@
 
 typedef void(^SPChangeSuccessHandlerBlockType)(NSString *simperiumKey, NSString *version);
 typedef void(^SPChangeErrorHandlerBlockType)(NSString *simperiumKey, NSString *version, NSError *error);
-typedef void(^SPChangeEnumerationBlockType)(NSDictionary *change);
-
-typedef NS_ENUM(NSInteger, SPProcessorErrors) {
-    SPProcessorErrorsSentDuplicateChange,       // Should Re-Sync
-    SPProcessorErrorsSentInvalidChange,         // Send Full Data: The backend couldn't apply our diff
-    SPProcessorErrorsReceivedUnknownChange,     // No need to handle: We've received a change for an unknown entity
-    SPProcessorErrorsReceivedInvalidChange,     // Should Redownload the Entity: We couldn't apply a remote diff
-    SPProcessorErrorsClientOutOfSync,           // We received a change with an SV != local version: Reindex is required
-    SPProcessorErrorsClientError,               // Should Nuke PendingChange: Catch-all client errors
-    SPProcessorErrorsServerError                // Should Retry: Catch-all server errors
-};
+typedef void(^SPChangeEnumerationBlockType)(SPChange *change);
 
 
 #pragma mark ====================================================================================
@@ -61,9 +52,9 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
 - (NSArray *)processLocalBucketsDeletion:(NSSet *)buckets;
 
 - (void)enumeratePendingChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
-- (void)enumerateQueuedChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
+- (void)enumerateQueuedChangesForBucket:(SPBucket *)bucket  block:(SPChangeEnumerationBlockType)block;
 - (void)enumerateQueuedDeletionsForBucket:(SPBucket*)bucket block:(SPChangeEnumerationBlockType)block;
-- (void)enumerateRetryChangesForBucket:(SPBucket *)bucket block:(SPChangeEnumerationBlockType)block;
+- (void)enumerateRetryChangesForBucket:(SPBucket *)bucket   block:(SPChangeEnumerationBlockType)block;
 
 - (BOOL)hasLocalChangesForKey:(NSString *)key;
 - (NSArray *)exportPendingChanges;

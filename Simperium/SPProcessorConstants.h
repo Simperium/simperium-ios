@@ -23,6 +23,16 @@ extern NSString * const ProcessorDidAcknowledgeDeleteNotification;
 #pragma mark Changeset Errors
 #pragma mark ====================================================================================
 
+typedef NS_ENUM(NSInteger, SPProcessorErrors) {
+    SPProcessorErrorsSentDuplicateChange,       // Should Re-Sync
+    SPProcessorErrorsSentInvalidChange,         // Send Full Data: The backend couldn't apply our diff
+    SPProcessorErrorsReceivedUnknownChange,     // No need to handle: We've received a change for an unknown entity
+    SPProcessorErrorsReceivedInvalidChange,     // Should Redownload the Entity: We couldn't apply a remote diff
+    SPProcessorErrorsClientOutOfSync,           // We received a change with an SV != local version: Reindex is required
+    SPProcessorErrorsClientError,               // Should Nuke PendingChange: Catch-all client errors
+    SPProcessorErrorsServerError                // Should Retry: Catch-all server errors
+};
+
 typedef NS_ENUM(NSUInteger, CH_ERRORS) {
     CH_ERRORS_INVALID_SCHEMA        = 400,
     CH_ERRORS_INVALID_PERMISSION    = 401,
