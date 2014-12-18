@@ -17,7 +17,7 @@
 #pragma mark ====================================================================================
 
 static NSUInteger const SPMetadataIterations    = 100;
-static NSUInteger const SPStressIterations      = 100000;
+static NSUInteger const SPStressIterations      = 1000;
 static NSTimeInterval const SPStressTimeout     = 30;
 
 
@@ -159,10 +159,15 @@ static NSTimeInterval const SPStressTimeout     = 30;
     dispatch_queue_t queue = dispatch_queue_create("Queue", NULL);
 
     dispatch_async(queue, ^{
-        for (NSInteger i = -1; ++i < SPMetadataIterations; ) {
-            SPPersistentMutableDictionary *dictionary = [SPPersistentMutableDictionary loadDictionaryWithLabel:@"Something"];
-            [dictionary setObject:[NSString sp_makeUUID] forKey:[NSString sp_makeUUID]];
-            [dictionary count];
+        for (NSInteger i = -1; ++i < SPStressIterations; ) {
+            @autoreleasepool {
+                SPPersistentMutableDictionary *first = [SPPersistentMutableDictionary loadDictionaryWithLabel:@"Something"];
+                [first setObject:[NSString sp_makeUUID] forKey:[NSString sp_makeUUID]];
+                [first count];
+                
+                SPPersistentMutableDictionary *second = [SPPersistentMutableDictionary loadDictionaryWithLabel:@"Something"];
+                [second count];
+            }
         }
         
         [expectation fulfill];
