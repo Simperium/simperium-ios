@@ -469,15 +469,19 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     // Make sure that any pending async op is drained
     dispatch_group_t group = dispatch_group_create();
     
-    dispatch_group_enter(group);
-    [self.coreDataStorage commitPendingOperations:^{
-        dispatch_group_leave(group);
-    }];
+    if (self.coreDataStorage) {
+        dispatch_group_enter(group);
+        [self.coreDataStorage commitPendingOperations:^{
+            dispatch_group_leave(group);
+        }];
+    }
     
-    dispatch_group_enter(group);
-    [self.JSONStorage commitPendingOperations:^{
-        dispatch_group_leave(group);
-    }];
+    if (self.JSONStorage) {
+        dispatch_group_enter(group);
+        [self.JSONStorage commitPendingOperations:^{
+            dispatch_group_leave(group);
+        }];
+    }
 
     // Once ready, flip back the SkipContext flag
     dispatch_group_notify(group, dispatch_get_main_queue(), ^() {
