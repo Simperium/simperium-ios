@@ -344,15 +344,16 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             [changeProcessor discardPendingChanges:simperiumKey bucket:bucket];
             
         } else if (error.code == SPProcessorErrorsReceivedInvalidChange) {
-            
-            // Do not generate reentrant calls: let the index processor handle the reload
-            if (weakSelf.indexing) {
-                [indexProcessor enableReloadForObjectWithKey:simperiumKey];
-            } else {
-                dispatch_async(dispatch_get_main_queue(), ^{
+            // Prevent re-entrant calls: Indexing flag is modified only on the main thread
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (weakSelf.indexing == false) {
                     [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
+                    return;
+                }
+                dispatch_async(bucket.processorQueue, ^{
+                    [indexProcessor enableReloadForObjectWithKey:simperiumKey];
                 });
-            }
+            });
         }
     };
     
