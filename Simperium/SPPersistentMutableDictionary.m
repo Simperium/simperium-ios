@@ -306,7 +306,7 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
         BOOL success    = [[NSFileManager defaultManager] createDirectoryAtURL:baseURL withIntermediateDirectories:YES attributes:nil error:&error];
         
         if (!success) {
-            SPLogError(@"%@ could not create baseURL %@", NSStringFromClass([self class]), baseURL);
+            NSLog(@"%@ could not create baseURL %@: %@", NSStringFromClass([self class]), baseURL, error);
             abort();
         }
         
@@ -314,14 +314,25 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
         [self migrateIfNeeded];
         
         // Finally, load the PSC
-        NSURL *storeURL = [baseURL URLByAppendingPathComponent:self.filename];
-        
+        NSURL *storeURL                     = [baseURL URLByAppendingPathComponent:self.filename];
         NSManagedObjectModel *context       = self.managedObjectModel;
         NSPersistentStoreCoordinator *psc   = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:context];
+        
         if (![psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
         {
-            SPLogError(@"Unresolved error %@, %@", error, [error userInfo]);
-            abort();
+            NSLog(@"%@ could add persistent store %@: %@", NSStringFromClass([self class]), baseURL, error);
+            
+            // Move the faulty DB
+            NSString *backupPath = [storeURL.path stringByAppendingString:@"~"];
+            [[NSFileManager defaultManager] copyItemAtPath:storeURL.path toPath:backupPath error:nil];
+            [[NSFileManager defaultManager] removeItemAtPath:storeURL.path error:nil];
+            
+            // Try again
+            if (![psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
+            {
+                NSLog(@"%@ Unresolved error %@: %@", NSStringFromClass([self class]), baseURL, error);
+                abort();
+            }
         }
         
         _persistentStoreCoordinator = psc;

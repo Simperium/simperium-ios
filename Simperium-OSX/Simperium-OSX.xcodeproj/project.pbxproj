@@ -194,6 +194,8 @@
 		B5F43C31194F56D300495590 /* SPProcessorConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F43C2F194F56D300495590 /* SPProcessorConstants.m */; };
 		B5F43C33194F578E00495590 /* SPChangeProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F43C32194F578E00495590 /* SPChangeProcessorTests.m */; };
 		B5F65F7C1847DE3E00CEF48D /* SPManagedObject+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F65F7B1847DE3E00CEF48D /* SPManagedObject+Internals.h */; };
+		B5FDA4AF1A2E47F300E83054 /* SPCoreDataStorage+Mock.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FDA4AB1A2E47F300E83054 /* SPCoreDataStorage+Mock.m */; };
+		B5FDA4B01A2E47F300E83054 /* SPManagedObject+Mock.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FDA4AD1A2E47F300E83054 /* SPManagedObject+Mock.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -406,6 +408,11 @@
 		B5F43C2F194F56D300495590 /* SPProcessorConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPProcessorConstants.m; path = ../../Simperium/SPProcessorConstants.m; sourceTree = "<group>"; };
 		B5F43C32194F578E00495590 /* SPChangeProcessorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPChangeProcessorTests.m; path = ../../SimperiumTests/SPChangeProcessorTests.m; sourceTree = "<group>"; };
 		B5F65F7B1847DE3E00CEF48D /* SPManagedObject+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SPManagedObject+Internals.h"; path = "../../Simperium/SPManagedObject+Internals.h"; sourceTree = "<group>"; };
+		B5FDA4AA1A2E47F300E83054 /* SPCoreDataStorage+Mock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SPCoreDataStorage+Mock.h"; path = "../../SimperiumTests/SPCoreDataStorage+Mock.h"; sourceTree = "<group>"; };
+		B5FDA4AB1A2E47F300E83054 /* SPCoreDataStorage+Mock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "SPCoreDataStorage+Mock.m"; path = "../../SimperiumTests/SPCoreDataStorage+Mock.m"; sourceTree = "<group>"; };
+		B5FDA4AC1A2E47F300E83054 /* SPManagedObject+Mock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SPManagedObject+Mock.h"; path = "../../SimperiumTests/SPManagedObject+Mock.h"; sourceTree = "<group>"; };
+		B5FDA4AD1A2E47F300E83054 /* SPManagedObject+Mock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "SPManagedObject+Mock.m"; path = "../../SimperiumTests/SPManagedObject+Mock.m"; sourceTree = "<group>"; };
+		B5FDA4AE1A2E47F300E83054 /* XCTestCase+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "XCTestCase+Simperium.h"; path = "../../SimperiumTests/XCTestCase+Simperium.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -732,6 +739,11 @@
 		B5D581D1183565CA00B08996 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				B5FDA4AA1A2E47F300E83054 /* SPCoreDataStorage+Mock.h */,
+				B5FDA4AB1A2E47F300E83054 /* SPCoreDataStorage+Mock.m */,
+				B5FDA4AC1A2E47F300E83054 /* SPManagedObject+Mock.h */,
+				B5FDA4AD1A2E47F300E83054 /* SPManagedObject+Mock.m */,
+				B5FDA4AE1A2E47F300E83054 /* XCTestCase+Simperium.h */,
 				B5D581CE183565C500B08996 /* XCTestCase+Simperium.h */,
 				B5D581CF183565C500B08996 /* XCTestCase+Simperium.m */,
 			);
@@ -1074,10 +1086,12 @@
 				B56B16511835682500E45C98 /* Config.m in Sources */,
 				B58EC3251885B74100ED37E5 /* SPThreadsafeMutableSetTests.m in Sources */,
 				B59D9F191A1A49F800941154 /* SPMemberJSONTests.m in Sources */,
+				B5FDA4B01A2E47F300E83054 /* SPManagedObject+Mock.m in Sources */,
 				B56B16541835682500E45C98 /* TestObject.m in Sources */,
 				B58EC3241885B74100ED37E5 /* SPPersistentMutableSetTests.m in Sources */,
 				B566128C1A1E1E610064A625 /* SPStorageObserverAdapter.m in Sources */,
 				B59D9F131A1A49BB00941154 /* SPIndexProcessorTests.m in Sources */,
+				B5FDA4AF1A2E47F300E83054 /* SPCoreDataStorage+Mock.m in Sources */,
 				B59D9F171A1A49E800941154 /* SPCoreDataStorageTests.m in Sources */,
 				B56B16501835682500E45C98 /* PostComment.m in Sources */,
 				B59D9F151A1A49DD00941154 /* SPWebSocketInterfaceTests.m in Sources */,

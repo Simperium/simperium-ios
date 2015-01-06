@@ -16,7 +16,9 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSUInteger const SPMetadataIterations = 100;
+static NSUInteger const SPMetadataIterations    = 100;
+static NSUInteger const SPStressIterations      = 1000;
+static NSTimeInterval const SPStressTimeout     = 30;
 
 
 #pragma mark ====================================================================================
@@ -29,7 +31,7 @@ static NSUInteger const SPMetadataIterations = 100;
 
 @implementation SPPersistentMutableDictionaryTests
 
-- (void)testInserts {
+- (void)testInsertedObjectsAreEffectivelyPersisted {
 	NSString *storageLabel = [NSString sp_makeUUID];
 	SPPersistentMutableDictionary *storage = [SPPersistentMutableDictionary loadDictionaryWithLabel:storageLabel];
 	NSMutableDictionary *integrity = [NSMutableDictionary dictionary];
@@ -75,7 +77,7 @@ static NSUInteger const SPMetadataIterations = 100;
 	XCTAssertTrue( (storage.count == 0), @"RemoveAllObjects Failed");
 }
 
-- (void)testRemoval {
+- (void)testRemovedObjectsAreNotAvailableAfterSave {
 	NSString *storageLabel = [NSString sp_makeUUID];
 	SPPersistentMutableDictionary *storage = [SPPersistentMutableDictionary loadDictionaryWithLabel:storageLabel];
 		
@@ -117,7 +119,7 @@ static NSUInteger const SPMetadataIterations = 100;
 	[allKeys removeAllObjects];
 }
 
-- (void)testNamespaces {
+- (void)testMultipleDictionariesWithDifferentNamespaces {
 	// Fresh Start
 	NSString *firstLabel = [NSString sp_makeUUID];
 	NSString *secondLabel = [NSString sp_makeUUID];
@@ -148,6 +150,30 @@ static NSUInteger const SPMetadataIterations = 100;
 	
 	[secondStorage removeAllObjects];
 	[secondStorage save];
+}
+
+- (void)testStressReopeningMutableDictionaryInBackground {
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Expectation"];
+    
+    dispatch_queue_t queue = dispatch_queue_create("Queue", NULL);
+
+    dispatch_async(queue, ^{
+        for (NSInteger i = -1; ++i < SPStressIterations; ) {
+            @autoreleasepool {
+                SPPersistentMutableDictionary *first = [SPPersistentMutableDictionary loadDictionaryWithLabel:@"Something"];
+                [first setObject:[NSString sp_makeUUID] forKey:[NSString sp_makeUUID]];
+                [first count];
+                
+                SPPersistentMutableDictionary *second = [SPPersistentMutableDictionary loadDictionaryWithLabel:@"Something"];
+                [second count];
+            }
+        }
+        
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:SPStressTimeout handler:nil];
 }
 
 

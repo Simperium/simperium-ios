@@ -9,6 +9,12 @@
 #import <XCTest/XCTest.h>
 #import "NSString+Simperium.h"
 
+
+
+#pragma mark ====================================================================================
+#pragma mark NSString+Simperium
+#pragma mark ====================================================================================
+
 @interface NSStringSimperiumTest : XCTestCase
 
 @end

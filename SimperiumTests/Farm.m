@@ -71,12 +71,14 @@
 }
 
 - (void)signout {
-	StartBlock();
+    dispatch_group_t group = dispatch_group_create();
+    
+    dispatch_group_enter(group);
 	[self.simperium signOutAndRemoveLocalData:YES completion:^() {
-		EndBlock();
+        dispatch_group_leave(group);
 	}];
 	
-	WaitUntilBlockCompletes();
+    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
 }
 
 - (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs {

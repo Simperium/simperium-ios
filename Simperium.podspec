@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Simperium"
-  s.version      = "0.7.5"
+  s.version      = "0.7.6"
   s.summary      = "Simperium libraries."
   s.description  = "Simperium is a simple way for developers to move data as it changes, instantly and automatically."
   s.homepage     = "https://github.com/Simperium/simperium-ios"
@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '6.0'
   s.osx.deployment_target = '10.8'
 
-  s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*'
+  s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*', 'External/SSKeychain/*'
   s.osx.source_files = 'Simperium-OSX/**/*.{h,m}'
 
   s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}', 'Simperium/SPTOSViewController.{h,m}', 'Simperium/SPAuthenticationButton.{h,m}'

@@ -32,10 +32,11 @@
 
 static int const SPWebsocketIndexPageSize           = 500;
 static int const SPWebsocketIndexBatchSize          = 10;
-static int const SPWebsocketErrorAuthFailed         = 401;
+static int const SPWebsocketAuthErrorTokenMalformed = 400;
+static int const SPWebsocketAuthErrorTokenInvalid   = 401;
 static int const SPWebsocketChangesBatchSize        = 20;
 static NSString* const SPWebsocketErrorMark         = @"{";
-static NSString* const SPWebsocketErrorKey          = @"code";
+static NSString* const SPWebsocketErrorCodeKey      = @"code";
 
 static SPLogLevels logLevel                         = SPLogLevelsInfo;
 
@@ -236,7 +237,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         NSDictionary *authPayload = [responseString sp_objectFromJSONStringWithError:&error];
         
         if ( [authPayload isKindOfClass:[NSDictionary class]] ) {
-            if ( [authPayload[SPWebsocketErrorKey] isEqualToNumber:@(SPWebsocketErrorAuthFailed)] ) {
+            NSInteger errorCode = [authPayload[SPWebsocketErrorCodeKey] integerValue];
+            if (errorCode == SPWebsocketAuthErrorTokenMalformed || errorCode == SPWebsocketAuthErrorTokenInvalid) {
                 [[NSNotificationCenter defaultCenter] postNotificationName:SPAuthenticationDidFail object:self];
             }
         }
@@ -342,15 +344,16 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             [changeProcessor discardPendingChanges:simperiumKey bucket:bucket];
             
         } else if (error.code == SPProcessorErrorsReceivedInvalidChange) {
-            
-            // Do not generate reentrant calls: let the index processor handle the reload
-            if (weakSelf.indexing) {
-                [indexProcessor enableReloadForObjectWithKey:simperiumKey];
-            } else {
-                dispatch_async(dispatch_get_main_queue(), ^{
+            // Prevent re-entrant calls: Indexing flag is modified only on the main thread
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (weakSelf.indexing == false) {
                     [weakSelf requestVersion:version forObjectWithKey:simperiumKey];
+                    return;
+                }
+                dispatch_async(bucket.processorQueue, ^{
+                    [indexProcessor enableReloadForObjectWithKey:simperiumKey];
                 });
-            }
+            });
         }
     };
     
@@ -680,10 +683,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
     SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
     
-    // Paranoid Mode: Don't set the lastChangeSignature, unless it's not nil!
-    if (self.pendingLastChangeSignature) {
-        bucket.lastChangeSignature      = self.pendingLastChangeSignature;
-    }
+    // Update the Bucket's lastChangeSignature
+    bucket.lastChangeSignature      = self.pendingLastChangeSignature;
     
     // All versions were received successfully, so update the lastChangeSignature
     self.pendingLastChangeSignature = nil;

@@ -29,6 +29,8 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 @property (nonatomic, strong, readwrite) SRWebSocket    *webSocket;
 @property (nonatomic, strong, readwrite) NSTimer        *timeoutTimer;
 @property (nonatomic, strong, readwrite) NSDate         *lastSeenTimestamp;
+@property (nonatomic, assign, readwrite) NSUInteger     bytesSent;
+@property (nonatomic, assign, readwrite) NSUInteger     bytesReceived;
 @end
 
 
@@ -48,10 +50,10 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 {
     self = [super init];
     if (self) {
-        self.webSocket          = [[SRWebSocket alloc] initWithURLRequest:request];
-        self.webSocket.delegate = self;
+        _webSocket          = [[SRWebSocket alloc] initWithURLRequest:request];
+        _webSocket.delegate = self;
         
-        self.activityTimeout    = SPWebSocketTimeoutInterval;
+        _activityTimeout    = SPWebSocketTimeoutInterval;
         
 #if TARGET_OS_IPHONE
         NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
@@ -64,6 +66,7 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 
 - (void)open {
     [self resetTimeoutTimer];
+    [self resetStats];
     [self.webSocket open];
 }
 
@@ -73,6 +76,7 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 }
 
 - (void)send:(id)data {
+    self.bytesSent = [self lengthForMessage:data];
     [self.webSocket send:data];
 }
 
@@ -106,6 +110,26 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 
 
 #pragma mark ====================================================================================
+#pragma mark Stats Helpers
+#pragma mark ====================================================================================
+
+- (void)resetStats {
+    self.bytesReceived  = 0;
+    self.bytesSent      = 0;
+}
+
+- (NSUInteger)lengthForMessage:(id)message {
+    if ([message isKindOfClass:[NSString class]]) {
+        return [((NSString *)message) lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    } else if ([message isKindOfClass:[NSData class]]) {
+        return ((NSData *)message).length;
+    } else {
+        return 0;
+    }
+}
+
+
+#pragma mark ====================================================================================
 #pragma mark Timestamp Helpers
 #pragma mark ====================================================================================
 
@@ -127,6 +151,8 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
     [self resetTimeoutTimer];
     [self resetLastSeenTimestamp];
+
+    self.bytesReceived = [self lengthForMessage:message];
     [self.delegate webSocket:self didReceiveMessage:message];
 }
 

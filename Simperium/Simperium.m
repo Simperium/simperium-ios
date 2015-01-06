@@ -463,8 +463,31 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 
 - (BOOL)saveWithoutSyncing {
     self.skipContextProcessing = YES;
+    
     BOOL result = [self save];
-    self.skipContextProcessing = NO;
+
+    // Make sure that any pending async op is drained
+    dispatch_group_t group = dispatch_group_create();
+    
+    if (self.coreDataStorage) {
+        dispatch_group_enter(group);
+        [self.coreDataStorage commitPendingOperations:^{
+            dispatch_group_leave(group);
+        }];
+    }
+    
+    if (self.JSONStorage) {
+        dispatch_group_enter(group);
+        [self.JSONStorage commitPendingOperations:^{
+            dispatch_group_leave(group);
+        }];
+    }
+
+    // Once ready, flip back the SkipContext flag
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^() {
+        self.skipContextProcessing = NO;
+    });
+    
     return result;
 }
 
@@ -545,6 +568,11 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         return;
     }
     
+    if (self.logoutInProgress) {
+        SPLogError(@"Error: Simperium is already logging out");
+        return;
+    }
+    
     SPLogInfo(@"Simperium logging out...");
     
     // Reset Simperium: Don't start network managers again; expect app to handle that
@@ -560,6 +588,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     // Reset the network manager and processors; any enqueued tasks will get skipped
     self.logoutInProgress = YES;
     
+    // Once every changeProcessor queue is drained: proceed nuking the database (if needed)
     dispatch_group_t group = dispatch_group_create();
     
     for (SPBucket *bucket in self.buckets.allValues) {
@@ -571,28 +600,35 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         }];
     }
     
-    // Once every changeProcessor queue has been effectively, hit the completion callback
     dispatch_group_notify(group, dispatch_get_main_queue(), ^(void) {
-        
-        // Now delete all local content; no more changes will be coming in at this point
-        if (remove) {
-            SPLogInfo(@"Simperium clearing local data...");
-            self.skipContextProcessing = YES;
-            [self.buckets.allValues makeObjectsPerformSelector:@selector(deleteAllObjects)];
-            self.skipContextProcessing = NO;
-        }
-
-        // Hit the delegate + callback
-        if ([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
-            [self.delegate simperiumDidLogout:self];
-        }
-        
-        self.logoutInProgress = NO;
-        
-        if (completion) {
-            completion();
-        }
+        [self _finishSignout:remove completion:completion];
     });
+}
+
+- (void)_finishSignout:(BOOL)remove completion:(SimperiumSignoutCompletion)completion {
+    
+    // Now delete all local content; no more changes will be coming in at this point
+    if (remove) {
+        SPLogInfo(@"Simperium removing all entities...");
+        self.skipContextProcessing = YES;
+        [self.buckets.allValues makeObjectsPerformSelector:@selector(deleteAllObjects)];
+    }
+    
+    // Wait until any pending Save OP is ready
+    [self.coreDataStorage commitPendingOperations:^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([self.delegate respondsToSelector:@selector(simperiumDidLogout:)]) {
+                [self.delegate simperiumDidLogout:self];
+            }
+            
+            if (completion) {
+                completion();
+            }
+            
+            self.logoutInProgress       = NO;
+            self.skipContextProcessing  = NO;
+        });
+    }];
 }
 
 - (void)resetMetadata {
@@ -671,12 +707,21 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 - (BOOL)requiresConnection {
     return (self.reachability.currentReachabilityStatus == NotReachable);
 }
+
 - (NSString *)networkStatus {
     return self.network.status;
 }
 
 - (NSDate *)networkLastSeenTime {
     return self.network.lastSeenTime;
+}
+
+- (NSUInteger)bytesSent {
+    return self.network.bytesSent;
+}
+
+- (NSUInteger)bytesReceived {
+    return self.network.bytesReceived;
 }
 
 
@@ -712,10 +757,14 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [self.authenticator reset];
     self.user.authToken = nil;
     
-    if (self.authenticationEnabled) {
-        // Delay it a touch to avoid issues with storyboard-driven UIs
-        [self performSelector:@selector(delayedOpenAuthViewController) withObject:nil afterDelay:0.1];
+    [self failWithErrorCode:SPSimperiumErrorsInvalidToken];
+    
+    if (!self.authenticationEnabled) {
+        return;
     }
+    
+    // Delay it a touch to avoid issues with storyboard-driven UIs
+    [self performSelector:@selector(delayedOpenAuthViewController) withObject:nil afterDelay:0.1];
 }
 
 - (BOOL)authenticateIfNecessary {
