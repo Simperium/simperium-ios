@@ -536,8 +536,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)enqueueObjectForDeletion:(NSString *)key bucket:(SPBucket *)bucket {
-    NSAssert( [key isKindOfClass:[NSString class]],         @"Missing key" );
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Missing Bucket");
+    NSAssert([key isKindOfClass:[NSString class]],      @"Missing key");
+    NSAssert([bucket isKindOfClass:[SPBucket class]],   @"Missing Bucket");
     
     SPLogVerbose(@"Simperium marking object for deletion when ready (%@): %@", bucket.name, key);
     [self.keysForObjectsToDelete addObject:key];
@@ -546,40 +546,42 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 - (void)enqueueObjectForRetry:(NSString *)key bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData {
     
-    NSAssert([key isKindOfClass:[NSString class]],     @"Missing change");
-    NSAssert([bucket isKindOfClass:[SPBucket class]],  @"Missing Bucket");
+    NSAssert([key isKindOfClass:[NSString class]],      @"Missing change");
+    NSAssert([bucket isKindOfClass:[SPBucket class]],   @"Missing Bucket");
     
-    id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
-    [threadSafeStorage beginSafeSection];
+    id<SPStorageProvider>threadSafeStorage  = [bucket.storage threadSafeStorage];
+    __block BOOL success                    = true;
     
-    id<SPDiffable>object    = [threadSafeStorage objectForKey:key bucketName:bucket.name];
-    NSDictionary *oldChange = [self.changesPending objectForKey:key];
-    
-    // Was the object remotely nuked?
-    if (!object && ![oldChange[CH_OPERATION] isEqualToString:CH_REMOVE]) {
-        [self.changesPending removeObjectForKey:key];
-        [threadSafeStorage finishSafeSection];
-        return;
-    }
-    
-    // Hack: Force Fire fault
-    [object simperiumKey];
-    
-    // Do we need to repost with the whole data?
-    BOOL success = YES;
-    
-    if (object && overrideRemoteData) {
-        NSDictionary *fullData = [object dictionary];
-        if (fullData) {
-            NSDictionary *newChange = [self createChangeForKey:key operation:CH_MODIFY version:object.ghost.version fullData:fullData];
-            [self.changesPending setObject:newChange forKey:key];
-        } else {
+    [threadSafeStorage performSafeBlockAndWait:^{
+        
+        id<SPDiffable>object                = [threadSafeStorage objectForKey:key bucketName:bucket.name];
+        NSDictionary *oldChange             = [self.changesPending objectForKey:key];
+        
+        // Was the object remotely nuked?
+        if (!object && ![oldChange[CH_OPERATION] isEqualToString:CH_REMOVE]) {
             [self.changesPending removeObjectForKey:key];
-            success = NO;
+            success = false;
+            return;
         }
-    }
-    
-    [threadSafeStorage finishSafeSection];
+        
+        // Hack: Force Fire fault
+        [object simperiumKey];
+        
+        // Do we need to repost with the whole data?
+        if (object == nil || overrideRemoteData == false) {
+            return;
+        }
+        
+        NSDictionary *fullData = [object dictionary];
+        if (!fullData) {
+            [self.changesPending removeObjectForKey:key];
+            success = false;
+            return;
+        }
+        
+        NSDictionary *newChange = [self createChangeForKey:key operation:CH_MODIFY version:object.ghost.version fullData:fullData];
+        [self.changesPending setObject:newChange forKey:key];
+    }];
     
     if (success) {
         [self.keysForObjectsWithPendingRetry addObject:key];
@@ -602,11 +604,22 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 - (NSArray *)processLocalObjectsWithKeys:(NSSet *)keys bucket:(SPBucket *)bucket {
     
+    id<SPStorageProvider> storage   = [bucket.storage threadSafeStorage];
+    __block NSArray *changes        = nil;
+    
+    [storage performSafeBlockAndWait:^{
+        changes = [self _processLocalObjectsWithStorage:storage keys:keys bucket:bucket];
+    }];
+    
+    return changes;
+}
+
+- (NSArray *)_processLocalObjectsWithStorage:(id<SPStorageProvider>)storage
+                                        keys:(NSSet *)keys
+                                      bucket:(SPBucket *)bucket
+{
     NSMutableArray *changes         = [NSMutableArray arrayWithCapacity:keys.count];
     NSMutableSet *keysNotFound      = [keys mutableCopy];
-    id<SPStorageProvider> storage   = [bucket.storage threadSafeStorage];
-    
-    [storage beginSafeSection];
     NSArray *objects                = [storage objectsForKeys:keys bucketName:bucket.name];
     
     for (id<SPDiffable> object in objects) {
@@ -656,7 +669,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     }
     
     [self.changesPending save];
-    [storage finishSafeSection];
     
     return changes;
 }
