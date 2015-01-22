@@ -47,8 +47,7 @@
 
 // Synchronization
 - (id<SPStorageProvider>)threadSafeStorage;
-- (void)beginSafeSection;
-- (void)finishSafeSection;
+- (void)performSafeBlockAndWait:(void (^)())block;
 - (void)performCriticalBlockAndWait:(void (^)())block;
 
 @optional

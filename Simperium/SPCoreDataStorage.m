@@ -9,6 +9,7 @@
 #import "SPCoreDataStorage.h"
 #import "SPManagedObject+Internals.h"
 #import "NSString+Simperium.h"
+#import "NSConditionLock+Simperium.h"
 #import "SPCoreDataExporter.h"
 #import "SPSchema.h"
 #import "SPThreadsafeMutableSet.h"
@@ -576,6 +577,15 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 #pragma mark - Synchronization
 
+- (void)performSafeBlockAndWait:(void (^)())block {
+    NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
+    NSParameterAssert(block);
+    
+    [self.mutex sp_decreaseCondition];
+    block();
+    [self.mutex sp_decreaseCondition];
+}
+
 - (void)performCriticalBlockAndWait:(void (^)())block {
     NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
     NSParameterAssert(block);
@@ -583,21 +593,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     [self.mutex lockWhenCondition:SPWorkersDone];
     [self.mainManagedObjectContext performBlockAndWait:block];
     [self.mutex unlock];
-}
-
-- (void)beginSafeSection {
-    NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-
-    [_mutex lock];
-    NSInteger workers = _mutex.condition + 1;
-    [_mutex unlockWithCondition:workers];
-}
-
-- (void)finishSafeSection {
-    
-    [_mutex lock];
-    NSInteger workers = _mutex.condition - 1;
-    [_mutex unlockWithCondition:workers];
 }
 
 

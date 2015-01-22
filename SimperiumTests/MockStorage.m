@@ -9,6 +9,7 @@
 #import "MockStorage.h"
 #import "SPObject.h"
 #import "NSString+Simperium.h"
+#import "NSConditionLock+Simperium.h"
 
 
 
@@ -180,23 +181,19 @@ static NSInteger const SPWorkersDone = 0;
     // No-Op
 }
 
-- (void)beginSafeSection {
-	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-    
-	[_mutex lock];
-	NSInteger workers = _mutex.condition + 1;
-	[_mutex unlockWithCondition:workers];
-}
-
-- (void)finishSafeSection {
-	
-	[_mutex lock];
-	NSInteger workers = _mutex.condition - 1;
-	[_mutex unlockWithCondition:workers];
-}
-
 - (void)commitPendingOperations:(void (^)())completion {
     completion();
+}
+
+
+#pragma mark - Synchronization
+
+- (void)performSafeBlockAndWait:(void (^)())block {
+	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
+    
+    [self.mutex sp_increaseCondition];
+    block();
+    [self.mutex sp_decreaseCondition];
 }
 
 - (void)performCriticalBlockAndWait:(void (^)())block {

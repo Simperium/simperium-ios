@@ -344,12 +344,4 @@
     // NO-OP
 }
 
-- (void)beginSafeSection {
-    // NO-OP
-}
-
-- (void)finishSafeSection {
-    // NO-OP
-}
-
 @end
