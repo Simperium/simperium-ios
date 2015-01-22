@@ -189,16 +189,37 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     return YES;
 }
 
-// TODO:
-//      - Split this method into processRemoteModify and processRemoteInsertion
-//      - Once the above are implemented, move the 'begin/finish'SafeSection calls to the caller, and nuke duplicated code, PLEASE!
-//
-- (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey bucket:(SPBucket *)bucket change:(NSDictionary *)change
-                      acknowledged:(BOOL)acknowledged clientMatches:(BOOL)clientMatches error:(NSError **)error {
+- (BOOL)processRemoteModifyWithKey:(NSString *)simperiumKey
+                            bucket:(SPBucket *)bucket
+                            change:(NSDictionary *)change
+                      acknowledged:(BOOL)acknowledged
+                     clientMatches:(BOOL)clientMatches
+                             error:(NSError **)error
+{
+    id<SPStorageProvider> storage   = [bucket.storage threadSafeStorage];
+    __block BOOL success            = NO;
     
-    id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
-    [storage beginSafeSection];
+    [storage performSafeBlockAndWait:^{
+        success = [self _processRemoteModifyWithStorage:storage
+                                           simperiumKey:simperiumKey
+                                                 bucket:bucket
+                                                 change:change
+                                           acknowledged:acknowledged
+                                          clientMatches:clientMatches
+                                                  error:error];
+    }];
     
+    return success;
+}
+
+- (BOOL)_processRemoteModifyWithStorage:(id<SPStorageProvider>)storage
+                           simperiumKey:(NSString *)simperiumKey
+                                 bucket:(SPBucket *)bucket
+                                 change:(NSDictionary *)change
+                           acknowledged:(BOOL)acknowledged
+                          clientMatches:(BOOL)clientMatches
+                                  error:(NSError **)error
+{
     id<SPDiffable> object = [storage objectForKey:simperiumKey bucketName:bucket.name];
     
     BOOL newlyAdded = NO;
@@ -209,7 +230,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         // It Must have been locally deleted before the confirmation got through!
         if (clientMatches) {
             SPLogVerbose(@"Simperium received an acknowledgement for an entity that was already deleted (%@): %@", bucket.name, simperiumKey);
-            [storage finishSafeSection];
             return NO;
         }
         
@@ -252,14 +272,12 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         if (error) {
             *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedUnknownChange description:nil];
         }
-        [storage finishSafeSection];
         return NO;
     }
     
     // If the local version matches the remote endVersion, don't process this change: it's a dupe message.
     // Processing aside, let's advance the bucket's CV, and return true
     if ([object.ghost.version isEqual:endVersion]) {
-        [storage finishSafeSection];
         return YES;
     }
     
@@ -277,7 +295,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
             if (error) {
                 *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
             }
-            [storage finishSafeSection];
             return NO;
         }
         
@@ -302,7 +319,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
                     if (error) {
                         *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
                     }
-                    [storage finishSafeSection];
                     return NO;
                 }
                 
@@ -327,13 +343,11 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
                 if (error) {
                     *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsReceivedInvalidChange description:theError.description];
                 }
-                [storage finishSafeSection];
                 return NO;
             }
         }
         
         [storage save];
-        [storage finishSafeSection];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             NSMutableDictionary *userInfo = [@{
@@ -361,8 +375,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     if (error) {
         *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsClientOutOfSync];
     }
-    
-    [storage finishSafeSection];
     
     return NO;
 }
@@ -534,8 +546,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 - (void)enqueueObjectForRetry:(NSString *)key bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData {
     
-    NSAssert( [key isKindOfClass:[NSString class]],     @"Missing change" );
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],  @"Missing Bucket");
+    NSAssert([key isKindOfClass:[NSString class]],     @"Missing change");
+    NSAssert([bucket isKindOfClass:[SPBucket class]],  @"Missing Bucket");
     
     id<SPStorageProvider>threadSafeStorage = [bucket.storage threadSafeStorage];
     [threadSafeStorage beginSafeSection];
@@ -577,8 +589,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 - (void)discardPendingChanges:(NSString *)key bucket:(SPBucket *)bucket {
     
-    NSAssert( [key isKindOfClass:[NSString class]],     @"Missing change" );
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],  @"Missing Bucket");
+    NSAssert([key isKindOfClass:[NSString class]],     @"Missing change");
+    NSAssert([bucket isKindOfClass:[SPBucket class]],  @"Missing Bucket");
     
     [self.changesPending removeObjectForKey:key];
 }
