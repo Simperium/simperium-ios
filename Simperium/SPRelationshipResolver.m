@@ -101,20 +101,33 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
     }
     
     dispatch_async(self.queue, ^{
-        id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
+        id<SPStorageProvider> threadSafeStorage     = [storage threadSafeStorage];
+        __block NSHashTable *resolvedRelationships  = nil;
+        
         [threadSafeStorage performSafeBlockAndWait:^{
-            [self _resolvePendingRelationships:relationships
-                                  simperiumKey:simperiumKey
-                                    bucketName:bucketName
-                             threadSafeStorage:threadSafeStorage];
+            resolvedRelationships = [self _resolvePendingRelationships:relationships
+                                                          simperiumKey:simperiumKey
+                                                            bucketName:bucketName
+                                                     threadSafeStorage:threadSafeStorage];
         }];
+        
+        if (resolvedRelationships.count == 0) {
+            return;
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            @autoreleasepool {
+                [self removeRelationships:resolvedRelationships];
+                [self saveWithStorage:storage];
+            }
+        });
     });
 }
 
-- (void)_resolvePendingRelationships:(NSHashTable *)relationships
-                        simperiumKey:(NSString *)simperiumKey
-                          bucketName:(NSString *)bucketName
-                   threadSafeStorage:(id<SPStorageProvider>)threadSafeStorage
+- (NSHashTable *)_resolvePendingRelationships:(NSHashTable *)relationships
+                                 simperiumKey:(NSString *)simperiumKey
+                                   bucketName:(NSString *)bucketName
+                            threadSafeStorage:(id<SPStorageProvider>)threadSafeStorage
 {
     NSParameterAssert(relationships);
     NSParameterAssert(simperiumKey);
@@ -163,18 +176,11 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
         [processed addObject:relationship];
     }
     
-    if (processed.count == 0) {
-        return;
+    if (processed.count) {
+        [threadSafeStorage save];
     }
     
-    [threadSafeStorage save];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        @autoreleasepool {
-            [self removeRelationships:processed];
-            [self saveWithStorage:storage];
-        }
-    });
+    return processed;
 }
 
 - (void)saveWithStorage:(id<SPStorageProvider>)storage {
