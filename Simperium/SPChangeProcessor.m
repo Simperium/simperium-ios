@@ -162,29 +162,26 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         SPLogVerbose(@"Simperium non-local REMOVE ENTITY received");
         
         id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
-        [threadSafeStorage beginCriticalSection];
         
-        id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
-        
-        if (object) {
-            [threadSafeStorage deleteObject:object];
-            [threadSafeStorage save];
-        }
-
-        [threadSafeStorage finishCriticalSection];
+        [threadSafeStorage performCriticalBlockAndWait:^{
+            id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
+            if (object) {
+                [threadSafeStorage deleteObject:object];
+                [threadSafeStorage save];
+            }
+        }];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             NSDictionary *userInfo = @{
-                                        @"bucketName"   : bucket.name,
-                                        @"keys"         : [NSSet setWithObject:simperiumKey]
-                                    };
+                @"bucketName"   : bucket.name,
+                @"keys"         : [NSSet setWithObject:simperiumKey]
+            };
             [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
         });
 
     } else {
         dispatch_async(dispatch_get_main_queue(), ^{
-            // Not really useful except for testing
-            NSDictionary *userInfo = @{  @"bucketName" : bucket.name };
+            NSDictionary *userInfo = @{ @"bucketName" : bucket.name };
             [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidAcknowledgeDeleteNotification object:bucket userInfo:userInfo];
         });
     }
