@@ -79,6 +79,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
         [self addObserversForMainContext:self.mainManagedObjectContext];
     }
+    
     return self;
 }
 
@@ -206,7 +207,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     }
     
     return results;
-    
 }
 
 - (NSArray *)objectKeysForBucketName:(NSString *)bucketName {
@@ -221,8 +221,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     return objectKeys;
 }
 
-- (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
-{
+- (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate {
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:[NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext]];
     [request setIncludesSubentities:NO]; //Omit subentities. Default is YES (i.e. include subentities) 
@@ -280,7 +279,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     SPManagedObject *object = [NSEntityDescription insertNewObjectForEntityForName:bucketName
                                                             inManagedObjectContext:self.mainManagedObjectContext];
     
-    object.simperiumKey = key ? key : [NSString sp_makeUUID];
+    object.simperiumKey = key ?: [NSString sp_makeUUID];
     
     return object;
 }
@@ -485,9 +484,9 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (void)addObserversForMainContext:(NSManagedObjectContext *)moc {
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:moc];
-    [nc addObserver:self selector:@selector(mainContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:moc];
-    [nc addObserver:self selector:@selector(mainContextObjectsDidChange:) name:NSManagedObjectContextObjectsDidChangeNotification object:moc];
+    [nc addObserver:self selector:@selector(managedContextWillSave:)        name:NSManagedObjectContextWillSaveNotification         object:moc];
+    [nc addObserver:self selector:@selector(mainContextDidSave:)            name:NSManagedObjectContextDidSaveNotification          object:moc];
+    [nc addObserver:self selector:@selector(mainContextObjectsDidChange:)   name:NSManagedObjectContextObjectsDidChangeNotification object:moc];
 }
 
 
@@ -653,7 +652,9 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     
     if (![*coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error])
     {
-         //TODO: this can occur the first time you launch a Simperium app after adding Simperium to it. The existing data store lacks the dynamically added members, so it must be upgraded first, and then the opening of the persistent store must be attempted again.
+        // TODO: this can occur the first time you launch a Simperium app after adding Simperium to it.
+        // The existing data store lacks the dynamically added members, so it must be upgraded first, and then the
+        // opening of the persistent store must be attempted again.
          
         NSLog(@"Simperium failed to perform lightweight migration; app should perform manual migration");
     }    
@@ -670,12 +671,13 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 // Need to perform a manual migration in a particular case. Do this according to Apple's guidelines.
 - (BOOL)migrateStore:(NSURL *)storeURL sourceModel:(NSManagedObjectModel *)srcModel destinationModel:(NSManagedObjectModel *)dstModel {
-    NSError *error;
+    NSError *error = nil;
     NSMappingModel *mappingModel = [NSMappingModel inferredMappingModelForSourceModel:srcModel
-                                                                     destinationModel:dstModel error:&error];
+                                                                     destinationModel:dstModel
+                                                                                error:&error];
     if (error) {
         NSString *message = [NSString stringWithFormat:@"Inferring failed %@ [%@]",
-                             [error description], ([error userInfo] ? [[error userInfo] description] : @"no user info")];
+                             error.description, (error.userInfo.description ?: @"no user info")];
         NSLog(@"Migration failure message: %@", message);
         
         return NO;
@@ -688,12 +690,17 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     NSMigrationManager *manager = [[sqliteStoreMigrationManagerClass alloc]
                                    initWithSourceModel:srcModel destinationModel:dstModel];
     
-    if (![manager migrateStoreFromURL:storeURL type:NSSQLiteStoreType
-                              options:nil withMappingModel:mappingModel toDestinationURL:nil
-                      destinationType:NSSQLiteStoreType destinationOptions:nil error:&error]) {
+    if (![manager migrateStoreFromURL:storeURL
+                                 type:NSSQLiteStoreType
+                              options:nil
+                     withMappingModel:mappingModel
+                     toDestinationURL:nil
+                      destinationType:NSSQLiteStoreType
+                   destinationOptions:nil
+                                error:&error]) {
         
         NSString *message = [NSString stringWithFormat:@"Migration failed %@ [%@]",
-                             [error description], ([error userInfo] ? [[error userInfo] description] : @"no user info")];
+                             error.description, (error.userInfo.description ?: @"no user info")];
         NSLog(@"Migration failure message: %@", message);
         return NO;
     }
