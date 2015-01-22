@@ -612,10 +612,9 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 + (BOOL)newCoreDataStack:(NSString *)modelName mainContext:(NSManagedObjectContext **)mainContext model:(NSManagedObjectModel **)model coordinator:(NSPersistentStoreCoordinator **)coordinator {
-    NSLog(@"Setting up Core Data: %@", modelName);
-    //NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"Simplenote" withExtension:@"momd"];
+    SPLogVerbose(@"Setting up Core Data: %@", modelName);
+    NSURL *developerModelURL = nil;;
     
-    NSURL *developerModelURL;
     @try {
         developerModelURL = [NSURL fileURLWithPath: [[NSBundle mainBundle]  pathForResource:modelName ofType:@"momd"]];
         *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:developerModelURL];
@@ -625,7 +624,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     }
     
     // Setup the persistent store
-    //NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"Simplenote.sqlite"];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
     NSString *bundleName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"];
