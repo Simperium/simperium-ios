@@ -136,29 +136,33 @@ typedef NS_ENUM(NSInteger, SPVersion) {
 - (void)reconcileLocalAndRemoteIndex:(NSSet *)remoteKeySet bucket:(SPBucket *)bucket {
     
     id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
-    [threadSafeStorage beginCriticalSection];
     
-    NSArray *localKeys = [threadSafeStorage objectKeysForBucketName:bucket.name];
-    NSMutableSet *localKeySet = [NSMutableSet setWithArray:localKeys];
-    [localKeySet minusSet:remoteKeySet];
+    [threadSafeStorage performCriticalBlockAndWait:^{
+        NSArray *localKeys                  = [threadSafeStorage objectKeysForBucketName:bucket.name];
+        NSMutableSet *localKeySet           = [NSMutableSet setWithArray:localKeys];
+        [localKeySet minusSet:remoteKeySet];
 
-    // If any objects exist locally but not remotely, get rid of them
-    if (localKeySet.count > 0) {
+        // If any objects exist locally but not remotely, get rid of them
+        if (localKeySet.count == 0) {
+            return;
+        }
+            
         NSMutableSet *keysForDeletedObjects = [NSMutableSet setWithCapacity:[localKeySet count]];
-        NSArray *objectsToDelete = [threadSafeStorage objectsForKeys:localKeySet bucketName:bucket.name];
+        NSArray *objectsToDelete            = [threadSafeStorage objectsForKeys:localKeySet bucketName:bucket.name];
         
         for (id<SPDiffable>objectToDelete in objectsToDelete) {
-            NSString *key = [objectToDelete simperiumKey];
+            NSString *key = objectToDelete.simperiumKey;
             
             // If the object has never synced, be careful not to delete it (it won't exist in the remote index yet)
-            if ([[objectToDelete ghost] memberData] == nil) {
+            if (objectToDelete.ghost.memberData == nil) {
                 SPLogWarn(@"Simperium found local object that doesn't exist remotely yet: %@ (%@)", key, bucket.name);
                 continue;
             }
             [keysForDeletedObjects addObject:key];
             [threadSafeStorage deleteObject:objectToDelete];
         }
-        SPLogVerbose(@"Simperium deleting %ld objects after re-indexing", (long)[keysForDeletedObjects count]);
+        
+        SPLogVerbose(@"Simperium deleting %ld objects after re-indexing", (long)keysForDeletedObjects.count);
         [threadSafeStorage save];
         
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -168,9 +172,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
             };
             [[NSNotificationCenter defaultCenter] postNotificationName:ProcessorDidDeleteObjectKeysNotification object:bucket userInfo:userInfo];
         });
-    }
-    
-    [threadSafeStorage finishCriticalSection];
+    }];
 }
 
 // Process actual version data from the Simperium service for a particular bucket
