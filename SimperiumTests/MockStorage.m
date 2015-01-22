@@ -195,18 +195,16 @@ static NSInteger const SPWorkersDone = 0;
 	[_mutex unlockWithCondition:workers];
 }
 
-- (void)beginCriticalSection {
-	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-    
-	[_mutex lockWhenCondition:SPWorkersDone];
-}
-
-- (void)finishCriticalSection {
-	[_mutex unlock];
-}
-
 - (void)commitPendingOperations:(void (^)())completion {
     completion();
+}
+
+- (void)performCriticalBlockAndWait:(void (^)())block {
+	NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
+
+    [self.mutex lockWhenCondition:SPWorkersDone];
+    block();
+	[self.mutex unlock];
 }
 
 @end

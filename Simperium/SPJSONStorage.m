@@ -323,6 +323,11 @@
     completion();
 }
 
+- (void)performCriticalBlockAndWait:(void (^)())block {
+    NSParameterAssert(block);
+    block();
+}
+
 - (NSSet *)stashedObjects {
     return nil;
 }
@@ -344,14 +349,6 @@
 }
 
 - (void)finishSafeSection {
-    // NO-OP
-}
-
-- (void)beginCriticalSection {
-    // NO-OP
-}
-
-- (void)finishCriticalSection {
     // NO-OP
 }
 

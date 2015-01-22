@@ -49,8 +49,7 @@
 - (id<SPStorageProvider>)threadSafeStorage;
 - (void)beginSafeSection;
 - (void)finishSafeSection;
-- (void)beginCriticalSection;
-- (void)finishCriticalSection;
+- (void)performCriticalBlockAndWait:(void (^)())block;
 
 @optional
 - (void)object:(id)object forKey:(NSString *)simperiumKey didChangeValue:(id)value forKey:(NSString *)key;

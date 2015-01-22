@@ -355,7 +355,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 - (void)commitPendingOperations:(void (^)())completion {
-    NSAssert(completion, @"Please, provide a completion handler");
+    NSParameterAssert(completion);
     
     // Let's make sure that pending blocks dispatched to the writer's queue are ready
     [self.writerManagedObjectContext performBlock:completion];
@@ -576,6 +576,15 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 #pragma mark - Synchronization
 
+- (void)performCriticalBlockAndWait:(void (^)())block {
+    NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
+    NSParameterAssert(block);
+    
+    [self.mutex lockWhenCondition:SPWorkersDone];
+    [self.mainManagedObjectContext performBlockAndWait:block];
+    [self.mutex unlock];
+}
+
 - (void)beginSafeSection {
     NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
 
@@ -589,16 +598,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     [_mutex lock];
     NSInteger workers = _mutex.condition - 1;
     [_mutex unlockWithCondition:workers];
-}
-
-- (void)beginCriticalSection {
-    NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-
-    [_mutex lockWhenCondition:SPWorkersDone];
-}
-
-- (void)finishCriticalSection {
-    [_mutex unlock];
 }
 
 
