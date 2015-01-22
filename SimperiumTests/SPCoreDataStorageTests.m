@@ -123,19 +123,18 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
 	dispatch_async(postBucket.processorQueue, ^{
 		
 		id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
-		[threadSafeStorage beginCriticalSection];
+		[threadSafeStorage performCriticalBlockAndWait:^{
+            NSEnumerator* enumerator = [postKeys reverseObjectEnumerator];
+            NSString* simperiumKey = nil;
+            
+            while (simperiumKey = (NSString*)[enumerator nextObject]) {
+                
+                Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
+                [threadSafeStorage deleteObject:post];
+                [threadSafeStorage save];
+            }
+        }];
 		
-		NSEnumerator* enumerator = [postKeys reverseObjectEnumerator];
-		NSString* simperiumKey = nil;
-		
-		while (simperiumKey = (NSString*)[enumerator nextObject]) {
-			
-			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
-			[threadSafeStorage deleteObject:post];
-			[threadSafeStorage save];
-		}
-		
-		[threadSafeStorage finishCriticalSection];
         [deleteExpectation fulfill];
 	});
 	
@@ -184,9 +183,9 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
                 dispatch_async(postBucket.processorQueue, ^{
                     id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
                     
-                    [threadSafeStorage beginCriticalSection];
-                    [threadSafeStorage deleteAllObjectsForBucketName:postBucket.name];
-                    [threadSafeStorage finishCriticalSection];
+                    [threadSafeStorage performCriticalBlockAndWait:^{
+                        [threadSafeStorage deleteAllObjectsForBucketName:postBucket.name];
+                    }];
                 });
                 
                 [threadSafeStorage save];
