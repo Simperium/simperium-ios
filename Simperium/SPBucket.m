@@ -24,8 +24,13 @@
 
 @synthesize lastChangeSignature = _lastChangeSignature;
 
-- (instancetype)initWithSchema:(SPSchema *)aSchema storage:(id<SPStorageProvider>)aStorage networkInterface:(id<SPNetworkInterface>)netInterface
-relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label remoteName:(NSString *)remoteName clientID:(NSString *)clientID
+- (instancetype)initWithSchema:(SPSchema *)aSchema
+                       storage:(id<SPStorageProvider>)aStorage
+              networkInterface:(id<SPNetworkInterface>)netInterface
+          relationshipResolver:(SPRelationshipResolver *)resolver
+                         label:(NSString *)label
+                    remoteName:(NSString *)remoteName
+                      clientID:(NSString *)clientID
 {
     self = [super init];
     if (self) {
@@ -83,7 +88,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
     [self.network requestVersions:numVersions object:diffable];
 }
 
-
 - (NSArray *)allObjects {
     return [self.storage objectsForBucketName:self.name predicate:nil];
 }
@@ -104,10 +108,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
     return [diffable object];
 }
 
-- (void)insertObject:(id)object {
-    //id<SPDiffable>diffable = [storage insertObject:object bucketName:self.name];
-}
-
 - (void)deleteObject:(id)object {
     [self.storage deleteObject:object];
 }
@@ -116,28 +116,15 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
     [self.storage deleteAllObjectsForBucketName:self.name];
 }
 
-- (void)updateDictionaryForKey:(NSString *)key {
-//    id<SPDiffable>object = [storage objectForKey:key entityName:self.name];
-//    if (!object) {
-//        object = [storage insertNewObjectForEntityForName:self.name simperiumKey:key];
-//    }
-//    [object loadMemberData:data];
-}
-
 - (void)validateObjects {
     // Allow the storage to determine the most efficient way to validate everything
     [self.storage validateObjectsForBucketName:self.name];
-
     [self.storage save];
 }
 
 - (void)unloadAllObjects {
     [self.storage unloadAllObjects];
     [self.relationshipResolver reset:self.storage];
-}
-
-- (void)insertObject:(NSDictionary *)object atIndex:(NSUInteger)index {
-    
 }
 
 - (NSArray *)objectsForKeys:(NSSet *)keys {
@@ -147,7 +134,6 @@ relationshipResolver:(SPRelationshipResolver *)resolver label:(NSString *)label 
 - (NSArray *)objectsForPredicate:(NSPredicate *)predicate {
     return [self.storage objectsForBucketName:self.name predicate:predicate];
 }
-
 
 - (NSInteger)numObjects {
     return [self.storage numObjectsForBucketName:self.name predicate:nil];
