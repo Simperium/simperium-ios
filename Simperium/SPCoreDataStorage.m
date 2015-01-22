@@ -581,7 +581,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
     NSParameterAssert(block);
     
-    [self.mutex sp_decreaseCondition];
+    [self.mutex sp_increaseCondition];
     block();
     [self.mutex sp_decreaseCondition];
 }
