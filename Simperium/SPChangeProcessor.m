@@ -196,8 +196,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
                      clientMatches:(BOOL)clientMatches
                              error:(NSError **)error
 {
-    id<SPStorageProvider> threadSafeStorage   = [bucket.storage threadSafeStorage];
-    __block BOOL success            = NO;
+    id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
+    __block BOOL success                    = NO;
     
     [threadSafeStorage performSafeBlockAndWait:^{
         success = [self _processRemoteModifyWithKey:simperiumKey
