@@ -550,7 +550,6 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 }
 
 - (void)enqueueObjectForRetry:(NSString *)key bucket:(SPBucket *)bucket overrideRemoteData:(BOOL)overrideRemoteData {
-    
     NSAssert([key isKindOfClass:[NSString class]],      @"Missing change");
     NSAssert([bucket isKindOfClass:[SPBucket class]],   @"Missing Bucket");
     

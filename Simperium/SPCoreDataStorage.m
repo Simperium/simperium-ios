@@ -42,7 +42,6 @@ static NSInteger const SPWorkersDone    = 0;
 @property (nonatomic, weak,   readwrite) SPCoreDataStorage              *sibling;
 @property (nonatomic, strong, readwrite) NSConditionLock                *mutex;
 @property (nonatomic, strong, readwrite) NSMutableSet                   *privateStashedObjects;
-@property (nonatomic, assign, readwrite) BOOL                           runningCriticalSection;
 - (void)addObserversForMainContext:(NSManagedObjectContext *)context;
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context;
 @end
@@ -76,7 +75,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
         [self.mainManagedObjectContext setMergePolicy:NSMergeByPropertyStoreTrumpMergePolicy];
         
         // Just one mutex for this Simperium stack
-        self.mutex = [[NSConditionLock alloc] initWithCondition:SPWorkersDone];
+        self.mutex                      = [[NSConditionLock alloc] initWithCondition:SPWorkersDone];
         
         // The new writer MOC will be the only one with direct access to the persistentStoreCoordinator
         self.writerManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
@@ -88,7 +87,8 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     return self;
 }
 
-- (instancetype)initWithSibling:(SPCoreDataStorage *)aSibling {
+- (instancetype)initWithSibling:(SPCoreDataStorage *)aSibling
+{
     self = [super init];
     if (self) {
         self.sibling = aSibling;
@@ -150,7 +150,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 - (id<SPDiffable>)objectForKey:(NSString *)key bucketName:(NSString *)bucketName {
-    NSEntityDescription *entityDescription  = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.currentManagedObjectContext];
+    NSEntityDescription *entityDescription  = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     NSPredicate *predicate                  = [NSPredicate predicateWithFormat:@"simperiumKey == %@", key];
     
     NSFetchRequest *fetchRequest            = [[NSFetchRequest alloc] init];
@@ -159,7 +159,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     fetchRequest.fetchLimit                 = 1;
     
     NSError *error;
-    NSArray *items = [self.currentManagedObjectContext executeFetchRequest:fetchRequest error:&error];
+    NSArray *items = [self.mainManagedObjectContext executeFetchRequest:fetchRequest error:&error];
 
     return [items firstObject];
 }
@@ -170,7 +170,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (NSArray *)objectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate {
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.currentManagedObjectContext];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     [fetchRequest setEntity:entity];
     [fetchRequest setReturnsObjectsAsFaults:YES];
     
@@ -179,13 +179,13 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     }
     
     NSError *error;
-    NSArray *items = [self.currentManagedObjectContext executeFetchRequest:fetchRequest error:&error];
+    NSArray *items = [self.mainManagedObjectContext executeFetchRequest:fetchRequest error:&error];
     
     return items;
 }
 
 - (NSArray *)objectKeysAndIdsForBucketName:(NSString *)bucketName {
-    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.currentManagedObjectContext];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     if (entity == nil) {
         //SPLogWarn(@"Simperium warning: couldn't find any instances for entity named %@", entityName);
         return nil;
@@ -204,7 +204,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     request.propertiesToFetch = [NSArray arrayWithObjects:[properties objectForKey:@"simperiumKey"], objectIdDesc, nil];
     
     NSError *error = nil;
-    NSArray *results = [self.currentManagedObjectContext executeFetchRequest:request error:&error];
+    NSArray *results = [self.mainManagedObjectContext executeFetchRequest:request error:&error];
     if (results == nil) {
         // Handle the error.
         NSAssert1(0, @"Simperium error: couldn't load array of entities (%@)", bucketName);
@@ -227,14 +227,14 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate {
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:[NSEntityDescription entityForName:bucketName inManagedObjectContext:self.currentManagedObjectContext]];
+    [request setEntity:[NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext]];
     [request setIncludesSubentities:NO]; //Omit subentities. Default is YES (i.e. include subentities) 
     if (predicate) {
         [request setPredicate:predicate];
     }
     
     NSError *err;
-    NSUInteger count = [self.currentManagedObjectContext countForFetchRequest:request error:&err];
+    NSUInteger count = [self.mainManagedObjectContext countForFetchRequest:request error:&err];
     if (count == NSNotFound) {
         //Handle error
         return 0;
@@ -257,13 +257,13 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"simperiumKey IN %@", keys];
     
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.currentManagedObjectContext];
+    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     [fetchRequest setEntity:entityDescription];
     [fetchRequest setPredicate:predicate];
     [fetchRequest setReturnsObjectsAsFaults:NO];
     
     NSError *error;
-    NSArray *objectArray = [self.currentManagedObjectContext executeFetchRequest:fetchRequest error:&error];
+    NSArray *objectArray = [self.mainManagedObjectContext executeFetchRequest:fetchRequest error:&error];
     
     NSMutableDictionary *objects = [NSMutableDictionary dictionaryWithCapacity:[keys count]];
     for (SPManagedObject *object in objectArray) {
@@ -274,14 +274,14 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (void)refaultObjects:(NSArray *)objects {
     for (SPManagedObject *object in objects) {
-        [self.currentManagedObjectContext refreshObject:object mergeChanges:NO];
+        [self.mainManagedObjectContext refreshObject:object mergeChanges:NO];
     }
 }
 
 - (id)insertNewObjectForBucketName:(NSString *)bucketName simperiumKey:(NSString *)key {
     // Every object has its persistent storage managed automatically
     SPManagedObject *object = [NSEntityDescription insertNewObjectForEntityForName:bucketName
-                                                            inManagedObjectContext:self.currentManagedObjectContext];
+                                                            inManagedObjectContext:self.mainManagedObjectContext];
     
     object.simperiumKey = key ?: [NSString sp_makeUUID];
     
@@ -302,20 +302,20 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (void)deleteAllObjectsForBucketName:(NSString *)bucketName {
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.currentManagedObjectContext];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     [fetchRequest setEntity:entity];
     
     // No need to fault everything
     [fetchRequest setIncludesPropertyValues:NO];
     
     NSError *error;
-    NSArray *items = [self.currentManagedObjectContext executeFetchRequest:fetchRequest error:&error];
+    NSArray *items = [self.mainManagedObjectContext executeFetchRequest:fetchRequest error:&error];
     
     for (NSManagedObject *managedObject in items) {
-        [self.currentManagedObjectContext deleteObject:managedObject];
+        [self.mainManagedObjectContext deleteObject:managedObject];
     }
     
-    if (![self.currentManagedObjectContext save:&error]) {
+    if (![self.mainManagedObjectContext save:&error]) {
         NSLog(@"Simperium error deleting %@ - error:%@",bucketName,error);
     }
 }
@@ -325,7 +325,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     
     // Check each entity instance
     for (NSDictionary *result in results) {
-        SPManagedObject *object = (SPManagedObject *)[self.currentManagedObjectContext objectWithID:result[@"objectID"]];
+        SPManagedObject *object = (SPManagedObject *)[self.mainManagedObjectContext objectWithID:result[@"objectID"]];
         NSString *key = [result objectForKey:@"simperiumKey"];
         // In apps like Simplenote where legacy data might exist on the device, the simperiumKey might need to
         // be set manually. Provide that opportunity here.
@@ -368,10 +368,10 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 - (BOOL)save {
     // Standard way to save an NSManagedObjectContext
     NSError *error = nil;
-    if (self.currentManagedObjectContext != nil) {
+    if (self.mainManagedObjectContext != nil) {
         @try {
-            BOOL bChanged = [self.currentManagedObjectContext hasChanges];
-            if (bChanged && ![self.currentManagedObjectContext save:&error]) {
+            BOOL bChanged = [self.mainManagedObjectContext hasChanges];
+            if (bChanged && ![self.mainManagedObjectContext save:&error]) {
                 NSLog(@"Critical Simperium error while saving context: %@, %@", error, [error userInfo]);
                 return NO;
             }
@@ -406,10 +406,10 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     NSMutableSet *unsavedEntities = [NSMutableSet setWithCapacity:3];
     
     // Add updated objects
-    [unsavedEntities addObjectsFromArray:[[self.currentManagedObjectContext updatedObjects] allObjects]];
+    [unsavedEntities addObjectsFromArray:[[self.mainManagedObjectContext updatedObjects] allObjects]];
     
     // Also check for newly inserted objects
-    [unsavedEntities addObjectsFromArray:[[self.currentManagedObjectContext insertedObjects] allObjects]];
+    [unsavedEntities addObjectsFromArray:[[self.mainManagedObjectContext insertedObjects] allObjects]];
     
     return [unsavedEntities allObjects];
 }
@@ -577,13 +577,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 
-#pragma mark - CoreData Helpers
-
-- (NSManagedObjectContext *)currentManagedObjectContext {
-    return self.runningCriticalSection ? self.writerManagedObjectContext : self.mainManagedObjectContext;
-}
-
-
 #pragma mark - Synchronization
 
 - (void)performSafeBlockAndWait:(void (^)())block {
@@ -602,11 +595,8 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     NSParameterAssert(block);
     
     [self.mutex lockWhenCondition:SPWorkersDone];
-    self.runningCriticalSection = true;
-    
-    [self.currentManagedObjectContext performBlockAndWait:block];
-    
-    self.runningCriticalSection = false;
+    block();
+//    [self.mainManagedObjectContext performBlockAndWait:block];
     [self.mutex unlock];
 }
 
