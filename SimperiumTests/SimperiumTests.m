@@ -167,17 +167,6 @@
     }
 }
 
-//- (void)ensureConfigsAreEqualTo:(Farm *)leader
-//{
-//    for (Farm *farm in farms) {
-//        if (farm == leader)
-//            continue;
-//        farm.config = (Config *)[farm.simperium objectForKey:@"config" entityName:@"Config"];
-//        STAssertTrue([farm.config isEqualToConfig:leader.config], @"config %@ != leader %@", farm.config, leader.config);
-//    }
-//}
-
-
 - (void)ensureFarmsEqual: (NSArray *)farmArray entityName:(NSString *)entityName {
     // Assume all leader configs are the same since they're set manually
     Farm *leader = [farmArray objectAtIndex:0];
