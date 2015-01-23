@@ -196,31 +196,31 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
                      clientMatches:(BOOL)clientMatches
                              error:(NSError **)error
 {
-    id<SPStorageProvider> storage   = [bucket.storage threadSafeStorage];
+    id<SPStorageProvider> threadSafeStorage   = [bucket.storage threadSafeStorage];
     __block BOOL success            = NO;
     
-    [storage performSafeBlockAndWait:^{
-        success = [self _processRemoteModifyWithStorage:storage
-                                           simperiumKey:simperiumKey
-                                                 bucket:bucket
-                                                 change:change
-                                           acknowledged:acknowledged
-                                          clientMatches:clientMatches
-                                                  error:error];
+    [threadSafeStorage performSafeBlockAndWait:^{
+        success = [self _processRemoteModifyWithKey:simperiumKey
+                                             bucket:bucket
+                                  threadSafeStorage:threadSafeStorage
+                                             change:change
+                                       acknowledged:acknowledged
+                                      clientMatches:clientMatches
+                                              error:error];
     }];
     
     return success;
 }
 
-- (BOOL)_processRemoteModifyWithStorage:(id<SPStorageProvider>)storage
-                           simperiumKey:(NSString *)simperiumKey
-                                 bucket:(SPBucket *)bucket
-                                 change:(NSDictionary *)change
-                           acknowledged:(BOOL)acknowledged
-                          clientMatches:(BOOL)clientMatches
-                                  error:(NSError **)error
+- (BOOL)_processRemoteModifyWithKey:(NSString *)simperiumKey
+                             bucket:(SPBucket *)bucket
+                  threadSafeStorage:(id<SPStorageProvider>)threadSafeStorage
+                             change:(NSDictionary *)change
+                       acknowledged:(BOOL)acknowledged
+                      clientMatches:(BOOL)clientMatches
+                              error:(NSError **)error
 {
-    id<SPDiffable> object = [storage objectForKey:simperiumKey bucketName:bucket.name];
+    id<SPDiffable> object = [threadSafeStorage objectForKey:simperiumKey bucketName:bucket.name];
     
     BOOL newlyAdded = NO;
     
@@ -237,7 +237,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         newlyAdded = YES;
         
         // Create the new object
-        object = [storage insertNewObjectForBucketName:bucket.name simperiumKey:simperiumKey];
+        object = [threadSafeStorage insertNewObjectForBucketName:bucket.name simperiumKey:simperiumKey];
         
         // Remember this object's ghost for future diffing
         // Send nil member data because it'll get loaded below
@@ -347,7 +347,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
             }
         }
         
-        [storage save];
+        [threadSafeStorage save];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             NSMutableDictionary *userInfo = [@{
@@ -392,14 +392,19 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
     NSString *changeClientID        = change[CH_CLIENT_ID];
     
     // Analyze the change's flags
-    id<SPStorageProvider>storage    = [bucket.storage threadSafeStorage];
-
-    BOOL objectWasFound             = ([storage objectForKey:key bucketName:bucket.name] != nil);
     BOOL clientMatches              = ([changeClientID compare:self.clientID] == NSOrderedSame);
     BOOL remove                     = (operation && [operation compare:CH_REMOVE] == NSOrderedSame);
     BOOL modify                     = (operation && [operation compare:CH_MODIFY] == NSOrderedSame);
     BOOL awaitingAck                = [self awaitingAcknowledgementForKey:key];
     BOOL acknowledged               = (awaitingAck && clientMatches);
+    
+    // Verify if the object is still in the storage!
+    __block BOOL objectWasFound     = true;
+    
+    id<SPStorageProvider>storage    = [bucket.storage threadSafeStorage];
+    [storage performSafeBlockAndWait:^{
+        objectWasFound = ([storage objectForKey:key bucketName:bucket.name] != nil);
+    }];
     
     SPLogVerbose(@"Simperium client %@ received change (%@) %@ [%@] : %@", self.clientID, bucket.name, changeClientID, operation, change);
     
@@ -527,8 +532,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 #pragma mark ====================================================================================
 
 - (void)enqueueObjectForMoreChanges:(NSString *)key bucket:(SPBucket *)bucket {
-    NSAssert( [key isKindOfClass:[NSString class]],         @"Missing key" );
-    NSAssert( [bucket isKindOfClass:[SPBucket class]],      @"Missing Bucket");
+    NSAssert([key isKindOfClass:[NSString class]],      @"Missing key");
+    NSAssert([bucket isKindOfClass:[SPBucket class]],   @"Missing Bucket");
     
     SPLogVerbose(@"Simperium marking object for sending more changes when ready (%@): %@", bucket.name, key);
     [self.keysForObjectsWithMoreChanges addObject:key];
@@ -604,23 +609,23 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 
 - (NSArray *)processLocalObjectsWithKeys:(NSSet *)keys bucket:(SPBucket *)bucket {
     
-    id<SPStorageProvider> storage   = [bucket.storage threadSafeStorage];
-    __block NSArray *changes        = nil;
+    id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
+    __block NSArray *changes                = nil;
     
-    [storage performSafeBlockAndWait:^{
-        changes = [self _processLocalObjectsWithStorage:storage keys:keys bucket:bucket];
+    [threadSafeStorage performSafeBlockAndWait:^{
+        changes = [self _processLocalObjectsWithKeys:keys bucket:bucket threadSafeStorage:threadSafeStorage];
     }];
     
     return changes;
 }
 
-- (NSArray *)_processLocalObjectsWithStorage:(id<SPStorageProvider>)storage
-                                        keys:(NSSet *)keys
-                                      bucket:(SPBucket *)bucket
+- (NSArray *)_processLocalObjectsWithKeys:(NSSet *)keys
+                                   bucket:(SPBucket *)bucket
+                        threadSafeStorage:(id<SPStorageProvider>)threadSafeStorage
 {
     NSMutableArray *changes         = [NSMutableArray arrayWithCapacity:keys.count];
     NSMutableSet *keysNotFound      = [keys mutableCopy];
-    NSArray *objects                = [storage objectsForKeys:keys bucketName:bucket.name];
+    NSArray *objects                = [threadSafeStorage objectsForKeys:keys bucketName:bucket.name];
     
     for (id<SPDiffable> object in objects) {
         

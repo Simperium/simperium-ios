@@ -94,13 +94,13 @@ typedef NS_ENUM(NSInteger, SPVersion) {
     [self reconcileLocalAndRemoteIndex:remoteKeySet bucket:bucket];
     
     // Process each batch while being efficient with memory and faulting
-    id<SPStorageProvider> storage = [bucket.storage threadSafeStorage];
-    [storage performSafeBlockAndWait:^{
+    id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
+    [threadSafeStorage performSafeBlockAndWait:^{
         
         for (NSMutableArray *batchList in batchLists) {
             @autoreleasepool {
                 // Batch fault the entities for efficiency
-                NSDictionary *objects = [storage faultObjectsForKeys:batchList bucketName:bucket.name];
+                NSDictionary *objects = [threadSafeStorage faultObjectsForKeys:batchList bucketName:bucket.name];
                 
                 for (NSString *key in batchList) {
                     id version = indexDict[key];
@@ -126,7 +126,7 @@ typedef NS_ENUM(NSInteger, SPVersion) {
                 }
                 
                 // Refault to free up the memory
-                [storage refaultObjects:objects.allValues];
+                [threadSafeStorage refaultObjects:objects.allValues];
             }
         }
     }];
