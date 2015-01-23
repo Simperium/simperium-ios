@@ -323,6 +323,11 @@
     completion();
 }
 
+- (void)performSafeBlockAndWait:(void (^)())block {
+    NSParameterAssert(block);
+    block();
+}
+
 - (void)performCriticalBlockAndWait:(void (^)())block {
     NSParameterAssert(block);
     block();
