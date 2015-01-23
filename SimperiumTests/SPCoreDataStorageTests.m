@@ -48,6 +48,17 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
     self.storage    = _simperium.coreDataStorage;
 }
 
+- (void)tearDown {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Signout Expectation"];
+    
+    [self.simperium signOutAndRemoveLocalData:false completion:^{
+        [expectation fulfill];
+    }];
+    
+    NSLog(@"Logged Out");
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:nil];
+}
+
 - (void)testBucketListMechanism {
     NSManagedObjectContext *mainContext     = self.simperium.managedObjectContext;
     NSManagedObjectContext *derivedContext  = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
@@ -129,7 +140,6 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
             NSString* simperiumKey = nil;
             
             while (simperiumKey = (NSString*)[enumerator nextObject]) {
-                
                 Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
                 [threadSafeStorage deleteObject:post];
                 [threadSafeStorage save];
@@ -220,14 +230,19 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
     adapter.didSaveCallback = ^(NSSet *inserted, NSSet *updated) {
         XCTAssert(inserted.count == SPRaceConditionNumberOfEntities, @"Missing inserted entity");
         
+        NSMutableSet *insertedKeys = [NSMutableSet set];
+        for (SPManagedObject *object in inserted) {
+            [insertedKeys addObject:object.simperiumKey];
+        }
+        
         dispatch_async(postBucket.processorQueue, ^{
             id<SPStorageProvider> threadsafeStorage = [self.storage threadSafeStorage];
             XCTAssertNotNil(threadsafeStorage, @"Missing Threadsafe Storage");
             
             [threadsafeStorage performSafeBlockAndWait:^{
                 
-                for (SPManagedObject *mainMO in inserted) {
-                    NSManagedObject *localMO = [threadsafeStorage objectForKey:mainMO.simperiumKey bucketName:postBucket.name];
+                for (NSString *simperiumKey in insertedKeys) {
+                    NSManagedObject *localMO = [threadsafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
                     XCTAssertNotNil(localMO, @"Missing Object");
                 }
             }];
