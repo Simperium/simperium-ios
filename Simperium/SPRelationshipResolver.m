@@ -101,26 +101,25 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
     }
     
     dispatch_async(self.queue, ^{
-        id<SPStorageProvider> threadSafeStorage     = [storage threadSafeStorage];
-        __block NSHashTable *resolvedRelationships  = nil;
+        id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
         
         [threadSafeStorage performSafeBlockAndWait:^{
-            resolvedRelationships = [self _resolvePendingRelationships:relationships
-                                                          simperiumKey:simperiumKey
-                                                            bucketName:bucketName
-                                                     threadSafeStorage:threadSafeStorage];
-        }];
+            NSHashTable *resolvedRelationships = [self _resolvePendingRelationships:relationships
+                                                                       simperiumKey:simperiumKey
+                                                                         bucketName:bucketName
+                                                                  threadSafeStorage:threadSafeStorage];
         
-        if (resolvedRelationships.count == 0) {
-            return;
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            @autoreleasepool {
-                [self removeRelationships:resolvedRelationships];
-                [self saveWithStorage:storage];
+            if (resolvedRelationships.count == 0) {
+                return;
             }
-        });
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                @autoreleasepool {
+                    [self removeRelationships:resolvedRelationships];
+                    [self saveWithStorage:storage];
+                }
+            });
+        }];
     });
 }
 
