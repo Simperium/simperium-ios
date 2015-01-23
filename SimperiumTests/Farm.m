@@ -64,21 +64,10 @@
     }
 }
 
-- (void)stop {
+- (void)stopWithCompletion:(void (^)())completion {
 	[self.simperium removeRemoteData];
 	[self waitForCompletion:1.0f];
-	[self signout];
-}
-
-- (void)signout {
-    dispatch_group_t group = dispatch_group_create();
-    
-    dispatch_group_enter(group);
-	[self.simperium signOutAndRemoveLocalData:YES completion:^() {
-        dispatch_group_leave(group);
-	}];
-	
-    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+	[self.simperium signOutAndRemoveLocalData:YES completion:completion];
 }
 
 - (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs {

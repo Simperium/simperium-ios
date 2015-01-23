@@ -163,7 +163,11 @@
     [super tearDown];
     
     for (Farm *farm in self.farms) {
-        [farm stop];
+        XCTestExpectation *expectation = [self expectationWithDescription:@"Signout"];
+        
+        [farm stopWithCompletion:^{
+            [expectation fulfill];
+        }];
     }
 }
 
