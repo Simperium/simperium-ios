@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Simperium. All rights reserved.
 //
 
-#import <Simperium/Simperium.h>
+#import <Foundation/Foundation.h>
 
 
 @interface NSConditionLock (Simperium)
