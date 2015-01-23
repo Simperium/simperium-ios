@@ -152,11 +152,9 @@
     leader.config.captainsLog = @"Hi";
     leader.config.shieldPercent = [NSNumber numberWithFloat:3.14];
     [leader.simperium save];
-    [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
     
-    // Wait just enough time for the change to be sent, but not enough time for an ack to come back
-	// Dispatch a blocking no-op in the bucket!
-	dispatch_sync(entityBucket.processorQueue, ^{ });
+    [self expectAdditions:1 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
+    XCTAssertTrue([self waitForCompletion], @"timed out (changing)");
 	
     // Now change right away without waiting for the object insertion to be acked
     NSNumber *refWarpSpeed = [NSNumber numberWithInt:4];
@@ -165,13 +163,16 @@
     leader.config.warpSpeed = refWarpSpeed;
     leader.config.captainsLog = refCaptainsLog;
     leader.config.shieldPercent = refShieldPercent;
-    [leader.simperium save];
+    
+    [self resetExpectations:self.farms];
     [self expectAdditions:0 deletions:0 changes:1 fromLeader:leader expectAcks:YES];
+    
+    [leader.simperium save];
     XCTAssertTrue([self waitForCompletion], @"timed out (changing)");
     
-    XCTAssertTrue([refWarpSpeed isEqualToNumber: leader.config.warpSpeed], @"");
-    XCTAssertTrue([refCaptainsLog isEqualToString: leader.config.captainsLog], @"");
-    XCTAssertTrue([refShieldPercent isEqualToNumber: leader.config.shieldPercent], @"");
+    XCTAssertTrue([refWarpSpeed isEqualToNumber:leader.config.warpSpeed], @"");
+    XCTAssertTrue([refCaptainsLog isEqualToString:leader.config.captainsLog], @"");
+    XCTAssertTrue([refShieldPercent isEqualToNumber:leader.config.shieldPercent], @"");
     [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name);
 }
