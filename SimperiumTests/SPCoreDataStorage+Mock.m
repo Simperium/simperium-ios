@@ -27,18 +27,37 @@
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
 }
 
-+ (void)initialize
+- (void)test_simulateWorkerOnlyMergesChangesIntoWriter
 {
-    [SPCoreDataStorage jr_swizzleMethod:@selector(childrenContextWillSave:)
-                             withMethod:@selector(test_childrenContextWillSave:)
+    [SPCoreDataStorage jr_swizzleMethod:@selector(childrenContextDidSave:)
+                             withMethod:@selector(test_childrenContextDidSaveMergesOnlyWriterContext:)
                                   error:nil];
 }
 
-- (void)test_childrenContextWillSave:(NSNotification *)note
+- (void)test_simulateWorkerCannotMergeChangesAnywhere
 {
-    // ThreadsafeStorage Instances don't normally need delegate calls. This is done just for Unit Testing Purposes
-    [self performSelector:@selector(test_childrenContextWillSave:) withObject:note];
-    [self.delegate storageWillSave:self deletedObjects:self.mainManagedObjectContext.deletedObjects];
+    [SPCoreDataStorage jr_swizzleMethod:@selector(childrenContextDidSave:)
+                             withMethod:@selector(test_childrenContextDidSaveCannotMergeChanges:)
+                                  error:nil];
+}
+
+- (void)test_childrenContextDidSaveMergesOnlyWriterContext:(NSNotification *)note {
+
+    NSManagedObjectContext *writerMOC = self.writerManagedObjectContext;
+    [writerMOC performBlockAndWait:^{
+        [writerMOC mergeChangesFromContextDidSaveNotification:note];
+    }];
+    
+    [self.delegate storageDidSave:self
+                  insertedObjects:self.mainManagedObjectContext.insertedObjects
+                   updatedObjects:self.mainManagedObjectContext.updatedObjects];
+}
+
+- (void)test_childrenContextDidSaveCannotMergeChanges:(NSNotification *)note {
+    
+    [self.delegate storageDidSave:self
+                  insertedObjects:self.mainManagedObjectContext.insertedObjects
+                   updatedObjects:self.mainManagedObjectContext.updatedObjects];
 }
 
 @end
