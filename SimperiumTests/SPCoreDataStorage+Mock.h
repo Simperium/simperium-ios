@@ -14,7 +14,11 @@
 @interface SPCoreDataStorage (Mock)
 
 - (void)test_waitUntilSaveCompletes;
-- (void)test_simulateWorkerOnlyMergesChangesIntoWriter;
-- (void)test_simulateWorkerCannotMergeChangesAnywhere;
+
++ (void)test_simulateWorkerOnlyMergesChangesIntoWriter;
++ (void)test_undoWorkerOnlyMergesChangesIntoWriter;
+
++ (void)test_simulateWorkerCannotMergeChangesAnywhere;
++ (void)test_undoWorkerCannotMergeChangesAnywhere;
 
 @end

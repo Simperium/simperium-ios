@@ -311,31 +311,23 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
 
 - (void)testDeletedEntitiesInWorkersWithUnmergedChangesAnywhereDontTriggerInaccessibleObjectException {
 
-    StorageBuilder storageProvider = ^SPCoreDataStorage *(void){
-        SPCoreDataStorage *threadSafeStorage = [self.storage threadSafeStorage];
-        [threadSafeStorage test_simulateWorkerCannotMergeChangesAnywhere];
-        return threadSafeStorage;
-    };
+    [SPCoreDataStorage test_simulateWorkerCannotMergeChangesAnywhere];
     
-    [self testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException:storageProvider];
+    [self testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException];
+    
+    [SPCoreDataStorage test_undoWorkerCannotMergeChangesAnywhere];
 }
 
 - (void)testDeletedEntitiesInWorkersWithMergedChangesIntoWriterDontTriggerInaccessibleObjectException {
 
-    StorageBuilder storageProvider = ^SPCoreDataStorage *(void){
-        SPCoreDataStorage *threadSafeStorage = [self.storage threadSafeStorage];
-        [threadSafeStorage test_simulateWorkerOnlyMergesChangesIntoWriter];
-        return threadSafeStorage;
-    };
+    [SPCoreDataStorage test_simulateWorkerOnlyMergesChangesIntoWriter];
     
-    [self testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException:storageProvider];
+    [self testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException];
+    
+    [SPCoreDataStorage test_undoWorkerOnlyMergesChangesIntoWriter];
 }
 
-
-#pragma mark - Internal Helpers
-
-typedef SPCoreDataStorage *(^StorageBuilder)(void);
-- (void)testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException:(StorageBuilder)newThreadsafeStorage {
+- (void)testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException {
     
     // Insert an entity and make sure it's stored
     NSString *postBucketName        = NSStringFromClass([Post class]);
@@ -363,7 +355,7 @@ typedef SPCoreDataStorage *(^StorageBuilder)(void);
         };
         
         // Threadsafe Storage
-        SPCoreDataStorage *threadSafeStorage    = newThreadsafeStorage();
+        SPCoreDataStorage *threadSafeStorage    = [self.storage threadSafeStorage];
         threadSafeStorage.delegate              = adapter;
         
         SPManagedObject *workerMO               = [threadSafeStorage objectForKey:postSimperiumKey bucketName:postBucketName];
