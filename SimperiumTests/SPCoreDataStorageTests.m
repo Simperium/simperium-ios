@@ -313,7 +313,7 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
 
     [SPCoreDataStorage test_simulateWorkerCannotMergeChangesAnywhere];
     
-    [self testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException];
+    [self _testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException];
     
     [SPCoreDataStorage test_undoWorkerCannotMergeChangesAnywhere];
 }
@@ -322,12 +322,15 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
 
     [SPCoreDataStorage test_simulateWorkerOnlyMergesChangesIntoWriter];
     
-    [self testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException];
+    [self _testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException];
     
     [SPCoreDataStorage test_undoWorkerOnlyMergesChangesIntoWriter];
 }
 
-- (void)testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException {
+
+#pragma mark - Private Methods
+
+- (void)_testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException {
     
     // Insert an entity and make sure it's stored
     NSString *postBucketName        = NSStringFromClass([Post class]);
