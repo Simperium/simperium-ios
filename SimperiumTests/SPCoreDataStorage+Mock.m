@@ -12,6 +12,12 @@
 
 
 
+@interface SPCoreDataStorage ()
+- (void)childrenContextDidSave:(NSNotification *)note;
+@end
+
+
+
 @implementation SPCoreDataStorage (Mock)
 
 - (void)test_waitUntilSaveCompletes
