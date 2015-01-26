@@ -596,7 +596,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     
     [self.mutex lockWhenCondition:SPWorkersDone];
     block();
-//    [self.mainManagedObjectContext performBlockAndWait:block];
     [self.mutex unlock];
 }
 
