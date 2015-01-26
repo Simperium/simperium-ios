@@ -7,6 +7,8 @@
 //
 
 #import "SPCoreDataStorage+Mock.h"
+#import <CoreData/CoreData.h>
+#import "jrswizzle.h"
 
 
 
@@ -23,6 +25,20 @@
     }];
     
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+}
+
++ (void)initialize
+{
+    [SPCoreDataStorage jr_swizzleMethod:@selector(childrenContextWillSave:)
+                             withMethod:@selector(test_childrenContextWillSave:)
+                                  error:nil];
+}
+
+- (void)test_childrenContextWillSave:(NSNotification *)note
+{
+    // ThreadsafeStorage Instances don't normally need delegate calls. This is done just for Unit Testing Purposes
+    [self performSelector:@selector(test_childrenContextWillSave:) withObject:note];
+    [self.delegate storageWillSave:self deletedObjects:self.mainManagedObjectContext.deletedObjects];
 }
 
 @end
