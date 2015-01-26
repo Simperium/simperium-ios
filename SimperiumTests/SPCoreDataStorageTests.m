@@ -282,7 +282,7 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
 - (void)testMultipleContextSaveDontMissEntities {
     
     NSString *postBucketName                    = NSStringFromClass([Post class]);
-    XCTestExpectation *expectation              = [self expectationWithDescription:@"Insertion Callback Expgiectation"];
+    XCTestExpectation *expectation              = [self expectationWithDescription:@"Insertion Callback Expectation"];
     
     // SPStorageObserverAdapter: Make sure that the inserted objects are there, if query'ed
     SPStorageObserverAdapter *adapter           = [SPStorageObserverAdapter new];
