@@ -430,10 +430,10 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 
-#pragma mark - Main MOC + Children MOC Notification Handlers
+#pragma mark - Temporary ID Helpers
 
-- (void)managedContextWillSave:(NSNotification*)notification {
-    NSManagedObjectContext *context = (NSManagedObjectContext *)notification.object;
+- (void)obtainPermanentIDsForInsertedObjectsInContext:(NSManagedObjectContext *)context {
+    NSParameterAssert(context);
     NSMutableSet *temporaryObjects = [NSMutableSet set];
     
     for (NSManagedObject *mo in context.insertedObjects) {
@@ -455,6 +455,13 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 
 #pragma mark - Main MOC Notification Handlers
+
+- (void)mainContextWillSave:(NSNotification *)notification {
+    
+    // Obtain Permanent ID's!
+    NSManagedObjectContext *mainContext = (NSManagedObjectContext *)notification.object;
+    [self obtainPermanentIDsForInsertedObjectsInContext:mainContext];
+}
 
 - (void)mainContextDidSave:(NSNotification *)notification {
     // Expose the affected objects via the public properties
@@ -485,13 +492,44 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (void)addObserversForMainContext:(NSManagedObjectContext *)moc {
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:moc];
-    [nc addObserver:self selector:@selector(mainContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:moc];
-    [nc addObserver:self selector:@selector(mainContextObjectsDidChange:) name:NSManagedObjectContextObjectsDidChangeNotification object:moc];
+    [nc addObserver:self selector:@selector(mainContextWillSave:)           name:NSManagedObjectContextWillSaveNotification         object:moc];
+    [nc addObserver:self selector:@selector(mainContextDidSave:)            name:NSManagedObjectContextDidSaveNotification          object:moc];
+    [nc addObserver:self selector:@selector(mainContextObjectsDidChange:)   name:NSManagedObjectContextObjectsDidChangeNotification object:moc];
 }
 
 
 #pragma mark - Children MOC Notification Handlers
+
+- (void)childrenContextWillSave:(NSNotification*)notification {
+
+    // Obtain Permanent ID's!
+    NSManagedObjectContext *childrenContext = (NSManagedObjectContext *)notification.object;
+    [self obtainPermanentIDsForInsertedObjectsInContext:childrenContext];
+    
+    // Get the deleted ManagedObject ID's
+    NSMutableSet *workerDeletedIds = [NSMutableSet set];
+    for (NSManagedObject *object in childrenContext.deletedObjects) {
+        [workerDeletedIds addObject:object.objectID];
+    }
+    
+    if (workerDeletedIds.count == 0) {
+        return;
+    }
+    
+    // NOTE:
+    // Deleting an entity in a Children MOC, while there was a faulted reference in the MainMOC, might trigger a NSObjectInaccessibleException (#436).
+    // Workaround: we'll make sure the objects are actually loaded into the WriterMOC. This will effectively prevent an exception,
+    // and the object will get removed as soon as the DidSave note is merged.
+
+    [self.writerManagedObjectContext performBlockAndWait:^{
+        for (NSManagedObjectID *objectID in workerDeletedIds) {
+            NSManagedObject *writerMO = [self.writerManagedObjectContext existingObjectWithID:objectID error:nil];
+            if (writerMO.isFault) {
+                [writerMO willAccessValueForKey:nil];
+            }
+        }
+    }];
+}
 
 - (void)childrenContextDidSave:(NSNotification*)notification {
     //  NOTE:
@@ -503,12 +541,12 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     [writerMOC performBlockAndWait:^{
         [writerMOC mergeChangesFromContextDidSaveNotification:notification];
     }];
-    
+
     //  NOTE II:
     //  Setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
     //  Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
     //  Let's, instead, merge the changes into the mainMOC. This will NOT trigger main MOC's hasChanges flag.
-    
+
     NSManagedObjectContext* mainMOC = self.sibling.mainManagedObjectContext;
     [mainMOC performBlockAndWait:^{
         
@@ -531,8 +569,8 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:context];
-    [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:context];
+    [nc addObserver:self selector:@selector(childrenContextWillSave:) name:NSManagedObjectContextWillSaveNotification   object:context];
+    [nc addObserver:self selector:@selector(childrenContextDidSave:)  name:NSManagedObjectContextDidSaveNotification    object:context];
 }
 
 
