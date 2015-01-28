@@ -138,6 +138,8 @@
 		B525F1F318842757003E4AA0 /* SPWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = B525F1F118842757003E4AA0 /* SPWebSocket.m */; };
 		B53E4888182AAC58000AA4C8 /* NSURLResponse+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */; };
 		B53E4889182AAC58000AA4C8 /* NSURLResponse+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B53E4887182AAC58000AA4C8 /* NSURLResponse+Simperium.m */; };
+		B56091591A7276A800A4E64A /* NSConditionLock+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B56091571A7276A800A4E64A /* NSConditionLock+Simperium.h */; };
+		B560915A1A7276A800A4E64A /* NSConditionLock+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B56091581A7276A800A4E64A /* NSConditionLock+Simperium.m */; };
 		B56612891A1E1E280064A625 /* Simperium+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B56612881A1E1E280064A625 /* Simperium+Internals.h */; };
 		B566128C1A1E1E610064A625 /* SPStorageObserverAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = B566128B1A1E1E610064A625 /* SPStorageObserverAdapter.m */; };
 		B56819C2194F7A6000E0DC65 /* DiffMatchPatch+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B56819C0194F7A6000E0DC65 /* DiffMatchPatch+Simperium.h */; };
@@ -343,6 +345,8 @@
 		B525F1F118842757003E4AA0 /* SPWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocket.m; path = ../../Simperium/SPWebSocket.m; sourceTree = "<group>"; };
 		B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSURLResponse+Simperium.h"; path = "../../Simperium/NSURLResponse+Simperium.h"; sourceTree = "<group>"; };
 		B53E4887182AAC58000AA4C8 /* NSURLResponse+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSURLResponse+Simperium.m"; path = "../../Simperium/NSURLResponse+Simperium.m"; sourceTree = "<group>"; };
+		B56091571A7276A800A4E64A /* NSConditionLock+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSConditionLock+Simperium.h"; path = "../../Simperium/NSConditionLock+Simperium.h"; sourceTree = "<group>"; };
+		B56091581A7276A800A4E64A /* NSConditionLock+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSConditionLock+Simperium.m"; path = "../../Simperium/NSConditionLock+Simperium.m"; sourceTree = "<group>"; };
 		B56612881A1E1E280064A625 /* Simperium+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Simperium+Internals.h"; path = "../../Simperium/Simperium+Internals.h"; sourceTree = "<group>"; };
 		B566128A1A1E1E610064A625 /* SPStorageObserverAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPStorageObserverAdapter.h; path = ../../SimperiumTests/SPStorageObserverAdapter.h; sourceTree = "<group>"; };
 		B566128B1A1E1E610064A625 /* SPStorageObserverAdapter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPStorageObserverAdapter.m; path = ../../SimperiumTests/SPStorageObserverAdapter.m; sourceTree = "<group>"; };
@@ -791,6 +795,8 @@
 				B56819C1194F7A6000E0DC65 /* DiffMatchPatch+Simperium.m */,
 				B5E03DA3182C236200412572 /* JSONKit+Simperium.h */,
 				B5E03DA4182C236200412572 /* JSONKit+Simperium.m */,
+				B56091571A7276A800A4E64A /* NSConditionLock+Simperium.h */,
+				B56091581A7276A800A4E64A /* NSConditionLock+Simperium.m */,
 				B56B1641183566DA00E45C98 /* NSArray+Simperium.h */,
 				B56B1642183566DA00E45C98 /* NSArray+Simperium.m */,
 				2698BE3715C908C60020565F /* NSMutableDictionary+Simperium.h */,
@@ -882,6 +888,7 @@
 				B58EC3181885B6C400ED37E5 /* SPPersistentMutableSet.h in Headers */,
 				B53E4888182AAC58000AA4C8 /* NSURLResponse+Simperium.h in Headers */,
 				463774E9171FC6D500E2E333 /* SocketRocket-Prefix.pch in Headers */,
+				B56091591A7276A800A4E64A /* NSConditionLock+Simperium.h in Headers */,
 				463774EA171FC6D500E2E333 /* SRWebSocket.h in Headers */,
 				46D5BC41174C2A9B0027DBAF /* SPRelationshipResolver.h in Headers */,
 				B59C7525186DAB70003A1C8D /* SPBucket+Internals.h in Headers */,
@@ -1046,6 +1053,7 @@
 				2698BE5115C908C80020565F /* SPSchema.m in Sources */,
 				2698BE5715C9097A0020565F /* JRSwizzle.m in Sources */,
 				26C3E1541666FE7500620306 /* SPWebSocketChannel.m in Sources */,
+				B560915A1A7276A800A4E64A /* NSConditionLock+Simperium.m in Sources */,
 				463774EB171FC6D500E2E333 /* SRWebSocket.m in Sources */,
 				B59AAC96185B90F000B557D3 /* SPThreadsafeMutableSet.m in Sources */,
 				46D5BC42174C2A9B0027DBAF /* SPRelationshipResolver.m in Sources */,

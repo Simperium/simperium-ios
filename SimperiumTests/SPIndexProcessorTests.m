@@ -287,6 +287,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.warpSpeed                    = originalWarp;
     config.cost                         = originalCost;
     
+    NSString* configSimperiumKey        = config.simperiumKey;
     
     // ===================================================================================================
     // Manually Intialize SPGhost: we're not relying on the backend to confirm these additions!
@@ -340,7 +341,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     dispatch_async(bucket.processorQueue, ^{
         
         [bucket.indexProcessor processVersions:versions bucket:bucket changeHandler:^(NSString *key) {
-            XCTAssertEqualObjects(key, config.simperiumKey, @"Invalid key received");
+            XCTAssertEqualObjects(key, configSimperiumKey, @"Invalid key received");
         }];
         
         [expectation fulfill];
@@ -395,6 +396,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
     config.captainsLog              = originalLog;
     
+    NSString* configSimperiumKey    = config.simperiumKey;
+    
     
     // ===================================================================================================
     // Manually Intialize SPGhost: we're not relying on the backend to confirm these additions!
@@ -444,7 +447,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     dispatch_async(bucket.processorQueue, ^{
         
         [bucket.indexProcessor processVersions:versions bucket:bucket changeHandler:^(NSString *key) {
-            XCTAssertEqualObjects(key, config.simperiumKey, @"Invalid key received");
+            XCTAssertEqualObjects(key, configSimperiumKey, @"Invalid key received");
         }];
         
         [expectation fulfill];
@@ -497,6 +500,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
     config.captainsLog              = originalLog;
     
+    NSString* configSimperiumKey    = config.simperiumKey;
     
     // ===================================================================================================
     // Manually Intialize SPGhost: we're not relying on the backend to confirm these additions!
@@ -542,7 +546,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     // ===================================================================================================
     //
     dispatch_async(bucket.processorQueue, ^{
-        [bucket.indexProcessor disableRebaseForObjectWithKey:config.simperiumKey];
+        [bucket.indexProcessor disableRebaseForObjectWithKey:configSimperiumKey];
     });
     
     

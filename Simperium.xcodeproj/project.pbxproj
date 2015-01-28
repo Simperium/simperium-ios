@@ -173,6 +173,8 @@
 		B5549FE318457F72007EA226 /* SPThreadsafeMutableSet.h in Headers */ = {isa = PBXBuildFile; fileRef = B5549FE118457F72007EA226 /* SPThreadsafeMutableSet.h */; };
 		B5549FE418457F72007EA226 /* SPThreadsafeMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = B5549FE218457F72007EA226 /* SPThreadsafeMutableSet.m */; };
 		B5549FE6184581BF007EA226 /* SPThreadsafeMutableSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5549FE5184581BF007EA226 /* SPThreadsafeMutableSetTests.m */; };
+		B56091551A717EE700A4E64A /* NSConditionLock+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B56091531A717EE700A4E64A /* NSConditionLock+Simperium.h */; };
+		B56091561A717EE700A4E64A /* NSConditionLock+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B56091541A717EE700A4E64A /* NSConditionLock+Simperium.m */; };
 		B565ECA2183261A600D162FF /* Test1.xcdatamodeld in Resources */ = {isa = PBXBuildFile; fileRef = 26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */; };
 		B565ECA31832643000D162FF /* TestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D727147A3BEB00B7B6B3 /* TestObject.m */; };
 		B565ECA41832643000D162FF /* PostComment.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D724147A018000B7B6B3 /* PostComment.m */; };
@@ -420,6 +422,8 @@
 		B5549FE118457F72007EA226 /* SPThreadsafeMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = SPThreadsafeMutableSet.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		B5549FE218457F72007EA226 /* SPThreadsafeMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPThreadsafeMutableSet.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		B5549FE5184581BF007EA226 /* SPThreadsafeMutableSetTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPThreadsafeMutableSetTests.m; sourceTree = "<group>"; };
+		B56091531A717EE700A4E64A /* NSConditionLock+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSConditionLock+Simperium.h"; sourceTree = "<group>"; };
+		B56091541A717EE700A4E64A /* NSConditionLock+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSConditionLock+Simperium.m"; sourceTree = "<group>"; };
 		B565ECA71832940B00D162FF /* XCTestCase+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "XCTestCase+Simperium.h"; sourceTree = "<group>"; };
 		B565ECA81832940B00D162FF /* XCTestCase+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "XCTestCase+Simperium.m"; sourceTree = "<group>"; };
 		B56819BC194F793400E0DC65 /* DiffMatchPatch+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DiffMatchPatch+Simperium.h"; sourceTree = "<group>"; };
@@ -796,6 +800,8 @@
 				26E83DA91399D05E00195758 /* NSDate+Simperium.m */,
 				26B16EFD13B1B78C00BEB3E5 /* NSData+Simperium.h */,
 				26B16EFE13B1B78F00BEB3E5 /* NSData+Simperium.m */,
+				B56091531A717EE700A4E64A /* NSConditionLock+Simperium.h */,
+				B56091541A717EE700A4E64A /* NSConditionLock+Simperium.m */,
 				B5E03D96182C115100412572 /* JSONKit+Simperium.h */,
 				B5E03D97182C115100412572 /* JSONKit+Simperium.m */,
 				B5C91A0C1827E9CB0002D306 /* NSURLResponse+Simperium.h */,
@@ -1020,6 +1026,7 @@
 				2622FD10147F24CC00C8EEB4 /* SPMemberInt.h in Headers */,
 				B5DF229218B41E3200874C75 /* SPMemberJSON.h in Headers */,
 				B5C91A0A1827E8600002D306 /* SPHttpRequestQueue.h in Headers */,
+				B56091551A717EE700A4E64A /* NSConditionLock+Simperium.h in Headers */,
 				2622FD14147F24D700C8EEB4 /* SPMemberDouble.h in Headers */,
 				2622FD18147F24E000C8EEB4 /* SPMemberFloat.h in Headers */,
 				2622FD1C147F24F700C8EEB4 /* SPMemberEntity.h in Headers */,
@@ -1269,6 +1276,7 @@
 				2622FD0D147F24A700C8EEB4 /* SPMemberDate.m in Sources */,
 				2622FD11147F24CC00C8EEB4 /* SPMemberInt.m in Sources */,
 				2622FD15147F24D700C8EEB4 /* SPMemberDouble.m in Sources */,
+				B56091561A717EE700A4E64A /* NSConditionLock+Simperium.m in Sources */,
 				2622FD19147F24E000C8EEB4 /* SPMemberFloat.m in Sources */,
 				2622FD1D147F24F700C8EEB4 /* SPMemberEntity.m in Sources */,
 				2622FD25147F251200C8EEB4 /* SPMemberList.m in Sources */,

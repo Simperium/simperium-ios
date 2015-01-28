@@ -49,6 +49,17 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
     self.storage    = _simperium.coreDataStorage;
 }
 
+- (void)tearDown {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Signout Expectation"];
+    
+    [self.simperium signOutAndRemoveLocalData:false completion:^{
+        [expectation fulfill];
+    }];
+    
+    NSLog(@"Logged Out");
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:nil];
+}
+
 - (void)testBucketListMechanism {
     NSManagedObjectContext *mainContext     = self.simperium.managedObjectContext;
     NSManagedObjectContext *derivedContext  = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
@@ -100,21 +111,22 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
     
 	dispatch_async(commentBucket.processorQueue, ^{
 		id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
-		[threadSafeStorage beginSafeSection];
-		
-		for (NSString* simperiumKey in postKeys) {
-			
-			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
-			for (NSInteger j = 0; ++j <= SPCommentsPerPost; ) {
-				PostComment* comment = [threadSafeStorage insertNewObjectForBucketName:commentBucket.name simperiumKey:nil];
-				comment.content = [NSString stringWithFormat:@"Comment [%ld]", (long)j];
-				[post addCommentsObject:comment];
-				[commentKeys addObject:comment.simperiumKey];
-			}
-		}
-		
-		[threadSafeStorage save];
-		[threadSafeStorage finishSafeSection];
+		[threadSafeStorage performSafeBlockAndWait:^{
+            
+            for (NSString* simperiumKey in postKeys) {
+                
+                Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
+                for (NSInteger j = 0; ++j <= SPCommentsPerPost; ) {
+                    PostComment* comment = [threadSafeStorage insertNewObjectForBucketName:commentBucket.name simperiumKey:nil];
+                    comment.content = [NSString stringWithFormat:@"Comment [%ld]", (long)j];
+                    [post addCommentsObject:comment];
+                    [commentKeys addObject:comment.simperiumKey];
+                }
+            }
+            
+            [threadSafeStorage save];
+        }];
+        
         [insertExpectation fulfill];
 	});
 	
@@ -124,19 +136,17 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
 	dispatch_async(postBucket.processorQueue, ^{
 		
 		id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
-		[threadSafeStorage beginCriticalSection];
+		[threadSafeStorage performCriticalBlockAndWait:^{
+            NSEnumerator* enumerator = [postKeys reverseObjectEnumerator];
+            NSString* simperiumKey = nil;
+            
+            while (simperiumKey = (NSString*)[enumerator nextObject]) {
+                Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
+                [threadSafeStorage deleteObject:post];
+                [threadSafeStorage save];
+            }
+        }];
 		
-		NSEnumerator* enumerator = [postKeys reverseObjectEnumerator];
-		NSString* simperiumKey = nil;
-		
-		while (simperiumKey = (NSString*)[enumerator nextObject]) {
-			
-			Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
-			[threadSafeStorage deleteObject:post];
-			[threadSafeStorage save];
-		}
-		
-		[threadSafeStorage finishCriticalSection];
         [deleteExpectation fulfill];
 	});
 	
@@ -174,24 +184,24 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
         dispatch_async(commentBucket.processorQueue, ^{
             for (NSString* simperiumKey in postKeys) {
                 id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
-                [threadSafeStorage beginSafeSection];
-                
-                Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
-                for (PostComment* comment in post.comments) {
-                    comment.content = [NSString stringWithFormat:@"Updated Comment"];
-                }
-
-                // Delete Posts
-                dispatch_async(postBucket.processorQueue, ^{
-                    id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
+                [threadSafeStorage performSafeBlockAndWait:^{
                     
-                    [threadSafeStorage beginCriticalSection];
-                    [threadSafeStorage deleteAllObjectsForBucketName:postBucket.name];
-                    [threadSafeStorage finishCriticalSection];
-                });
-                
-                [threadSafeStorage save];
-                [threadSafeStorage finishSafeSection];
+                    Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
+                    for (PostComment* comment in post.comments) {
+                        comment.content = [NSString stringWithFormat:@"Updated Comment"];
+                    }
+
+                    // Delete Posts
+                    dispatch_async(postBucket.processorQueue, ^{
+                        id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
+                        
+                        [threadSafeStorage performCriticalBlockAndWait:^{
+                            [threadSafeStorage deleteAllObjectsForBucketName:postBucket.name];
+                        }];
+                    });
+                    
+                    [threadSafeStorage save];
+                }];
             }
 
             dispatch_async(postBucket.processorQueue, ^{
@@ -221,16 +231,22 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
     adapter.didSaveCallback = ^(NSSet *inserted, NSSet *updated) {
         XCTAssert(inserted.count == SPRaceConditionNumberOfEntities, @"Missing inserted entity");
         
+        NSMutableSet *insertedKeys = [NSMutableSet set];
+        for (SPManagedObject *object in inserted) {
+            [insertedKeys addObject:object.simperiumKey];
+        }
+        
         dispatch_async(postBucket.processorQueue, ^{
             id<SPStorageProvider> threadsafeStorage = [self.storage threadSafeStorage];
             XCTAssertNotNil(threadsafeStorage, @"Missing Threadsafe Storage");
             
-            [threadsafeStorage beginSafeSection];
-            for (SPManagedObject *mainMO in inserted) {
-                NSManagedObject *localMO = [threadsafeStorage objectForKey:mainMO.simperiumKey bucketName:postBucket.name];
-                XCTAssertNotNil(localMO, @"Missing Object");
-            }
-            [threadsafeStorage finishSafeSection];
+            [threadsafeStorage performSafeBlockAndWait:^{
+                
+                for (NSString *simperiumKey in insertedKeys) {
+                    NSManagedObject *localMO = [threadsafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
+                    XCTAssertNotNil(localMO, @"Missing Object");
+                }
+            }];
             [expectation fulfill];
         });
     };
