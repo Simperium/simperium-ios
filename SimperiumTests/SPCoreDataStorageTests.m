@@ -17,6 +17,7 @@
 
 #import "SPCoreDataStorage.h"
 #import "SPStorageObserverAdapter.h"
+#import "SPCoreDataStorage+Mock.h"
 
 
 
@@ -298,7 +299,7 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
 - (void)testMultipleContextSaveDontMissEntities {
     
     NSString *postBucketName                    = NSStringFromClass([Post class]);
-    XCTestExpectation *expectation              = [self expectationWithDescription:@"Insertion Callback Expgiectation"];
+    XCTestExpectation *expectation              = [self expectationWithDescription:@"Insertion Callback Expectation"];
     
     // SPStorageObserverAdapter: Make sure that the inserted objects are there, if query'ed
     SPStorageObserverAdapter *adapter           = [SPStorageObserverAdapter new];
@@ -322,6 +323,70 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
     [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
         XCTAssertNil(error, @"Inserted Objects never reached DidSave Callback");
     }];
+}
+
+- (void)testDeletedEntitiesInWorkersWithUnmergedChangesAnywhereDontTriggerInaccessibleObjectException {
+
+    [SPCoreDataStorage test_simulateWorkerCannotMergeChangesAnywhere];
+    
+    [self _testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException];
+    
+    [SPCoreDataStorage test_undoWorkerCannotMergeChangesAnywhere];
+}
+
+- (void)testDeletedEntitiesInWorkersWithMergedChangesIntoWriterDontTriggerInaccessibleObjectException {
+
+    [SPCoreDataStorage test_simulateWorkerOnlyMergesChangesIntoWriter];
+    
+    [self _testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException];
+    
+    [SPCoreDataStorage test_undoWorkerOnlyMergesChangesIntoWriter];
+}
+
+
+#pragma mark - Private Methods
+
+- (void)_testDeletedEntitiesInWorkersDontTriggerInaccessibleObjectException {
+    
+    // Insert an entity and make sure it's stored
+    NSString *postBucketName        = NSStringFromClass([Post class]);
+    SPManagedObject *post           = [self.storage insertNewObjectForBucketName:postBucketName simperiumKey:nil];
+    NSString *postSimperiumKey      = post.simperiumKey;
+    
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
+    
+    // Make sure it's faulted
+    [self.storage.mainManagedObjectContext refreshObject:post mergeChanges:false];
+    XCTAssert(post.isFault, @"Should be faulted!");
+    
+    // Simulate a Background Worker
+    dispatch_group_t group          = dispatch_group_create();
+    dispatch_queue_t workerQueue    = dispatch_queue_create(nil, nil);
+    
+    dispatch_group_enter(group);
+    dispatch_async(workerQueue, ^{
+        
+        // Leave the group as soon as possible
+        SPStorageObserverAdapter *adapter       = [SPStorageObserverAdapter new];
+        adapter.didSaveCallback = ^(NSSet* inserted, NSSet* updated){
+            dispatch_group_leave(group);
+        };
+        
+        // Threadsafe Storage
+        SPCoreDataStorage *threadSafeStorage    = [self.storage threadSafeStorage];
+        threadSafeStorage.delegate              = adapter;
+        
+        SPManagedObject *workerMO               = [threadSafeStorage objectForKey:postSimperiumKey bucketName:postBucketName];
+        [threadSafeStorage deleteObject:workerMO];
+        [threadSafeStorage save];
+    });
+    
+    // Lock the Main Thread until the worker saves. This should prevent 'didSaveCallback' from being executed
+    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+    
+    // Attempt to fault the entity
+    XCTAssertNoThrow(post.simperiumKey, @"This shouldn't trigger an exception");
 }
 
 @end

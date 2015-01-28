@@ -7,6 +7,14 @@
 //
 
 #import "SPCoreDataStorage+Mock.h"
+#import <CoreData/CoreData.h>
+#import "jrswizzle.h"
+
+
+
+@interface SPCoreDataStorage ()
+- (void)childrenContextDidSave:(NSNotification *)note;
+@end
 
 
 
@@ -23,6 +31,56 @@
     }];
     
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+}
+
++ (void)test_simulateWorkerOnlyMergesChangesIntoWriter
+{
+    [SPCoreDataStorage jr_swizzleMethod:@selector(childrenContextDidSave:)
+                             withMethod:@selector(test_childrenContextDidSaveMergesOnlyWriterContext:)
+                                  error:nil];
+}
+
++ (void)test_undoWorkerOnlyMergesChangesIntoWriter
+{
+    [SPCoreDataStorage jr_swizzleMethod:@selector(test_childrenContextDidSaveMergesOnlyWriterContext:)
+                             withMethod:@selector(childrenContextDidSave:)
+                                  error:nil];
+}
+
++ (void)test_simulateWorkerCannotMergeChangesAnywhere {
+    
+    [SPCoreDataStorage jr_swizzleMethod:@selector(childrenContextDidSave:)
+                             withMethod:@selector(test_childrenContextDidSaveCannotMergeChanges:)
+                                  error:nil];
+}
+
++ (void)test_undoWorkerCannotMergeChangesAnywhere {
+    
+    [SPCoreDataStorage jr_swizzleMethod:@selector(test_childrenContextDidSaveCannotMergeChanges:)
+                             withMethod:@selector(childrenContextDidSave:)
+                                  error:nil];
+}
+
+
+#pragma mark - Private Helpers
+
+- (void)test_childrenContextDidSaveMergesOnlyWriterContext:(NSNotification *)note {
+
+    NSManagedObjectContext *writerMOC = self.writerManagedObjectContext;
+    [writerMOC performBlockAndWait:^{
+        [writerMOC mergeChangesFromContextDidSaveNotification:note];
+    }];
+    
+    [self.delegate storageDidSave:self
+                  insertedObjects:self.mainManagedObjectContext.insertedObjects
+                   updatedObjects:self.mainManagedObjectContext.updatedObjects];
+}
+
+- (void)test_childrenContextDidSaveCannotMergeChanges:(NSNotification *)note {
+
+    [self.delegate storageDidSave:self
+                  insertedObjects:self.mainManagedObjectContext.insertedObjects
+                   updatedObjects:self.mainManagedObjectContext.updatedObjects];
 }
 
 @end
