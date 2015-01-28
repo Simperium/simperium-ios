@@ -88,8 +88,8 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
 
 - (void)resolvePendingRelationshipsForKey:(NSString *)simperiumKey
                                bucketName:(NSString *)bucketName
-                                  storage:(id<SPStorageProvider>)storage {
-
+                                  storage:(id<SPStorageProvider>)storage
+{
     NSAssert([NSThread isMainThread],                                   @"Invalid Thread");
     NSAssert([simperiumKey isKindOfClass:[NSString class]],             @"Invalid Parameter");
     NSAssert([bucketName isKindOfClass:[NSString class]],               @"Invalid Parameter");
@@ -100,66 +100,86 @@ static SPLogLevels logLevel                                 = SPLogLevelsInfo;
         return;
     }
     
-    // Resolve the references but do it in the background
     dispatch_async(self.queue, ^{
         id<SPStorageProvider> threadSafeStorage = [storage threadSafeStorage];
-        [threadSafeStorage beginSafeSection];
         
-        NSHashTable *processed = [NSHashTable hashTableWithOptions:NSHashTableStrongMemory];
+        [threadSafeStorage performSafeBlockAndWait:^{
+            NSHashTable *resolvedRelationships = [self _resolvePendingRelationships:relationships
+                                                                       simperiumKey:simperiumKey
+                                                                         bucketName:bucketName
+                                                                  threadSafeStorage:threadSafeStorage];
         
-        for (SPRelationship *relationship in relationships) {
-
-            // Infer the targetBucket: 'Legacy' descriptors didn't store the targetBucket
-            NSString *targetBucket = relationship.targetBucket;
-            
-            if (!targetBucket) {
-                if ([simperiumKey isEqualToString:relationship.targetKey]) {
-                    targetBucket = bucketName;
-                } else {
-                    // Unhandled scenario: There is no way to determine the targetBucket!
-                    SPLogError(@"Simperium Relationship Resolver cannot determine the targetBucket for relationship [%@] > [%@]",
-                               relationship.sourceKey, relationship.targetKey);
-                    continue;
-                }
+            if (resolvedRelationships.count == 0) {
+                return;
             }
-            
-            id<SPDiffable>sourceObject  = [threadSafeStorage objectForKey:relationship.sourceKey bucketName:relationship.sourceBucket];
-            id<SPDiffable>targetObject  = [threadSafeStorage objectForKey:relationship.targetKey bucketName:targetBucket];
-            
-            if (!sourceObject || !targetObject) {
-                continue;
-            }
-
-            // Ensure the objects are faulted
-            [sourceObject willBeRead];
-            [targetObject willBeRead];
-            
-            SPLogVerbose(@"Simperium resolving pending reference for %@.%@=%@",
-                         relationship.sourceKey, relationship.sourceAttribute, relationship.targetKey);
-            
-            [sourceObject simperiumSetValue:targetObject forKey:relationship.sourceAttribute];
-            
-            // Get the key reference into the ghost as well
-            [sourceObject.ghost.memberData setObject:relationship.targetKey forKey:relationship.sourceAttribute];
-            sourceObject.ghost.needsSave = YES;
-            
-            // Cleanup!
-            [processed addObject:relationship];
-        }
-        
-        if (processed.count) {
-            [threadSafeStorage save];
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 @autoreleasepool {
-                    [self removeRelationships:processed];
+                    [self removeRelationships:resolvedRelationships];
                     [self saveWithStorage:storage];
                 }
             });
+        }];
+    });
+}
+
+- (NSHashTable *)_resolvePendingRelationships:(NSHashTable *)relationships
+                                 simperiumKey:(NSString *)simperiumKey
+                                   bucketName:(NSString *)bucketName
+                            threadSafeStorage:(id<SPStorageProvider>)threadSafeStorage
+{
+    NSParameterAssert(relationships);
+    NSParameterAssert(simperiumKey);
+    NSParameterAssert(bucketName);
+    NSParameterAssert(threadSafeStorage);
+    
+    NSHashTable *processed = [NSHashTable hashTableWithOptions:NSHashTableStrongMemory];
+    
+    for (SPRelationship *relationship in relationships) {
+
+        // Infer the targetBucket: 'Legacy' descriptors didn't store the targetBucket
+        NSString *targetBucket = relationship.targetBucket;
+        
+        if (!targetBucket) {
+            if ([simperiumKey isEqualToString:relationship.targetKey]) {
+                targetBucket = bucketName;
+            } else {
+                // Unhandled scenario: There is no way to determine the targetBucket!
+                SPLogError(@"Simperium Relationship Resolver cannot determine the targetBucket for relationship [%@] > [%@]",
+                           relationship.sourceKey, relationship.targetKey);
+                continue;
+            }
         }
         
-        [threadSafeStorage finishSafeSection];
-    });
+        id<SPDiffable>sourceObject  = [threadSafeStorage objectForKey:relationship.sourceKey bucketName:relationship.sourceBucket];
+        id<SPDiffable>targetObject  = [threadSafeStorage objectForKey:relationship.targetKey bucketName:targetBucket];
+        
+        if (!sourceObject || !targetObject) {
+            continue;
+        }
+
+        // Ensure the objects are faulted
+        [sourceObject willBeRead];
+        [targetObject willBeRead];
+        
+        SPLogVerbose(@"Simperium resolving pending reference for %@.%@=%@",
+                     relationship.sourceKey, relationship.sourceAttribute, relationship.targetKey);
+        
+        [sourceObject simperiumSetValue:targetObject forKey:relationship.sourceAttribute];
+        
+        // Get the key reference into the ghost as well
+        [sourceObject.ghost.memberData setObject:relationship.targetKey forKey:relationship.sourceAttribute];
+        sourceObject.ghost.needsSave = YES;
+        
+        // Cleanup!
+        [processed addObject:relationship];
+    }
+    
+    if (processed.count) {
+        [threadSafeStorage save];
+    }
+    
+    return processed;
 }
 
 - (void)saveWithStorage:(id<SPStorageProvider>)storage {

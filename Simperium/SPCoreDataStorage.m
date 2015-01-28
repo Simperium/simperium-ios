@@ -9,6 +9,7 @@
 #import "SPCoreDataStorage.h"
 #import "SPManagedObject+Internals.h"
 #import "NSString+Simperium.h"
+#import "NSConditionLock+Simperium.h"
 #import "SPCoreDataExporter.h"
 #import "SPSchema.h"
 #import "SPThreadsafeMutableSet.h"
@@ -54,7 +55,10 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 @implementation SPCoreDataStorage
 
-- (instancetype)initWithModel:(NSManagedObjectModel *)model mainContext:(NSManagedObjectContext *)mainContext coordinator:(NSPersistentStoreCoordinator *)coordinator {
+- (instancetype)initWithModel:(NSManagedObjectModel *)model
+                  mainContext:(NSManagedObjectContext *)mainContext
+                  coordinator:(NSPersistentStoreCoordinator *)coordinator
+{
     self = [super init];
     if (self) {
         // Create a writer MOC
@@ -71,7 +75,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
         [self.mainManagedObjectContext setMergePolicy:NSMergeByPropertyStoreTrumpMergePolicy];
         
         // Just one mutex for this Simperium stack
-        self.mutex = [[NSConditionLock alloc] initWithCondition:SPWorkersDone];
+        self.mutex                      = [[NSConditionLock alloc] initWithCondition:SPWorkersDone];
         
         // The new writer MOC will be the only one with direct access to the persistentStoreCoordinator
         self.writerManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
@@ -79,10 +83,12 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
         [self addObserversForMainContext:self.mainManagedObjectContext];
     }
+    
     return self;
 }
 
-- (instancetype)initWithSibling:(SPCoreDataStorage *)aSibling {
+- (instancetype)initWithSibling:(SPCoreDataStorage *)aSibling
+{
     self = [super init];
     if (self) {
         self.sibling = aSibling;
@@ -144,7 +150,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 - (id<SPDiffable>)objectForKey:(NSString *)key bucketName:(NSString *)bucketName {
-    
     NSEntityDescription *entityDescription  = [NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext];
     NSPredicate *predicate                  = [NSPredicate predicateWithFormat:@"simperiumKey == %@", key];
     
@@ -206,7 +211,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     }
     
     return results;
-    
 }
 
 - (NSArray *)objectKeysForBucketName:(NSString *)bucketName {
@@ -221,8 +225,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     return objectKeys;
 }
 
-- (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate
-{
+- (NSInteger)numObjectsForBucketName:(NSString *)bucketName predicate:(NSPredicate *)predicate {
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:[NSEntityDescription entityForName:bucketName inManagedObjectContext:self.mainManagedObjectContext]];
     [request setIncludesSubentities:NO]; //Omit subentities. Default is YES (i.e. include subentities) 
@@ -280,7 +283,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     SPManagedObject *object = [NSEntityDescription insertNewObjectForEntityForName:bucketName
                                                             inManagedObjectContext:self.mainManagedObjectContext];
     
-    object.simperiumKey = key ? key : [NSString sp_makeUUID];
+    object.simperiumKey = key ?: [NSString sp_makeUUID];
     
     return object;
 }
@@ -356,7 +359,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 - (void)commitPendingOperations:(void (^)())completion {
-    NSAssert(completion, @"Please, provide a completion handler");
+    NSParameterAssert(completion);
     
     // Let's make sure that pending blocks dispatched to the writer's queue are ready
     [self.writerManagedObjectContext performBlock:completion];
@@ -397,7 +400,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 
-// CD specific
 #pragma mark - Stashing and unstashing entities
 
 - (NSArray *)allUpdatedAndInsertedObjects {
@@ -430,10 +432,10 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 
-#pragma mark - Main MOC + Children MOC Notification Handlers
+#pragma mark - Temporary ID Helpers
 
-- (void)managedContextWillSave:(NSNotification*)notification {
-    NSManagedObjectContext *context = (NSManagedObjectContext *)notification.object;
+- (void)obtainPermanentIDsForInsertedObjectsInContext:(NSManagedObjectContext *)context {
+    NSParameterAssert(context);
     NSMutableSet *temporaryObjects = [NSMutableSet set];
     
     for (NSManagedObject *mo in context.insertedObjects) {
@@ -455,6 +457,13 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 
 #pragma mark - Main MOC Notification Handlers
+
+- (void)mainContextWillSave:(NSNotification *)notification {
+    
+    // Obtain Permanent ID's!
+    NSManagedObjectContext *mainContext = (NSManagedObjectContext *)notification.object;
+    [self obtainPermanentIDsForInsertedObjectsInContext:mainContext];
+}
 
 - (void)mainContextDidSave:(NSNotification *)notification {
     // Expose the affected objects via the public properties
@@ -485,13 +494,45 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (void)addObserversForMainContext:(NSManagedObjectContext *)moc {
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:moc];
-    [nc addObserver:self selector:@selector(mainContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:moc];
-    [nc addObserver:self selector:@selector(mainContextObjectsDidChange:) name:NSManagedObjectContextObjectsDidChangeNotification object:moc];
+    
+    [nc addObserver:self selector:@selector(mainContextWillSave:)           name:NSManagedObjectContextWillSaveNotification         object:moc];
+    [nc addObserver:self selector:@selector(mainContextDidSave:)            name:NSManagedObjectContextDidSaveNotification          object:moc];
+    [nc addObserver:self selector:@selector(mainContextObjectsDidChange:)   name:NSManagedObjectContextObjectsDidChangeNotification object:moc];
 }
 
 
 #pragma mark - Children MOC Notification Handlers
+
+- (void)childrenContextWillSave:(NSNotification*)notification {
+
+    // Obtain Permanent ID's!
+    NSManagedObjectContext *childrenContext = (NSManagedObjectContext *)notification.object;
+    [self obtainPermanentIDsForInsertedObjectsInContext:childrenContext];
+    
+    // Get the deleted ManagedObject ID's
+    NSMutableSet *workerDeletedIds = [NSMutableSet set];
+    for (NSManagedObject *object in childrenContext.deletedObjects) {
+        [workerDeletedIds addObject:object.objectID];
+    }
+    
+    if (workerDeletedIds.count == 0) {
+        return;
+    }
+    
+    // NOTE:
+    // Deleting an entity in a Children MOC, while there was a faulted reference in the MainMOC, might trigger a NSObjectInaccessibleException (#436).
+    // Workaround: we'll make sure the objects are actually loaded into the WriterMOC. This will effectively prevent an exception,
+    // and the object will get removed as soon as the DidSave note is merged.
+
+    [self.writerManagedObjectContext performBlockAndWait:^{
+        for (NSManagedObjectID *objectID in workerDeletedIds) {
+            NSManagedObject *writerMO = [self.writerManagedObjectContext existingObjectWithID:objectID error:nil];
+            if (writerMO.isFault) {
+                [writerMO willAccessValueForKey:nil];
+            }
+        }
+    }];
+}
 
 - (void)childrenContextDidSave:(NSNotification*)notification {
     //  NOTE:
@@ -503,12 +544,12 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     [writerMOC performBlockAndWait:^{
         [writerMOC mergeChangesFromContextDidSaveNotification:notification];
     }];
-    
+
     //  NOTE II:
     //  Setting the mainMOC as the childrenMOC's parent will trigger 'mainMOC hasChanges' flag.
     //  Which, in turn, can cause changes retrieved from the backend to get posted as local changes.
     //  Let's, instead, merge the changes into the mainMOC. This will NOT trigger main MOC's hasChanges flag.
-    
+
     NSManagedObjectContext* mainMOC = self.sibling.mainManagedObjectContext;
     [mainMOC performBlockAndWait:^{
         
@@ -531,8 +572,8 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (void)addObserversForChildrenContext:(NSManagedObjectContext *)context {
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(managedContextWillSave:) name:NSManagedObjectContextWillSaveNotification object:context];
-    [nc addObserver:self selector:@selector(childrenContextDidSave:) name:NSManagedObjectContextDidSaveNotification object:context];
+    [nc addObserver:self selector:@selector(childrenContextWillSave:) name:NSManagedObjectContextWillSaveNotification   object:context];
+    [nc addObserver:self selector:@selector(childrenContextDidSave:)  name:NSManagedObjectContextDidSaveNotification    object:context];
 }
 
 
@@ -577,29 +618,24 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 #pragma mark - Synchronization
 
-- (void)beginSafeSection {
-    NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-
-    [_mutex lock];
-    NSInteger workers = _mutex.condition + 1;
-    [_mutex unlockWithCondition:workers];
-}
-
-- (void)finishSafeSection {
+- (void)performSafeBlockAndWait:(void (^)())block {
+    NSAssert([NSThread isMainThread] == false,  @"It is not recommended to use this method on the main thread");
+    NSAssert(self.sibling != nil,               @"Please, use the performBlock primitives on threadsafe storage instances");
+    NSParameterAssert(block);
     
-    [_mutex lock];
-    NSInteger workers = _mutex.condition - 1;
-    [_mutex unlockWithCondition:workers];
+    [self.mutex sp_increaseCondition];
+    block();
+    [self.mutex sp_decreaseCondition];
 }
 
-- (void)beginCriticalSection {
-    NSAssert([NSThread isMainThread] == false, @"It is not recommended to use this method on the main thread");
-
-    [_mutex lockWhenCondition:SPWorkersDone];
-}
-
-- (void)finishCriticalSection {
-    [_mutex unlock];
+- (void)performCriticalBlockAndWait:(void (^)())block {
+    NSAssert([NSThread isMainThread] == false,  @"It is not recommended to use this method on the main thread");
+    NSAssert(self.sibling != nil,               @"Please, use the performBlock primitives on threadsafe storage instances");
+    NSParameterAssert(block);
+    
+    [self.mutex lockWhenCondition:SPWorkersDone];
+    block();
+    [self.mutex unlock];
 }
 
 
@@ -618,11 +654,14 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     return !pscCompatibile;
 }
 
-+ (BOOL)newCoreDataStack:(NSString *)modelName mainContext:(NSManagedObjectContext **)mainContext model:(NSManagedObjectModel **)model coordinator:(NSPersistentStoreCoordinator **)coordinator {
-    NSLog(@"Setting up Core Data: %@", modelName);
-    //NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"Simplenote" withExtension:@"momd"];
++ (BOOL)newCoreDataStack:(NSString *)modelName
+             mainContext:(NSManagedObjectContext **)mainContext
+                   model:(NSManagedObjectModel **)model
+             coordinator:(NSPersistentStoreCoordinator **)coordinator
+{
+    SPLogVerbose(@"Setting up Core Data: %@", modelName);
+    NSURL *developerModelURL = nil;;
     
-    NSURL *developerModelURL;
     @try {
         developerModelURL = [NSURL fileURLWithPath: [[NSBundle mainBundle]  pathForResource:modelName ofType:@"momd"]];
         *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:developerModelURL];
@@ -632,7 +671,6 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     }
     
     // Setup the persistent store
-    //NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"Simplenote.sqlite"];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
     NSString *bundleName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"];
@@ -653,7 +691,9 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     
     if (![*coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error])
     {
-         //TODO: this can occur the first time you launch a Simperium app after adding Simperium to it. The existing data store lacks the dynamically added members, so it must be upgraded first, and then the opening of the persistent store must be attempted again.
+        // TODO: this can occur the first time you launch a Simperium app after adding Simperium to it.
+        // The existing data store lacks the dynamically added members, so it must be upgraded first, and then the
+        // opening of the persistent store must be attempted again.
          
         NSLog(@"Simperium failed to perform lightweight migration; app should perform manual migration");
     }    
@@ -669,13 +709,17 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 // Need to perform a manual migration in a particular case. Do this according to Apple's guidelines.
-- (BOOL)migrateStore:(NSURL *)storeURL sourceModel:(NSManagedObjectModel *)srcModel destinationModel:(NSManagedObjectModel *)dstModel {
-    NSError *error;
+- (BOOL)migrateStore:(NSURL *)storeURL
+         sourceModel:(NSManagedObjectModel *)srcModel
+    destinationModel:(NSManagedObjectModel *)dstModel
+{
+    NSError *error = nil;
     NSMappingModel *mappingModel = [NSMappingModel inferredMappingModelForSourceModel:srcModel
-                                                                     destinationModel:dstModel error:&error];
+                                                                     destinationModel:dstModel
+                                                                                error:&error];
     if (error) {
         NSString *message = [NSString stringWithFormat:@"Inferring failed %@ [%@]",
-                             [error description], ([error userInfo] ? [[error userInfo] description] : @"no user info")];
+                             error.description, (error.userInfo.description ?: @"no user info")];
         NSLog(@"Migration failure message: %@", message);
         
         return NO;
@@ -688,12 +732,17 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     NSMigrationManager *manager = [[sqliteStoreMigrationManagerClass alloc]
                                    initWithSourceModel:srcModel destinationModel:dstModel];
     
-    if (![manager migrateStoreFromURL:storeURL type:NSSQLiteStoreType
-                              options:nil withMappingModel:mappingModel toDestinationURL:nil
-                      destinationType:NSSQLiteStoreType destinationOptions:nil error:&error]) {
+    if (![manager migrateStoreFromURL:storeURL
+                                 type:NSSQLiteStoreType
+                              options:nil
+                     withMappingModel:mappingModel
+                     toDestinationURL:nil
+                      destinationType:NSSQLiteStoreType
+                   destinationOptions:nil
+                                error:&error]) {
         
         NSString *message = [NSString stringWithFormat:@"Migration failed %@ [%@]",
-                             [error description], ([error userInfo] ? [[error userInfo] description] : @"no user info")];
+                             error.description, (error.userInfo.description ?: @"no user info")];
         NSLog(@"Migration failure message: %@", message);
         return NO;
     }

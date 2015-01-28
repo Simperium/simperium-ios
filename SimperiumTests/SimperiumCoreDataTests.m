@@ -37,9 +37,9 @@ static NSString* const kDeletedKey = @"deleted";
 #pragma mark ====================================================================================
 
 @interface SimperiumCoreDataTests ()
-@property (nonatomic, strong, readwrite) NSManagedObjectContext* writerContext;
-@property (nonatomic, strong, readwrite) NSManagedObjectContext* mainContext;
-@property (nonatomic, strong, readwrite) NSMutableDictionary* changesByContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext*    writerContext;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext*    mainContext;
+@property (nonatomic, strong, readwrite) NSMutableDictionary*       changesByContext;
 @end
 
 
@@ -57,13 +57,13 @@ static NSString* const kDeletedKey = @"deleted";
     [self connectFarms];
 
 	// Load the contexts
-    Farm *leader = [self.farms lastObject];
-	self.writerContext = leader.simperium.writerManagedObjectContext;
-	self.mainContext = leader.simperium.managedObjectContext;
-	self.changesByContext = [NSMutableDictionary dictionary];
+    Farm *leader            = [self.farms lastObject];
+	self.writerContext      = leader.simperium.writerManagedObjectContext;
+	self.mainContext        = leader.simperium.managedObjectContext;
+	self.changesByContext   = [NSMutableDictionary dictionary];
 	
-	XCTAssertTrue((self.mainContext.concurrencyType == NSMainQueueConcurrencyType), @"CoreData mainContext Setup Error");
-	XCTAssertTrue((self.writerContext.concurrencyType == NSPrivateQueueConcurrencyType),	@"CoreData writerContext Setup Error");
+	XCTAssert(self.mainContext.concurrencyType == NSMainQueueConcurrencyType,       @"CoreData mainContext Setup Error");
+	XCTAssert(self.writerContext.concurrencyType == NSPrivateQueueConcurrencyType,	@"CoreData writerContext Setup Error");
 }
 
 - (void)tearDown {
@@ -96,7 +96,10 @@ static NSString* const kDeletedKey = @"deleted";
 	
 	// Scotty, beam the changes down!
 	XCTAssertTrue(self.mainContext.hasChanges, @"Main MOC should have changes");
-	XCTAssertFalse(self.writerContext.hasChanges, @"Writer MOC should not have changes");
+    
+    [self.writerContext performBlockAndWait:^{
+        XCTAssertFalse(self.writerContext.hasChanges, @"Writer MOC should not have changes");
+    }];
 	
 	NSError* error = nil;
 	[self.mainContext save:&error];
@@ -108,7 +111,7 @@ static NSString* const kDeletedKey = @"deleted";
 	// The writerContext should have persisted the changes
 	NSArray *savedChanges = [[self changesForContext:self.writerContext] objectForKey:kInsertedKey];
 	
-	XCTAssertTrue( (savedChanges.count == kObjectsCount), @"Writer MOC failed to persist the inserted objects");
+	XCTAssertTrue(savedChanges.count == kObjectsCount, @"Writer MOC failed to persist the inserted objects");
 	
     NSLog(@"%@ end", self.name);
 }
@@ -127,16 +130,18 @@ static NSString* const kDeletedKey = @"deleted";
 	deepContext.parentContext = workerContext;
 	
 	// Let's insert new objects
-	Config* config = nil;
+	Config* mainConfig = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:self.mainContext];
+	XCTAssert(mainConfig.bucket, @"The MainContext newObject's bucket should not be nil");
 	
-	config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:self.mainContext];
-	XCTAssertTrue( (config.bucket != nil), @"The MainContext newObject's bucket should not be nil");
+    [workerContext performBlockAndWait:^{
+        Config* workerConfig = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:workerContext];
+        XCTAssert(workerConfig.bucket, @"The WorkerContext newObject's bucket should not be nil");
+    }];
 	
-	config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:workerContext];
-	XCTAssertTrue( (config.bucket != nil), @"The WorkerContext newObject's bucket should not be nil");
-	
-	config = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:deepContext];
-	XCTAssertTrue( (config.bucket != nil), @"The DeepContext newObject's bucket should not be nil");
+    [deepContext performBlockAndWait:^{
+        Config* deepCofig = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:deepContext];
+        XCTAssertTrue(deepCofig.bucket, @"The DeepContext newObject's bucket should not be nil");
+    }];
 	
 	[super waitFor:kLocalTestTimeout];
 	
@@ -159,26 +164,30 @@ static NSString* const kDeletedKey = @"deleted";
 		// Insert an object into the last context of the chain
 		Config* inserted = [NSEntityDescription insertNewObjectForEntityForName:@"Config" inManagedObjectContext:deepContext];
 		XCTAssertNotNil(inserted, @"Error inserting object in child");
-		XCTAssertTrue(  (deepContext.hasChanges), @"Error inserting into Deep Context");
-		XCTAssertFalse( (workerContext.hasChanges), @"Worker context shouldn't have changes");
+		XCTAssertTrue(deepContext.hasChanges, @"Error inserting into Deep Context");
+        
+        [workerContext performBlockAndWait:^{
+            XCTAssertFalse(workerContext.hasChanges, @"Worker context shouldn't have changes");
+        }];
 
 		// Push the changes one level up (to the 'workerContext')
 		NSError* error = nil;
 		[deepContext save:&error];
 		XCTAssertNil(error, @"Error saving deep context");
-		XCTAssertTrue( (workerContext.hasChanges), @"Worker context SHOULD have changes");
-		
+        
 		[workerContext performBlockAndWait:^{
-		
+            XCTAssertTrue(workerContext.hasChanges, @"Worker context SHOULD have changes");
+            
 			// Push one level up (mainContext)
 			NSError* error = nil;
 			[workerContext save:&error];
 			XCTAssertNil(error, @"Error saving worker context");
-			XCTAssertTrue( (self.mainContext.hasChanges), @"Main context SHOULD have changes");
-			
+            
 			// Finally, this will reach the writer
 			[self.mainContext performBlockAndWait:^{
-				
+                
+                XCTAssertTrue(self.mainContext.hasChanges, @"Main context SHOULD have changes");
+                
 				NSError* error = nil;
 				[self.mainContext save:&error];
 				XCTAssertNil(error, @"Error saving Main context");

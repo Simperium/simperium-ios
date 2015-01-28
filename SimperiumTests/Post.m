@@ -27,7 +27,7 @@
     // Break these out for ease of debugging
     int numComments = (int)[self.comments count];
     int otherNumComments = (int)[other.comments count];
-    BOOL numCommentsEqual =  numComments = otherNumComments;
+    BOOL numCommentsEqual =  numComments == otherNumComments;
     
     BOOL isEqual = titleEqual && numCommentsEqual;
     

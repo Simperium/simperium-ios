@@ -163,20 +163,13 @@
     [super tearDown];
     
     for (Farm *farm in self.farms) {
-        [farm stop];
+        XCTestExpectation *expectation = [self expectationWithDescription:@"Signout"];
+        
+        [farm stopWithCompletion:^{
+            [expectation fulfill];
+        }];
     }
 }
-
-//- (void)ensureConfigsAreEqualTo:(Farm *)leader
-//{
-//    for (Farm *farm in farms) {
-//        if (farm == leader)
-//            continue;
-//        farm.config = (Config *)[farm.simperium objectForKey:@"config" entityName:@"Config"];
-//        STAssertTrue([farm.config isEqualToConfig:leader.config], @"config %@ != leader %@", farm.config, leader.config);
-//    }
-//}
-
 
 - (void)ensureFarmsEqual: (NSArray *)farmArray entityName:(NSString *)entityName {
     // Assume all leader configs are the same since they're set manually

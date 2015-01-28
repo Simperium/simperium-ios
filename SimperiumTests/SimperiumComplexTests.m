@@ -7,6 +7,7 @@
 //
 
 #import "SimperiumTests.h"
+#import "Simperium+Internals.h"
 #import "Config.h"
 #import "Farm.h"
 #import "SPBucket+Internals.h"
@@ -94,10 +95,16 @@
     // The timing here is critical for testing websockets...it needs to be long enough for the first save to be processed and sent, but not
     // so long that the ack has been processed. Find a way to block for successful sends instead.
 	// Dispatch a blocking no-op in the bucket!
-	dispatch_sync(entityBucket.processorQueue, ^{ });
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Save Expectation"];
     
-    //[self expectAdditions:2 deletions:0 changes:0 fromLeader:leader expectAcks:YES];
-        
+    [leader.simperium.coreDataStorage commitPendingOperations:^{
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    dispatch_sync(entityBucket.processorQueue, ^{ });
+    
     // Now change right away without waiting for the object insertion to be acked
     NSNumber *refWarpSpeed = @(4);
     NSString *refCaptainsLog = @"Hi!!!";
@@ -145,16 +152,11 @@
         [self waitFor: (arc4random() % 200) / 1000.0];
     }
     [self waitFor:10];
-    // Can't know how many to expect since some changes will get sent together
-    //[self expectAdditions:0 deletions:0 changes:changeNumber-1 fromLeader:leader expectAcks:YES];
-    //STAssertTrue([self waitForCompletion], @"timed out (changing)");
     
     XCTAssertTrue([refString isEqualToString: leader.config.captainsLog],
                  @"leader %@ != ref %@", leader.config.captainsLog, refString);
     [self ensureFarmsEqual:self.farms entityName:[Config entityName]];
     NSLog(@"%@ end", self.name); 
 }
-
-
 
 @end

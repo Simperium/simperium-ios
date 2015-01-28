@@ -29,7 +29,7 @@
 
 - (instancetype)initWithToken:(NSString *)token label:(NSString *)label;
 - (void)start;
-- (void)stop;
+- (void)stopWithCompletion:(void (^)())completion;
 - (void)connect;
 - (void)disconnect;
 - (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs;
