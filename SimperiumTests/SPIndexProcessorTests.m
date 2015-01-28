@@ -13,6 +13,7 @@
 #import "SPGhost.h"
 #import "SPIndexProcessor.h"
 #import "SPStorageProvider.h"
+#import "SPCoreDataStorage+Mock.h"
 #import "Config.h"
 
 #import "NSString+Simperium.h"
@@ -460,7 +461,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     // Verify if the indexProcessor actually did its job
     // ===================================================================================================
     //
-    
+
     [storage refaultObjects:@[config]];
     
     XCTAssertEqualObjects(config.captainsLog, expectedLog,                  @"Invalid Log");
