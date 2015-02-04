@@ -252,6 +252,14 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
 }
 
+- (void)setDelaysNewObjectsInitialization:(BOOL)delaysNewObjectsInitialization {
+    self.coreDataStorage.delaysNewObjectsInitialization = delaysNewObjectsInitialization;
+}
+
+- (BOOL)delaysNewObjectsInitialization {
+    return self.coreDataStorage.delaysNewObjectsInitialization;
+}
+
 
 #pragma mark ====================================================================================
 #pragma mark Buckets
