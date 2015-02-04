@@ -12,5 +12,6 @@
 @interface SPStorage : NSObject
 - (void)stopManagingObjectWithKey:(NSString *)key;
 - (void)configureInsertedObject:(id<SPDiffable>)object;
+- (void)configureInsertedObjects:(NSSet *)insertedObjects;
 - (void)configureNewGhost:(id<SPDiffable>)object;
 @end

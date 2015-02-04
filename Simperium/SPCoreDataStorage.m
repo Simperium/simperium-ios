@@ -463,6 +463,13 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     // Obtain Permanent ID's!
     NSManagedObjectContext *mainContext = (NSManagedObjectContext *)notification.object;
     [self obtainPermanentIDsForInsertedObjectsInContext:mainContext];
+    
+    // Initialize the inserted object's simperiumKey. If needed
+    if (!self.delaysNewObjectsInitialization) {
+        return;
+    }
+    
+    [self configureInsertedObjects:mainContext.insertedObjects];
 }
 
 - (void)mainContextDidSave:(NSNotification *)notification {
@@ -481,15 +488,14 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 }
 
 - (void)mainContextObjectsDidChange:(NSNotification *)notification {
-    // Check for inserted objects and init them
-    NSSet *insertedObjects = [notification.userInfo objectForKey:NSInsertedObjectsKey];
-
-    for (NSManagedObject *insertedObject in insertedObjects) {
-        if ([insertedObject isKindOfClass:[SPManagedObject class]]) {
-            SPManagedObject *object = (SPManagedObject *)insertedObject;
-            [self configureInsertedObject: object];
-        }
+    // Initialize the inserted object's simperiumKey. If needed
+    if (self.delaysNewObjectsInitialization) {
+        return;
     }
+    
+    NSSet *insertedObjects = [notification.userInfo objectForKey:NSInsertedObjectsKey];
+    [self configureInsertedObjects:insertedObjects];
+
 }
 
 - (void)addObserversForMainContext:(NSManagedObjectContext *)moc {
