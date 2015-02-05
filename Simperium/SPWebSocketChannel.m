@@ -506,6 +506,15 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     [self setShouldSendEverything];
 }
 
+- (void)stop {
+    
+    NSAssert([NSThread isMainThread], @"This method should get called on the main thread");
+    
+    self.authenticated = false;
+    self.webSocketManager = nil;
+    [self invalidateSyncTimeoutTimer];
+}
+
 
 #pragma mark ====================================================================================
 #pragma mark Private Methods: Sending Changes
