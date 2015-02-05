@@ -62,17 +62,17 @@ static NSString * SPUsername    = @"SPUsername";
 - (instancetype)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s {
     self = [super init];
     if (self) {
-        self.delegate   = authDelegate;
-        self.simperium  = s;
+        _delegate   = authDelegate;
+        _simperium  = s;
         
 #if TARGET_OS_IPHONE
         [SSKeychain setAccessibilityType:kSecAttrAccessibleAlways];
 #endif
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kSPReachabilityChangedNotification object:nil];
-        self.reachability = [SPReachability reachabilityForInternetConnection];
-        self.connected = self.reachability.currentReachabilityStatus != NotReachable;
-        [self.reachability startNotifier];
+        _reachability = [SPReachability reachabilityForInternetConnection];
+        _connected = self.reachability.currentReachabilityStatus != NotReachable;
+        [_reachability startNotifier];
     }
     return self;
 }
