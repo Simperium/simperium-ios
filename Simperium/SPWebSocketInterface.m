@@ -261,7 +261,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     self.webSocket          = nil;
     
     // Prevent any pending retries
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];    
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
 - (void)reset:(SPBucket *)bucket completion:(SPNetworkInterfaceResetCompletion)completion {
@@ -318,7 +318,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 - (void)webSocketDidOpen:(SPWebSocket *)theWebSocket {
     
     // Reconnection failsafe
-    if ( theWebSocket != self.webSocket) {
+    if (theWebSocket != self.webSocket) {
         return;
     }
     
@@ -349,7 +349,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     NSArray *components = [message sp_componentsSeparatedByString:@":" limit:SPMessageIndexLast];
     
     // Shortest messages have the form: [CHANNEL:COMMAND]
-    if ( components.count < (SPMessageIndexCommand + 1) ) {
+    if (components.count < (SPMessageIndexCommand + 1)) {
         SPLogError(@"Simperium websocket received invalid message: %@", message);
         return;
     }

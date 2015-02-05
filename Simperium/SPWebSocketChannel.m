@@ -30,15 +30,18 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static int const SPWebsocketIndexPageSize           = 500;
-static int const SPWebsocketIndexBatchSize          = 10;
-static int const SPWebsocketAuthErrorTokenMalformed = 400;
-static int const SPWebsocketAuthErrorTokenInvalid   = 401;
-static int const SPWebsocketChangesBatchSize        = 20;
-static NSString* const SPWebsocketErrorMark         = @"{";
-static NSString* const SPWebsocketErrorCodeKey      = @"code";
+typedef NS_ENUM(NSInteger, SPWebsocketAuthError) {
+    SPWebsocketAuthErrorTokenMalformed                      = 400,
+    SPWebsocketAuthErrorTokenInvalid                        = 401
+};
 
-static SPLogLevels logLevel                         = SPLogLevelsInfo;
+static int const SPWebsocketChangesBatchSize                = 20;
+static int const SPWebsocketIndexPageSize                   = 500;
+static int const SPWebsocketIndexBatchSize                  = 10;
+static NSString* const SPWebsocketErrorMark                 = @"{";
+static NSString* const SPWebsocketErrorCodeKey              = @"code";
+
+static SPLogLevels logLevel                                 = SPLogLevelsInfo;
 
 typedef void(^SPWebSocketSyncedBlockType)(void);
 
@@ -236,7 +239,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         NSError *error = nil;
         NSDictionary *authPayload = [responseString sp_objectFromJSONStringWithError:&error];
         
-        if ( [authPayload isKindOfClass:[NSDictionary class]] ) {
+        if ([authPayload isKindOfClass:[NSDictionary class]]) {
             NSInteger errorCode = [authPayload[SPWebsocketErrorCodeKey] integerValue];
             if (errorCode == SPWebsocketAuthErrorTokenMalformed || errorCode == SPWebsocketAuthErrorTokenInvalid) {
                 [[NSNotificationCenter defaultCenter] postNotificationName:SPAuthenticationDidFail object:self];
