@@ -62,17 +62,17 @@ static NSString * SPUsername    = @"SPUsername";
 - (instancetype)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s {
     self = [super init];
     if (self) {
-        self.delegate   = authDelegate;
-        self.simperium  = s;
+        _delegate   = authDelegate;
+        _simperium  = s;
         
 #if TARGET_OS_IPHONE
         [SSKeychain setAccessibilityType:kSecAttrAccessibleAlways];
 #endif
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kSPReachabilityChangedNotification object:nil];
-        self.reachability = [SPReachability reachabilityForInternetConnection];
-        self.connected = self.reachability.currentReachabilityStatus != NotReachable;
-        [self.reachability startNotifier];
+        _reachability = [SPReachability reachabilityForInternetConnection];
+        _connected = self.reachability.currentReachabilityStatus != NotReachable;
+        [_reachability startNotifier];
     }
     return self;
 }
@@ -80,18 +80,6 @@ static NSString * SPUsername    = @"SPUsername";
 - (void)handleNetworkChange:(NSNotification *)notification {
     self.connected = (self.reachability.currentReachabilityStatus != NotReachable);
 }
-
-- (BOOL)needsAuthentication {
-    NSString *username  = [[NSUserDefaults standardUserDefaults] objectForKey:SPUsername];
-    NSString *token     = nil;
-    
-    if (username) {
-        token = [SSKeychain passwordForService:self.simperium.appID account:username error:nil];
-    }
-    
-    return (username.length == 0 || token.length == 0);
-}
-
 
 // Open a UI to handle authentication if necessary
 - (BOOL)authenticateIfNecessary {
@@ -290,6 +278,20 @@ static NSString * SPUsername    = @"SPUsername";
     if ([self.delegate respondsToSelector:@selector(authenticationDidCancel)]) {
         [self.delegate authenticationDidCancel];
     }
+}
+
+
+#pragma mark - Static Helpers
+
++ (BOOL)needsAuthenticationForAppWithID:(NSString *)appID {
+    NSString *username  = [[NSUserDefaults standardUserDefaults] objectForKey:SPUsername];
+    NSString *token     = nil;
+    
+    if (username) {
+        token = [SSKeychain passwordForService:appID account:username error:nil];
+    }
+    
+    return (username.length == 0 || token.length == 0);
 }
 
 @end
