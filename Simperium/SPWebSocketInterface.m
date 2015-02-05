@@ -283,6 +283,15 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     [self resetHeartbeatTimer];
 }
 
+- (void)reopen {
+    // Note:
+    // WebSocket's didClose handler will take care of reopening the socket.
+    SPLogVerbose(@"Simperium (%@) Reo-Opening WebSocket Interface", self.simperium.label);
+    
+    [self stopChannels];
+    [self.webSocket close];
+}
+
 
 #pragma mark - Heatbeat Helpers
 

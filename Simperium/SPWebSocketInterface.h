@@ -22,6 +22,7 @@
 
 - (void)loadChannelsForBuckets:(NSDictionary *)bucketList;
 - (void)send:(NSString *)message;
+- (void)reopen;
 
 + (instancetype)interfaceWithSimperium:(Simperium *)s;
 

@@ -40,6 +40,7 @@ static int const SPWebsocketIndexPageSize                   = 500;
 static int const SPWebsocketIndexBatchSize                  = 10;
 static NSString* const SPWebsocketErrorMark                 = @"{";
 static NSString* const SPWebsocketErrorCodeKey              = @"code";
+static NSTimeInterval const SPWebSocketSyncTimeoutInterval  = 180;
 
 static SPLogLevels logLevel                                 = SPLogLevelsInfo;
 
@@ -52,6 +53,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 
 @interface SPWebSocketChannel()
 @property (nonatomic,   weak) Simperium                     *simperium;
+@property (nonatomic, strong) NSTimer                       *syncTimeoutTimer;
 @property (nonatomic, strong) NSMutableArray                *versionsBatch;
 @property (nonatomic, strong) NSMutableArray                *changesBatch;
 @property (nonatomic, assign) NSInteger                     retryDelay;
@@ -292,6 +294,9 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         
         [self processBatchChanges:receivedBatch bucket:bucket];
     });
+    
+    // Signal there's activity in the channel
+    [self invalidateSyncTimeoutTimer];
 }
 
 - (void)processBatchChanges:(NSArray *)changes bucket:(SPBucket *)bucket {
@@ -594,7 +599,9 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *message = [NSString stringWithFormat:@"%d:c:%@", self.number, [change sp_JSONString]];
         SPLogVerbose(@"Simperium sending change (%@-%@) %@", self.name, self.simperium.label, message);
+        
         [self.webSocketManager send:message];
+        [self startSyncTimeoutTimer];
     });
 }
 
@@ -717,6 +724,29 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
             [self startProcessingChangesForBucket:bucket];
         });
     });
+}
+
+
+#pragma mark ====================================================================================
+#pragma mark Sync Timeout
+#pragma mark ====================================================================================
+
+- (void)startSyncTimeoutTimer {
+    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
+    
+    [self.syncTimeoutTimer invalidate];
+    self.syncTimeoutTimer = [NSTimer scheduledTimerWithTimeInterval:SPWebSocketSyncTimeoutInterval target:self selector:@selector(handleSyncTimeout:) userInfo:nil repeats:NO];
+}
+
+- (void)invalidateSyncTimeoutTimer {
+    NSAssert([NSThread isMainThread], @"This should get called on the main thread!");
+    
+    [self.syncTimeoutTimer invalidate];
+    self.syncTimeoutTimer = nil;
+}
+
+- (void)handleSyncTimeout:(NSTimer *)timer {
+    [self.webSocketManager reopen];
 }
 
 
