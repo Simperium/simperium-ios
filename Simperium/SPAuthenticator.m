@@ -81,18 +81,6 @@ static NSString * SPUsername    = @"SPUsername";
     self.connected = (self.reachability.currentReachabilityStatus != NotReachable);
 }
 
-- (BOOL)needsAuthentication {
-    NSString *username  = [[NSUserDefaults standardUserDefaults] objectForKey:SPUsername];
-    NSString *token     = nil;
-    
-    if (username) {
-        token = [SSKeychain passwordForService:self.simperium.appID account:username error:nil];
-    }
-    
-    return (username.length == 0 || token.length == 0);
-}
-
-
 // Open a UI to handle authentication if necessary
 - (BOOL)authenticateIfNecessary {
     
@@ -290,6 +278,20 @@ static NSString * SPUsername    = @"SPUsername";
     if ([self.delegate respondsToSelector:@selector(authenticationDidCancel)]) {
         [self.delegate authenticationDidCancel];
     }
+}
+
+
+#pragma mark - Static Helpers
+
++ (BOOL)needsAuthenticationForAppWithID:(NSString *)appID {
+    NSString *username  = [[NSUserDefaults standardUserDefaults] objectForKey:SPUsername];
+    NSString *token     = nil;
+    
+    if (username) {
+        token = [SSKeychain passwordForService:appID account:username error:nil];
+    }
+    
+    return (username.length == 0 || token.length == 0);
 }
 
 @end
