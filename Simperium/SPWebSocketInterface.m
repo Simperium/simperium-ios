@@ -261,9 +261,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     self.webSocket          = nil;
     
     // Prevent any pending retries
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    
-    // TODO: Consider ensuring threads are done their work and sending a notification
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];    
 }
 
 - (void)reset:(SPBucket *)bucket completion:(SPNetworkInterfaceResetCompletion)completion {
