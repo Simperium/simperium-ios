@@ -137,9 +137,13 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // Shares an object with a particular user's email address (forthcoming).
 //- (void)shareObject:(SPManagedObject *)object withEmail:(NSString *)email;
 
-// Alternative to setting delegates on each individual bucket (if you want a single handler
-// for everything). If you need to, call this after starting Simperium.
+// Alternative to setting delegates on each individual bucket (if you want a single handler for everything).
+// If you need to, call this after starting Simperium.
 - (void)setAllBucketDelegates:(id<SPBucketDelegate>)aDelegate;
+
+// Alternative to toggling propertyMismatchFailsafeE on each individual bucket (if you want the same behavior everywhere).
+// When enabled, Simperium will capture any exceptions thrown while setting property values, and log the error.
+- (void)setAllBucketPropertyMismatchFailsafeEnabled:(BOOL)isEnabled;
 
 // Opens an authentication interface if necessary.
 - (BOOL)authenticateIfNecessary;
