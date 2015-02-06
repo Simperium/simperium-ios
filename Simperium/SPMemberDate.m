@@ -24,12 +24,14 @@
 }
 
 - (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
-    id value = [dict objectForKey: key];
-    if (!value)
+    id value = [dict objectForKey:key];
+    if (!value) {
         return nil;
+    }
     
-    if ([value isKindOfClass:[NSDate class]])
+    if ([value isKindOfClass:[NSDate class]]) {
         return value;
+    }
     
     // Convert from NSNumber to NSDate
     //NSInteger gmtOffset = [[NSTimeZone localTimeZone] secondsFromGMT];
@@ -37,7 +39,7 @@
 }
 
 - (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self dateValueFromNumber: value];
+    id convertedValue = [self dateValueFromNumber:value];
     [dict setValue:convertedValue forKey:key];
 }
 
