@@ -31,8 +31,10 @@
 }
 
 - (id)arrayFromJSONString:(id)value {
-    if ([value length] == 0)
+    if ([value length] == 0) {
         return [[self defaultValue] sp_objectFromJSONString];
+    }
+    
     return [value sp_objectFromJSONString];
 }
 
@@ -55,8 +57,9 @@
     NSAssert([a isKindOfClass:[NSArray class]] && [b isKindOfClass:[NSArray class]],
             @"Simperium error: couldn't diff list because their classes weren't NSArray");
     
-    if ([a isEqualToArray:b])
+    if ([a isEqualToArray:b]) {
         return [NSDictionary dictionary];
+    }
     
     // For the moment we can only create OP_LIST_DMP
     return @{ OP_OP: OP_LIST_DMP, OP_VALUE: [a sp_diffDeltaWithArray:b diffMatchPatch:self.diffMatchPatch] };
