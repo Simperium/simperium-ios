@@ -301,8 +301,14 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 }
 
 - (void)setAllBucketDelegates:(id)aDelegate {
-    for (SPBucket *bucket in [self.buckets allValues]) {
+    for (SPBucket *bucket in self.buckets.allValues) {
         bucket.delegate = aDelegate;
+    }
+}
+
+- (void)setAllBucketPropertyMismatchFailsafeEnabled:(BOOL)isEnabled {
+    for (SPBucket *bucket in self.buckets.allValues) {
+        bucket.propertyMismatchFailsafeEnabled = isEnabled;
     }
 }
 

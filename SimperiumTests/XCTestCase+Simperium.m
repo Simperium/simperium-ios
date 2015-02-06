@@ -21,4 +21,13 @@
 	} while (YES);
 }
 
+- (void)assertNoThrow:(void (^)())block {
+    @try {
+        block();
+    }
+    @catch (NSException *exception) {
+        XCTAssert(false, @"This shouldn't throw an exception");
+    }
+}
+
 @end

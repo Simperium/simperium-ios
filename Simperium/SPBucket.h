@@ -54,11 +54,15 @@ typedef NS_ENUM(NSUInteger, SPBucketChangeType) {
 
 @property (nonatomic, copy, readonly) NSString *remoteName;
 
-/// Assign this delegate to be notified when objects in this bucket change (see SPBucketDelegate above)
+// Assign this delegate to be notified when objects in this bucket change (see SPBucketDelegate above)
 @property (nonatomic, weak) id<SPBucketDelegate> delegate;
 
-/// Enable this to receive SPBucketDelegate notifications during indexing (disabled by default because it's slow)
+// Enable this to receive SPBucketDelegate notifications during indexing (disabled by default because it's slow)
 @property (nonatomic, assign) BOOL notifyWhileIndexing;
+
+// When enabled, Simperium will catch any exceptions thrown while setting property values, and log the error.
+// This may prove useful to prevent data type mismatch crashes.
+@property (nonatomic, assign) BOOL propertyMismatchFailsafeEnabled;
 
 
 /** The following are convenience methods for accessing, inserting and deleting objects. If you're using Core Data, you can instead just access your context directly and Simperium will identify any changes accordingly.
