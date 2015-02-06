@@ -19,6 +19,17 @@
 
 
 
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
+
+
+#pragma mark ====================================================================================
+#pragma mark SPManagedObject
+#pragma mark ====================================================================================
+
 @implementation SPManagedObject
 
 @synthesize ghost;
@@ -29,7 +40,7 @@
 
 - (void)simperiumSetValue:(id)value forKey:(NSString *)key {
     [self willChangeValueForKey:key];
-    [self setValue:value forKey:key];
+    [self safeSetValue:value forKey:key];
     [self didChangeValueForKey:key];
 }
 
@@ -126,7 +137,7 @@
             
             // This sets the actual instance data
             [self willChangeValueForKey:member.keyName];
-            [self setValue:data forKey:member.keyName];
+            [self safeSetValue:data forKey:[member keyName]];
             [self didChangeValueForKey:member.keyName];
         }
     }
@@ -175,6 +186,23 @@
 
 - (NSString *)namespacedSimperiumKey {
     return [NSString stringWithFormat:@"%@.%@", self.bucket.name, self.simperiumKey];
+}
+
+- (void)safeSetValue:(id)value forKey:(NSString*)key {
+    // Default Behavior
+    if (self.bucket.propertyMismatchFailsafeEnabled == false) {
+        [self setValue:value forKey:key];
+        return;
+    }
+    
+    // "Failsafe" opt-in behavior
+    @try {
+        [self setValue:value forKey:key];
+    }
+    @catch (NSException *exception) {
+        SPLogError(@"Simperium CRITICAL Error: Exception thrown while setting [%@] for entity of Kind [%@]",
+                   key, NSStringFromClass([self class]));
+    }
 }
 
 @end

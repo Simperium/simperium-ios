@@ -120,7 +120,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 - (void)stopChannels {
     for (SPWebSocketChannel *channel in [self.channels allValues]) {
-        channel.authenticated = NO;
+        [channel stop];
     }
 }
 
@@ -244,8 +244,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 - (void)stop:(SPBucket *)bucket {
     SPWebSocketChannel *channel = [self channelForName:bucket.name];
-    channel.authenticated       = NO;
-    channel.webSocketManager    = nil;
+    [channel stop];
     
     // Can't remove the channel because it's needed for offline changes; this is weird and should be fixed
     //[channels removeObjectForKey:bucket.name];
@@ -262,8 +261,6 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     
     // Prevent any pending retries
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    
-    // TODO: Consider ensuring threads are done their work and sending a notification
 }
 
 - (void)reset:(SPBucket *)bucket completion:(SPNetworkInterfaceResetCompletion)completion {
@@ -284,6 +281,15 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     }
     [self.webSocket send:message];
     [self resetHeartbeatTimer];
+}
+
+- (void)reopen {
+    // Note:
+    // WebSocket's didClose handler will take care of reopening the socket.
+    SPLogVerbose(@"Simperium (%@) Reo-Opening WebSocket Interface", self.simperium.label);
+    
+    [self stopChannels];
+    [self.webSocket close];
 }
 
 
@@ -308,7 +314,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 
 - (void)handleRemoteLogLevel:(SPRemoteLogging)level {
     
-    SPLogVerbose(@"Simperium (%@) Received Remote LogLevel %d", self.simperium.label, level);
+    SPLogInfo(@"Simperium (%@) Received Remote LogLevel %d", self.simperium.label, level);
     
     self.simperium.remoteLoggingEnabled  = (level != SPRemoteLoggingOff);
     self.simperium.verboseLoggingEnabled = (level == SPRemoteLoggingVerbose);
@@ -320,7 +326,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 - (void)webSocketDidOpen:(SPWebSocket *)theWebSocket {
     
     // Reconnection failsafe
-    if ( theWebSocket != self.webSocket) {
+    if (theWebSocket != self.webSocket) {
         return;
     }
     
@@ -351,7 +357,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     NSArray *components = [message sp_componentsSeparatedByString:@":" limit:SPMessageIndexLast];
     
     // Shortest messages have the form: [CHANNEL:COMMAND]
-    if ( components.count < (SPMessageIndexCommand + 1) ) {
+    if (components.count < (SPMessageIndexCommand + 1)) {
         SPLogError(@"Simperium websocket received invalid message: %@", message);
         return;
     }

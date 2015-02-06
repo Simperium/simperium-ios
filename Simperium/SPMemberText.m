@@ -9,13 +9,29 @@
 #import "SPMemberText.h"
 #import "DiffMatchPatch.h"
 #import "DiffMatchPatch+Simperium.h"
+#import "SPLogger.h"
 
 
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
+
+
+#pragma mark ====================================================================================
+#pragma mark Private Properties
+#pragma mark ====================================================================================
 
 @interface SPMemberText ()
 @property (nonatomic, strong) DiffMatchPatch *dmp;
 @end
 
+
+#pragma mark ====================================================================================
+#pragma mark SPMemberText
+#pragma mark ====================================================================================
 
 @implementation SPMemberText
 
@@ -34,11 +50,17 @@
 }
 
 - (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
-    NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
-            @"Simperium error: couldn't diff strings because their classes weren't NSString");
     
-    // Use DiffMatchPatch to find the diff
-    // Use some logic from MobWrite to clean stuff up
+    // Failsafe: In Release Builds, let's return an empty diff if the input is invalid
+    NSString *mismatchMessage = @"Simperium error: couldn't diff strings because their classes weren't NSString";
+    NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]], mismatchMessage);
+    
+    if (![thisValue isKindOfClass:[NSString class]] || ![otherValue isKindOfClass:[NSString class]]) {
+        SPLogError(mismatchMessage);
+        return @{ };
+    }
+    
+    // DiffMatchPatch: find the diff, and let's use some logic from MobWrite to clean stuff up
     NSMutableArray *diffList = [self.dmp diff_mainOfOldString:thisValue andNewString:otherValue];
     if (diffList.count > 2) {
         [self.dmp diff_cleanupSemantic:diffList];

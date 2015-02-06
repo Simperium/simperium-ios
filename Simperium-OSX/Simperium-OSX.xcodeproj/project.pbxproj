@@ -192,6 +192,7 @@
 		B5E8114C1994060D002C5546 /* SPRelationship.h in Headers */ = {isa = PBXBuildFile; fileRef = B5E811491994060D002C5546 /* SPRelationship.h */; };
 		B5E8114D1994060D002C5546 /* SPRelationship.m in Sources */ = {isa = PBXBuildFile; fileRef = B5E8114A1994060D002C5546 /* SPRelationship.m */; };
 		B5E8114E1994060D002C5546 /* SPRelationshipResolver+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5E8114B1994060D002C5546 /* SPRelationshipResolver+Internals.h */; };
+		B5F3C60F1A850A91000CE940 /* SPManagedObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F3C60E1A850A91000CE940 /* SPManagedObjectTests.m */; };
 		B5F43C30194F56D300495590 /* SPProcessorConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F43C2E194F56D300495590 /* SPProcessorConstants.h */; };
 		B5F43C31194F56D300495590 /* SPProcessorConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F43C2F194F56D300495590 /* SPProcessorConstants.m */; };
 		B5F43C33194F578E00495590 /* SPChangeProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F43C32194F578E00495590 /* SPChangeProcessorTests.m */; };
@@ -408,6 +409,7 @@
 		B5E811491994060D002C5546 /* SPRelationship.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPRelationship.h; path = ../../Simperium/SPRelationship.h; sourceTree = "<group>"; };
 		B5E8114A1994060D002C5546 /* SPRelationship.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPRelationship.m; path = ../../Simperium/SPRelationship.m; sourceTree = "<group>"; };
 		B5E8114B1994060D002C5546 /* SPRelationshipResolver+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SPRelationshipResolver+Internals.h"; path = "../../Simperium/SPRelationshipResolver+Internals.h"; sourceTree = "<group>"; };
+		B5F3C60E1A850A91000CE940 /* SPManagedObjectTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPManagedObjectTests.m; path = ../../SimperiumTests/SPManagedObjectTests.m; sourceTree = "<group>"; };
 		B5F43C2E194F56D300495590 /* SPProcessorConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPProcessorConstants.h; path = ../../Simperium/SPProcessorConstants.h; sourceTree = "<group>"; };
 		B5F43C2F194F56D300495590 /* SPProcessorConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPProcessorConstants.m; path = ../../Simperium/SPProcessorConstants.m; sourceTree = "<group>"; };
 		B5F43C32194F578E00495590 /* SPChangeProcessorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPChangeProcessorTests.m; path = ../../SimperiumTests/SPChangeProcessorTests.m; sourceTree = "<group>"; };
@@ -772,6 +774,7 @@
 		B5D581E21835660000B08996 /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				B5F3C60E1A850A91000CE940 /* SPManagedObjectTests.m */,
 				B59D9F121A1A49BB00941154 /* SPIndexProcessorTests.m */,
 				B5F43C32194F578E00495590 /* SPChangeProcessorTests.m */,
 				B58EC3201885B74100ED37E5 /* SPPersistentMutableDictionaryTests.m */,
@@ -1082,6 +1085,7 @@
 				B56B16531835682500E45C98 /* Test1.xcdatamodeld in Sources */,
 				B5D581D0183565C500B08996 /* XCTestCase+Simperium.m in Sources */,
 				B5D581DA183565E300B08996 /* MockWebSocketInterface.m in Sources */,
+				B5F3C60F1A850A91000CE940 /* SPManagedObjectTests.m in Sources */,
 				B5D581D9183565E300B08996 /* MockWebSocketChannel.m in Sources */,
 				B5F43C33194F578E00495590 /* SPChangeProcessorTests.m in Sources */,
 				B59D9F1B1A1A4A0900941154 /* NSStringSimperiumTest.m in Sources */,

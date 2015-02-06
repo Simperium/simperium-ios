@@ -7,6 +7,20 @@
 //
 
 #import "SPMemberDate.h"
+#import "SPLogger.h"
+
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
+
+
+#pragma mark ====================================================================================
+#pragma mark SPMemberDate
+#pragma mark ====================================================================================
 
 @implementation SPMemberDate
 
@@ -24,12 +38,14 @@
 }
 
 - (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
-    id value = [dict objectForKey: key];
-    if (!value)
+    id value = [dict objectForKey:key];
+    if (!value) {
         return nil;
+    }
     
-    if ([value isKindOfClass:[NSDate class]])
+    if ([value isKindOfClass:[NSDate class]]) {
         return value;
+    }
     
     // Convert from NSNumber to NSDate
     //NSInteger gmtOffset = [[NSTimeZone localTimeZone] secondsFromGMT];
@@ -37,20 +53,28 @@
 }
 
 - (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
-    id convertedValue = [self dateValueFromNumber: value];
+    id convertedValue = [self dateValueFromNumber:value];
     [dict setValue:convertedValue forKey:key];
 }
 
 - (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
-    NSAssert([thisValue isKindOfClass:[NSDate class]] && [otherValue isKindOfClass:[NSDate class]],
-            @"Simperium error: couldn't diff dates because their classes weren't NSDate");
+    
+    // Failsafe: In Release Builds, let's return an empty diff if the input is invalid
+    NSString *mismatchMessage = @"Simperium error: couldn't diff dates because their classes weren't NSDate";
+    NSAssert([thisValue isKindOfClass:[NSDate class]] && [otherValue isKindOfClass:[NSDate class]], mismatchMessage);
+    
+    if (![thisValue isKindOfClass:[NSDate class]] || ![otherValue isKindOfClass:[NSDate class]]) {
+        SPLogError(mismatchMessage);
+        return @{ };
+    }
     
     // Reduce granularity of timing for now due to rounding errors
     NSTimeInterval delta = [thisValue timeIntervalSinceDate:otherValue];
     
-    if (delta > -0.1 && delta < 0.1)
+    if (delta > -0.1 && delta < 0.1) {
         // effectively equal (no difference)
-        return [NSDictionary dictionary];
+        return @{ };
+    }
     
     // Construct the diff in the expected format
     return [NSDictionary dictionaryWithObjectsAndKeys:

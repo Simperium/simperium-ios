@@ -18,6 +18,7 @@
 @property (nonatomic, strong,  readonly) NSManagedObjectContext         *mainManagedObjectContext;
 @property (nonatomic, strong,  readonly) NSManagedObjectModel           *managedObjectModel;
 @property (nonatomic, strong,  readonly) NSPersistentStoreCoordinator   *persistentStoreCoordinator;
+@property (nonatomic, assign, readwrite) BOOL                           delaysNewObjectsInitialization;
 @property (nonatomic, weak,   readwrite) id<SPStorageObserver>          delegate;
 
 extern char* const SPCoreDataBucketListKey;

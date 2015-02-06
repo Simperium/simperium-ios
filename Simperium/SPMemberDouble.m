@@ -7,6 +7,20 @@
 //
 
 #import "SPMemberDouble.h"
+#import "SPLogger.h"
+
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
+
+
+#pragma mark ====================================================================================
+#pragma mark SPMemberDouble
+#pragma mark ====================================================================================
 
 @implementation SPMemberDouble
 
@@ -15,8 +29,15 @@
 }
 
 - (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
-    NSAssert([thisValue isKindOfClass:[NSNumber class]] && [otherValue isKindOfClass:[NSNumber class]],
-            @"Simperium error: couldn't diff doubles because their classes weren't NSNumber");
+    
+    // Failsafe: In Release Builds, let's return an empty diff if the input is invalid
+    NSString *mismatchMessage = @"Simperium error: couldn't diff doubles because their classes weren't NSNumber";
+    NSAssert([thisValue isKindOfClass:[NSNumber class]] && [otherValue isKindOfClass:[NSNumber class]], mismatchMessage);
+    
+    if (![thisValue isKindOfClass:[NSNumber class]] || ![otherValue isKindOfClass:[NSNumber class]]) {
+        SPLogError(mismatchMessage);
+        return @{ };
+    }
     
     // Allow for floating point rounding variance
     double delta = [thisValue doubleValue] - [otherValue doubleValue];

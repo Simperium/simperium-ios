@@ -137,9 +137,13 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // Shares an object with a particular user's email address (forthcoming).
 //- (void)shareObject:(SPManagedObject *)object withEmail:(NSString *)email;
 
-// Alternative to setting delegates on each individual bucket (if you want a single handler
-// for everything). If you need to, call this after starting Simperium.
+// Alternative to setting delegates on each individual bucket (if you want a single handler for everything).
+// If you need to, call this after starting Simperium.
 - (void)setAllBucketDelegates:(id<SPBucketDelegate>)aDelegate;
+
+// Alternative to toggling propertyMismatchFailsafeE on each individual bucket (if you want the same behavior everywhere).
+// When enabled, Simperium will capture any exceptions thrown while setting property values, and log the error.
+- (void)setAllBucketPropertyMismatchFailsafeEnabled:(BOOL)isEnabled;
 
 // Opens an authentication interface if necessary.
 - (BOOL)authenticateIfNecessary;
@@ -158,6 +162,9 @@ typedef void (^SimperiumSignoutCompletion)(void);
 
 // Enables or disables the network.
 @property (nonatomic, readwrite, assign) BOOL networkEnabled;
+
+// Delays Inserted Objects initialization until the MOC is saved. Useful for importing data while preventing duplicates.
+@property (nonatomic, readwrite, assign) BOOL delaysNewObjectsInitialization;
 
 // Enables or disables full database validation: objects with missing simperiumKey or ghost will be initialized.
 // By default this is enabled, and should be ran at least once after implementing Simperium on legacy databases.

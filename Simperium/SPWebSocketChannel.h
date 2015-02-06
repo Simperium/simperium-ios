@@ -52,6 +52,7 @@
 
 // Initialization
 - (void)startProcessingChangesForBucket:(SPBucket *)bucket;
+- (void)stop;
 
 + (instancetype)channelWithSimperium:(Simperium *)s;
 
