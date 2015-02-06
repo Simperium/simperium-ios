@@ -50,9 +50,10 @@
     // Reduce granularity of timing for now due to rounding errors
     NSTimeInterval delta = [thisValue timeIntervalSinceDate:otherValue];
     
-    if (delta > -0.1 && delta < 0.1)
+    if (delta > -0.1 && delta < 0.1) {
         // effectively equal (no difference)
         return [NSDictionary dictionary];
+    }
     
     // Construct the diff in the expected format
     return [NSDictionary dictionaryWithObjectsAndKeys:
