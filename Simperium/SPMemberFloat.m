@@ -22,8 +22,9 @@
     double delta = [thisValue floatValue] - [otherValue floatValue];
     BOOL equal = (delta >= 0 && delta < 0.00001) || (delta < 0 && delta > -0.00001);
     
-    if (equal)
+    if (equal) {
         return [NSDictionary dictionary];
+    }
     
     // Construct the diff in the expected format
     return [NSDictionary dictionaryWithObjectsAndKeys:
