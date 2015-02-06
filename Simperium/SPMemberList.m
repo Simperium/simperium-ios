@@ -10,10 +10,29 @@
 #import "JSONKit+Simperium.h"
 #import "DiffMatchPatch.h"
 #import "NSArray+Simperium.h"
+#import "SPLogger.h"
+
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
+
+
+#pragma mark ====================================================================================
+#pragma mark Private
+#pragma mark ====================================================================================
 
 @interface SPMemberList ()
 @property (nonatomic, strong, readonly) DiffMatchPatch *diffMatchPatch;
 @end
+
+
+#pragma mark ====================================================================================
+#pragma mark SPMemberList
+#pragma mark ====================================================================================
 
 @implementation SPMemberList
 @synthesize diffMatchPatch = _diffMatchPatch;
@@ -54,11 +73,18 @@
 }
 
 - (NSDictionary *)diff:(NSArray *)a otherValue:(NSArray *)b {
-    NSAssert([a isKindOfClass:[NSArray class]] && [b isKindOfClass:[NSArray class]],
-            @"Simperium error: couldn't diff list because their classes weren't NSArray");
+    
+    // Failsafe: In Release Builds, let's return an empty diff if the input is invalid
+    NSString *mismatchMessage = @"Simperium error: couldn't diff list because their classes weren't NSArray";
+    NSAssert([a isKindOfClass:[NSArray class]] && [b isKindOfClass:[NSArray class]], mismatchMessage);
+    
+    if (![a isKindOfClass:[NSArray class]] || ![b isKindOfClass:[NSArray class]]) {
+        SPLogError(mismatchMessage);
+        return @{ };
+    }
     
     if ([a isEqualToArray:b]) {
-        return [NSDictionary dictionary];
+        return @{ };
     }
     
     // For the moment we can only create OP_LIST_DMP

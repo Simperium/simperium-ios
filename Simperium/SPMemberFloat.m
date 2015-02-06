@@ -7,6 +7,20 @@
 //
 
 #import "SPMemberFloat.h"
+#import "SPLogger.h"
+
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
+
+
+#pragma mark ====================================================================================
+#pragma mark SPMemberFloat
+#pragma mark ====================================================================================
 
 @implementation SPMemberFloat
 
@@ -15,15 +29,22 @@
 }
 
 - (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
-    NSAssert([thisValue isKindOfClass:[NSNumber class]] && [otherValue isKindOfClass:[NSNumber class]],
-            @"Simperium error: couldn't diff floats because their classes weren't NSNumber");
+    
+    // Failsafe: In Release Builds, let's return an empty diff if the input is invalid
+    NSString *mismatchMessage = @"Simperium error: couldn't diff floats because their classes weren't NSNumber";
+    NSAssert([thisValue isKindOfClass:[NSNumber class]] && [otherValue isKindOfClass:[NSNumber class]], mismatchMessage);
+    
+    if (![thisValue isKindOfClass:[NSNumber class]] || ![otherValue isKindOfClass:[NSNumber class]]) {
+        SPLogError(mismatchMessage);
+        return @{ };
+    }
     
     // Allow for floating point rounding variance
     double delta = [thisValue floatValue] - [otherValue floatValue];
     BOOL equal = (delta >= 0 && delta < 0.00001) || (delta < 0 && delta > -0.00001);
     
     if (equal) {
-        return [NSDictionary dictionary];
+        return @{ };
     }
     
     // Construct the diff in the expected format

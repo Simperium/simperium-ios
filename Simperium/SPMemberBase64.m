@@ -68,8 +68,8 @@
 
 - (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
     
-    if ([thisValue isEqual: otherValue]) {
-        return [NSDictionary dictionary];
+    if ([thisValue isEqual:otherValue]) {
+        return @{ };
     }
     
     // Some binary data, like UIImages, won't detect equality with isEqual:
@@ -78,7 +78,7 @@
     NSString *thisStr   = [self stringValueFromTransformable:thisValue];
     NSString *otherStr  = [self stringValueFromTransformable:otherValue];
     if ([thisStr compare:otherStr] == NSOrderedSame) {
-        return [NSDictionary dictionary];
+        return @{ };
     }
     
     // Construct the diff in the expected format

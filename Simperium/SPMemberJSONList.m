@@ -8,6 +8,20 @@
 
 #import "SPMemberJSONList.h"
 #import "JSONKit+Simperium.h"
+#import "SPLogger.h"
+
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
+
+
+#pragma mark ====================================================================================
+#pragma mark SPMemberJSONList
+#pragma mark ====================================================================================
 
 @implementation SPMemberJSONList
 
@@ -33,13 +47,20 @@
 }
 
 - (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
-    NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]],
-            @"Simperium error: couldn't diff JSON lists because their classes weren't NSString");
+    
+    // Failsafe: In Release Builds, let's return an empty diff if the input is invalid
+    NSString *mismatchMessage = @"Simperium error: couldn't diff JSON lists because their classes weren't NSString";
+    NSAssert([thisValue isKindOfClass:[NSString class]] && [otherValue isKindOfClass:[NSString class]], mismatchMessage);
+    
+    if (![thisValue isKindOfClass:[NSString class]] || ![otherValue isKindOfClass:[NSString class]]) {
+        SPLogError(mismatchMessage);
+        return @{ };
+    }
     
     // TODO: proper list diff; for now just replace
     
     if ([thisValue isEqualToString: otherValue]) {
-        return [NSDictionary dictionary];
+        return @{ };
     }
     
     // Construct the diff in the expected format

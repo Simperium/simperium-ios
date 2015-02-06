@@ -7,6 +7,20 @@
 //
 
 #import "SPMemberDate.h"
+#import "SPLogger.h"
+
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
+
+
+#pragma mark ====================================================================================
+#pragma mark SPMemberDate
+#pragma mark ====================================================================================
 
 @implementation SPMemberDate
 
@@ -44,15 +58,22 @@
 }
 
 - (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
-    NSAssert([thisValue isKindOfClass:[NSDate class]] && [otherValue isKindOfClass:[NSDate class]],
-            @"Simperium error: couldn't diff dates because their classes weren't NSDate");
+    
+    // Failsafe: In Release Builds, let's return an empty diff if the input is invalid
+    NSString *mismatchMessage = @"Simperium error: couldn't diff dates because their classes weren't NSDate";
+    NSAssert([thisValue isKindOfClass:[NSDate class]] && [otherValue isKindOfClass:[NSDate class]], mismatchMessage);
+    
+    if (![thisValue isKindOfClass:[NSDate class]] || ![otherValue isKindOfClass:[NSDate class]]) {
+        SPLogError(mismatchMessage);
+        return @{ };
+    }
     
     // Reduce granularity of timing for now due to rounding errors
     NSTimeInterval delta = [thisValue timeIntervalSinceDate:otherValue];
     
     if (delta > -0.1 && delta < 0.1) {
         // effectively equal (no difference)
-        return [NSDictionary dictionary];
+        return @{ };
     }
     
     // Construct the diff in the expected format
