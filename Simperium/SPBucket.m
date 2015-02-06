@@ -24,6 +24,10 @@
 
 @synthesize lastChangeSignature = _lastChangeSignature;
 
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (instancetype)initWithSchema:(SPSchema *)aSchema
                        storage:(id<SPStorageProvider>)aStorage
               networkInterface:(id<SPNetworkInterface>)netInterface
@@ -34,26 +38,26 @@
 {
     self = [super init];
     if (self) {
-        self.name = aSchema.bucketName;
-        self.remoteName = remoteName;
-        self.storage = aStorage;
-        self.network = netInterface;
-        self.relationshipResolver = resolver;
-
-        SPDiffer *aDiffer = [[SPDiffer alloc] initWithSchema:aSchema];
-        self.differ = aDiffer;
+        _name                               = aSchema.bucketName;
+        _remoteName                         = remoteName;
+        _storage                            = aStorage;
+        _network                            = netInterface;
+        _relationshipResolver               = resolver;
+        
+        SPDiffer *aDiffer                   = [[SPDiffer alloc] initWithSchema:aSchema];
+        _differ                             = aDiffer;
 
         // Label is used to support multiple simperium instances (e.g. unit testing)
-        self.instanceLabel = [NSString stringWithFormat:@"%@%@", self.name, label];
+        _instanceLabel                      = [NSString stringWithFormat:@"%@%@", self.name, label];
 
-        SPChangeProcessor *cp = [[SPChangeProcessor alloc] initWithLabel:self.instanceLabel clientID:clientID];
-        self.changeProcessor = cp;
+        SPChangeProcessor *cp               = [[SPChangeProcessor alloc] initWithLabel:self.instanceLabel clientID:clientID];
+        _changeProcessor                    = cp;
 
-        SPIndexProcessor *ip = [[SPIndexProcessor alloc] init];
-        self.indexProcessor = ip;
+        SPIndexProcessor *ip                = [[SPIndexProcessor alloc] init];
+        _indexProcessor                     = ip;
 
-        NSString *queueLabel = [@"com.simperium.processor." stringByAppendingString:self.name];
-        self.processorQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
+        NSString *queueLabel                = [@"com.simperium.processor." stringByAppendingString:self.name];
+        _processorQueue                     = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
 
         NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
         
@@ -66,10 +70,6 @@
     }
     
     return self;
-}
-
-- (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (id)objectForKey:(NSString *)simperiumKey {
@@ -174,6 +174,7 @@
     [[NSUserDefaults standardUserDefaults] setObject:_lastChangeSignature forKey: sigKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
+
 
 #pragma mark Notifications
 
