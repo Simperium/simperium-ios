@@ -10,4 +10,5 @@
 
 @interface XCTestCase (Simperium)
 - (void)waitFor:(NSTimeInterval)seconds;
+- (void)assertNoThrow:(void (^)())block;
 @end
