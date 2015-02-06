@@ -16,8 +16,9 @@
 }
 
 - (id)stringValueFromArray:(id)value {
-    if ([value length] == 0)
+    if ([value length] == 0) {
         return [[self defaultValue] sp_objectFromJSONString];
+    }
     return [value sp_objectFromJSONString];
 }
 
@@ -37,8 +38,9 @@
     
     // TODO: proper list diff; for now just replace
     
-    if ([thisValue isEqualToString: otherValue])
+    if ([thisValue isEqualToString: otherValue]) {
         return [NSDictionary dictionary];
+    }
     
     // Construct the diff in the expected format
     return [NSDictionary dictionaryWithObjectsAndKeys:
