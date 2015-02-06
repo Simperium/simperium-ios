@@ -19,6 +19,17 @@
 
 
 
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static SPLogLevels logLevel = SPLogLevelsInfo;
+
+
+#pragma mark ====================================================================================
+#pragma mark SPManagedObject
+#pragma mark ====================================================================================
+
 @implementation SPManagedObject
 
 @synthesize ghost;
@@ -178,20 +189,20 @@
 }
 
 - (void)safeSetValue:(id)value forKey:(NSString*)key {
-    NSDictionary *attributes = [[self entity] attributesByName];
-    NSAttributeType attributeType = [[attributes objectForKey:key] attributeType];
-    
-    if ((attributeType == NSStringAttributeType) && ([value isKindOfClass:[NSNumber class]])) {
-        value = [value stringValue];
-    }
-    else if (((attributeType == NSInteger16AttributeType) || (attributeType == NSInteger32AttributeType) || (attributeType == NSInteger64AttributeType) || (attributeType == NSBooleanAttributeType)) && ([value isKindOfClass:[NSString class]])) {
-        value = [NSNumber numberWithInteger:[value integerValue]];
-    }
-    else if (((attributeType == NSFloatAttributeType) || (attributeType == NSDoubleAttributeType) || (attributeType == NSDecimalAttributeType)) &&  ([value isKindOfClass:[NSString class]])) {
-        value = [NSNumber numberWithDouble:[value doubleValue]];
+    // Default Behavior
+    if (self.bucket.propertyMismatchFailsafeEnabled == false) {
+        [self setValue:value forKey:key];
+        return;
     }
     
-    [self setValue:value forKey:key];
+    // "Failsafe" opt-in behavior
+    @try {
+        [self setValue:value forKey:key];
+    }
+    @catch (NSException *exception) {
+        SPLogError(@"Simperium CRITICAL Error: Exception thrown while setting [%@] for entity of Kind [%@]",
+                   key, NSStringFromClass([self class]));
+    }
 }
 
 @end
