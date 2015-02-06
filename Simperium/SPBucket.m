@@ -43,6 +43,7 @@
         _storage                            = aStorage;
         _network                            = netInterface;
         _relationshipResolver               = resolver;
+        _propertyMismatchFailsafeEnabled    = false;
         
         SPDiffer *aDiffer                   = [[SPDiffer alloc] initWithSchema:aSchema];
         _differ                             = aDiffer;
