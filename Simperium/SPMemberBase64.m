@@ -17,8 +17,9 @@
 }
 
 - (NSString *)stringValueFromTransformable:(id)value {
-    if (value == nil)
+    if (value == nil) {
         return @"";
+    }
     
     // Convert from a Transformable class to a base64 string
     NSData *data = (self.valueTransformerName ?
@@ -26,7 +27,7 @@
                     [NSKeyedArchiver archivedDataWithRootObject:value]);
     
     NSString *base64 = [NSString sp_encodeBase64WithData:data];
-    //NSLog(@"Simperium transformed base64 (%@) %@ to %@", keyName, value, base64);
+
     return base64;
 }
 
@@ -67,16 +68,18 @@
 
 - (NSDictionary *)diff:(id)thisValue otherValue:(id)otherValue {
     
-    if ([thisValue isEqual: otherValue])
+    if ([thisValue isEqual: otherValue]) {
         return [NSDictionary dictionary];
+    }
     
     // Some binary data, like UIImages, won't detect equality with isEqual:
     // Therefore, compare base64 instead; this can be very slow
     // TODO: think of better ways to handle this
-    NSString *thisStr = [self stringValueFromTransformable:thisValue];
-    NSString *otherStr = [self stringValueFromTransformable:otherValue];
-    if ([thisStr compare:otherStr] == NSOrderedSame)
+    NSString *thisStr   = [self stringValueFromTransformable:thisValue];
+    NSString *otherStr  = [self stringValueFromTransformable:otherValue];
+    if ([thisStr compare:otherStr] == NSOrderedSame) {
         return [NSDictionary dictionary];
+    }
     
     // Construct the diff in the expected format
     return [NSDictionary dictionaryWithObjectsAndKeys:
