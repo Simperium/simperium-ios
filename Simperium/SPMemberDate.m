@@ -53,6 +53,10 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 }
 
 - (void)setValue:(id)value forKey:(NSString *)key inDictionary:(NSMutableDictionary *)dict {
+    if (value == nil) {
+        return;
+    }
+    
     id convertedValue = [self dateValueFromNumber:value];
     [dict setValue:convertedValue forKey:key];
 }
