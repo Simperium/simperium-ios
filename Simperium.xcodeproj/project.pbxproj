@@ -163,6 +163,8 @@
 		46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */; };
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
+		79343B041A28552B006715C2 /* SPForgotPWViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 79343B021A28552B006715C2 /* SPForgotPWViewController.h */; };
+		79343B051A28552B006715C2 /* SPForgotPWViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 79343B031A28552B006715C2 /* SPForgotPWViewController.m */; };
 		797D26FE19F1B72700DEF569 /* SSKeychain.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FA19F1B72700DEF569 /* SSKeychain.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		797D26FF19F1B72700DEF569 /* SSKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 797D26FB19F1B72700DEF569 /* SSKeychain.m */; };
 		797D270019F1B72700DEF569 /* SSKeychainQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FC19F1B72700DEF569 /* SSKeychainQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -412,6 +414,8 @@
 		46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumComplexTests.m; sourceTree = "<group>"; };
 		46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumAuxiliaryTests.m; sourceTree = "<group>"; };
 		46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumErrorTests.m; sourceTree = "<group>"; };
+		79343B021A28552B006715C2 /* SPForgotPWViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPForgotPWViewController.h; sourceTree = "<group>"; };
+		79343B031A28552B006715C2 /* SPForgotPWViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPForgotPWViewController.m; sourceTree = "<group>"; };
 		797D26FA19F1B72700DEF569 /* SSKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSKeychain.h; sourceTree = "<group>"; };
 		797D26FB19F1B72700DEF569 /* SSKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSKeychain.m; sourceTree = "<group>"; };
 		797D26FC19F1B72700DEF569 /* SSKeychainQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSKeychainQuery.h; sourceTree = "<group>"; };
@@ -865,6 +869,8 @@
 				466EB41317BC45F5005F7599 /* SPAuthenticationValidator.m */,
 				E265DBCE17CD3E0A00070550 /* SPTOSViewController.h */,
 				E265DBCF17CD3E0A00070550 /* SPTOSViewController.m */,
+				79343B021A28552B006715C2 /* SPForgotPWViewController.h */,
+				79343B031A28552B006715C2 /* SPForgotPWViewController.m */,
 			);
 			name = Authentication;
 			sourceTree = "<group>";
@@ -1007,6 +1013,7 @@
 				264CD942135DFE6D00C51BAD /* SPGhost.h in Headers */,
 				264CD944135DFE6D00C51BAD /* SPMember.h in Headers */,
 				264CD996135DFE7E00C51BAD /* DiffMatchPatch.h in Headers */,
+				79343B041A28552B006715C2 /* SPForgotPWViewController.h in Headers */,
 				264CD999135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.h in Headers */,
 				264CD99A135DFE7E00C51BAD /* MinMaxMacros.h in Headers */,
 				264CD99B135DFE7E00C51BAD /* NSMutableDictionary+DMPExtensions.h in Headers */,
@@ -1294,6 +1301,7 @@
 				267CE8FF156C0FD20028801C /* SPBucket.m in Sources */,
 				24A73F5717E250E0000CA275 /* SPPersistentMutableDictionary.m in Sources */,
 				267CE902156C0FD20028801C /* SPDiffer.m in Sources */,
+				79343B051A28552B006715C2 /* SPForgotPWViewController.m in Sources */,
 				267CE904156C0FD20028801C /* SPJSONStorage.m in Sources */,
 				797D26FF19F1B72700DEF569 /* SSKeychain.m in Sources */,
 				267CE906156C0FD20028801C /* SPObject.m in Sources */,

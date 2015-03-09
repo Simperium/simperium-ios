@@ -15,6 +15,7 @@
 #import "SPAuthenticationConfiguration.h"
 #import "SPAuthenticationValidator.h"
 #import "SPTOSViewController.h"
+#import "SPForgotPWViewController.h"
 
 
 
@@ -42,6 +43,7 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 @property (nonatomic, strong) SPAuthenticationButton    *actionButton;
 @property (nonatomic, strong) SPAuthenticationButton    *changeButton;
 @property (nonatomic, strong) UIButton                  *termsButton;
+@property (nonatomic, strong) UIButton					*forgotPasswordButton;
 
 @property (nonatomic, strong) UITextField               *usernameField;
 @property (nonatomic, strong) UITextField               *passwordField;
@@ -97,6 +99,7 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     self.changeButton.detailTitleLabel.text = changeDetailTitle.uppercaseString;
 
     self.termsButton.hidden = _signingIn;
+    self.forgotPasswordButton.hidden = !_signingIn;
 }
 
 - (void)viewDidLoad {
@@ -157,7 +160,24 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     _termsButton.titleLabel.font = [UIFont fontWithName:configuration.mediumFontName size:10.0];
     _termsButton.frame = CGRectMake(10.0, 0.0, self.tableView.frame.size.width-20.0, 24.0);
     _termsButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [_termsButton setAttributedTitle:termsTitle forState:UIControlStateNormal];;
+    [_termsButton setAttributedTitle:termsTitle forState:UIControlStateNormal];
+    
+    // Forgot Password String
+	NSDictionary *forgotPasswordAttributes = @{
+        NSForegroundColorAttributeName: [greyColor colorWithAlphaComponent:0.4]
+    };
+	
+	NSString *forgotPasswordText = NSLocalizedString(@"Forgot password? »", @"Forgot password Button Text");
+    NSMutableAttributedString *forgotPasswordTitle = [[NSMutableAttributedString alloc] initWithString:[forgotPasswordText uppercaseString] attributes:forgotPasswordAttributes];
+	
+	// Forgot Password Button
+    self.forgotPasswordButton = [UIButton buttonWithType:UIButtonTypeCustom];
+	[_forgotPasswordButton addTarget:self action:@selector(forgotPasswordAction:) forControlEvents:UIControlEventTouchUpInside];
+    _forgotPasswordButton.titleEdgeInsets = UIEdgeInsetsMake(3, 0, 0, 0);
+    _forgotPasswordButton.titleLabel.font = [UIFont fontWithName:configuration.mediumFontName size:10.0];
+    _forgotPasswordButton.frame = CGRectMake(10.0, 0.0, self.tableView.frame.size.width-20.0, 24.0);
+	_forgotPasswordButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [_forgotPasswordButton setAttributedTitle:forgotPasswordTitle forState:UIControlStateNormal];
     
     // Action
     self.actionButton = [[SPAuthenticationButton alloc] initWithFrame:CGRectMake(0, 30.0, self.view.frame.size.width, 44)];
@@ -196,7 +216,12 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.changeButton.frame.size.height + self.changeButton.frame.origin.y)];
     footerView.contentMode = UIViewContentModeTopLeft;
     [footerView setUserInteractionEnabled:YES];
-    [footerView addSubview:_termsButton];
+    if ([[SPAuthenticationConfiguration sharedInstance] showTOSButton]) {
+        [footerView addSubview:_termsButton];
+    }
+    if ([[SPAuthenticationConfiguration sharedInstance] showForgotPasswordButton]) {
+        [footerView addSubview:_forgotPasswordButton];
+    }
     [footerView addSubview:_actionButton];
     [footerView addSubview:_changeButton];
     footerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -514,6 +539,18 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     SPTOSViewController *vc = [[SPTOSViewController alloc] init];
     UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:vc];
     
+    if (self.navigationController) {
+        [self.navigationController presentViewController:navController animated:YES completion:nil];
+    } else {
+        [self presentViewController:navController animated:YES completion:nil];
+    }
+}
+
+- (void)forgotPasswordAction:(id)sender {
+   
+   SPForgotPWViewController *vc = [[SPForgotPWViewController alloc] init];
+   UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:vc];
+   
     if (self.navigationController) {
         [self.navigationController presentViewController:navController animated:YES completion:nil];
     } else {
