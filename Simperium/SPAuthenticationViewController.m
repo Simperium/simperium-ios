@@ -37,15 +37,19 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 
 @interface SPAuthenticationViewController() <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate>
 
-@property (nonatomic, strong) SPAuthenticationValidator *validator;
-
-@property (nonatomic, strong) SPAuthenticationButton    *actionButton;
-@property (nonatomic, strong) SPAuthenticationButton    *changeButton;
-@property (nonatomic, strong) UIButton                  *termsButton;
+#pragma mark - Public Properties
+@property (nonatomic, strong) UITableView               *tableView;
+@property (nonatomic, strong) UIImageView               *logoView;
 
 @property (nonatomic, strong) UITextField               *usernameField;
 @property (nonatomic, strong) UITextField               *passwordField;
 @property (nonatomic, strong) UITextField               *passwordConfirmField;
+
+#pragma mark - Private Properties
+@property (nonatomic, strong) SPAuthenticationValidator *validator;
+@property (nonatomic, strong) SPAuthenticationButton    *actionButton;
+@property (nonatomic, strong) SPAuthenticationButton    *changeButton;
+@property (nonatomic, strong) UIButton                  *termsButton;
 
 @property (nonatomic, strong) UIBarButtonItem           *cancelButton;
 @property (nonatomic, strong) UIActivityIndicatorView   *progressView;

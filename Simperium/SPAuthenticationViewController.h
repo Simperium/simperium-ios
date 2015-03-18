@@ -21,9 +21,14 @@
 
 @interface SPAuthenticationViewController : UIViewController
 
-@property (nonatomic, strong) SPAuthenticator   *authenticator;
-@property (nonatomic, strong) UITableView       *tableView;
-@property (nonatomic, strong) UIImageView       *logoView;
-@property (nonatomic, assign) BOOL              signingIn;
+@property (nonatomic, strong,  readonly) UITableView        *tableView;
+@property (nonatomic, strong,  readonly) UIImageView        *logoView;
+
+@property (nonatomic, strong,  readonly) UITextField        *usernameField;
+@property (nonatomic, strong,  readonly) UITextField        *passwordField;
+@property (nonatomic, strong,  readonly) UITextField        *passwordConfirmField;
+
+@property (nonatomic, strong, readwrite) SPAuthenticator    *authenticator;
+@property (nonatomic, assign, readwrite) BOOL               signingIn;
 
 @end
