@@ -28,7 +28,11 @@ NS_ENUM(NSInteger, SPAuthenticationRows) {
     SPAuthenticationRowsConfirm     = 2
 };
 
-static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
+static CGFloat const SPAuthenticationFieldPaddingX          = 10.0;
+
+static NSString *SPAuthenticationEmailCellIdentifier        = @"EmailCellIdentifier";
+static NSString *SPAuthenticationPasswordCellIdentifier     = @"PasswordCellIdentifier";
+static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdentifier";
 
 
 #pragma mark ====================================================================================
@@ -153,6 +157,20 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     NSRange underlineRange = [termsText rangeOfString:@"Terms of Service"];
     NSMutableAttributedString *termsTitle = [[NSMutableAttributedString alloc] initWithString:[termsText uppercaseString] attributes:termsAttributes];
     [termsTitle setAttributes:termsLinkAttributes range:underlineRange];
+    
+    // Username Field
+    NSString *usernameText = @"email@email.com";
+    self.usernameField = [self textFieldWithPlaceholder:usernameText secure:NO];
+    _usernameField.keyboardType = UIKeyboardTypeEmailAddress;
+    
+    // Password Field
+    NSString *passwordText = NSLocalizedString(@"Password", @"Hint displayed in the password field");
+    self.passwordField = [self textFieldWithPlaceholder:passwordText secure:YES];
+
+    // Confirm Field
+    NSString *confirmText = NSLocalizedString(@"Confirm", @"Hint displayed in the password confirmation field");
+    self.passwordConfirmField = [self textFieldWithPlaceholder:confirmText secure:YES];
+    _passwordConfirmField.returnKeyType = UIReturnKeyGo;
     
     // Terms Button
     self.termsButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -640,47 +658,33 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static NSString *EmailCellIdentifier    = @"EmailCellIdentifier";
-    static NSString *PasswordCellIdentifier = @"PasswordCellIdentifier";
-    static NSString *ConfirmCellIdentifier  = @"ConfirmCellIdentifier";
-
-    UITableViewCell *cell;
+    
+    UITableViewCell *cell = nil;
     if (indexPath.row == SPAuthenticationRowsEmail) {
-        cell = [tView dequeueReusableCellWithIdentifier:EmailCellIdentifier];
+        cell = [tView dequeueReusableCellWithIdentifier:SPAuthenticationEmailCellIdentifier];
         // Email
         if (cell == nil) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:EmailCellIdentifier];
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:SPAuthenticationEmailCellIdentifier];
             
-            NSString *usernameText = @"email@email.com";
-            self.usernameField = [self textFieldWithPlaceholder:usernameText secure:NO];
-            _usernameField.keyboardType = UIKeyboardTypeEmailAddress;
-
             [self positionTextField:_usernameField inCell:cell];
             [cell.contentView addSubview:_usernameField];
         }
     } else if (indexPath.row == SPAuthenticationRowsPassword) {
-        cell = [tView dequeueReusableCellWithIdentifier:PasswordCellIdentifier];
+        cell = [tView dequeueReusableCellWithIdentifier:SPAuthenticationPasswordCellIdentifier];
         // Password
         if (cell == nil) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:PasswordCellIdentifier];
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:SPAuthenticationPasswordCellIdentifier];
             
-            NSString *passwordText = NSLocalizedString(@"Password", @"Hint displayed in the password field");
-            self.passwordField = [self textFieldWithPlaceholder:passwordText secure:YES];
-
             [self positionTextField:_passwordField inCell:cell];
             [cell.contentView addSubview:_passwordField];
         }
         
         self.passwordField.returnKeyType = _signingIn ? UIReturnKeyGo : UIReturnKeyNext;
     } else {
-        cell = [tView dequeueReusableCellWithIdentifier:ConfirmCellIdentifier];
-        // Password
+        cell = [tView dequeueReusableCellWithIdentifier:SPAuthenticationConfirmCellIdentifier];
+        // Password Confirmation
         if (cell == nil) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ConfirmCellIdentifier];
-            
-            NSString *confirmText = NSLocalizedString(@"Confirm", @"Hint displayed in the password confirmation field");
-            self.passwordConfirmField = [self textFieldWithPlaceholder:confirmText secure:YES];
-            _passwordConfirmField.returnKeyType = UIReturnKeyGo;
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:SPAuthenticationConfirmCellIdentifier];
             
             [self positionTextField:_passwordConfirmField inCell:cell];
             [cell.contentView addSubview:_passwordConfirmField];
