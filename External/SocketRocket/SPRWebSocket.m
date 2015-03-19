@@ -76,14 +76,14 @@ static inline void SRFastLog(NSString *format, ...);
 
 @interface NSData (SPRWebSocket)
 
-- (NSString *)stringBySHA1ThenBase64Encoding;
+- (NSString *)spr_stringBySHA1ThenBase64Encoding;
 
 @end
 
 
 @interface NSString (SPRWebSocket)
 
-- (NSString *)stringBySHA1ThenBase64Encoding;
+- (NSString *)spr_stringBySHA1ThenBase64Encoding;
 
 @end
 
@@ -92,7 +92,7 @@ static inline void SRFastLog(NSString *format, ...);
 
 // The origin isn't really applicable for a native application.
 // So instead, just map ws -> http and wss -> https.
-- (NSString *)SR_origin;
+- (NSString *)SPR_origin;
 
 @end
 
@@ -125,7 +125,7 @@ static NSString *newSHA1String(const char *bytes, size_t length) {
 
 @implementation NSData (SPRWebSocket)
 
-- (NSString *)stringBySHA1ThenBase64Encoding;
+- (NSString *)spr_stringBySHA1ThenBase64Encoding;
 {
     return newSHA1String(self.bytes, self.length);
 }
@@ -135,7 +135,7 @@ static NSString *newSHA1String(const char *bytes, size_t length) {
 
 @implementation NSString (SPRWebSocket)
 
-- (NSString *)stringBySHA1ThenBase64Encoding;
+- (NSString *)spr_stringBySHA1ThenBase64Encoding;
 {
     return newSHA1String(self.UTF8String, self.length);
 }
@@ -438,7 +438,7 @@ static __strong NSData *CRLFCRLF;
     }
     
     NSString *concattedString = [_secKey stringByAppendingString:SRWebSocketAppendToSecKeyString];
-    NSString *expectedAccept = [concattedString stringBySHA1ThenBase64Encoding];
+    NSString *expectedAccept = [concattedString spr_stringBySHA1ThenBase64Encoding];
     
     return [acceptHeader isEqualToString:expectedAccept];
 }
@@ -528,7 +528,7 @@ static __strong NSData *CRLFCRLF;
     CFHTTPMessageSetHeaderFieldValue(request, CFSTR("Sec-WebSocket-Key"), (__bridge CFStringRef)_secKey);
     CFHTTPMessageSetHeaderFieldValue(request, CFSTR("Sec-WebSocket-Version"), (__bridge CFStringRef)[NSString stringWithFormat:@"%ld", (long)_webSocketVersion]);
     
-    CFHTTPMessageSetHeaderFieldValue(request, CFSTR("Origin"), (__bridge CFStringRef)_url.SR_origin);
+    CFHTTPMessageSetHeaderFieldValue(request, CFSTR("Origin"), (__bridge CFStringRef)_url.SPR_origin);
     
     if (_requestedProtocols) {
         CFHTTPMessageSetHeaderFieldValue(request, CFSTR("Sec-WebSocket-Protocol"), (__bridge CFStringRef)[_requestedProtocols componentsJoinedByString:@", "]);
@@ -1651,7 +1651,7 @@ static const size_t SRFrameHeaderOverhead = 32;
 
 @implementation NSURL (SPRWebSocket)
 
-- (NSString *)SR_origin;
+- (NSString *)SPR_origin;
 {
     NSString *scheme = [self.scheme lowercaseString];
         
