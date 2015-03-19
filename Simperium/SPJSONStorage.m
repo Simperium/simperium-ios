@@ -14,7 +14,7 @@
 #import "SPBucket+Internals.h"
 #import "SPSchema.h"
 #import "SPDiffer.h"
-#import "jrswizzle.h"
+#import "SPswizzle.h"
 
 
 @interface NSMutableDictionary ()
@@ -46,8 +46,8 @@
         _storageQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
         
         NSError *error = nil;
-        [NSMutableDictionary jr_swizzleMethod:@selector(setObject:forKey:) withMethod:@selector(simperiumSetObject:forKey:) error:&error];
-        [NSMutableDictionary jr_swizzleMethod:@selector(setValue:forKey:) withMethod:@selector(simperiumSetValue:forKey:) error:&error];
+        [NSMutableDictionary sp_swizzleMethod:@selector(setObject:forKey:) withMethod:@selector(simperiumSetObject:forKey:) error:&error];
+        [NSMutableDictionary sp_swizzleMethod:@selector(setValue:forKey:) withMethod:@selector(simperiumSetValue:forKey:) error:&error];
     }
     
     return self;

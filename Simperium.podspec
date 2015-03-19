@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '6.0'
   s.osx.deployment_target = '10.8'
 
-  s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*', 'External/SocketRocket/*', 'External/SSKeychain/*'
+  s.source_files = 'Simperium/*.{h,m}', 'External/JRSwizzle/*', 'External/SPReachability/*', 'External/SocketRocket/*', 'External/SSKeychain/*'
   s.osx.source_files = 'Simperium-OSX/**/*.{h,m}'
 
   s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}', 'Simperium/SPTOSViewController.{h,m}', 'Simperium/SPAuthenticationButton.{h,m}'
@@ -45,5 +45,4 @@ Pod::Spec.new do |s|
   # Finally, specify any Pods that this Pod depends on.
   #
   s.dependency 'Google-Diff-Match-Patch'
-  s.dependency 'JRSwizzle'
 end

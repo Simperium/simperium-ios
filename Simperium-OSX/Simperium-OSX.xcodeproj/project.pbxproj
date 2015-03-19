@@ -91,8 +91,6 @@
 		2698BE5015C908C80020565F /* SPSchema.h in Headers */ = {isa = PBXBuildFile; fileRef = 2698BE4215C908C70020565F /* SPSchema.h */; };
 		2698BE5115C908C80020565F /* SPSchema.m in Sources */ = {isa = PBXBuildFile; fileRef = 2698BE4315C908C70020565F /* SPSchema.m */; };
 		2698BE5215C908C80020565F /* SPStorageProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 2698BE4415C908C70020565F /* SPStorageProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		2698BE5615C9097A0020565F /* JRSwizzle.h in Headers */ = {isa = PBXBuildFile; fileRef = 2698BE5415C9097A0020565F /* JRSwizzle.h */; };
-		2698BE5715C9097A0020565F /* JRSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 2698BE5515C9097A0020565F /* JRSwizzle.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		26C3E1531666FE7500620306 /* SPWebSocketChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */; };
 		26C3E1541666FE7500620306 /* SPWebSocketChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 26C3E14E1666FE7500620306 /* SPWebSocketChannel.m */; };
 		4617AEBB179A1A3400545BD9 /* SPReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 4617AEB9179A1A3400545BD9 /* SPReachability.h */; };
@@ -144,6 +142,8 @@
 		B560915A1A7276A800A4E64A /* NSConditionLock+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B56091581A7276A800A4E64A /* NSConditionLock+Simperium.m */; };
 		B56612891A1E1E280064A625 /* Simperium+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B56612881A1E1E280064A625 /* Simperium+Internals.h */; };
 		B566128C1A1E1E610064A625 /* SPStorageObserverAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = B566128B1A1E1E610064A625 /* SPStorageObserverAdapter.m */; };
+		B566148D1ABB71C100307E78 /* SPSwizzle.h in Headers */ = {isa = PBXBuildFile; fileRef = B566148B1ABB71C100307E78 /* SPSwizzle.h */; };
+		B566148E1ABB71C100307E78 /* SPSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = B566148C1ABB71C100307E78 /* SPSwizzle.m */; };
 		B56819C2194F7A6000E0DC65 /* DiffMatchPatch+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B56819C0194F7A6000E0DC65 /* DiffMatchPatch+Simperium.h */; };
 		B56819C3194F7A6000E0DC65 /* DiffMatchPatch+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B56819C1194F7A6000E0DC65 /* DiffMatchPatch+Simperium.m */; };
 		B56B1643183566DA00E45C98 /* NSArray+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B56B1641183566DA00E45C98 /* NSArray+Simperium.h */; };
@@ -296,8 +296,6 @@
 		2698BE4215C908C70020565F /* SPSchema.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPSchema.h; path = ../../Simperium/SPSchema.h; sourceTree = "<group>"; };
 		2698BE4315C908C70020565F /* SPSchema.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPSchema.m; path = ../../Simperium/SPSchema.m; sourceTree = "<group>"; };
 		2698BE4415C908C70020565F /* SPStorageProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPStorageProvider.h; path = ../../Simperium/SPStorageProvider.h; sourceTree = "<group>"; };
-		2698BE5415C9097A0020565F /* JRSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JRSwizzle.h; sourceTree = "<group>"; };
-		2698BE5515C9097A0020565F /* JRSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JRSwizzle.m; sourceTree = "<group>"; };
 		26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPWebSocketChannel.h; path = ../../Simperium/SPWebSocketChannel.h; sourceTree = "<group>"; };
 		26C3E14E1666FE7500620306 /* SPWebSocketChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocketChannel.m; path = ../../Simperium/SPWebSocketChannel.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		4617AEB9179A1A3400545BD9 /* SPReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPReachability.h; sourceTree = "<group>"; };
@@ -350,6 +348,8 @@
 		B56612881A1E1E280064A625 /* Simperium+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Simperium+Internals.h"; path = "../../Simperium/Simperium+Internals.h"; sourceTree = "<group>"; };
 		B566128A1A1E1E610064A625 /* SPStorageObserverAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPStorageObserverAdapter.h; path = ../../SimperiumTests/SPStorageObserverAdapter.h; sourceTree = "<group>"; };
 		B566128B1A1E1E610064A625 /* SPStorageObserverAdapter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPStorageObserverAdapter.m; path = ../../SimperiumTests/SPStorageObserverAdapter.m; sourceTree = "<group>"; };
+		B566148B1ABB71C100307E78 /* SPSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPSwizzle.h; path = ../JRSwizzle/SPSwizzle.h; sourceTree = "<group>"; };
+		B566148C1ABB71C100307E78 /* SPSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPSwizzle.m; path = ../JRSwizzle/SPSwizzle.m; sourceTree = "<group>"; };
 		B56819C0194F7A6000E0DC65 /* DiffMatchPatch+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "DiffMatchPatch+Simperium.h"; path = "../../Simperium/DiffMatchPatch+Simperium.h"; sourceTree = "<group>"; };
 		B56819C1194F7A6000E0DC65 /* DiffMatchPatch+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "DiffMatchPatch+Simperium.m"; path = "../../Simperium/DiffMatchPatch+Simperium.m"; sourceTree = "<group>"; };
 		B56B1641183566DA00E45C98 /* NSArray+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSArray+Simperium.h"; path = "../../Simperium/NSArray+Simperium.h"; sourceTree = "<group>"; };
@@ -597,7 +597,7 @@
 				B59D9F1E1A1A4A4F00941154 /* SSKeychain */,
 				4617AEB8179A1A3400545BD9 /* SPReachability */,
 				463774DD171FC6D500E2E333 /* SocketRocket */,
-				2698BE5315C9097A0020565F /* jrswizzle */,
+				2698BE5315C9097A0020565F /* JRSwizzle */,
 				268EDF9D155F36B7006B566F /* diffmatchpatch */,
 			);
 			name = External;
@@ -624,12 +624,13 @@
 			path = diffmatchpatch;
 			sourceTree = "<group>";
 		};
-		2698BE5315C9097A0020565F /* jrswizzle */ = {
+		2698BE5315C9097A0020565F /* JRSwizzle */ = {
 			isa = PBXGroup;
 			children = (
-				2698BE5415C9097A0020565F /* JRSwizzle.h */,
-				2698BE5515C9097A0020565F /* JRSwizzle.m */,
+				B566148B1ABB71C100307E78 /* SPSwizzle.h */,
+				B566148C1ABB71C100307E78 /* SPSwizzle.m */,
 			);
+			name = JRSwizzle;
 			path = jrswizzle;
 			sourceTree = "<group>";
 		};
@@ -864,6 +865,7 @@
 				B5008F5818B55D5100AC0337 /* SPMemberJSON.h in Headers */,
 				268EDF70155F08A2006B566F /* SPStorage.h in Headers */,
 				268EDF72155F08A2006B566F /* SPStorageObserver.h in Headers */,
+				B566148D1ABB71C100307E78 /* SPSwizzle.h in Headers */,
 				268EDFDD155F36B7006B566F /* DiffMatchPatch.h in Headers */,
 				268EDFE0155F36B7006B566F /* DiffMatchPatchCFUtilities.h in Headers */,
 				268EDFE1155F36B7006B566F /* MinMaxMacros.h in Headers */,
@@ -879,7 +881,6 @@
 				2698BE4E15C908C80020565F /* SPObject.h in Headers */,
 				B56B1643183566DA00E45C98 /* NSArray+Simperium.h in Headers */,
 				2698BE5015C908C80020565F /* SPSchema.h in Headers */,
-				2698BE5615C9097A0020565F /* JRSwizzle.h in Headers */,
 				26C3E1531666FE7500620306 /* SPWebSocketChannel.h in Headers */,
 				B58EC3181885B6C400ED37E5 /* SPPersistentMutableSet.h in Headers */,
 				B53E4888182AAC58000AA4C8 /* NSURLResponse+Simperium.h in Headers */,
@@ -1046,7 +1047,7 @@
 				2698BE4D15C908C80020565F /* SPJSONStorage.m in Sources */,
 				2698BE4F15C908C80020565F /* SPObject.m in Sources */,
 				2698BE5115C908C80020565F /* SPSchema.m in Sources */,
-				2698BE5715C9097A0020565F /* JRSwizzle.m in Sources */,
+				B566148E1ABB71C100307E78 /* SPSwizzle.m in Sources */,
 				26C3E1541666FE7500620306 /* SPWebSocketChannel.m in Sources */,
 				B53FA6FF1ABB5B1E00F5EEDD /* SPKeychain.m in Sources */,
 				B560915A1A7276A800A4E64A /* NSConditionLock+Simperium.m in Sources */,
