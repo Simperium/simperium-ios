@@ -7,7 +7,7 @@
 //
 
 #import "MockWebSocketInterface.h"
-#import "SRWebSocket.h"
+#import "SPRWebSocket.h"
 
 
 
@@ -16,7 +16,7 @@
 #pragma mark ====================================================================================
 
 @interface SPWebSocketInterface()
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message;
+- (void)webSocket:(SPRWebSocket *)webSocket didReceiveMessage:(id)message;
 - (void)authenticateChannel:(SPWebSocketChannel *)channel;
 - (SPWebSocketChannel *)loadChannelForBucket:(SPBucket *)bucket;
 - (SPWebSocketChannel *)channelForName:(NSString *)str;
@@ -65,7 +65,7 @@
 }
 
 - (void)openWebSocket {
-	// Do not open a SRWebSocket instance
+	// Do not open a SPRWebSocket instance
 }
 
 - (BOOL)open {
