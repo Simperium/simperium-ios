@@ -8,7 +8,7 @@
 
 #import "SPCoreDataStorage+Mock.h"
 #import <CoreData/CoreData.h>
-#import "jrswizzle.h"
+#import "SPSwizzle.h"
 
 
 
