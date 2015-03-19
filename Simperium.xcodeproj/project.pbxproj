@@ -129,7 +129,7 @@
 		26E83C2713985DBE00195758 /* SPCoreDataExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 26E83C2513985DBC00195758 /* SPCoreDataExporter.m */; };
 		26E83D9913999C0F00195758 /* SPUser.h in Headers */ = {isa = PBXBuildFile; fileRef = 26E83D9713999C0C00195758 /* SPUser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		26E83D9A13999C0F00195758 /* SPUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 26E83D9813999C0D00195758 /* SPUser.m */; };
-		26E83DAA1399D05F00195758 /* NSDate+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 26E83DA81399D05D00195758 /* NSDate+Simperium.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		26E83DAA1399D05F00195758 /* NSDate+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 26E83DA81399D05D00195758 /* NSDate+Simperium.h */; };
 		26E83DAB1399D05F00195758 /* NSDate+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 26E83DA91399D05E00195758 /* NSDate+Simperium.m */; };
 		26ED43D8146CD84E00C3D7D6 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */; };
 		26ED43DA146CD85800C3D7D6 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBCD13DCFDA700B8AC56 /* CFNetwork.framework */; };
@@ -163,9 +163,9 @@
 		46EE3D41171C975D00E6F0A5 /* SimperiumComplexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */; };
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
-		797D26FE19F1B72700DEF569 /* SPKeychain.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FA19F1B72700DEF569 /* SPKeychain.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		797D26FE19F1B72700DEF569 /* SPKeychain.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FA19F1B72700DEF569 /* SPKeychain.h */; };
 		797D26FF19F1B72700DEF569 /* SPKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 797D26FB19F1B72700DEF569 /* SPKeychain.m */; };
-		797D270019F1B72700DEF569 /* SPKeychainQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FC19F1B72700DEF569 /* SPKeychainQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		797D270019F1B72700DEF569 /* SPKeychainQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FC19F1B72700DEF569 /* SPKeychainQuery.h */; };
 		797D270119F1B72700DEF569 /* SPKeychainQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 797D26FD19F1B72700DEF569 /* SPKeychainQuery.m */; };
 		B51397F11947612B004C1416 /* SPChangeProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B51397F01947612B004C1416 /* SPChangeProcessorTests.m */; };
 		B52674721858EC4800A89D7A /* Simperium+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B52674701858EC4800A89D7A /* Simperium+Internals.h */; };
@@ -189,8 +189,8 @@
 		B58B22E51905A1B200190E90 /* SPRelationship.h in Headers */ = {isa = PBXBuildFile; fileRef = B58B22E31905A1B200190E90 /* SPRelationship.h */; };
 		B58B22E61905A1B200190E90 /* SPRelationship.m in Sources */ = {isa = PBXBuildFile; fileRef = B58B22E41905A1B200190E90 /* SPRelationship.m */; };
 		B597DD59183128FE005E95D7 /* SPWebSocketInterfaceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B597DD58183128FE005E95D7 /* SPWebSocketInterfaceTests.m */; };
-		B59D9F2D1A1A4BD300941154 /* SPKeychain.m in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FB19F1B72700DEF569 /* SPKeychain.m */; settings = {ATTRIBUTES = (Public, ); }; };
-		B59D9F2E1A1A4BD300941154 /* SPKeychainQuery.m in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FD19F1B72700DEF569 /* SPKeychainQuery.m */; settings = {ATTRIBUTES = (Public, ); }; };
+		B59D9F2D1A1A4BD300941154 /* SPKeychain.m in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FB19F1B72700DEF569 /* SPKeychain.m */; };
+		B59D9F2E1A1A4BD300941154 /* SPKeychainQuery.m in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FD19F1B72700DEF569 /* SPKeychainQuery.m */; };
 		B5A19D5918806BBC0059AA36 /* SPWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A19D5718806BBC0059AA36 /* SPWebSocket.h */; };
 		B5A19D5A18806BBC0059AA36 /* SPWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A19D5818806BBC0059AA36 /* SPWebSocket.m */; };
 		B5A57EAC1951C128006E2455 /* SPIndexProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A57EAB1951C128006E2455 /* SPIndexProcessorTests.m */; };
@@ -990,7 +990,6 @@
 				B5EB869A1822E34F007450FF /* SPLogger.h in Headers */,
 				26E83C2613985DBE00195758 /* SPCoreDataExporter.h in Headers */,
 				26E83D9913999C0F00195758 /* SPUser.h in Headers */,
-				26E83DAA1399D05F00195758 /* NSDate+Simperium.h in Headers */,
 				2622FD2D147F32A500C8EEB4 /* SPNetworkInterface.h in Headers */,
 				26C93A6D14F850EA00BE99F5 /* SPAuthenticationViewController.h in Headers */,
 				26563AE414FC3BDE0081C8C1 /* SPAuthenticator.h in Headers */,
@@ -999,10 +998,6 @@
 				267CE90D156C351B0028801C /* SPStorageProvider.h in Headers */,
 				466EB41417BC45F5005F7599 /* SPAuthenticationConfiguration.h in Headers */,
 				B5C91A071827E8600002D306 /* SPHttpRequest.h in Headers */,
-				797D26FE19F1B72700DEF569 /* SPKeychain.h in Headers */,
-				B59D9F2D1A1A4BD300941154 /* SPKeychain.m in Headers */,
-				797D270019F1B72700DEF569 /* SPKeychainQuery.h in Headers */,
-				B59D9F2E1A1A4BD300941154 /* SPKeychainQuery.m in Headers */,
 				264CD940135DFE6D00C51BAD /* SPEnvironment.h in Headers */,
 				264CD942135DFE6D00C51BAD /* SPGhost.h in Headers */,
 				264CD944135DFE6D00C51BAD /* SPMember.h in Headers */,
@@ -1010,6 +1005,7 @@
 				264CD999135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.h in Headers */,
 				264CD99A135DFE7E00C51BAD /* MinMaxMacros.h in Headers */,
 				264CD99B135DFE7E00C51BAD /* NSMutableDictionary+DMPExtensions.h in Headers */,
+				26E83DAA1399D05F00195758 /* NSDate+Simperium.h in Headers */,
 				264CD99D135DFE7E00C51BAD /* NSString+JavaSubstring.h in Headers */,
 				264CD99F135DFE7E00C51BAD /* NSString+UnicharUtilities.h in Headers */,
 				264CD9A1135DFE7E00C51BAD /* NSString+UriCompatibility.h in Headers */,
@@ -1063,6 +1059,10 @@
 				466EB41A17BC4890005F7599 /* SPAuthenticationButton.h in Headers */,
 				B5F65F7A1847DE0100CEF48D /* SPManagedObject+Internals.h in Headers */,
 				460A505F17DE96350070F02B /* SPProcessorConstants.h in Headers */,
+				797D26FE19F1B72700DEF569 /* SPKeychain.h in Headers */,
+				B59D9F2D1A1A4BD300941154 /* SPKeychain.m in Headers */,
+				797D270019F1B72700DEF569 /* SPKeychainQuery.h in Headers */,
+				B59D9F2E1A1A4BD300941154 /* SPKeychainQuery.m in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
