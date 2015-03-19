@@ -29,6 +29,7 @@ NS_ENUM(NSInteger, SPAuthenticationRows) {
 };
 
 static CGFloat const SPAuthenticationFieldPaddingX          = 10.0f;
+static CGFloat const SPAuthenticationFieldWidth             = 280.0f;
 static CGFloat const SPAuthenticationFieldHeight            = 38.0f;
 
 static NSString *SPAuthenticationEmailCellIdentifier        = @"EmailCellIdentifier";
@@ -620,7 +621,8 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 
 - (UITextField *)textFieldWithPlaceholder:(NSString *)placeholder secure:(BOOL)secure {
-    UITextField *newTextField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, SPAuthenticationFieldHeight)];
+    CGRect textFieldFrame = CGRectMake(0.0f, 0.0f, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight);
+    UITextField *newTextField = [[UITextField alloc] initWithFrame:textFieldFrame];
     newTextField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     newTextField.clearsOnBeginEditing = NO;
     newTextField.autocorrectionType = UITextAutocorrectionTypeNo;
