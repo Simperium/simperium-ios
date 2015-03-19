@@ -6,10 +6,10 @@
 //  Copyright (c) 2013-2014 Sam Soffes. All rights reserved.
 //
 
-#import "SSKeychainQuery.h"
-#import "SSKeychain.h"
+#import "SPKeychainQuery.h"
+#import "SPKeychain.h"
 
-@implementation SSKeychainQuery
+@implementation SPKeychainQuery
 
 @synthesize account = _account;
 @synthesize service = _service;
@@ -43,7 +43,7 @@
 		[query setObject:self.label forKey:(__bridge id)kSecAttrLabel];
 	}
 #if __IPHONE_4_0 && TARGET_OS_IPHONE
-	CFTypeRef accessibilityType = [SSKeychain accessibilityType];
+	CFTypeRef accessibilityType = [SPKeychain accessibilityType];
 	if (accessibilityType) {
 		[query setObject:(__bridge id)accessibilityType forKey:(__bridge id)kSecAttrAccessible];
 	}

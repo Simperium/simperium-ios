@@ -25,7 +25,7 @@ typedef NS_ENUM(NSUInteger, SSKeychainQuerySynchronizationMode) {
 /**
  Simple interface for querying or modifying keychain items.
  */
-@interface SSKeychainQuery : NSObject
+@interface SPKeychainQuery : NSObject
 
 /** kSecAttrAccount */
 @property (nonatomic, copy) NSString *account;

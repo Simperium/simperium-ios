@@ -6,7 +6,7 @@
 //  Copyright (c) 2010-2014 Sam Soffes. All rights reserved.
 //
 
-#import "SSKeychain.h"
+#import "SPKeychain.h"
 
 NSString *const kSSKeychainErrorDomain = @"com.samsoffes.sskeychain";
 NSString *const kSSKeychainAccountKey = @"acct";
@@ -21,7 +21,7 @@ NSString *const kSSKeychainWhereKey = @"svce";
 	static CFTypeRef SSKeychainAccessibilityType = NULL;
 #endif
 
-@implementation SSKeychain
+@implementation SPKeychain
 
 + (NSString *)passwordForService:(NSString *)serviceName account:(NSString *)account {
 	return [self passwordForService:serviceName account:account error:nil];
@@ -29,7 +29,7 @@ NSString *const kSSKeychainWhereKey = @"svce";
 
 
 + (NSString *)passwordForService:(NSString *)serviceName account:(NSString *)account error:(NSError *__autoreleasing *)error {
-	SSKeychainQuery *query = [[SSKeychainQuery alloc] init];
+	SPKeychainQuery *query = [[SPKeychainQuery alloc] init];
 	query.service = serviceName;
 	query.account = account;
 	[query fetch:error];
@@ -43,7 +43,7 @@ NSString *const kSSKeychainWhereKey = @"svce";
 
 
 + (BOOL)deletePasswordForService:(NSString *)serviceName account:(NSString *)account error:(NSError *__autoreleasing *)error {
-	SSKeychainQuery *query = [[SSKeychainQuery alloc] init];
+	SPKeychainQuery *query = [[SPKeychainQuery alloc] init];
 	query.service = serviceName;
 	query.account = account;
 	return [query deleteItem:error];
@@ -56,7 +56,7 @@ NSString *const kSSKeychainWhereKey = @"svce";
 
 
 + (BOOL)setPassword:(NSString *)password forService:(NSString *)serviceName account:(NSString *)account error:(NSError *__autoreleasing *)error {
-	SSKeychainQuery *query = [[SSKeychainQuery alloc] init];
+	SPKeychainQuery *query = [[SPKeychainQuery alloc] init];
 	query.service = serviceName;
 	query.account = account;
 	query.password = password;
@@ -70,7 +70,7 @@ NSString *const kSSKeychainWhereKey = @"svce";
 
 
 + (NSArray *)accountsForService:(NSString *)serviceName {
-	SSKeychainQuery *query = [[SSKeychainQuery alloc] init];
+	SPKeychainQuery *query = [[SPKeychainQuery alloc] init];
 	query.service = serviceName;
 	return [query fetchAll:nil];
 }
