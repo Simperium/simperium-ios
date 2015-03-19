@@ -18,41 +18,41 @@
 #import <Security/SecCertificate.h>
 
 typedef enum {
-    SR_CONNECTING   = 0,
-    SR_OPEN         = 1,
-    SR_CLOSING      = 2,
-    SR_CLOSED       = 3,
-} SRReadyState;
+    SPR_CONNECTING   = 0,
+    SPR_OPEN         = 1,
+    SPR_CLOSING      = 2,
+    SPR_CLOSED       = 3,
+} SPRReadyState;
 
-typedef enum SRStatusCode : NSInteger {
-    SRStatusCodeNormal = 1000,
-    SRStatusCodeGoingAway = 1001,
-    SRStatusCodeProtocolError = 1002,
-    SRStatusCodeUnhandledType = 1003,
+typedef enum SPRStatusCode : NSInteger {
+    SPRStatusCodeNormal = 1000,
+    SPRStatusCodeGoingAway = 1001,
+    SPRStatusCodeProtocolError = 1002,
+    SPRStatusCodeUnhandledType = 1003,
     // 1004 reserved.
     SRStatusNoStatusReceived = 1005,
     // 1004-1006 reserved.
-    SRStatusCodeInvalidUTF8 = 1007,
-    SRStatusCodePolicyViolated = 1008,
-    SRStatusCodeMessageTooBig = 1009,
-} SRStatusCode;
+    SPRStatusCodeInvalidUTF8 = 1007,
+    SPRStatusCodePolicyViolated = 1008,
+    SPRStatusCodeMessageTooBig = 1009,
+} SPRStatusCode;
 
-@class SRWebSocket;
+@class SPRWebSocket;
 
-extern NSString *const SRWebSocketErrorDomain;
-extern NSString *const SRHTTPResponseErrorKey;
+extern NSString *const SPRWebSocketErrorDomain;
+extern NSString *const SPRHTTPResponseErrorKey;
 
-#pragma mark - SRWebSocketDelegate
+#pragma mark - SPRWebSocketDelegate
 
-@protocol SRWebSocketDelegate;
+@protocol SPRWebSocketDelegate;
 
-#pragma mark - SRWebSocket
+#pragma mark - SPRWebSocket
 
-@interface SRWebSocket : NSObject <NSStreamDelegate>
+@interface SPRWebSocket : NSObject <NSStreamDelegate>
 
-@property (nonatomic, weak) id <SRWebSocketDelegate> delegate;
+@property (nonatomic, weak) id <SPRWebSocketDelegate> delegate;
 
-@property (nonatomic, readonly) SRReadyState readyState;
+@property (nonatomic, readonly) SPRReadyState readyState;
 @property (nonatomic, readonly, retain) NSURL *url;
 
 // This returns the negotiated protocol.
@@ -72,11 +72,11 @@ extern NSString *const SRHTTPResponseErrorKey;
 - (void)setDelegateOperationQueue:(NSOperationQueue*) queue;
 - (void)setDelegateDispatchQueue:(dispatch_queue_t) queue;
 
-// By default, it will schedule itself on +[NSRunLoop SR_networkRunLoop] using defaultModes.
+// By default, it will schedule itself on +[NSRunLoop SPR_networkRunLoop] using defaultModes.
 - (void)scheduleInRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode;
 - (void)unscheduleFromRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode;
 
-// SRWebSockets are intended for one-time-use only.  Open should be called once and only once.
+// SPRWebSockets are intended for one-time-use only.  Open should be called once and only once.
 - (void)open;
 
 - (void)close;
@@ -90,20 +90,20 @@ extern NSString *const SRHTTPResponseErrorKey;
 
 @end
 
-#pragma mark - SRWebSocketDelegate
+#pragma mark - SPRWebSocketDelegate
 
-@protocol SRWebSocketDelegate <NSObject>
+@protocol SPRWebSocketDelegate <NSObject>
 
 // message will either be an NSString if the server is using text
 // or NSData if the server is using binary.
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message;
+- (void)webSocket:(SPRWebSocket *)webSocket didReceiveMessage:(id)message;
 
 @optional
 
-- (void)webSocketDidOpen:(SRWebSocket *)webSocket;
-- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error;
-- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean;
-- (void)webSocket:(SRWebSocket *)webSocket didReceivePong:(NSData *)pongPayload;
+- (void)webSocketDidOpen:(SPRWebSocket *)webSocket;
+- (void)webSocket:(SPRWebSocket *)webSocket didFailWithError:(NSError *)error;
+- (void)webSocket:(SPRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean;
+- (void)webSocket:(SPRWebSocket *)webSocket didReceivePong:(NSData *)pongPayload;
 
 @end
 
@@ -111,7 +111,7 @@ extern NSString *const SRHTTPResponseErrorKey;
 
 @interface NSURLRequest (CertificateAdditions)
 
-@property (nonatomic, retain, readonly) NSArray *SR_SSLPinnedCertificates;
+@property (nonatomic, retain, readonly) NSArray *SPR_SSLPinnedCertificates;
 
 @end
 
@@ -119,14 +119,14 @@ extern NSString *const SRHTTPResponseErrorKey;
 
 @interface NSMutableURLRequest (CertificateAdditions)
 
-@property (nonatomic, retain) NSArray *SR_SSLPinnedCertificates;
+@property (nonatomic, retain) NSArray *SPR_SSLPinnedCertificates;
 
 @end
 
-#pragma mark - NSRunLoop (SRWebSocket)
+#pragma mark - NSRunLoop (SPRWebSocket)
 
-@interface NSRunLoop (SRWebSocket)
+@interface NSRunLoop (SPRWebSocket)
 
-+ (NSRunLoop *)SR_networkRunLoop;
++ (NSRunLoop *)SPR_networkRunLoop;
 
 @end
