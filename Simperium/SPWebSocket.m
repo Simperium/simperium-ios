@@ -25,8 +25,8 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 #pragma mark SPWebSocket Private Methods
 #pragma mark ====================================================================================
 
-@interface SPWebSocket () <SRWebSocketDelegate>
-@property (nonatomic, strong, readwrite) SRWebSocket    *webSocket;
+@interface SPWebSocket () <SPRWebSocketDelegate>
+@property (nonatomic, strong, readwrite) SPRWebSocket    *webSocket;
 @property (nonatomic, strong, readwrite) NSTimer        *timeoutTimer;
 @property (nonatomic, strong, readwrite) NSDate         *lastSeenTimestamp;
 @property (nonatomic, assign, readwrite) NSUInteger     bytesSent;
@@ -50,7 +50,7 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 {
     self = [super init];
     if (self) {
-        _webSocket          = [[SRWebSocket alloc] initWithURLRequest:request];
+        _webSocket          = [[SPRWebSocket alloc] initWithURLRequest:request];
         _webSocket.delegate = self;
         
         _activityTimeout    = SPWebSocketTimeoutInterval;
@@ -80,7 +80,7 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
     [self.webSocket send:data];
 }
 
-- (SRReadyState)readyState {
+- (SPRReadyState)readyState {
     return self.webSocket.readyState;
 }
 
@@ -104,7 +104,7 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
     [self.webSocket close];
     
     NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"Activity Timeout"};
-    NSError* error = [NSError errorWithDomain:SRWebSocketErrorDomain code:SPWebSocketErrorsActivityTimeout userInfo:userInfo];
+    NSError* error = [NSError errorWithDomain:SPRWebSocketErrorDomain code:SPWebSocketErrorsActivityTimeout userInfo:userInfo];
     [self.delegate webSocket:self didFailWithError:error];
 }
 
@@ -139,16 +139,16 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
 
 
 #pragma mark ====================================================================================
-#pragma mark SRWebSocketDelegate Methods
+#pragma mark SPRWebSocketDelegate Methods
 #pragma mark ====================================================================================
 
-- (void)webSocketDidOpen:(SRWebSocket *)theWebSocket {
+- (void)webSocketDidOpen:(SPRWebSocket *)theWebSocket {
     [self resetTimeoutTimer];
     [self resetLastSeenTimestamp];
     [self.delegate webSocketDidOpen:self];
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
+- (void)webSocket:(SPRWebSocket *)webSocket didReceiveMessage:(id)message {
     [self resetTimeoutTimer];
     [self resetLastSeenTimestamp];
 
@@ -156,12 +156,12 @@ NSTimeInterval const SPWebSocketTimeoutInterval = 60;
     [self.delegate webSocket:self didReceiveMessage:message];
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
+- (void)webSocket:(SPRWebSocket *)webSocket didFailWithError:(NSError *)error {
     [self invalidateTimeoutTimer];
     [self.delegate webSocket:self didFailWithError:error];
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
+- (void)webSocket:(SPRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     [self invalidateTimeoutTimer];
     [self.delegate webSocket:self didCloseWithCode:code reason:reason wasClean:wasClean];
 }

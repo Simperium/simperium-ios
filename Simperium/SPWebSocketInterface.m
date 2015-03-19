@@ -187,7 +187,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     // Prepare the Request: Handle certificate pinning stuff
     NSString *urlString                 = [NSString stringWithFormat:@"%@/%@/websocket", SPWebsocketURL, self.simperium.appID];
     NSMutableURLRequest *request        = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
-    request.SR_SSLPinnedCertificates    = [self loadTrustedCertificates];
+    request.SPR_SSLPinnedCertificates   = [self loadTrustedCertificates];
 
     // Open the socket!
     SPWebSocket *newWebSocket           = [[SPWebSocket alloc] initWithURLRequest:request];
@@ -301,7 +301,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 }
 
 - (void)sendHeartbeat:(NSTimer *)timer {
-    if (self.webSocket.readyState != SR_OPEN) {
+    if (self.webSocket.readyState != SPR_OPEN) {
         return;
     }
     
@@ -459,10 +459,10 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     }
     
     NSDictionary *statusMap = @{
-      @(SR_CONNECTING)  : @"Connecting",
-      @(SR_OPEN)        : @"Open",
-      @(SR_CLOSING)     : @"Closing",
-      @(SR_CLOSED)      : @"Closed"
+      @(SPR_CONNECTING)  : @"Connecting",
+      @(SPR_OPEN)        : @"Open",
+      @(SPR_CLOSING)     : @"Closing",
+      @(SPR_CLOSED)      : @"Closed"
     };
     
     return statusMap[@(_webSocket.readyState)] ?: @"Unknown";
