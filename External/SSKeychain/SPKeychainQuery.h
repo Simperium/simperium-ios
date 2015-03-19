@@ -15,10 +15,10 @@
 #endif
 
 #ifdef SSKEYCHAIN_SYNCHRONIZATION_AVAILABLE
-typedef NS_ENUM(NSUInteger, SSKeychainQuerySynchronizationMode) {
-	SSKeychainQuerySynchronizationModeAny,
-	SSKeychainQuerySynchronizationModeNo,
-	SSKeychainQuerySynchronizationModeYes
+typedef NS_ENUM(NSUInteger, SPKeychainQuerySynchronizationMode) {
+	SPKeychainQuerySynchronizationModeAny,
+	SPKeychainQuerySynchronizationModeNo,
+	SPKeychainQuerySynchronizationModeYes
 };
 #endif
 
@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, SSKeychainQuerySynchronizationMode) {
 
 #ifdef SSKEYCHAIN_SYNCHRONIZATION_AVAILABLE
 /** kSecAttrSynchronizable */
-@property (nonatomic) SSKeychainQuerySynchronizationMode synchronizationMode;
+@property (nonatomic) SPKeychainQuerySynchronizationMode synchronizationMode;
 #endif
 
 /** Root storage for password information */

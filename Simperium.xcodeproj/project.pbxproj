@@ -412,10 +412,10 @@
 		46EE3D40171C975D00E6F0A5 /* SimperiumComplexTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumComplexTests.m; sourceTree = "<group>"; };
 		46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumAuxiliaryTests.m; sourceTree = "<group>"; };
 		46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimperiumErrorTests.m; sourceTree = "<group>"; };
-		797D26FA19F1B72700DEF569 /* SPKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPKeychain.h; sourceTree = "<group>"; };
-		797D26FB19F1B72700DEF569 /* SPKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPKeychain.m; sourceTree = "<group>"; };
-		797D26FC19F1B72700DEF569 /* SPKeychainQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPKeychainQuery.h; sourceTree = "<group>"; };
-		797D26FD19F1B72700DEF569 /* SPKeychainQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPKeychainQuery.m; sourceTree = "<group>"; };
+		797D26FA19F1B72700DEF569 /* SPKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = SPKeychain.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		797D26FB19F1B72700DEF569 /* SPKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPKeychain.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		797D26FC19F1B72700DEF569 /* SPKeychainQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = SPKeychainQuery.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		797D26FD19F1B72700DEF569 /* SPKeychainQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPKeychainQuery.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		B51397F01947612B004C1416 /* SPChangeProcessorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPChangeProcessorTests.m; sourceTree = "<group>"; };
 		B52674701858EC4800A89D7A /* Simperium+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Simperium+Internals.h"; sourceTree = "<group>"; };
 		B53F75A71A1BAB4600C0DDFB /* SPStorageObserverAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStorageObserverAdapter.h; sourceTree = "<group>"; };
