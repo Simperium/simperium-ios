@@ -762,7 +762,7 @@
 				797D26F719F1B72700DEF569 /* SSKeychain */,
 				26653CF815FE5DE900461A28 /* SPReachability */,
 				2618987315D2EB310013CBC9 /* SocketRocket */,
-				26D4D3B0156C3DA300E822E9 /* jrswizzle */,
+				26D4D3B0156C3DA300E822E9 /* JRSwizzle */,
 				264CD964135DFE7E00C51BAD /* diffmatchpatch */,
 			);
 			path = External;
@@ -838,12 +838,13 @@
 			name = Models;
 			sourceTree = "<group>";
 		};
-		26D4D3B0156C3DA300E822E9 /* jrswizzle */ = {
+		26D4D3B0156C3DA300E822E9 /* JRSwizzle */ = {
 			isa = PBXGroup;
 			children = (
 				B5E083531ABB70D300E618D0 /* SPSwizzle.h */,
 				B5E083541ABB70D300E618D0 /* SPSwizzle.m */,
 			);
+			name = JRSwizzle;
 			path = jrswizzle;
 			sourceTree = "<group>";
 		};
