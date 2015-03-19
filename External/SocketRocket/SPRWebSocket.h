@@ -30,7 +30,7 @@ typedef enum SPRStatusCode : NSInteger {
     SPRStatusCodeProtocolError = 1002,
     SPRStatusCodeUnhandledType = 1003,
     // 1004 reserved.
-    SRStatusNoStatusReceived = 1005,
+    SPRStatusNoStatusReceived = 1005,
     // 1004-1006 reserved.
     SPRStatusCodeInvalidUTF8 = 1007,
     SPRStatusCodePolicyViolated = 1008,
