@@ -183,7 +183,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     
     // Action
     self.actionButton = [[SPAuthenticationButton alloc] initWithFrame:CGRectMake(0, 30.0, self.view.frame.size.width, 44)];
-    [_actionButton addTarget:self action:@selector(goAction:) forControlEvents:UIControlEventTouchUpInside];
+    [_actionButton addTarget:self action:@selector(performAction:) forControlEvents:UIControlEventTouchUpInside];
     [_actionButton setTitleColor:whiteColor forState:UIControlStateNormal];
     _actionButton.titleLabel.font = [UIFont fontWithName:configuration.regularFontName size:22.0];
     _actionButton.backgroundColor = blueColor;
@@ -531,7 +531,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 #pragma mark Actions
 
-- (void)termsAction:(id)sender {
+- (IBAction)termsAction:(id)sender {
  
     SPTOSViewController *vc = [[SPTOSViewController alloc] init];
     UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:vc];
@@ -543,7 +543,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     }
 }
 
-- (void)changeAction:(id)sender {
+- (IBAction)changeAction:(id)sender {
     _signingIn = !_signingIn;
     NSArray *indexPaths = @[ [self confirmIndexPath] ];
     if (_signingIn) {
@@ -561,7 +561,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     });
 }
 
-- (void)goAction:(id)sender {
+- (IBAction)performAction:(id)sender {
     if ([self validateData]) {
         if (!_signingIn && self.passwordConfirmField.text.length > 0) {
             if ([self validatePasswordConfirmation]) {
@@ -573,11 +573,11 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     }
 }
 
-- (void)cancelAction:(id)sender {
+- (IBAction)cancelAction:(id)sender {
     [self.authenticator cancel];
 }
 
-- (void)endEditingAction:(id)sender {
+- (IBAction)endEditingAction:(id)sender {
     [self.view endEditing:YES];
 }
 

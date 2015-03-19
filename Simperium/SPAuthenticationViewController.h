@@ -31,4 +31,9 @@
 @property (nonatomic, strong, readwrite) SPAuthenticator    *authenticator;
 @property (nonatomic, assign, readwrite) BOOL               signingIn;
 
+/**
+    Performs the current action: Validates the fields, and hits the backend, if needed
+ */
+- (IBAction)performAction:(id)sender;
+
 @end
