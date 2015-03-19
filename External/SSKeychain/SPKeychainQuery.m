@@ -6,10 +6,10 @@
 //  Copyright (c) 2013-2014 Sam Soffes. All rights reserved.
 //
 
-#import "SSKeychainQuery.h"
-#import "SSKeychain.h"
+#import "SPKeychainQuery.h"
+#import "SPKeychain.h"
 
-@implementation SSKeychainQuery
+@implementation SPKeychainQuery
 
 @synthesize account = _account;
 @synthesize service = _service;
@@ -27,7 +27,7 @@
 #pragma mark - Public
 
 - (BOOL)save:(NSError *__autoreleasing *)error {
-	OSStatus status = SSKeychainErrorBadArguments;
+	OSStatus status = SPKeychainErrorBadArguments;
 	if (!self.service || !self.account || !self.passwordData) {
 		if (error) {
 			*error = [[self class] errorWithCode:status];
@@ -43,7 +43,7 @@
 		[query setObject:self.label forKey:(__bridge id)kSecAttrLabel];
 	}
 #if __IPHONE_4_0 && TARGET_OS_IPHONE
-	CFTypeRef accessibilityType = [SSKeychain accessibilityType];
+	CFTypeRef accessibilityType = [SPKeychain accessibilityType];
 	if (accessibilityType) {
 		[query setObject:(__bridge id)accessibilityType forKey:(__bridge id)kSecAttrAccessible];
 	}
@@ -59,7 +59,7 @@
 
 
 - (BOOL)deleteItem:(NSError *__autoreleasing *)error {
-	OSStatus status = SSKeychainErrorBadArguments;
+	OSStatus status = SPKeychainErrorBadArguments;
 	if (!self.service || !self.account) {
 		if (error) {
 			*error = [[self class] errorWithCode:status];
@@ -89,7 +89,7 @@
 
 
 - (NSArray *)fetchAll:(NSError *__autoreleasing *)error {
-	OSStatus status = SSKeychainErrorBadArguments;
+	OSStatus status = SPKeychainErrorBadArguments;
 	NSMutableDictionary *query = [self query];
 	[query setObject:@YES forKey:(__bridge id)kSecReturnAttributes];
 	[query setObject:(__bridge id)kSecMatchLimitAll forKey:(__bridge id)kSecMatchLimit];
@@ -106,7 +106,7 @@
 
 
 - (BOOL)fetch:(NSError *__autoreleasing *)error {
-	OSStatus status = SSKeychainErrorBadArguments;
+	OSStatus status = SPKeychainErrorBadArguments;
 	if (!self.service || !self.account) {
 		if (error) {
 			*error = [[self class] errorWithCode:status];
@@ -198,15 +198,15 @@
 		id value;
 
 		switch (self.synchronizationMode) {
-			case SSKeychainQuerySynchronizationModeNo: {
+			case SPKeychainQuerySynchronizationModeNo: {
 			  value = @NO;
 			  break;
 			}
-			case SSKeychainQuerySynchronizationModeYes: {
+			case SPKeychainQuerySynchronizationModeYes: {
 			  value = @YES;
 			  break;
 			}
-			case SSKeychainQuerySynchronizationModeAny: {
+			case SPKeychainQuerySynchronizationModeAny: {
 			  value = (__bridge id)(kSecAttrSynchronizableAny);
 			  break;
 			}
@@ -224,7 +224,7 @@
 	NSString *message = nil;
 	switch (code) {
 		case errSecSuccess: return nil;
-		case SSKeychainErrorBadArguments: message = NSLocalizedStringFromTable(@"SSKeychainErrorBadArguments", @"SSKeychain", nil); break;
+		case SPKeychainErrorBadArguments: message = NSLocalizedStringFromTable(@"SPKeychainErrorBadArguments", @"SSKeychain", nil); break;
 
 #if TARGET_OS_IPHONE
 		case errSecUnimplemented: {
@@ -276,7 +276,7 @@
 	if (message) {
 		userInfo = @{ NSLocalizedDescriptionKey : message };
 	}
-	return [NSError errorWithDomain:kSSKeychainErrorDomain code:code userInfo:userInfo];
+	return [NSError errorWithDomain:kSPKeychainErrorDomain code:code userInfo:userInfo];
 }
 
 @end
