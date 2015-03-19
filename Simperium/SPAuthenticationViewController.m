@@ -28,7 +28,8 @@ NS_ENUM(NSInteger, SPAuthenticationRows) {
     SPAuthenticationRowsConfirm     = 2
 };
 
-static CGFloat const SPAuthenticationFieldPaddingX          = 10.0;
+static CGFloat const SPAuthenticationFieldPaddingX          = 10.0f;
+static CGFloat const SPAuthenticationFieldHeight            = 38.0f;
 
 static NSString *SPAuthenticationEmailCellIdentifier        = @"EmailCellIdentifier";
 static NSString *SPAuthenticationPasswordCellIdentifier     = @"PasswordCellIdentifier";
@@ -97,7 +98,6 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
         NSLocalizedString(@"Don't have an account?", @"A short description to access the account creation screen") :
         NSLocalizedString(@"Already have an account?", @"A short description to access the account login screen");
 
-    
     changeTitle = [[changeTitle stringByAppendingString:@" »"] uppercaseString];
     
     [self.actionButton setTitle:actionTitle forState:UIControlStateNormal];
@@ -620,7 +620,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 
 - (UITextField *)textFieldWithPlaceholder:(NSString *)placeholder secure:(BOOL)secure {
-    UITextField *newTextField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, 25)];
+    UITextField *newTextField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, SPAuthenticationFieldHeight)];
     newTextField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     newTextField.clearsOnBeginEditing = NO;
     newTextField.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -637,12 +637,10 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 - (void)positionTextField:(UITextField *)textField inCell:(UITableViewCell *)cell {
-    CGFloat fieldHeight = ceilf(textField.font.lineHeight);
-    
     textField.frame = CGRectIntegral(CGRectMake(SPAuthenticationFieldPaddingX,
-                                                (cell.bounds.size.height - fieldHeight) / 2.0,
-                                                cell.bounds.size.width - 2 * SPAuthenticationFieldPaddingX,
-                                                fieldHeight));
+                                                (cell.bounds.size.height - SPAuthenticationFieldHeight) * 0.5f,
+                                                cell.bounds.size.width - 2.0f * SPAuthenticationFieldPaddingX,
+                                                SPAuthenticationFieldHeight));
     
 }
 
