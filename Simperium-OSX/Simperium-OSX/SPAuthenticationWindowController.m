@@ -18,22 +18,46 @@
 #import "SPAuthenticationConfiguration.h"
 #import "SPAuthenticationValidator.h"
 
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
 static NSUInteger windowWidth = 380;
 static NSUInteger windowHeight = 540;
+static NSInteger rowSize = 50;
 
-@interface SPAuthenticationWindowController () {
-    BOOL earthquaking;
-}
+#pragma mark ====================================================================================
+#pragma mark Private
+#pragma mark ====================================================================================
 
+@interface SPAuthenticationWindowController () <NSTextFieldDelegate>
+@property (nonatomic, strong) NSImageView               *logoImageView;
+@property (nonatomic, strong) NSButton                  *cancelButton;
+@property (nonatomic, strong) SPAuthenticationTextField *usernameField;
+@property (nonatomic, strong) SPAuthenticationTextField *passwordField;
+@property (nonatomic, strong) SPAuthenticationTextField *confirmField;
+@property (nonatomic, strong) NSTextField               *changeToSignInField;
+@property (nonatomic, strong) NSTextField               *changeToSignUpField;
+@property (nonatomic, strong) NSTextField               *errorField;
+@property (nonatomic, strong) NSButton                  *signInButton;
+@property (nonatomic, strong) NSButton                  *signUpButton;
+@property (nonatomic, strong) NSButton                  *changeToSignInButton;
+@property (nonatomic, strong) NSButton                  *changeToSignUpButton;
+@property (nonatomic, strong) NSProgressIndicator       *signInProgress;
+@property (nonatomic, strong) NSProgressIndicator       *signUpProgress;
+@property (nonatomic, assign) BOOL                      earthquaking;
 @end
 
-@implementation SPAuthenticationWindowController
-@synthesize authenticator;
-@synthesize validator;
-@synthesize optional;
 
-- (id)init {
-    rowSize = 50;
+#pragma mark ====================================================================================
+#pragma mark SPAuthenticationWindowController
+#pragma mark ====================================================================================
+
+@implementation SPAuthenticationWindowController
+
+- (instancetype)init {
     SPAuthenticationWindow *window = [[SPAuthenticationWindow alloc] initWithContentRect:NSMakeRect(0, 0, windowWidth, windowHeight) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
     
     if ((self = [super initWithWindow: window])) {
@@ -48,94 +72,91 @@ static NSUInteger windowHeight = 540;
         int cancelWidth = 60;
         NSString *cancelButtonText = NSLocalizedString(@"Skip", @"Text to display on OSX cancel button");
 
-        cancelButton = [self linkButtonWithText:cancelButtonText frame:NSMakeRect(windowWidth-cancelWidth, windowHeight-5-20, cancelWidth, 20)];
-        cancelButton.target = self;
-        cancelButton.action = @selector(cancelAction:);
-        [authView addSubview:cancelButton];
+        self.cancelButton = [self linkButtonWithText:cancelButtonText frame:NSMakeRect(windowWidth-cancelWidth, windowHeight-5-20, cancelWidth, 20)];
+        self.cancelButton.target = self;
+        self.cancelButton.action = @selector(cancelAction:);
+        [authView addSubview:self.cancelButton];
         
         NSImage *logoImage = [NSImage imageNamed:[[SPAuthenticationConfiguration sharedInstance] logoImageName]];
         CGFloat markerY = windowHeight-45-logoImage.size.height;
         NSRect logoRect = NSMakeRect(windowWidth/2 - logoImage.size.width/2, markerY, logoImage.size.width, logoImage.size.height);
-        logoImageView = [[NSImageView alloc] initWithFrame:logoRect];
-        logoImageView.image = logoImage;
-        [authView addSubview:logoImageView];
+        self.logoImageView = [[NSImageView alloc] initWithFrame:logoRect];
+        self.logoImageView.image = logoImage;
+        [authView addSubview:self.logoImageView];
         
-        errorField = [self tipFieldWithText:@"" frame:NSMakeRect(paddingX, markerY - 30, width, 20)];
-        [errorField setTextColor:[NSColor redColor]];
-        [authView addSubview:errorField];
+        self.errorField = [self tipFieldWithText:@"" frame:NSMakeRect(paddingX, markerY - 30, width, 20)];
+        [self.errorField setTextColor:[NSColor redColor]];
+        [authView addSubview:self.errorField];
 
         markerY -= 30;
-        usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize, width, 40) secure:NO];
+        self.usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize, width, 40) secure:NO];
         
-        [usernameField setPlaceholderString:NSLocalizedString(@"Email Address", @"Placeholder text for login field")];
-        usernameField.delegate = self;
-        [authView addSubview:usernameField];
+        [self.usernameField setPlaceholderString:NSLocalizedString(@"Email Address", @"Placeholder text for login field")];
+        self.usernameField.delegate = self;
+        [authView addSubview:self.usernameField];
         
-        passwordField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*2, width, 40) secure:YES];
-        [passwordField setPlaceholderString:NSLocalizedString(@"Password", @"Placeholder text for password field")];
+        self.passwordField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*2, width, 40) secure:YES];
+        [self.passwordField setPlaceholderString:NSLocalizedString(@"Password", @"Placeholder text for password field")];
         
-        passwordField.delegate = self;
-        [authView addSubview:passwordField];
+        self.passwordField.delegate = self;
+        [authView addSubview:self.passwordField];
 
-        confirmField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*3, width, 40) secure:YES];
-        [confirmField setPlaceholderString:NSLocalizedString(@"Confirm Password", @"Placeholder text for confirmation field")];
-        confirmField.delegate = self;
-        [authView addSubview:confirmField];
+        self.confirmField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*3, width, 40) secure:YES];
+        [self.confirmField setPlaceholderString:NSLocalizedString(@"Confirm Password", @"Placeholder text for confirmation field")];
+        self.confirmField.delegate = self;
+        [authView addSubview:self.confirmField];
                 
         markerY -= 30;
-        signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*3, width, 40)];
-        signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
-        signInButton.target = self;
-        signInButton.action = @selector(signInAction:);
-        [authView addSubview:signInButton];
+        self.signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*3, width, 40)];
+        self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
+        self.signInButton.target = self;
+        self.signInButton.action = @selector(signInAction:);
+        [authView addSubview:self.signInButton];
 
         int progressSize = 20;
-        signInProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(signInButton.frame.size.width - progressSize - paddingX, (signInButton.frame.size.height - progressSize) / 2, progressSize, progressSize)];
-        [signInProgress setStyle:NSProgressIndicatorSpinningStyle];
-        [signInProgress setDisplayedWhenStopped:NO];
-        [signInButton addSubview:signInProgress];
+        self.signInProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(self.signInButton.frame.size.width - progressSize - paddingX, (self.signInButton.frame.size.height - progressSize) / 2, progressSize, progressSize)];
+        [self.signInProgress setStyle:NSProgressIndicatorSpinningStyle];
+        [self.signInProgress setDisplayedWhenStopped:NO];
+        [self.signInButton addSubview:self.signInProgress];
 
         
-        signUpButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*4, width, 40)];
-        signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
-        signUpButton.target = self;
-        signUpButton.action = @selector(signUpAction:);
-        [authView addSubview:signUpButton];
+        self.signUpButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*4, width, 40)];
+        self.signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
+        self.signUpButton.target = self;
+        self.signUpButton.action = @selector(signUpAction:);
+        [authView addSubview:self.signUpButton];
         
-        signUpProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(signUpProgress.frame.size.width - progressSize - paddingX, (signUpProgress.frame.size.height - progressSize) / 2, progressSize, progressSize)];
-        [signUpProgress setStyle:NSProgressIndicatorSpinningStyle];
-        [signUpProgress setDisplayedWhenStopped:NO];
-        [signUpButton addSubview:signUpProgress];
-
+        self.signUpProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(self.signUpProgress.frame.size.width - progressSize - paddingX, (self.signUpProgress.frame.size.height - progressSize) / 2, progressSize, progressSize)];
+        [self.signUpProgress setStyle:NSProgressIndicatorSpinningStyle];
+        [self.signUpProgress setDisplayedWhenStopped:NO];
+        [self.signUpButton addSubview:self.signUpProgress];
         
+        // Toggle Signup
         NSString *signUpTip = NSLocalizedString(@"Need an account?", @"Link to create an account");
-        changeToSignUpField = [self tipFieldWithText:signUpTip frame:NSMakeRect(paddingX, markerY - rowSize*3 - 35, width, 20)];
-        [authView addSubview:changeToSignUpField];
+        self.changeToSignUpField = [self tipFieldWithText:signUpTip frame:NSMakeRect(paddingX, markerY - rowSize*3 - 35, width, 20)];
+        [authView addSubview:self.changeToSignUpField];
 
+        self.changeToSignUpButton = [self toggleButtonWithText:self.signUpButton.title frame:NSMakeRect(paddingX, self.changeToSignUpField.frame.origin.y - self.changeToSignUpField.frame.size.height - 2, width, 30)];
+        [authView addSubview:self.changeToSignUpButton];
+        
+        // Toggle SignIn
         NSString *signInTip = NSLocalizedString(@"Already have an account?", @"Link to sign in to an account");
-        changeToSignInField = [self tipFieldWithText:signInTip frame:NSMakeRect(paddingX, markerY - rowSize*4 - 35, width, 20)];
-        [authView addSubview:changeToSignInField];
+        self.changeToSignInField = [self tipFieldWithText:signInTip frame:NSMakeRect(paddingX, markerY - rowSize*4 - 35, width, 20)];
+        [authView addSubview:self.changeToSignInField];
         
-        changeToSignUpButton = [self toggleButtonWithText:signUpButton.title frame:NSMakeRect(paddingX, changeToSignUpField.frame.origin.y - changeToSignUpField.frame.size.height - 2, width, 30)];
-        [authView addSubview:changeToSignUpButton];
-        
-        changeToSignInButton = [self toggleButtonWithText:signInButton.title frame:NSMakeRect(paddingX, changeToSignInField.frame.origin.y - changeToSignInField.frame.size.height - 2, width, 30)];
-        [authView addSubview:changeToSignInButton];
+        self.changeToSignInButton = [self toggleButtonWithText:self.signInButton.title frame:NSMakeRect(paddingX, self.changeToSignInField.frame.origin.y - self.changeToSignInField.frame.size.height - 2, width, 30)];
+        [authView addSubview:self.changeToSignInButton];
         
         // Enter sign up mode
-        [self toggleAuthenticationMode:signUpButton];        
+        [self toggleAuthenticationMode:self.signUpButton];
     }
     
     return self;
 }
 
 - (void)setOptional:(BOOL)on {
-    optional = on;
-    [cancelButton setHidden:!optional];
-}
-
-- (BOOL)optional {
-    return optional;
+    _optional = on;
+    [self.cancelButton setHidden:!_optional];
 }
 
 - (NSTextField *)tipFieldWithText:(NSString *)text frame:(CGRect)frame {
@@ -183,7 +204,7 @@ static NSUInteger windowHeight = 540;
 
 
 - (IBAction)toggleAuthenticationMode:(id)sender {
-	self.signingIn = (sender == changeToSignInButton);
+	self.signingIn = (sender == self.changeToSignInButton);
 }
 
 - (void)setSigningIn:(BOOL)signingIn {
@@ -192,17 +213,17 @@ static NSUInteger windowHeight = 540;
 }
 
 - (void)refreshFields {
-    [signInButton setHidden:!_signingIn];
-    [signInButton setEnabled:_signingIn];
-    [signUpButton setHidden:_signingIn];
-    [signUpButton setEnabled:!_signingIn];
-    [changeToSignInButton setHidden:_signingIn];
-    [changeToSignInButton setEnabled:!_signingIn];
-    [changeToSignUpButton setHidden:!_signingIn];
-    [changeToSignUpButton setEnabled:_signingIn];
-    [changeToSignInField setHidden:_signingIn];
-    [changeToSignUpField setHidden:!_signingIn];
-    [confirmField setHidden:_signingIn];
+    [self.signInButton setHidden:!_signingIn];
+    [self.signInButton setEnabled:_signingIn];
+    [self.signUpButton setHidden:_signingIn];
+    [self.signUpButton setEnabled:!_signingIn];
+    [self.changeToSignInButton setHidden:_signingIn];
+    [self.changeToSignInButton setEnabled:!_signingIn];
+    [self.changeToSignUpButton setHidden:!_signingIn];
+    [self.changeToSignUpButton setEnabled:_signingIn];
+    [self.changeToSignInField setHidden:_signingIn];
+    [self.changeToSignUpField setHidden:!_signingIn];
+    [self.confirmField setHidden:_signingIn];
     
     [self.window.contentView setNeedsDisplay:YES];
     [self clearAuthenticationError];
@@ -216,24 +237,24 @@ static NSUInteger windowHeight = 540;
         return;
     }
     
-    signInButton.title = NSLocalizedString(@"Signing In...", @"Displayed temporarily while signing in");
-    [signInProgress startAnimation:self];
-    [signInButton setEnabled:NO];
-    [changeToSignUpButton setEnabled:NO];
-    [usernameField setEnabled:NO];
-    [passwordField setEnabled:NO];
-    [self.authenticator authenticateWithUsername:[usernameField stringValue] password:[passwordField stringValue]
+    self.signInButton.title = NSLocalizedString(@"Signing In...", @"Displayed temporarily while signing in");
+    [self.signInProgress startAnimation:self];
+    [self.signInButton setEnabled:NO];
+    [self.changeToSignUpButton setEnabled:NO];
+    [self.usernameField setEnabled:NO];
+    [self.passwordField setEnabled:NO];
+    [self.authenticator authenticateWithUsername:[self.usernameField stringValue] password:[self.passwordField stringValue]
                                        success:^{
                                        }
                                        failure:^(int responseCode, NSString *responseString) {
                                            NSLog(@"Error signing in (%d): %@", responseCode, responseString);
                                            [self showAuthenticationErrorForCode:responseCode];
-                                           [signInProgress stopAnimation:self];
-                                           signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
-                                           [signInButton setEnabled:YES];
-                                           [changeToSignUpButton setEnabled:YES];
-                                           [usernameField setEnabled:YES];
-                                           [passwordField setEnabled:YES];
+                                           [self.signInProgress stopAnimation:self];
+                                           self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
+                                           [self.signInButton setEnabled:YES];
+                                           [self.changeToSignUpButton setEnabled:YES];
+                                           [self.usernameField setEnabled:YES];
+                                           [self.passwordField setEnabled:YES];
                                        }
      ];
 }
@@ -243,41 +264,41 @@ static NSUInteger windowHeight = 540;
         return;
     }
     
-    signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
-    [signUpProgress startAnimation:self];
-    [signUpButton setEnabled:NO];
-    [changeToSignInButton setEnabled:NO];
-    [usernameField setEnabled:NO];
-    [passwordField setEnabled:NO];
-    [confirmField setEnabled:NO];
+    self.signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
+    [self.signUpProgress startAnimation:self];
+    [self.signUpButton setEnabled:NO];
+    [self.changeToSignInButton setEnabled:NO];
+    [self.usernameField setEnabled:NO];
+    [self.passwordField setEnabled:NO];
+    [self.confirmField setEnabled:NO];
 
-    [self.authenticator createWithUsername:[usernameField stringValue] password:[passwordField stringValue]
+    [self.authenticator createWithUsername:[self.usernameField stringValue] password:[self.passwordField stringValue]
                                  success:^{
                                      //[self close];
                                  }
                                  failure:^(int responseCode, NSString *responseString) {
                                      NSLog(@"Error signing up (%d): %@", responseCode, responseString);
                                      [self showAuthenticationErrorForCode:responseCode];
-                                     signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
-                                     [signUpProgress stopAnimation:self];
-                                     [signUpButton setEnabled:YES];
-                                     [changeToSignInButton setEnabled:YES];
-                                     [usernameField setEnabled:YES];
-                                     [passwordField setEnabled:YES];
-                                     [confirmField setEnabled:YES];
+                                     self.signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
+                                     [self.signUpProgress stopAnimation:self];
+                                     [self.signUpButton setEnabled:YES];
+                                     [self.changeToSignInButton setEnabled:YES];
+                                     [self.usernameField setEnabled:YES];
+                                     [self.passwordField setEnabled:YES];
+                                     [self.confirmField setEnabled:YES];
                                  }];
 }
 
 - (IBAction)cancelAction:(id)sender {
-    [authenticator cancel];
+    [self.authenticator cancel];
 }
 
 
 # pragma mark Validation and Error Handling
 
 - (BOOL)validateUsername {
-    if (![self.validator validateUsername:usernameField.stringValue]) {
-        [self earthquake:usernameField];
+    if (![self.validator validateUsername:self.usernameField.stringValue]) {
+        [self earthquake:self.usernameField];
         [self showAuthenticationError:NSLocalizedString(@"Not a valid email address", @"Error when you enter a bad email address")];
         
         return NO;
@@ -287,9 +308,9 @@ static NSUInteger windowHeight = 540;
 }
 
 - (BOOL)validatePasswordSecurity {
-    if (![self.validator validatePasswordSecurity:passwordField.stringValue]) {
-        [self earthquake:passwordField];
-        [self earthquake:confirmField];
+    if (![self.validator validatePasswordSecurity:self.passwordField.stringValue]) {
+        [self earthquake:self.passwordField];
+        [self earthquake:self.confirmField];
         
         NSString *errorStr = NSLocalizedString(@"Password should be at least %ld characters", @"Error when your password isn't long enough");
         NSString *notLongEnough = [NSString stringWithFormat:errorStr, (long)self.validator.minimumPasswordLength];
@@ -302,9 +323,9 @@ static NSUInteger windowHeight = 540;
 }
 
 - (BOOL)validatePasswordsMatch{
-    if (![passwordField.stringValue isEqualToString:confirmField.stringValue]) {
-        [self earthquake:passwordField];
-        [self earthquake:confirmField];
+    if (![self.passwordField.stringValue isEqualToString:self.confirmField.stringValue]) {
+        [self earthquake:self.passwordField];
+        [self earthquake:self.confirmField];
 
         return NO;
     }
@@ -313,7 +334,7 @@ static NSUInteger windowHeight = 540;
 }
 
 - (BOOL)validateConnection {
-    if (!authenticator.connected) {
+    if (!self.authenticator.connected) {
         [self showAuthenticationError:NSLocalizedString(@"You're not connected to the internet", @"Error when you're not connected")];
         return NO;
     }
@@ -338,10 +359,11 @@ static NSUInteger windowHeight = 540;
 
 - (void)earthquake:(NSView *)view {
     // Quick and dirty way to prevent overlapping animations that can move the view
-    if (earthquaking)
+    if (self.earthquaking) {
         return;
+    }
     
-    earthquaking = YES;
+    self.earthquaking = YES;
     CAKeyframeAnimation *shakeAnimation = [self shakeAnimation:view.frame];
     [view setAnimations:@{@"frameOrigin":shakeAnimation}];
 	[[view animator] setFrameOrigin:view.frame.origin];
@@ -373,11 +395,11 @@ static NSUInteger windowHeight = 540;
 }
 
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
-    earthquaking = NO;
+    self.earthquaking = NO;
 }
 
 - (void)showAuthenticationError:(NSString *)errorMessage {
-    [errorField setStringValue:errorMessage];
+    [self.errorField setStringValue:errorMessage];
 }
 
 - (void)showAuthenticationErrorForCode:(NSUInteger)responseCode {
@@ -385,8 +407,8 @@ static NSUInteger windowHeight = 540;
         case 409:
             // User already exists
             [self showAuthenticationError:NSLocalizedString(@"That email is already being used", @"Error when address is in use")];
-            [self earthquake:usernameField];
-            [[self window] makeFirstResponder:usernameField];
+            [self earthquake:self.usernameField];
+            [self.window makeFirstResponder:self.usernameField];
             break;
         case 401:
             // Bad email or password
@@ -401,19 +423,18 @@ static NSUInteger windowHeight = 540;
 }
 
 - (void)clearAuthenticationError {
-    [errorField setStringValue:@""];
+    [self.errorField setStringValue:@""];
 }
 
 #pragma mark NSTextView delegates
 
-- (BOOL)control:(NSControl *)control textView:(NSTextView *)fieldEditor doCommandBySelector:(SEL)commandSelector
-{
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)fieldEditor doCommandBySelector:(SEL)commandSelector {
     BOOL retval = NO;
     
     if (commandSelector == @selector(insertNewline:)) {
-        if (_signingIn && [control isEqual:passwordField.textField]) {
+        if (_signingIn && [control isEqual:self.passwordField.textField]) {
             [self signInAction:nil];
-        } else if (!_signingIn && [control isEqual:confirmField.textField]) {
+        } else if (!_signingIn && [control isEqual:self.confirmField.textField]) {
             [self signUpAction:nil];
         }
     }
@@ -430,13 +451,12 @@ static NSUInteger windowHeight = 540;
     // Intercept return and invoke actions
     NSEvent *currentEvent = [NSApp currentEvent];
     if (currentEvent.type == NSKeyDown && [currentEvent.charactersIgnoringModifiers isEqualToString:@"\r"]) {
-        if (_signingIn && [[obj object] isEqual:passwordField.textField]) {
+        if (_signingIn && [[obj object] isEqual:self.passwordField.textField]) {
             [self signInAction:nil];
-        } else if (!_signingIn && [[obj object] isEqual:confirmField.textField]) {
+        } else if (!_signingIn && [[obj object] isEqual:self.confirmField.textField]) {
             [self signUpAction:nil];
         }
     }
 }
-
 
 @end
