@@ -14,11 +14,13 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
 @implementation NSString (Simperium)
 
 // From https://github.com/mikeho/QSUtilities
-+ (NSString *)sp_encodeBase64WithString:(NSString *)strData {
++ (NSString *)sp_encodeBase64WithString:(NSString *)strData
+{
     return [NSString sp_encodeBase64WithData:[strData dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
-+ (NSString *)sp_encodeBase64WithData:(NSData *)objData {
++ (NSString *)sp_encodeBase64WithData:(NSData *)objData
+{
     if ([NSData instancesRespondToSelector:@selector(base64EncodedStringWithOptions:)]) {
         return [objData base64EncodedStringWithOptions:0];
     }
@@ -109,6 +111,12 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
     }
     
     return randomString;
+}
+
+- (BOOL)sp_isValidUrl
+{
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:self]];
+    return [NSURLConnection canHandleRequest:request];
 }
 
 - (NSString *)sp_urlEncodeString
