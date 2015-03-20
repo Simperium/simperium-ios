@@ -1,5 +1,5 @@
 //
-//  SPForgotPasswordViewController.h
+//  SPWebViewController.h
 //  Simperium
 //
 //  Created by Patrick Vink on 11/28/14.
@@ -10,9 +10,11 @@
 
 
 #pragma mark ====================================================================================
-#pragma mark SPForgotPasswordViewController
+#pragma mark SPWebViewController
 #pragma mark ====================================================================================
 
-@interface SPForgotPasswordViewController : UIViewController
+@interface SPWebViewController : UIViewController
+
+- (instancetype)initWithURL:(NSURL *)url;
 
 @end
