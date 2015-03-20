@@ -8,8 +8,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface SPAuthenticationView : NSView {
-    
-}
+
+#pragma mark ====================================================================================
+#pragma mark SPAuthenticationView
+#pragma mark ====================================================================================
+
+@interface SPAuthenticationView : NSView
 
 @end
