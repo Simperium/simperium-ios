@@ -24,9 +24,18 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSUInteger windowWidth = 380;
-static NSUInteger windowHeight = 540;
-static NSInteger rowSize = 50;
+static NSUInteger const SPAuthenticationWindowWidth     = 380.0f;
+static NSUInteger const SPAuthenticationWindowHeight    = 540.0f;
+static NSInteger const rowSize = 50;
+
+static CGFloat const SPAuthenticationCancelWidth        = 60.0f;
+
+static NSUInteger const SPAuthenticationFieldPaddingX   = 30.0f;
+static NSUInteger const SPAuthenticationFieldWidth      = SPAuthenticationWindowWidth - SPAuthenticationFieldPaddingX * 2;
+static NSUInteger const SPAuthenticationFieldHeight     = 40.0f;
+
+static CGFloat const SPAuthenticationProgressSize       = 20.0f;
+
 
 #pragma mark ====================================================================================
 #pragma mark Private
@@ -58,7 +67,7 @@ static NSInteger rowSize = 50;
 @implementation SPAuthenticationWindowController
 
 - (instancetype)init {
-    SPAuthenticationWindow *window = [[SPAuthenticationWindow alloc] initWithContentRect:NSMakeRect(0, 0, windowWidth, windowHeight) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+    SPAuthenticationWindow *window = [[SPAuthenticationWindow alloc] initWithContentRect:NSMakeRect(0, 0, SPAuthenticationWindowWidth, SPAuthenticationWindowHeight) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
     
     if ((self = [super initWithWindow: window])) {
         self.validator = [[SPAuthenticationValidator alloc] init];
@@ -66,67 +75,62 @@ static NSInteger rowSize = 50;
         SPAuthenticationView *authView = [[SPAuthenticationView alloc] initWithFrame:window.frame];
         [window.contentView addSubview:authView];
         
-        NSUInteger paddingX = 30;
-        NSUInteger width = windowWidth - paddingX*2;
-        
-        int cancelWidth = 60;
         NSString *cancelButtonText = NSLocalizedString(@"Skip", @"Text to display on OSX cancel button");
 
-        self.cancelButton = [self linkButtonWithText:cancelButtonText frame:NSMakeRect(windowWidth-cancelWidth, windowHeight-5-20, cancelWidth, 20)];
+        self.cancelButton = [self linkButtonWithText:cancelButtonText frame:NSMakeRect(SPAuthenticationWindowWidth-SPAuthenticationCancelWidth, SPAuthenticationWindowHeight-5-20, SPAuthenticationCancelWidth, 20)];
         self.cancelButton.target = self;
         self.cancelButton.action = @selector(cancelAction:);
         [authView addSubview:self.cancelButton];
         
         NSImage *logoImage = [NSImage imageNamed:[[SPAuthenticationConfiguration sharedInstance] logoImageName]];
-        CGFloat markerY = windowHeight-45-logoImage.size.height;
-        NSRect logoRect = NSMakeRect(windowWidth/2 - logoImage.size.width/2, markerY, logoImage.size.width, logoImage.size.height);
+        CGFloat markerY = SPAuthenticationWindowHeight-45-logoImage.size.height;
+        NSRect logoRect = NSMakeRect(SPAuthenticationWindowWidth * 0.5f - logoImage.size.width * 0.5f, markerY, logoImage.size.width, logoImage.size.height);
         self.logoImageView = [[NSImageView alloc] initWithFrame:logoRect];
         self.logoImageView.image = logoImage;
         [authView addSubview:self.logoImageView];
         
-        self.errorField = [self tipFieldWithText:@"" frame:NSMakeRect(paddingX, markerY - 30, width, 20)];
+        self.errorField = [self tipFieldWithText:@"" frame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - 30, SPAuthenticationFieldWidth, 20)];
         [self.errorField setTextColor:[NSColor redColor]];
         [authView addSubview:self.errorField];
 
         markerY -= 30;
-        self.usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize, width, 40) secure:NO];
+        self.usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:NO];
         
         [self.usernameField setPlaceholderString:NSLocalizedString(@"Email Address", @"Placeholder text for login field")];
         self.usernameField.delegate = self;
         [authView addSubview:self.usernameField];
         
-        self.passwordField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*2, width, 40) secure:YES];
+        self.passwordField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize*2, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:YES];
         [self.passwordField setPlaceholderString:NSLocalizedString(@"Password", @"Placeholder text for password field")];
         
         self.passwordField.delegate = self;
         [authView addSubview:self.passwordField];
 
-        self.confirmField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*3, width, 40) secure:YES];
+        self.confirmField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize*3, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:YES];
         [self.confirmField setPlaceholderString:NSLocalizedString(@"Confirm Password", @"Placeholder text for confirmation field")];
         self.confirmField.delegate = self;
         [authView addSubview:self.confirmField];
                 
         markerY -= 30;
-        self.signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*3, width, 40)];
+        self.signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize*3, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight)];
         self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
         self.signInButton.target = self;
         self.signInButton.action = @selector(signInAction:);
         [authView addSubview:self.signInButton];
 
-        int progressSize = 20;
-        self.signInProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(self.signInButton.frame.size.width - progressSize - paddingX, (self.signInButton.frame.size.height - progressSize) / 2, progressSize, progressSize)];
+        self.signInProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(self.signInButton.frame.size.width - SPAuthenticationProgressSize - SPAuthenticationFieldPaddingX, (self.signInButton.frame.size.height - SPAuthenticationProgressSize) * 0.5f, SPAuthenticationProgressSize, SPAuthenticationProgressSize)];
         [self.signInProgress setStyle:NSProgressIndicatorSpinningStyle];
         [self.signInProgress setDisplayedWhenStopped:NO];
         [self.signInButton addSubview:self.signInProgress];
 
         
-        self.signUpButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(paddingX, markerY - rowSize*4, width, 40)];
+        self.signUpButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize*4, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight)];
         self.signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
         self.signUpButton.target = self;
         self.signUpButton.action = @selector(signUpAction:);
         [authView addSubview:self.signUpButton];
         
-        self.signUpProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(self.signUpProgress.frame.size.width - progressSize - paddingX, (self.signUpProgress.frame.size.height - progressSize) / 2, progressSize, progressSize)];
+        self.signUpProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(self.signUpProgress.frame.size.width - SPAuthenticationProgressSize - SPAuthenticationFieldPaddingX, (self.signUpProgress.frame.size.height - SPAuthenticationProgressSize) * 0.5f, SPAuthenticationProgressSize, SPAuthenticationProgressSize)];
         [self.signUpProgress setStyle:NSProgressIndicatorSpinningStyle];
         [self.signUpProgress setDisplayedWhenStopped:NO];
         [self.signUpButton addSubview:self.signUpProgress];
@@ -136,15 +140,15 @@ static NSInteger rowSize = 50;
         self.changeToSignUpField = [self tipFieldWithText:signUpTip frame:NSMakeRect(paddingX, markerY - rowSize*3 - 35, width, 20)];
         [authView addSubview:self.changeToSignUpField];
 
-        self.changeToSignUpButton = [self toggleButtonWithText:self.signUpButton.title frame:NSMakeRect(paddingX, self.changeToSignUpField.frame.origin.y - self.changeToSignUpField.frame.size.height - 2, width, 30)];
+        self.changeToSignUpButton = [self toggleButtonWithText:self.signUpButton.title frame:NSMakeRect(SPAuthenticationFieldPaddingX, self.changeToSignUpField.frame.origin.y - self.changeToSignUpField.frame.size.height - 2, SPAuthenticationFieldWidth, 30)];
         [authView addSubview:self.changeToSignUpButton];
         
         // Toggle SignIn
         NSString *signInTip = NSLocalizedString(@"Already have an account?", @"Link to sign in to an account");
-        self.changeToSignInField = [self tipFieldWithText:signInTip frame:NSMakeRect(paddingX, markerY - rowSize*4 - 35, width, 20)];
+        self.changeToSignInField = [self tipFieldWithText:signInTip frame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize*4 - 35, SPAuthenticationFieldWidth, 20)];
         [authView addSubview:self.changeToSignInField];
         
-        self.changeToSignInButton = [self toggleButtonWithText:self.signInButton.title frame:NSMakeRect(paddingX, self.changeToSignInField.frame.origin.y - self.changeToSignInField.frame.size.height - 2, width, 30)];
+        self.changeToSignInButton = [self toggleButtonWithText:self.signInButton.title frame:NSMakeRect(SPAuthenticationFieldPaddingX, self.changeToSignInField.frame.origin.y - self.changeToSignInField.frame.size.height - 2, SPAuthenticationFieldWidth, 30)];
         [authView addSubview:self.changeToSignInButton];
         
         // Enter sign up mode
@@ -178,8 +182,6 @@ static NSInteger rowSize = 50;
     NSButton *button = [[NSButton alloc] initWithFrame:frame];
     [button setBordered:NO];
     [button setButtonType:NSMomentaryChangeButton];
-    button.target = self;
-    button.action = @selector(toggleAuthenticationMode:);
     
     NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
     [style setAlignment:NSCenterTextAlignment];
