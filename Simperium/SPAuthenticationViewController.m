@@ -35,6 +35,11 @@ static CGFloat const SPAuthenticationFieldPaddingX          = 10.0f;
 static CGFloat const SPAuthenticationFieldWidth             = 280.0f;
 static CGFloat const SPAuthenticationFieldHeight            = 38.0f;
 
+static CGFloat const SPAuthenticationLinkHeight             = 24.0f;
+static CGFloat const SPAuthenticationLinkFontSize           = 10.0f;
+static CGFloat const SPAuthenticationLinkPadding            = 10.0f;
+static UIEdgeInsets const SPAuthenticationLinkTitleInsets   = {3.0f, 0.0f, 0.0f, 0.0f};
+
 static NSString *SPAuthenticationEmailCellIdentifier        = @"EmailCellIdentifier";
 static NSString *SPAuthenticationPasswordCellIdentifier     = @"PasswordCellIdentifier";
 static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdentifier";
@@ -182,27 +187,32 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     // Terms Button
     self.termsButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [_termsButton addTarget:self action:@selector(termsAction:) forControlEvents:UIControlEventTouchUpInside];
-    _termsButton.titleEdgeInsets = UIEdgeInsetsMake(3, 0, 0, 0);
-    _termsButton.titleLabel.font = [UIFont fontWithName:configuration.mediumFontName size:10.0];
-    _termsButton.frame = CGRectMake(10.0, 0.0, self.tableView.frame.size.width-20.0, 24.0);
+    _termsButton.titleEdgeInsets = SPAuthenticationLinkTitleInsets;
+    _termsButton.titleLabel.font = [UIFont fontWithName:configuration.mediumFontName size:SPAuthenticationLinkFontSize];
+    _termsButton.frame = CGRectMake(SPAuthenticationLinkPadding,
+                                    0.0,
+                                    self.tableView.frame.size.width - 2 * SPAuthenticationLinkPadding,
+                                    SPAuthenticationLinkHeight);
+    
     _termsButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [_termsButton setAttributedTitle:termsTitle forState:UIControlStateNormal];
     
     // Forgot Password String
-	NSDictionary *forgotPasswordAttributes = @{
-        NSForegroundColorAttributeName: [greyColor colorWithAlphaComponent:0.4]
-    };
-	
 	NSString *forgotPasswordText = NSLocalizedString(@"Forgot password? »", @"Forgot password Button Text");
-    NSMutableAttributedString *forgotPasswordTitle = [[NSMutableAttributedString alloc] initWithString:[forgotPasswordText uppercaseString] attributes:forgotPasswordAttributes];
+	NSDictionary *forgotPasswordAttributes = @{ NSForegroundColorAttributeName: [greyColor colorWithAlphaComponent:0.4] };
+    NSAttributedString *forgotPasswordTitle = [[NSAttributedString alloc] initWithString:forgotPasswordText.uppercaseString
+                                                                              attributes:forgotPasswordAttributes];
 	
 	// Forgot Password Button
     self.forgotPasswordButton = [UIButton buttonWithType:UIButtonTypeCustom];
-	[_forgotPasswordButton addTarget:self action:@selector(forgotPasswordAction:) forControlEvents:UIControlEventTouchUpInside];
-    _forgotPasswordButton.titleEdgeInsets = UIEdgeInsetsMake(3, 0, 0, 0);
-    _forgotPasswordButton.titleLabel.font = [UIFont fontWithName:configuration.mediumFontName size:10.0];
-    _forgotPasswordButton.frame = CGRectMake(10.0, 0.0, self.tableView.frame.size.width-20.0, 24.0);
-	_forgotPasswordButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [_forgotPasswordButton addTarget:self action:@selector(forgotPasswordAction:) forControlEvents:UIControlEventTouchUpInside];
+    _forgotPasswordButton.titleEdgeInsets = SPAuthenticationLinkTitleInsets;
+    _forgotPasswordButton.titleLabel.font = [UIFont fontWithName:configuration.mediumFontName size:SPAuthenticationLinkFontSize];
+    _forgotPasswordButton.frame = CGRectMake(SPAuthenticationLinkPadding,
+                                             0.0,
+                                             self.tableView.frame.size.width - 2 * SPAuthenticationLinkPadding,
+                                             SPAuthenticationLinkHeight);
+    _forgotPasswordButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [_forgotPasswordButton setAttributedTitle:forgotPasswordTitle forState:UIControlStateNormal];
     
     // Action
@@ -242,12 +252,15 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.changeButton.frame.size.height + self.changeButton.frame.origin.y)];
     footerView.contentMode = UIViewContentModeTopLeft;
     [footerView setUserInteractionEnabled:YES];
-    if ([[SPAuthenticationConfiguration sharedInstance] showTOSButton]) {
+    
+    if (configuration.showTOSButton) {
         [footerView addSubview:_termsButton];
     }
-    if ([[SPAuthenticationConfiguration sharedInstance] showForgotPasswordButton]) {
+    
+    if (configuration.showForgotPasswordButton) {
         [footerView addSubview:_forgotPasswordButton];
     }
+    
     [footerView addSubview:_actionButton];
     [footerView addSubview:_changeButton];
     footerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
