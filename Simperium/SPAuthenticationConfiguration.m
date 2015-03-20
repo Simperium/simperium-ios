@@ -14,18 +14,18 @@
 #import <UIKit/UIKit.h>
 #endif
 
-@implementation SPAuthenticationConfiguration
 
-static SPAuthenticationConfiguration *gInstance = NULL;
+@implementation SPAuthenticationConfiguration
 
 + (instancetype)sharedInstance
 {
+    static SPAuthenticationConfiguration *_instance = NULL;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-            gInstance = [[self alloc] init];
+        _instance = [[self alloc] init];
     });
     
-    return(gInstance);
+    return _instance;
 }
 
 - (instancetype)init {
