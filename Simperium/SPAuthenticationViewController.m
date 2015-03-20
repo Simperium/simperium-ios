@@ -15,7 +15,7 @@
 #import "SPAuthenticationConfiguration.h"
 #import "SPAuthenticationValidator.h"
 #import "SPTOSViewController.h"
-#import "SPForgotPWViewController.h"
+#import "SPForgotPasswordViewController.h"
 
 
 
@@ -572,7 +572,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 - (IBAction)forgotPasswordAction:(id)sender {
    
-   SPForgotPWViewController *vc = [[SPForgotPWViewController alloc] init];
+   SPForgotPasswordViewController *vc = [[SPForgotPasswordViewController alloc] init];
    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:vc];
    
     if (self.navigationController) {
