@@ -1,5 +1,5 @@
 //
-//  SPForgotPWViewController.m
+//  SPForgotPasswordViewController.m
 //  Simperium
 //
 //  Created by Patrick Vink on 11/28/14.
@@ -9,15 +9,29 @@
 #import "SPForgotPasswordViewController.h"
 #import "SPLogger.h"
 
+
+
 #pragma mark ====================================================================================
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static SPLogLevels logLevel     = SPLogLevelsInfo;
+static SPLogLevels logLevel = SPLogLevelsInfo;
 
-@interface SPForgotPasswordViewController ()
+#pragma mark ====================================================================================
+#pragma mark Private
+#pragma mark ====================================================================================
+
+@interface SPForgotPasswordViewController () <UIWebViewDelegate>
+    
+@property (nonatomic, strong) UIWebView                 *webView;
+@property (nonatomic, strong) UIActivityIndicatorView   *activityIndicator;
 
 @end
+
+
+#pragma mark ====================================================================================
+#pragma mark SPForgotPasswordViewController
+#pragma mark ====================================================================================
 
 @implementation SPForgotPasswordViewController
 
@@ -30,22 +44,19 @@ static SPLogLevels logLevel     = SPLogLevelsInfo;
     }
 }
 
-- (void)dismissAction:(id)sender {
+- (void)viewDidLoad {
     
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)viewDidLoad
-{
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
     
-    activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    [activityIndicator hidesWhenStopped];
-    UIBarButtonItem *activityContainer = [[UIBarButtonItem alloc] initWithCustomView:activityIndicator];
+    self.activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    [self.activityIndicator hidesWhenStopped];
+    
+    UIBarButtonItem *activityContainer = [[UIBarButtonItem alloc] initWithCustomView:self.activityIndicator];
     self.navigationItem.leftBarButtonItem = activityContainer;
     
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismissAction:)];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                                                                                           target:self
+                                                                                           action:@selector(dismissAction:)];
     
     NSString *forgotPWURL = NSLocalizedString(@"Forgot Password URL", @"Using this localized string you can set your own password per language");
     
@@ -56,24 +67,33 @@ static SPLogLevels logLevel     = SPLogLevelsInfo;
     }
     
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:[NSURL URLWithString:forgotPWURL]];
-    [webView loadRequest:request];
+    [self.webView loadRequest:request];
 }
 
-- (BOOL)isValidURL:(NSString *)urlString{
+
+#pragma mark - Helpers
+
+- (IBAction)dismissAction:(id)sender {
+    
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (BOOL)isValidURL:(NSString *)urlString {
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:urlString]];
     return [NSURLConnection canHandleRequest:request];
 }
+
 
 #pragma mark UIWebViewDelegate Methods
 
 - (void)webViewDidStartLoad:(UIWebView *)webView {
     
-    [activityIndicator startAnimating];
+    [self.activityIndicator startAnimating];
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView {
     
-    [activityIndicator stopAnimating];
+    [self.activityIndicator stopAnimating];
 }
 
 

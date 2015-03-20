@@ -1,5 +1,5 @@
 //
-//  SPForgotPWViewController.h
+//  SPForgotPasswordViewController.h
 //  Simperium
 //
 //  Created by Patrick Vink on 11/28/14.
@@ -8,10 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SPForgotPasswordViewController : UIViewController <UIWebViewDelegate> {
-    
-    UIWebView *webView;
-    UIActivityIndicatorView *activityIndicator;
-}
+
+#pragma mark ====================================================================================
+#pragma mark SPForgotPasswordViewController
+#pragma mark ====================================================================================
+
+@interface SPForgotPasswordViewController : UIViewController
 
 @end
