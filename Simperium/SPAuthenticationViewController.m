@@ -1,5 +1,5 @@
 //
-//  SPAutehnticationViewController.m
+//  SPAuthenticationViewController.m
 //  Simperium
 //
 //  Created by Michael Johnston on 24/11/11.
@@ -13,12 +13,10 @@
 #import "SPAuthenticationButton.h"
 #import "SPAuthenticationConfiguration.h"
 #import "SPAuthenticationValidator.h"
-#import "SPEnvironment.h"
 #import "SPHttpRequest.h"
 #import "SPWebViewController.h"
 
 #import "JSONKit+Simperium.h"
-#import "NSString+Simperium.h"
 
 
 #pragma mark ====================================================================================
@@ -115,8 +113,13 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     [self.changeButton setTitle:changeTitle forState:UIControlStateNormal];
     self.changeButton.detailTitleLabel.text = changeDetailTitle.uppercaseString;
 
-    self.termsButton.hidden = _signingIn;
-    self.forgotPasswordButton.hidden = !_signingIn;
+    // Refresh Terms + Forgot Password
+    SPAuthenticationConfiguration *configuration = [SPAuthenticationConfiguration sharedInstance];
+    BOOL shouldShowTerms = !_signingIn && configuration.termsOfServiceURL;
+    BOOL shouldShowForgot = _signingIn && configuration.forgotPasswordURL;
+    
+    self.termsButton.hidden = !shouldShowTerms;
+    self.forgotPasswordButton.hidden = !shouldShowForgot;
 }
 
 - (void)viewDidLoad {
@@ -254,19 +257,14 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     // Setup TableView's Footer
     UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.changeButton.frame.size.height + self.changeButton.frame.origin.y)];
     footerView.contentMode = UIViewContentModeTopLeft;
-    [footerView setUserInteractionEnabled:YES];
+    footerView.userInteractionEnabled = YES;
+    footerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     
-    if (configuration.showTOSButton) {
-        [footerView addSubview:_termsButton];
-    }
-    
-    if (configuration.showForgotPasswordButton) {
-        [footerView addSubview:_forgotPasswordButton];
-    }
-    
+    // Attach Footer Views
+    [footerView addSubview:_termsButton];
+    [footerView addSubview:_forgotPasswordButton];
     [footerView addSubview:_actionButton];
     [footerView addSubview:_changeButton];
-    footerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.tableView.tableFooterView = footerView;
     
     // Setup TableView's GesturesRecognizer
@@ -275,10 +273,8 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     tapGesture.numberOfTapsRequired = 1;
     [self.tableView addGestureRecognizer:tapGesture];
     
-    // Show / Hide signup fields, if needed
+    // Refresh + Layout
     [self refreshButtons];
-    
-    // Layout views
     [self layoutViewsForInterfaceOrientation:self.interfaceOrientation];
 }
 
@@ -577,24 +573,12 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 #pragma mark Actions
 
 - (IBAction)termsAction:(id)sender {
- 
-    NSString *termsPath = NSLocalizedString(@"Simperium TOS URL",
-                                            @"Using this localized string you can set your own TOS per language");
-    
-    termsPath = termsPath.sp_isValidUrl ? termsPath : SPTermsOfServiceURL;
-    
-    NSURL *forgotPasswordURL = [NSURL URLWithString:termsPath];
-    [self showWebviewWithURL:forgotPasswordURL];
+    NSString *termsOfServiceURL = [[SPAuthenticationConfiguration sharedInstance] termsOfServiceURL];
+    [self showWebviewWithURL:termsOfServiceURL];
 }
 
 - (IBAction)forgotPasswordAction:(id)sender {
-   
-    NSString *forgotPasswordPath = NSLocalizedString(@"Simperium Forgot Password URL",
-                                                     @"Using this localized string you can set your own password per language");
-    
-    forgotPasswordPath = forgotPasswordPath.sp_isValidUrl ? forgotPasswordPath : @"https://simperium.com/404.html";
-    
-    NSURL *forgotPasswordURL = [NSURL URLWithString:forgotPasswordPath];
+    NSString *forgotPasswordURL = [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
     [self showWebviewWithURL:forgotPasswordURL];
 }
 
@@ -793,11 +777,11 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     return [NSIndexPath indexPathForItem:SPAuthenticationRowsConfirm inSection:0];
 }
 
-- (void)showWebviewWithURL:(NSURL *)url {
+- (void)showWebviewWithURL:(NSString *)targetURL {
     
-    NSParameterAssert(url);
+    NSParameterAssert(targetURL);
     
-    SPWebViewController *vc                 = [[SPWebViewController alloc] initWithURL:url];
+    SPWebViewController *vc                 = [[SPWebViewController alloc] initWithURL:targetURL];
     UINavigationController *navController   = [[UINavigationController alloc] initWithRootViewController:vc];
     
     if (self.navigationController) {

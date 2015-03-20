@@ -17,12 +17,13 @@
 
 static SPLogLevels logLevel = SPLogLevelsInfo;
 
+
 #pragma mark ====================================================================================
 #pragma mark Private
 #pragma mark ====================================================================================
 
 @interface SPWebViewController () <UIWebViewDelegate>
-@property (nonatomic, strong) NSURL                     *url;
+@property (nonatomic, strong) NSURL                     *targetURL;
 @property (nonatomic, strong) UIWebView                 *webView;
 @property (nonatomic, strong) UIActivityIndicatorView   *activityIndicator;
 @end
@@ -34,13 +35,13 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
 @implementation SPWebViewController
 
-- (instancetype)initWithURL:(NSURL *)url {
+- (instancetype)initWithURL:(NSString *)url {
     
     NSParameterAssert(url);
     
     self = [super init];
     if (self) {
-        self.url = url;
+        self.targetURL = [NSURL URLWithString:url];
     }
     
     return self;
@@ -67,7 +68,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
                                                                                            target:self
                                                                                            action:@selector(dismissAction:)];
     
-    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:self.url];
+    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:self.targetURL];
     [self.webView loadRequest:request];
 }
 

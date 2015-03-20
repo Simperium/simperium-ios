@@ -7,13 +7,26 @@
 //
 
 #import "SPAuthenticationConfiguration.h"
-
-#define kFontTestString @"Testyj"
+#import "SPEnvironment.h"
+#import "NSString+Simperium.h"
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
 #endif
 
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static NSString *SPAuthenticationDefaultRegularFontName = @"HelveticaNeue";
+static NSString *SPAuthenticationDefaultMediumFontName  = @"HelveticaNeue-Medium";
+static NSString *SPAuthenticationTestString             = @"Testyj";
+
+
+#pragma mark ====================================================================================
+#pragma mark SPAuthenticationConfiguration
+#pragma mark ====================================================================================
 
 @implementation SPAuthenticationConfiguration
 
@@ -31,27 +44,38 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _regularFontName = @"HelveticaNeue";
-        _mediumFontName = @"HelveticaNeue-Medium";
-        _showTOSButton = YES;
+        _regularFontName    = SPAuthenticationDefaultRegularFontName;
+        _mediumFontName     = SPAuthenticationDefaultMediumFontName;
+        _termsOfServiceURL  = SPTermsOfServiceURL;
         
-#if TARGET_OS_IPHONE
-#else
-        self.controlColor = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
+#if !TARGET_OS_IPHONE
+        _controlColor       = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
 #endif
     }
     
     return self;
 }
 
-// Just quick and dirty fonts for now. Could be extended with colors.
-// In an app this would likely be done in an external .plist file, but for a framework,
-// keeping in code avoids having to include a resource.
+
+#pragma mark - Custom Setters
+
+- (void)setForgotPasswordURL:(NSString *)forgotPasswordURL {
+    NSAssert(!forgotPasswordURL || forgotPasswordURL.sp_isValidUrl, @"Simperium: Invalid Forgot Password URL");
+    _forgotPasswordURL = forgotPasswordURL;
+}
+
+- (void)setTermsOfServiceURL:(NSString *)termsOfServiceURL {
+    NSAssert(!termsOfServiceURL || termsOfServiceURL.sp_isValidUrl, @"Simperium: Invalid Terms of Service URL");
+    _termsOfServiceURL = termsOfServiceURL;
+}
+
+
+#pragma mark - Font Helpers
+
 #if TARGET_OS_IPHONE
 
 - (float)regularFontHeightForSize:(float)size {
-    // Not cached, but could be
-    return [kFontTestString sizeWithFont:[UIFont fontWithName:self.regularFontName size:size]].height;
+    return [SPAuthenticationTestString sizeWithFont:[UIFont fontWithName:self.regularFontName size:size]].height;
 }
 
 #else
@@ -65,10 +89,12 @@
 }
 
 - (float)regularFontHeightForSize:(float)size {
-    // Not cached, but could be
-    NSDictionary *attributes = @{NSFontAttributeName : [self regularFontWithSize:size],
-                                 NSFontSizeAttribute : [NSString stringWithFormat:@"%f", size]};
-    return [kFontTestString sizeWithAttributes:attributes].height;
+    NSDictionary *attributes = @{
+        NSFontAttributeName : [self regularFontWithSize:size],
+        NSFontSizeAttribute : [NSString stringWithFormat:@"%f", size]
+    };
+    
+    return [SPAuthenticationTestString sizeWithAttributes:attributes].height;
 }
 #endif
 
