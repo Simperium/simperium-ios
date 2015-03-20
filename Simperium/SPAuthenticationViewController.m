@@ -7,16 +7,18 @@
 //
 
 #import "SPAuthenticationViewController.h"
+
+#import "Simperium.h"
 #import "SPAuthenticator.h"
-#import "SPHttpRequest.h"
-#import <Simperium/Simperium.h>
-#import "JSONKit+Simperium.h"
 #import "SPAuthenticationButton.h"
 #import "SPAuthenticationConfiguration.h"
 #import "SPAuthenticationValidator.h"
-#import "SPTOSViewController.h"
-#import "SPForgotPasswordViewController.h"
+#import "SPEnvironment.h"
+#import "SPHttpRequest.h"
+#import "SPWebViewController.h"
 
+#import "JSONKit+Simperium.h"
+#import "NSString+Simperium.h"
 
 
 #pragma mark ====================================================================================
@@ -560,26 +562,24 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 - (IBAction)termsAction:(id)sender {
  
-    SPTOSViewController *vc = [[SPTOSViewController alloc] init];
-    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:vc];
+    NSString *termsPath = NSLocalizedString(@"Simperium TOS URL",
+                                            @"Using this localized string you can set your own TOS per language");
     
-    if (self.navigationController) {
-        [self.navigationController presentViewController:navController animated:YES completion:nil];
-    } else {
-        [self presentViewController:navController animated:YES completion:nil];
-    }
+    termsPath = termsPath.sp_isValidUrl ? termsPath : SPTermsOfServiceURL;
+    
+    NSURL *forgotPasswordURL = [NSURL URLWithString:termsPath];
+    [self showWebviewWithURL:forgotPasswordURL];
 }
 
 - (IBAction)forgotPasswordAction:(id)sender {
    
-   SPForgotPasswordViewController *vc = [[SPForgotPasswordViewController alloc] init];
-   UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:vc];
-   
-    if (self.navigationController) {
-        [self.navigationController presentViewController:navController animated:YES completion:nil];
-    } else {
-        [self presentViewController:navController animated:YES completion:nil];
-    }
+    NSString *forgotPasswordPath = NSLocalizedString(@"Simperium Forgot Password URL",
+                                                     @"Using this localized string you can set your own password per language");
+    
+    forgotPasswordPath = forgotPasswordPath.sp_isValidUrl ? forgotPasswordPath : @"https://simperium.com/404.html";
+    
+    NSURL *forgotPasswordURL = [NSURL URLWithString:forgotPasswordPath];
+    [self showWebviewWithURL:forgotPasswordURL];
 }
 
 - (IBAction)changeAction:(id)sender {
@@ -775,6 +775,20 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 - (NSIndexPath *)confirmIndexPath {
     return [NSIndexPath indexPathForItem:SPAuthenticationRowsConfirm inSection:0];
+}
+
+- (void)showWebviewWithURL:(NSURL *)url {
+    
+    NSParameterAssert(url);
+    
+    SPWebViewController *vc                 = [[SPWebViewController alloc] initWithURL:url];
+    UINavigationController *navController   = [[UINavigationController alloc] initWithRootViewController:vc];
+    
+    if (self.navigationController) {
+        [self.navigationController presentViewController:navController animated:YES completion:nil];
+    } else {
+        [self presentViewController:navController animated:YES completion:nil];
+    }
 }
 
 @end
