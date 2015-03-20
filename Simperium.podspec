@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.source_files = 'Simperium/*.{h,m}', 'External/JRSwizzle/*', 'External/SPReachability/*', 'External/SocketRocket/*', 'External/SSKeychain/*'
   s.osx.source_files = 'Simperium-OSX/**/*.{h,m}'
 
-  s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}', 'Simperium/SPTOSViewController.{h,m}', 'Simperium/SPAuthenticationButton.{h,m}'
+  s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}', 'Simperium/SPWebViewController.{h,m}', 'Simperium/SPAuthenticationButton.{h,m}'
 
   # If you do not explicitly set the list of public header files,
   # all headers of source_files will be made public.
