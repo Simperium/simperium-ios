@@ -24,15 +24,15 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSUInteger const SPAuthenticationWindowWidth     = 380.0f;
-static NSUInteger const SPAuthenticationWindowHeight    = 540.0f;
-static NSInteger const rowSize = 50;
+static CGFloat const SPAuthenticationWindowWidth        = 380.0f;
+static CGFloat const SPAuthenticationWindowHeight       = 540.0f;
+static CGFloat const SPAuthenticationRowSize            = 50;
 
 static CGFloat const SPAuthenticationCancelWidth        = 60.0f;
 
-static NSUInteger const SPAuthenticationFieldPaddingX   = 30.0f;
-static NSUInteger const SPAuthenticationFieldWidth      = SPAuthenticationWindowWidth - SPAuthenticationFieldPaddingX * 2;
-static NSUInteger const SPAuthenticationFieldHeight     = 40.0f;
+static CGFloat const SPAuthenticationFieldPaddingX      = 30.0f;
+static CGFloat const SPAuthenticationFieldWidth         = SPAuthenticationWindowWidth - SPAuthenticationFieldPaddingX * 2;
+static CGFloat const SPAuthenticationFieldHeight        = 40.0f;
 
 static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
@@ -52,6 +52,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 @property (nonatomic, strong) NSTextField               *errorField;
 @property (nonatomic, strong) NSButton                  *signInButton;
 @property (nonatomic, strong) NSButton                  *signUpButton;
+@property (nonatomic, strong) NSButton                  *forgotPasswordButton;
 @property (nonatomic, strong) NSButton                  *changeToSignInButton;
 @property (nonatomic, strong) NSButton                  *changeToSignUpButton;
 @property (nonatomic, strong) NSProgressIndicator       *signInProgress;
@@ -94,25 +95,25 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         [authView addSubview:self.errorField];
 
         markerY -= 30;
-        self.usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:NO];
+        self.usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:NO];
         
         [self.usernameField setPlaceholderString:NSLocalizedString(@"Email Address", @"Placeholder text for login field")];
         self.usernameField.delegate = self;
         [authView addSubview:self.usernameField];
         
-        self.passwordField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize*2, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:YES];
+        self.passwordField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*2, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:YES];
         [self.passwordField setPlaceholderString:NSLocalizedString(@"Password", @"Placeholder text for password field")];
         
         self.passwordField.delegate = self;
         [authView addSubview:self.passwordField];
 
-        self.confirmField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize*3, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:YES];
+        self.confirmField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*3, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:YES];
         [self.confirmField setPlaceholderString:NSLocalizedString(@"Confirm Password", @"Placeholder text for confirmation field")];
         self.confirmField.delegate = self;
         [authView addSubview:self.confirmField];
                 
         markerY -= 30;
-        self.signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize*3, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight)];
+        self.signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*3, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight)];
         self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
         self.signInButton.target = self;
         self.signInButton.action = @selector(signInAction:);
@@ -123,8 +124,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         [self.signInProgress setDisplayedWhenStopped:NO];
         [self.signInButton addSubview:self.signInProgress];
 
-        
-        self.signUpButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize*4, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight)];
+        self.signUpButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*4, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight)];
         self.signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
         self.signUpButton.target = self;
         self.signUpButton.action = @selector(signUpAction:);
@@ -134,10 +134,16 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         [self.signUpProgress setStyle:NSProgressIndicatorSpinningStyle];
         [self.signUpProgress setDisplayedWhenStopped:NO];
         [self.signUpButton addSubview:self.signUpProgress];
+
+        // Forgot Password!
+        self.forgotPasswordButton = [self linkButtonWithText:@"Forgot your Password?" frame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*3 - 35, SPAuthenticationFieldWidth, 20)];
+        self.forgotPasswordButton.target = self;
+        self.forgotPasswordButton.action = @selector(forgotPassword:);
+        [authView addSubview:self.forgotPasswordButton];
         
         // Toggle Signup
         NSString *signUpTip = NSLocalizedString(@"Need an account?", @"Link to create an account");
-        self.changeToSignUpField = [self tipFieldWithText:signUpTip frame:NSMakeRect(paddingX, markerY - rowSize*3 - 35, width, 20)];
+        self.changeToSignUpField = [self tipFieldWithText:signUpTip frame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*4 - 35, SPAuthenticationFieldWidth, 20)];
         [authView addSubview:self.changeToSignUpField];
 
         self.changeToSignUpButton = [self toggleButtonWithText:self.signUpButton.title frame:NSMakeRect(SPAuthenticationFieldPaddingX, self.changeToSignUpField.frame.origin.y - self.changeToSignUpField.frame.size.height - 2, SPAuthenticationFieldWidth, 30)];
@@ -145,7 +151,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         
         // Toggle SignIn
         NSString *signInTip = NSLocalizedString(@"Already have an account?", @"Link to sign in to an account");
-        self.changeToSignInField = [self tipFieldWithText:signInTip frame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - rowSize*4 - 35, SPAuthenticationFieldWidth, 20)];
+        self.changeToSignInField = [self tipFieldWithText:signInTip frame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*4 - 35, SPAuthenticationFieldWidth, 20)];
         [authView addSubview:self.changeToSignInField];
         
         self.changeToSignInButton = [self toggleButtonWithText:self.signInButton.title frame:NSMakeRect(SPAuthenticationFieldPaddingX, self.changeToSignInField.frame.origin.y - self.changeToSignInField.frame.size.height - 2, SPAuthenticationFieldWidth, 30)];
@@ -204,6 +210,10 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     return button;
 }
 
+- (IBAction)forgotPassword:(id)sender {
+    NSString *forgotPasswordURL = [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:forgotPasswordURL]];
+}
 
 - (IBAction)toggleAuthenticationMode:(id)sender {
 	self.signingIn = (sender == self.changeToSignInButton);
@@ -215,6 +225,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 }
 
 - (void)refreshFields {
+    // Refresh Buttons
     [self.signInButton setHidden:!_signingIn];
     [self.signInButton setEnabled:_signingIn];
     [self.signUpButton setHidden:_signingIn];
@@ -227,8 +238,15 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self.changeToSignUpField setHidden:!_signingIn];
     [self.confirmField setHidden:_signingIn];
     
-    [self.window.contentView setNeedsDisplay:YES];
+    // Remove any pending errors
     [self clearAuthenticationError];
+    
+    // Forgot Password
+    BOOL shouldDisplayForgotPassword = _signingIn && [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
+    [self.forgotPasswordButton setHidden:!shouldDisplayForgotPassword];
+    
+    // Refresh the entire View
+    [self.window.contentView setNeedsDisplay:YES];
 }
 
 
