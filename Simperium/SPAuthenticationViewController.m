@@ -1,5 +1,5 @@
 //
-//  SPAutehnticationViewController.m
+//  SPAuthenticationViewController.m
 //  Simperium
 //
 //  Created by Michael Johnston on 24/11/11.
@@ -7,15 +7,16 @@
 //
 
 #import "SPAuthenticationViewController.h"
+
+#import "Simperium.h"
 #import "SPAuthenticator.h"
-#import "SPHttpRequest.h"
-#import <Simperium/Simperium.h>
-#import "JSONKit+Simperium.h"
 #import "SPAuthenticationButton.h"
 #import "SPAuthenticationConfiguration.h"
 #import "SPAuthenticationValidator.h"
-#import "SPTOSViewController.h"
+#import "SPHttpRequest.h"
+#import "SPWebViewController.h"
 
+#import "JSONKit+Simperium.h"
 
 
 #pragma mark ====================================================================================
@@ -28,7 +29,18 @@ NS_ENUM(NSInteger, SPAuthenticationRows) {
     SPAuthenticationRowsConfirm     = 2
 };
 
-static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
+static CGFloat const SPAuthenticationFieldPaddingX          = 10.0f;
+static CGFloat const SPAuthenticationFieldWidth             = 280.0f;
+static CGFloat const SPAuthenticationFieldHeight            = 38.0f;
+
+static CGFloat const SPAuthenticationLinkHeight             = 24.0f;
+static CGFloat const SPAuthenticationLinkFontSize           = 10.0f;
+static CGFloat const SPAuthenticationLinkPadding            = 10.0f;
+static UIEdgeInsets const SPAuthenticationLinkTitleInsets   = {3.0f, 0.0f, 0.0f, 0.0f};
+
+static NSString *SPAuthenticationEmailCellIdentifier        = @"EmailCellIdentifier";
+static NSString *SPAuthenticationPasswordCellIdentifier     = @"PasswordCellIdentifier";
+static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdentifier";
 
 
 #pragma mark ====================================================================================
@@ -37,15 +49,21 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 
 @interface SPAuthenticationViewController() <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UIGestureRecognizerDelegate>
 
+#pragma mark - Public Properties
+@property (nonatomic, strong) UITableView               *tableView;
+@property (nonatomic, strong) UIImageView               *logoView;
+
+@property (nonatomic, strong) UITextField               *usernameField;
+@property (nonatomic, strong) UITextField               *passwordField;
+@property (nonatomic, strong) UITextField               *passwordConfirmField;
+
+#pragma mark - Private Properties
 @property (nonatomic, strong) SPAuthenticationValidator *validator;
 
 @property (nonatomic, strong) SPAuthenticationButton    *actionButton;
 @property (nonatomic, strong) SPAuthenticationButton    *changeButton;
 @property (nonatomic, strong) UIButton                  *termsButton;
-
-@property (nonatomic, strong) UITextField               *usernameField;
-@property (nonatomic, strong) UITextField               *passwordField;
-@property (nonatomic, strong) UITextField               *passwordConfirmField;
+@property (nonatomic, strong) UIButton                  *forgotPasswordButton;
 
 @property (nonatomic, strong) UIBarButtonItem           *cancelButton;
 @property (nonatomic, strong) UIActivityIndicatorView   *progressView;
@@ -89,14 +107,19 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
         NSLocalizedString(@"Don't have an account?", @"A short description to access the account creation screen") :
         NSLocalizedString(@"Already have an account?", @"A short description to access the account login screen");
 
-    
     changeTitle = [[changeTitle stringByAppendingString:@" »"] uppercaseString];
     
     [self.actionButton setTitle:actionTitle forState:UIControlStateNormal];
     [self.changeButton setTitle:changeTitle forState:UIControlStateNormal];
     self.changeButton.detailTitleLabel.text = changeDetailTitle.uppercaseString;
 
-    self.termsButton.hidden = _signingIn;
+    // Refresh Terms + Forgot Password
+    SPAuthenticationConfiguration *configuration = [SPAuthenticationConfiguration sharedInstance];
+    BOOL shouldShowTerms = !_signingIn && configuration.termsOfServiceURL;
+    BOOL shouldShowForgot = _signingIn && configuration.forgotPasswordURL;
+    
+    self.termsButton.hidden = !shouldShowTerms;
+    self.forgotPasswordButton.hidden = !shouldShowForgot;
 }
 
 - (void)viewDidLoad {
@@ -150,18 +173,57 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     NSMutableAttributedString *termsTitle = [[NSMutableAttributedString alloc] initWithString:[termsText uppercaseString] attributes:termsAttributes];
     [termsTitle setAttributes:termsLinkAttributes range:underlineRange];
     
+    // Username Field
+    NSString *usernameText = @"email@email.com";
+    self.usernameField = [self textFieldWithPlaceholder:usernameText secure:NO];
+    _usernameField.keyboardType = UIKeyboardTypeEmailAddress;
+    
+    // Password Field
+    NSString *passwordText = NSLocalizedString(@"Password", @"Hint displayed in the password field");
+    self.passwordField = [self textFieldWithPlaceholder:passwordText secure:YES];
+
+    // Confirm Field
+    NSString *confirmText = NSLocalizedString(@"Confirm", @"Hint displayed in the password confirmation field");
+    self.passwordConfirmField = [self textFieldWithPlaceholder:confirmText secure:YES];
+    _passwordConfirmField.returnKeyType = UIReturnKeyGo;
+    
+    // Terms Frame
+    CGRect termsFrame = CGRectMake(SPAuthenticationLinkPadding,
+                                   0.0,
+                                   self.tableView.frame.size.width - 2 * SPAuthenticationLinkPadding,
+                                   SPAuthenticationLinkHeight);
+    
     // Terms Button
     self.termsButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [_termsButton addTarget:self action:@selector(termsAction:) forControlEvents:UIControlEventTouchUpInside];
-    _termsButton.titleEdgeInsets = UIEdgeInsetsMake(3, 0, 0, 0);
-    _termsButton.titleLabel.font = [UIFont fontWithName:configuration.mediumFontName size:10.0];
-    _termsButton.frame = CGRectMake(10.0, 0.0, self.tableView.frame.size.width-20.0, 24.0);
+    _termsButton.titleEdgeInsets = SPAuthenticationLinkTitleInsets;
+    _termsButton.titleLabel.font = [UIFont fontWithName:configuration.mediumFontName size:SPAuthenticationLinkFontSize];
+    _termsButton.frame = termsFrame;
+    
     _termsButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [_termsButton setAttributedTitle:termsTitle forState:UIControlStateNormal];;
+    [_termsButton setAttributedTitle:termsTitle forState:UIControlStateNormal];
+    
+    // Forgot Password String
+	NSDictionary *forgotPasswordAttributes = @{
+        NSForegroundColorAttributeName: [greyColor colorWithAlphaComponent:0.4]
+    };
+    
+	NSString *forgotPasswordText = NSLocalizedString(@"Forgot password? »", @"Forgot password Button Text");
+    NSAttributedString *forgotPasswordTitle = [[NSAttributedString alloc] initWithString:forgotPasswordText.uppercaseString
+                                                                              attributes:forgotPasswordAttributes];
+	
+	// Forgot Password Button
+    self.forgotPasswordButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_forgotPasswordButton addTarget:self action:@selector(forgotPasswordAction:) forControlEvents:UIControlEventTouchUpInside];
+    _forgotPasswordButton.titleEdgeInsets = SPAuthenticationLinkTitleInsets;
+    _forgotPasswordButton.titleLabel.font = [UIFont fontWithName:configuration.mediumFontName size:SPAuthenticationLinkFontSize];
+    _forgotPasswordButton.frame = termsFrame;
+    _forgotPasswordButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [_forgotPasswordButton setAttributedTitle:forgotPasswordTitle forState:UIControlStateNormal];
     
     // Action
     self.actionButton = [[SPAuthenticationButton alloc] initWithFrame:CGRectMake(0, 30.0, self.view.frame.size.width, 44)];
-    [_actionButton addTarget:self action:@selector(goAction:) forControlEvents:UIControlEventTouchUpInside];
+    [_actionButton addTarget:self action:@selector(performAction:) forControlEvents:UIControlEventTouchUpInside];
     [_actionButton setTitleColor:whiteColor forState:UIControlStateNormal];
     _actionButton.titleLabel.font = [UIFont fontWithName:configuration.regularFontName size:22.0];
     _actionButton.backgroundColor = blueColor;
@@ -195,11 +257,14 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     // Setup TableView's Footer
     UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.changeButton.frame.size.height + self.changeButton.frame.origin.y)];
     footerView.contentMode = UIViewContentModeTopLeft;
-    [footerView setUserInteractionEnabled:YES];
+    footerView.userInteractionEnabled = YES;
+    footerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    
+    // Attach Footer Views
     [footerView addSubview:_termsButton];
+    [footerView addSubview:_forgotPasswordButton];
     [footerView addSubview:_actionButton];
     [footerView addSubview:_changeButton];
-    footerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.tableView.tableFooterView = footerView;
     
     // Setup TableView's GesturesRecognizer
@@ -208,10 +273,8 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     tapGesture.numberOfTapsRequired = 1;
     [self.tableView addGestureRecognizer:tapGesture];
     
-    // Show / Hide signup fields, if needed
+    // Refresh + Layout
     [self refreshButtons];
-    
-    // Layout views
     [self layoutViewsForInterfaceOrientation:self.interfaceOrientation];
 }
 
@@ -509,19 +572,17 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 
 #pragma mark Actions
 
-- (void)termsAction:(id)sender {
- 
-    SPTOSViewController *vc = [[SPTOSViewController alloc] init];
-    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:vc];
-    
-    if (self.navigationController) {
-        [self.navigationController presentViewController:navController animated:YES completion:nil];
-    } else {
-        [self presentViewController:navController animated:YES completion:nil];
-    }
+- (IBAction)termsAction:(id)sender {
+    NSString *termsOfServiceURL = [[SPAuthenticationConfiguration sharedInstance] termsOfServiceURL];
+    [self showWebviewWithURL:termsOfServiceURL];
 }
 
-- (void)changeAction:(id)sender {
+- (IBAction)forgotPasswordAction:(id)sender {
+    NSString *forgotPasswordURL = [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
+    [self showWebviewWithURL:forgotPasswordURL];
+}
+
+- (IBAction)changeAction:(id)sender {
     _signingIn = !_signingIn;
     NSArray *indexPaths = @[ [self confirmIndexPath] ];
     if (_signingIn) {
@@ -539,7 +600,7 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     });
 }
 
-- (void)goAction:(id)sender {
+- (IBAction)performAction:(id)sender {
     if ([self validateData]) {
         if (!_signingIn && self.passwordConfirmField.text.length > 0) {
             if ([self validatePasswordConfirmation]) {
@@ -551,11 +612,11 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
     }
 }
 
-- (void)cancelAction:(id)sender {
+- (IBAction)cancelAction:(id)sender {
     [self.authenticator cancel];
 }
 
-- (void)endEditingAction:(id)sender {
+- (IBAction)endEditingAction:(id)sender {
     [self.view endEditing:YES];
 }
 
@@ -598,7 +659,8 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 
 
 - (UITextField *)textFieldWithPlaceholder:(NSString *)placeholder secure:(BOOL)secure {
-    UITextField *newTextField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 280, 25)];
+    CGRect textFieldFrame = CGRectMake(0.0f, 0.0f, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight);
+    UITextField *newTextField = [[UITextField alloc] initWithFrame:textFieldFrame];
     newTextField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     newTextField.clearsOnBeginEditing = NO;
     newTextField.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -615,12 +677,10 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 }
 
 - (void)positionTextField:(UITextField *)textField inCell:(UITableViewCell *)cell {
-    CGFloat fieldHeight = ceilf(textField.font.lineHeight);
-    
     textField.frame = CGRectIntegral(CGRectMake(SPAuthenticationFieldPaddingX,
-                                                (cell.bounds.size.height - fieldHeight) / 2.0,
-                                                cell.bounds.size.width - 2 * SPAuthenticationFieldPaddingX,
-                                                fieldHeight));
+                                                (cell.bounds.size.height - SPAuthenticationFieldHeight) * 0.5f,
+                                                cell.bounds.size.width - 2.0f * SPAuthenticationFieldPaddingX,
+                                                SPAuthenticationFieldHeight));
     
 }
 
@@ -636,47 +696,33 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static NSString *EmailCellIdentifier    = @"EmailCellIdentifier";
-    static NSString *PasswordCellIdentifier = @"PasswordCellIdentifier";
-    static NSString *ConfirmCellIdentifier  = @"ConfirmCellIdentifier";
-
-    UITableViewCell *cell;
+    
+    UITableViewCell *cell = nil;
     if (indexPath.row == SPAuthenticationRowsEmail) {
-        cell = [tView dequeueReusableCellWithIdentifier:EmailCellIdentifier];
+        cell = [tView dequeueReusableCellWithIdentifier:SPAuthenticationEmailCellIdentifier];
         // Email
         if (cell == nil) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:EmailCellIdentifier];
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:SPAuthenticationEmailCellIdentifier];
             
-            NSString *usernameText = @"email@email.com";
-            self.usernameField = [self textFieldWithPlaceholder:usernameText secure:NO];
-            _usernameField.keyboardType = UIKeyboardTypeEmailAddress;
-
             [self positionTextField:_usernameField inCell:cell];
             [cell.contentView addSubview:_usernameField];
         }
     } else if (indexPath.row == SPAuthenticationRowsPassword) {
-        cell = [tView dequeueReusableCellWithIdentifier:PasswordCellIdentifier];
+        cell = [tView dequeueReusableCellWithIdentifier:SPAuthenticationPasswordCellIdentifier];
         // Password
         if (cell == nil) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:PasswordCellIdentifier];
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:SPAuthenticationPasswordCellIdentifier];
             
-            NSString *passwordText = NSLocalizedString(@"Password", @"Hint displayed in the password field");
-            self.passwordField = [self textFieldWithPlaceholder:passwordText secure:YES];
-
             [self positionTextField:_passwordField inCell:cell];
             [cell.contentView addSubview:_passwordField];
         }
         
         self.passwordField.returnKeyType = _signingIn ? UIReturnKeyGo : UIReturnKeyNext;
     } else {
-        cell = [tView dequeueReusableCellWithIdentifier:ConfirmCellIdentifier];
-        // Password
+        cell = [tView dequeueReusableCellWithIdentifier:SPAuthenticationConfirmCellIdentifier];
+        // Password Confirmation
         if (cell == nil) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ConfirmCellIdentifier];
-            
-            NSString *confirmText = NSLocalizedString(@"Confirm", @"Hint displayed in the password confirmation field");
-            self.passwordConfirmField = [self textFieldWithPlaceholder:confirmText secure:YES];
-            _passwordConfirmField.returnKeyType = UIReturnKeyGo;
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:SPAuthenticationConfirmCellIdentifier];
             
             [self positionTextField:_passwordConfirmField inCell:cell];
             [cell.contentView addSubview:_passwordConfirmField];
@@ -729,6 +775,20 @@ static CGFloat const SPAuthenticationFieldPaddingX = 10.0;
 
 - (NSIndexPath *)confirmIndexPath {
     return [NSIndexPath indexPathForItem:SPAuthenticationRowsConfirm inSection:0];
+}
+
+- (void)showWebviewWithURL:(NSString *)targetURL {
+    
+    NSParameterAssert(targetURL);
+    
+    SPWebViewController *vc                 = [[SPWebViewController alloc] initWithURL:targetURL];
+    UINavigationController *navController   = [[UINavigationController alloc] initWithRootViewController:vc];
+    
+    if (self.navigationController) {
+        [self.navigationController presentViewController:navController animated:YES completion:nil];
+    } else {
+        [self presentViewController:navController animated:YES completion:nil];
+    }
 }
 
 @end

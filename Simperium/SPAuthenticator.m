@@ -12,7 +12,7 @@
 #import "SPUser.h"
 #import "SPAuthenticator.h"
 #import "JSONKit+Simperium.h"
-#import "SSKeychain.h"
+#import "SPKeychain.h"
 #import "SPReachability.h"
 #import "SPHttpRequest.h"
 #import "SPHttpRequestQueue.h"
@@ -66,7 +66,7 @@ static NSString * SPUsername    = @"SPUsername";
         _simperium  = s;
         
 #if TARGET_OS_IPHONE
-        [SSKeychain setAccessibilityType:kSecAttrAccessibleAlways];
+        [SPKeychain setAccessibilityType:kSecAttrAccessibleAlways];
 #endif
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kSPReachabilityChangedNotification object:nil];
@@ -93,7 +93,7 @@ static NSString * SPUsername    = @"SPUsername";
     
     if (username) {
         NSError *error = nil;
-        token = [SSKeychain passwordForService:self.simperium.appID account:username error:&error];
+        token = [SPKeychain passwordForService:self.simperium.appID account:username error:&error];
         
         if (error) {
             SPLogError(@"Simperium couldn't retrieve token from keychain. Error: %@", error);
@@ -188,7 +188,7 @@ static NSString * SPUsername    = @"SPUsername";
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     NSError *error = nil;
-    BOOL success = [SSKeychain setPassword:token forService:self.simperium.appID account:username error:&error];
+    BOOL success = [SPKeychain setPassword:token forService:self.simperium.appID account:username error:&error];
     
     if (success == NO) {
         SPLogError(@"Simperium couldn't store token in the keychain. Error: %@", error);
@@ -268,7 +268,7 @@ static NSString * SPUsername    = @"SPUsername";
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     if (username && username.length > 0) {
-        [SSKeychain deletePasswordForService:self.simperium.appID account:username error:nil];
+        [SPKeychain deletePasswordForService:self.simperium.appID account:username error:nil];
     }
 }
 
@@ -288,7 +288,7 @@ static NSString * SPUsername    = @"SPUsername";
     NSString *token     = nil;
     
     if (username) {
-        token = [SSKeychain passwordForService:appID account:username error:nil];
+        token = [SPKeychain passwordForService:appID account:username error:nil];
     }
     
     return (username.length == 0 || token.length == 0);

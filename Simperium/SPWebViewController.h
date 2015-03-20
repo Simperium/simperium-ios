@@ -1,18 +1,20 @@
 //
-//  SPAuthenticationView.h
-//  Simplenote-OSX
+//  SPWebViewController.h
+//  Simperium
 //
-//  Created by Michael Johnston on 7/20/13.
+//  Created by Patrick Vink on 11/28/14.
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
-#import <Cocoa/Cocoa.h>
+#import <UIKit/UIKit.h>
 
 
 #pragma mark ====================================================================================
-#pragma mark SPAuthenticationView
+#pragma mark SPWebViewController
 #pragma mark ====================================================================================
 
-@interface SPAuthenticationView : NSView
+@interface SPWebViewController : UIViewController
+
+- (instancetype)initWithURL:(NSString *)url;
 
 @end

@@ -816,9 +816,9 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
     
     SPAuthenticationViewController *loginController = [[self.authenticationViewControllerClass alloc] init];
-    loginController.authenticator       = self.authenticator;
-    loginController.signingIn           = self.shouldSignIn;
-    self.authenticationViewController   = loginController;
+    loginController.authenticator                   = self.authenticator;
+    loginController.signingIn                       = self.shouldSignIn;
+    self.authenticationViewController               = loginController;
     
     if (!self.rootViewController) {
         UIWindow *window = [[[UIApplication sharedApplication] windows] firstObject];

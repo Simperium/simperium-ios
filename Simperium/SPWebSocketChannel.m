@@ -22,7 +22,6 @@
 #import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "SPLogger.h"
-#import "SRWebSocket.h"
 
 
 

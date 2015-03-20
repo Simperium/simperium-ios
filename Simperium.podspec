@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Simperium"
-  s.version      = "0.7.8"
+  s.version      = "0.7.9"
   s.summary      = "Simperium libraries."
   s.description  = "Simperium is a simple way for developers to move data as it changes, instantly and automatically."
   s.homepage     = "https://github.com/Simperium/simperium-ios"
@@ -13,10 +13,10 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '6.0'
   s.osx.deployment_target = '10.8'
 
-  s.source_files = 'Simperium/*.{h,m}', 'External/SPReachability/*', 'External/SSKeychain/*'
+  s.source_files = 'Simperium/*.{h,m}', 'External/JRSwizzle/*', 'External/SPReachability/*', 'External/SocketRocket/*', 'External/SSKeychain/*'
   s.osx.source_files = 'Simperium-OSX/**/*.{h,m}'
 
-  s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}', 'Simperium/SPTOSViewController.{h,m}', 'Simperium/SPAuthenticationButton.{h,m}'
+  s.osx.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}', 'Simperium/SPWebViewController.{h,m}', 'Simperium/SPAuthenticationButton.{h,m}'
 
   # If you do not explicitly set the list of public header files,
   # all headers of source_files will be made public.
@@ -35,6 +35,8 @@ Pod::Spec.new do |s|
   # s.library   = 'iconv'
   # s.libraries = 'iconv', 'xml2'
 
+  # Required by SocketRocket
+  s.libraries = "icucore"
   s.requires_arc = true
 
   # If you need to specify any other build settings, add them to the
@@ -45,6 +47,4 @@ Pod::Spec.new do |s|
   # Finally, specify any Pods that this Pod depends on.
   #
   s.dependency 'Google-Diff-Match-Patch'
-  s.dependency 'JRSwizzle'
-  s.dependency 'SocketRocket'
 end

@@ -8,9 +8,15 @@
 
 #import "SPAuthenticationView.h"
 
+
+
+#pragma mark ====================================================================================
+#pragma mark SPAuthenticationView
+#pragma mark ====================================================================================
+
 @implementation SPAuthenticationView
 
-- (id)initWithFrame:(NSRect)frame {
+- (instancetype)initWithFrame:(NSRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
     }

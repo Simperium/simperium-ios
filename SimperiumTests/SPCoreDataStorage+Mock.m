@@ -8,7 +8,7 @@
 
 #import "SPCoreDataStorage+Mock.h"
 #import <CoreData/CoreData.h>
-#import "jrswizzle.h"
+#import "SPSwizzle.h"
 
 
 
@@ -35,28 +35,28 @@
 
 + (void)test_simulateWorkerOnlyMergesChangesIntoWriter
 {
-    [SPCoreDataStorage jr_swizzleMethod:@selector(childrenContextDidSave:)
+    [SPCoreDataStorage sp_swizzleMethod:@selector(childrenContextDidSave:)
                              withMethod:@selector(test_childrenContextDidSaveMergesOnlyWriterContext:)
                                   error:nil];
 }
 
 + (void)test_undoWorkerOnlyMergesChangesIntoWriter
 {
-    [SPCoreDataStorage jr_swizzleMethod:@selector(test_childrenContextDidSaveMergesOnlyWriterContext:)
+    [SPCoreDataStorage sp_swizzleMethod:@selector(test_childrenContextDidSaveMergesOnlyWriterContext:)
                              withMethod:@selector(childrenContextDidSave:)
                                   error:nil];
 }
 
 + (void)test_simulateWorkerCannotMergeChangesAnywhere {
     
-    [SPCoreDataStorage jr_swizzleMethod:@selector(childrenContextDidSave:)
+    [SPCoreDataStorage sp_swizzleMethod:@selector(childrenContextDidSave:)
                              withMethod:@selector(test_childrenContextDidSaveCannotMergeChanges:)
                                   error:nil];
 }
 
 + (void)test_undoWorkerCannotMergeChangesAnywhere {
     
-    [SPCoreDataStorage jr_swizzleMethod:@selector(test_childrenContextDidSaveCannotMergeChanges:)
+    [SPCoreDataStorage sp_swizzleMethod:@selector(test_childrenContextDidSaveCannotMergeChanges:)
                              withMethod:@selector(childrenContextDidSave:)
                                   error:nil];
 }

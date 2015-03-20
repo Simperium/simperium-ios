@@ -6,48 +6,48 @@
 //  Copyright (c) 2010-2014 Sam Soffes. All rights reserved.
 //
 
-#import "SSKeychainQuery.h"
+#import "SPKeychainQuery.h"
 
 /**
  Error code specific to SSKeychain that can be returned in NSError objects.
  For codes returned by the operating system, refer to SecBase.h for your
  platform.
  */
-typedef NS_ENUM(OSStatus, SSKeychainErrorCode) {
+typedef NS_ENUM(OSStatus, SPKeychainErrorCode) {
 	/** Some of the arguments were invalid. */
-	SSKeychainErrorBadArguments = -1001,
+	SPKeychainErrorBadArguments = -1001,
 };
 
 /** SSKeychain error domain */
-extern NSString *const kSSKeychainErrorDomain;
+extern NSString *const kSPKeychainErrorDomain;
 
 /** Account name. */
-extern NSString *const kSSKeychainAccountKey;
+extern NSString *const kSPKeychainAccountKey;
 
 /**
  Time the item was created.
 
  The value will be a string.
  */
-extern NSString *const kSSKeychainCreatedAtKey;
+extern NSString *const kSPKeychainCreatedAtKey;
 
 /** Item class. */
-extern NSString *const kSSKeychainClassKey;
+extern NSString *const kSPKeychainClassKey;
 
 /** Item description. */
-extern NSString *const kSSKeychainDescriptionKey;
+extern NSString *const kSPKeychainDescriptionKey;
 
 /** Item label. */
-extern NSString *const kSSKeychainLabelKey;
+extern NSString *const kSPKeychainLabelKey;
 
 /** Time the item was last modified.
 
  The value will be a string.
  */
-extern NSString *const kSSKeychainLastModifiedKey;
+extern NSString *const kSPKeychainLastModifiedKey;
 
 /** Where the item was created. */
-extern NSString *const kSSKeychainWhereKey;
+extern NSString *const kSPKeychainWhereKey;
 
 /**
  Simple wrapper for accessing accounts, getting passwords, setting passwords, and deleting passwords using the system
@@ -56,7 +56,7 @@ extern NSString *const kSSKeychainWhereKey;
  This was originally inspired by EMKeychain and SDKeychain (both of which are now gone). Thanks to the authors.
  SSKeychain has since switched to a simpler implementation that was abstracted from [SSToolkit](http://sstoolk.it).
  */
-@interface SSKeychain : NSObject
+@interface SPKeychain : NSObject
 
 #pragma mark - Classic methods
 
