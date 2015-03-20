@@ -795,24 +795,24 @@
 		265D80061475C2CE00002A19 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				B56819BC194F793400E0DC65 /* DiffMatchPatch+Simperium.h */,
+				B56819BD194F793400E0DC65 /* DiffMatchPatch+Simperium.m */,
+				B5E03D96182C115100412572 /* JSONKit+Simperium.h */,
+				B5E03D97182C115100412572 /* JSONKit+Simperium.m */,
 				1854D50D1799F6D2006C4211 /* NSArray+Simperium.h */,
 				1854D50E1799F6D2006C4211 /* NSArray+Simperium.m */,
-				46A16A7F17289FE2003AED55 /* NSString+Simperium.h */,
-				46A16A8017289FE2003AED55 /* NSString+Simperium.m */,
+				B56091531A717EE700A4E64A /* NSConditionLock+Simperium.h */,
+				B56091541A717EE700A4E64A /* NSConditionLock+Simperium.m */,
 				26E83DA81399D05D00195758 /* NSDate+Simperium.h */,
 				26E83DA91399D05E00195758 /* NSDate+Simperium.m */,
 				26B16EFD13B1B78C00BEB3E5 /* NSData+Simperium.h */,
 				26B16EFE13B1B78F00BEB3E5 /* NSData+Simperium.m */,
-				B56091531A717EE700A4E64A /* NSConditionLock+Simperium.h */,
-				B56091541A717EE700A4E64A /* NSConditionLock+Simperium.m */,
-				B5E03D96182C115100412572 /* JSONKit+Simperium.h */,
-				B5E03D97182C115100412572 /* JSONKit+Simperium.m */,
-				B5C91A0C1827E9CB0002D306 /* NSURLResponse+Simperium.h */,
-				B5C91A0D1827E9CB0002D306 /* NSURLResponse+Simperium.m */,
 				B5F4C84318FC1B04009F8643 /* NSError+Simperium.h */,
 				B5F4C84418FC1B04009F8643 /* NSError+Simperium.m */,
-				B56819BC194F793400E0DC65 /* DiffMatchPatch+Simperium.h */,
-				B56819BD194F793400E0DC65 /* DiffMatchPatch+Simperium.m */,
+				46A16A7F17289FE2003AED55 /* NSString+Simperium.h */,
+				46A16A8017289FE2003AED55 /* NSString+Simperium.m */,
+				B5C91A0C1827E9CB0002D306 /* NSURLResponse+Simperium.h */,
+				B5C91A0D1827E9CB0002D306 /* NSURLResponse+Simperium.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
