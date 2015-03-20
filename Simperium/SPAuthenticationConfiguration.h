@@ -13,8 +13,8 @@
 @property (nonatomic,   copy) NSString  *regularFontName;
 @property (nonatomic,   copy) NSString  *mediumFontName;
 @property (nonatomic,   copy) NSString  *logoImageName;
-@property (nonatomic, assign) BOOL      *showForgotPasswordButton;
-@property (nonatomic, assign) BOOL      *showTOSButton;
+@property (nonatomic, assign) BOOL      showForgotPasswordButton;
+@property (nonatomic, assign) BOOL      showTOSButton;
 
 #if TARGET_OS_IPHONE
 #else
