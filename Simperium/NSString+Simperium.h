@@ -16,6 +16,9 @@
 + (NSString *)sp_makeUUID;
 + (NSString *)sp_md5StringFromData:(NSData *)data;
 + (NSString *)sp_randomStringOfLength:(NSUInteger)length;
+
+- (BOOL)sp_isValidUrl;
+
 - (NSString *)sp_urlEncodeString;
 - (NSArray *)sp_componentsSeparatedByString:(NSString *)separator limit:(NSInteger)limit;
 

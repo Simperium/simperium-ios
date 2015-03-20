@@ -1,14 +1,27 @@
 //
-//  SPEnvironment.m
+//  Constants.h
+//
+//  Created by Michael Johnston on 11-02-11.
+//  Copyright 2011 Simperium. All rights reserved.
+//
+//  A simple system for shared state. See http://simperium.com for details.
 
 #import "SPEnvironment.h"
+
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
 
 // Production
 NSString* const SPBaseURL                       = @"https://api.simperium.com/1/";
 NSString* const SPAuthURL                       = @"https://auth.simperium.com/1/";
 NSString* const SPWebsocketURL                  = @"wss://api.simperium.com/sock/1";
+NSString* const SPTermsOfServiceURL             = @"http://simperium.com/tos/";
 
 NSString* const SPAPIVersion                    = @"1.1";
+
 
 #if TARGET_OS_IPHONE
 NSString* const SPLibraryID                     = @"ios";

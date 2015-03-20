@@ -8,14 +8,21 @@
 
 #import <Foundation/Foundation.h>
 
+
+#pragma mark ====================================================================================
+#pragma mark SPAuthenticationConfiguration
+#pragma mark ====================================================================================
+
 @interface SPAuthenticationConfiguration : NSObject
 
-@property (nonatomic, copy) NSString *regularFontName;
-@property (nonatomic, copy) NSString *mediumFontName;
-@property (nonatomic, copy) NSString *logoImageName;
+@property (nonatomic, copy,   readwrite) NSString   *regularFontName;
+@property (nonatomic, copy,   readwrite) NSString   *mediumFontName;
+@property (nonatomic, copy,   readwrite) NSString   *logoImageName;
 
-#if TARGET_OS_IPHONE
-#else
+@property (nonatomic, assign, readwrite) NSString   *forgotPasswordURL;
+@property (nonatomic, assign, readwrite) NSString   *termsOfServiceURL;
+
+#if !TARGET_OS_IPHONE
 @property (nonatomic, strong) NSColor *controlColor;
 #endif
 
