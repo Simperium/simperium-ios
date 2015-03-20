@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SPForgotPWViewController : UIViewController <UIWebViewDelegate> {
+@interface SPForgotPasswordViewController : UIViewController <UIWebViewDelegate> {
     
     UIWebView *webView;
     UIActivityIndicatorView *activityIndicator;

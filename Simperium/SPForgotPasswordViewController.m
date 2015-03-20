@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
-#import "SPForgotPWViewController.h"
+#import "SPForgotPasswordViewController.h"
 #import "SPLogger.h"
 
 #pragma mark ====================================================================================
@@ -15,11 +15,11 @@
 
 static SPLogLevels logLevel     = SPLogLevelsInfo;
 
-@interface SPForgotPWViewController ()
+@interface SPForgotPasswordViewController ()
 
 @end
 
-@implementation SPForgotPWViewController
+@implementation SPForgotPasswordViewController
 
 - (void)loadView {
     
