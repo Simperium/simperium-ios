@@ -78,7 +78,6 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         self.validatesObjects               = YES;
         self.authenticationEnabled          = YES;
         self.dynamicSchemaEnabled           = YES;
-        self.authenticationEnabled          = YES;
         self.buckets                        = [NSMutableDictionary dictionary];
         
         SPReachability *reachability        = [SPReachability reachabilityForInternetConnection];
