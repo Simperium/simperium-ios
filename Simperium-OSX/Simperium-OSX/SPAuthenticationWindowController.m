@@ -98,6 +98,10 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         self.usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:NO];
         
         [self.usernameField setPlaceholderString:NSLocalizedString(@"Email Address", @"Placeholder text for login field")];
+        if (_signingIn && [[SPAuthenticationConfiguration sharedInstance] previousUsernameEnabled]) {
+            // Get previous username, to display as last used username in authentication view
+            [self.usernameField setStringValue:[[NSUserDefaults standardUserDefaults] objectForKey:@"SPUsernamePrevious"]];
+        }
         self.usernameField.delegate = self;
         [authView addSubview:self.usernameField];
         
