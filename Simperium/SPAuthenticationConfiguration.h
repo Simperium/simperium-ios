@@ -22,6 +22,8 @@
 @property (nonatomic, assign, readwrite) NSString   *forgotPasswordURL;
 @property (nonatomic, assign, readwrite) NSString   *termsOfServiceURL;
 
+@property (nonatomic, assign, readwrite) BOOL       previousUsernameEnabled;
+
 #if !TARGET_OS_IPHONE
 @property (nonatomic, strong) NSColor *controlColor;
 #endif

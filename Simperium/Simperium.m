@@ -744,6 +744,10 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 
 - (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token {
     
+    // Save username as previous username, this username is used to display as last username in authentication views
+    [[NSUserDefaults standardUserDefaults] setObject:username forKey:@"SPUsernamePrevious"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
     // It's now safe to start the network managers
     [self startNetworkManagers];
     
