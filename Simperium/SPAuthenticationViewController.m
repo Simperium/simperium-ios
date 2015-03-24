@@ -578,7 +578,15 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 - (IBAction)forgotPasswordAction:(id)sender {
-    NSString *forgotPasswordURL = [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
+    SPAuthenticationConfiguration *configuration = [SPAuthenticationConfiguration sharedInstance];
+    NSString *forgotPasswordURL = configuration.forgotPasswordURL;
+    
+    // Post the email already entered in the Username Field. This allows us to prefill the Forgot Password Form
+    if (self.usernameField.text.length) {
+        NSString *parameters = [NSString stringWithFormat:@"?email=%@", self.usernameField.text];
+        forgotPasswordURL = [forgotPasswordURL stringByAppendingString:parameters];
+    }
+    
     [self showWebviewWithURL:forgotPasswordURL];
 }
 
@@ -586,9 +594,9 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     _signingIn = !_signingIn;
     NSArray *indexPaths = @[ [self confirmIndexPath] ];
     if (_signingIn) {
-        [self.tableView deleteRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
+        [self.tableView deleteRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationTop];
     } else {
-        [self.tableView insertRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
+        [self.tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationTop];
     }
     
     [self.usernameField becomeFirstResponder];
