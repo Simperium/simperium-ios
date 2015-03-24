@@ -7,15 +7,6 @@
 //
 
 #import "SPWebViewController.h"
-#import "SPLogger.h"
-
-
-
-#pragma mark ====================================================================================
-#pragma mark Constants
-#pragma mark ====================================================================================
-
-static SPLogLevels logLevel = SPLogLevelsInfo;
 
 
 #pragma mark ====================================================================================

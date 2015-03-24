@@ -78,7 +78,6 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         self.validatesObjects               = YES;
         self.authenticationEnabled          = YES;
         self.dynamicSchemaEnabled           = YES;
-        self.authenticationEnabled          = YES;
         self.buckets                        = [NSMutableDictionary dictionary];
         
         SPReachability *reachability        = [SPReachability reachabilityForInternetConnection];
@@ -596,9 +595,6 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [self.authenticator reset];
     self.user = nil;
     
-    // We just logged out. Let's display SignIn fields next time!
-    self.shouldSignIn = YES;
-    
     // Reset the network manager and processors; any enqueued tasks will get skipped
     self.logoutInProgress = YES;
     
@@ -745,6 +741,10 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 
 - (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token {
     
+    // Save username as previous username, this username is used to display as last username in authentication views
+    [[NSUserDefaults standardUserDefaults] setObject:username forKey:@"SPUsernamePrevious"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
     // It's now safe to start the network managers
     [self startNetworkManagers];
     
@@ -810,6 +810,11 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 }
 
 - (void)openAuthViewControllerAnimated:(BOOL)animated {
+    // Get previous username, if available the sign-in view should be set as default
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"SPUsernamePrevious"]) {
+        self.shouldSignIn = YES;
+    }
+
 #if TARGET_OS_IPHONE
     if ([self isAuthVisible]) {
         return;

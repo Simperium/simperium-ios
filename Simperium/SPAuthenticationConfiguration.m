@@ -44,9 +44,10 @@ static NSString *SPAuthenticationTestString             = @"Testyj";
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _regularFontName    = SPAuthenticationDefaultRegularFontName;
-        _mediumFontName     = SPAuthenticationDefaultMediumFontName;
-        _termsOfServiceURL  = SPTermsOfServiceURL;
+        _regularFontName            = SPAuthenticationDefaultRegularFontName;
+        _mediumFontName             = SPAuthenticationDefaultMediumFontName;
+        _termsOfServiceURL          = SPTermsOfServiceURL;
+        _previousUsernameEnabled    = YES;
         
 #if !TARGET_OS_IPHONE
         _controlColor       = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
