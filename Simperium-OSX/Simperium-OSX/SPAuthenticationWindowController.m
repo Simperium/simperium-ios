@@ -212,6 +212,13 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
 - (IBAction)forgotPassword:(id)sender {
     NSString *forgotPasswordURL = [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
+    
+    // Post the email already entered in the Username Field. This allows us to prefill the Forgot Password Form
+    if (self.usernameField.stringValue.length) {
+        NSString *parameters = [NSString stringWithFormat:@"?email=%@", self.usernameField.stringValue];
+        forgotPasswordURL = [forgotPasswordURL stringByAppendingString:parameters];
+    }
+    
     [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:forgotPasswordURL]];
 }
 
