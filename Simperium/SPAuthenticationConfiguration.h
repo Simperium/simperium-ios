@@ -19,11 +19,11 @@
 @property (nonatomic, copy,   readwrite) NSString   *mediumFontName;
 @property (nonatomic, copy,   readwrite) NSString   *logoImageName;
 
-@property (nonatomic, assign, readwrite) NSString   *forgotPasswordURL;
-@property (nonatomic, assign, readwrite) NSString   *termsOfServiceURL;
+@property (nonatomic, strong, readwrite) NSString   *forgotPasswordURL;
+@property (nonatomic, strong, readwrite) NSString   *termsOfServiceURL;
 
 #if !TARGET_OS_IPHONE
-@property (nonatomic, strong) NSColor *controlColor;
+@property (nonatomic, strong, readwrite) NSColor    *controlColor;
 #endif
 
 + (instancetype)sharedInstance;
