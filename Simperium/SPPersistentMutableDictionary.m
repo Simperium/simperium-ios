@@ -306,8 +306,10 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
         BOOL success    = [[NSFileManager defaultManager] createDirectoryAtURL:baseURL withIntermediateDirectories:YES attributes:nil error:&error];
         
         if (!success) {
-            NSLog(@"%@ could not create baseURL %@: %@", NSStringFromClass([self class]), baseURL, error);
-            abort();
+            NSString *reason        = [NSString stringWithFormat:@"Could not create baseURL %@. Error: %@", baseURL, error];
+            NSString *name          = NSStringFromClass([self class]);
+            NSException *exception  = [NSException exceptionWithName:name reason:reason userInfo:nil];
+            @throw exception;
         }
         
         // We've moved the store location to NSApplicationSupportDirectory. Let's move old folders, if needed
@@ -330,8 +332,10 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
             // Try again
             if (![psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
             {
-                NSLog(@"%@ Unresolved error %@: %@", NSStringFromClass([self class]), baseURL, error);
-                abort();
+                NSString *reason        = [NSString stringWithFormat:@"Unresolved error %@: %@", baseURL, error];
+                NSString *name          = NSStringFromClass([self class]);
+                NSException *exception  = [NSException exceptionWithName:name reason:reason userInfo:nil];
+                @throw exception;
             }
         }
         
