@@ -23,8 +23,15 @@ static NSJSONWritingOptions const SPJSONWritingOptions = 0;
     }
     
     NSError *theError = nil;
-    NSData *data = [NSJSONSerialization dataWithJSONObject:object options:SPJSONWritingOptions error:&theError];
+    NSData *data = nil;
     
+    @try {
+        data = [NSJSONSerialization dataWithJSONObject:object options:SPJSONWritingOptions error:&theError];
+    }
+    @catch (NSException *exception) {
+        NSLog(@"Simperium JSON Parsing Exception: %@", exception.reason);
+    }
+
     if (theError) {
         if(error) {
             *error = theError;
