@@ -465,14 +465,12 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 #pragma mark Login
 
 - (void)performLogin {
-    self.actionButton.enabled = NO;
-    self.changeButton.enabled = NO;
-    self.cancelButton.enabled = NO;
-
-    [self.usernameField resignFirstResponder];
-    [self.passwordField resignFirstResponder];
-    [self.progressView setHidden: NO];
+    self.view.userInteractionEnabled = NO;
+    [self.view endEditing:YES];
+    
+    [self.progressView setHidden:NO];
     [self.progressView startAnimating];
+    
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
 
     [self.authenticator authenticateWithUsername:self.usernameField.text
@@ -483,9 +481,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
                                             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                                         }
                                         failure: ^(int responseCode, NSString *responseString){
-                                            self.actionButton.enabled = YES;
-                                            self.changeButton.enabled = YES;
-                                            self.cancelButton.enabled = YES;
+                                            self.view.userInteractionEnabled = YES;
 
                                             [self.progressView setHidden: YES];
                                             [self.progressView stopAnimating];
