@@ -476,14 +476,14 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     [self.authenticator authenticateWithUsername:self.usernameField.text
                                         password:self.passwordField.text
                                          success:^{
-                                            [self.progressView setHidden: YES];
+                                            [self.progressView setHidden:YES];
                                             [self.progressView stopAnimating];
                                             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                                         }
                                         failure: ^(int responseCode, NSString *responseString){
                                             self.view.userInteractionEnabled = YES;
 
-                                            [self.progressView setHidden: YES];
+                                            [self.progressView setHidden:YES];
                                             [self.progressView stopAnimating];
                                             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                          
