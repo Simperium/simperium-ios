@@ -558,6 +558,12 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         dispatch_group_async(group, bucket.processorQueue, ^{ });
     }
     
+    // Make sure that any pending OP's get process'ed
+    dispatch_group_enter(group);
+    [self.coreDataStorage commitPendingOperations:^{
+        dispatch_group_leave(group);
+    }];
+    
     // When the queues are empty, the changes are expected to be saved locally
     dispatch_group_notify(group, dispatch_get_main_queue(), ^ {
         [[NSApplication sharedApplication] replyToApplicationShouldTerminate:YES];
