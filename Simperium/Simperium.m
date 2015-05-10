@@ -20,6 +20,7 @@
 #import "JSONKit+Simperium.h"
 #import "NSString+Simperium.h"
 #import "SPLogger.h"
+#import "SPAuthenticationConfiguration.h"
 
 
 
@@ -78,7 +79,6 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         self.validatesObjects               = YES;
         self.authenticationEnabled          = YES;
         self.dynamicSchemaEnabled           = YES;
-        self.authenticationEnabled          = YES;
         self.buckets                        = [NSMutableDictionary dictionary];
         
         SPReachability *reachability        = [SPReachability reachabilityForInternetConnection];
@@ -602,9 +602,6 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [self.authenticator reset];
     self.user = nil;
     
-    // We just logged out. Let's display SignIn fields next time!
-    self.shouldSignIn = YES;
-    
     // Reset the network manager and processors; any enqueued tasks will get skipped
     self.logoutInProgress = YES;
     
@@ -751,6 +748,9 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 
 - (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token {
     
+    // Save username as previous username, this username is used to display as last username in authentication views
+    [[SPAuthenticationConfiguration sharedInstance] setPreviousUsernameLogged:username];
+    
     // It's now safe to start the network managers
     [self startNetworkManagers];
     
@@ -816,6 +816,10 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 }
 
 - (void)openAuthViewControllerAnimated:(BOOL)animated {
+    // Get previous username, if available the sign-in view should be set as default
+    SPAuthenticationConfiguration *configuration = [SPAuthenticationConfiguration sharedInstance];
+    self.shouldSignIn = configuration.previousUsernameEnabled && configuration.previousUsernameLogged;
+
 #if TARGET_OS_IPHONE
     if ([self isAuthVisible]) {
         return;
