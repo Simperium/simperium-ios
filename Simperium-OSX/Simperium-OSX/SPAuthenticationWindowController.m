@@ -98,6 +98,12 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         self.usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:NO];
         
         [self.usernameField setPlaceholderString:NSLocalizedString(@"Email Address", @"Placeholder text for login field")];
+        
+        SPAuthenticationConfiguration *authConfig = [SPAuthenticationConfiguration sharedInstance];
+        if (_signingIn && authConfig.previousUsernameEnabled && authConfig.previousUsernameLogged) {
+            // Get previous username, to display as last used username in authentication view
+            [self.usernameField setStringValue:authConfig.previousUsernameLogged];
+        }
         self.usernameField.delegate = self;
         [authView addSubview:self.usernameField];
         
@@ -212,6 +218,13 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
 - (IBAction)forgotPassword:(id)sender {
     NSString *forgotPasswordURL = [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
+    
+    // Post the email already entered in the Username Field. This allows us to prefill the Forgot Password Form
+    if (self.usernameField.stringValue.length) {
+        NSString *parameters = [NSString stringWithFormat:@"?email=%@", self.usernameField.stringValue];
+        forgotPasswordURL = [forgotPasswordURL stringByAppendingString:parameters];
+    }
+    
     [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:forgotPasswordURL]];
 }
 

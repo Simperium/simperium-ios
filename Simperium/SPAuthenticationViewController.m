@@ -178,6 +178,11 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     self.usernameField = [self textFieldWithPlaceholder:usernameText secure:NO];
     _usernameField.keyboardType = UIKeyboardTypeEmailAddress;
     
+    if (_signingIn && configuration.previousUsernameEnabled && configuration.previousUsernameLogged) {
+        // Get previous username, to display as last used username in authentication view
+        _usernameField.text = configuration.previousUsernameLogged;
+    }
+    
     // Password Field
     NSString *passwordText = NSLocalizedString(@"Password", @"Hint displayed in the password field");
     self.passwordField = [self textFieldWithPlaceholder:passwordText secure:YES];
@@ -465,29 +470,25 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 #pragma mark Login
 
 - (void)performLogin {
-    self.actionButton.enabled = NO;
-    self.changeButton.enabled = NO;
-    self.cancelButton.enabled = NO;
-
-    [self.usernameField resignFirstResponder];
-    [self.passwordField resignFirstResponder];
-    [self.progressView setHidden: NO];
+    self.view.userInteractionEnabled = NO;
+    [self.view endEditing:YES];
+    
+    [self.progressView setHidden:NO];
     [self.progressView startAnimating];
+    
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
 
     [self.authenticator authenticateWithUsername:self.usernameField.text
                                         password:self.passwordField.text
                                          success:^{
-                                            [self.progressView setHidden: YES];
+                                            [self.progressView setHidden:YES];
                                             [self.progressView stopAnimating];
                                             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                                         }
                                         failure: ^(int responseCode, NSString *responseString){
-                                            self.actionButton.enabled = YES;
-                                            self.changeButton.enabled = YES;
-                                            self.cancelButton.enabled = YES;
+                                            self.view.userInteractionEnabled = YES;
 
-                                            [self.progressView setHidden: YES];
+                                            [self.progressView setHidden:YES];
                                             [self.progressView stopAnimating];
                                             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                          
@@ -578,7 +579,15 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 - (IBAction)forgotPasswordAction:(id)sender {
-    NSString *forgotPasswordURL = [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
+    SPAuthenticationConfiguration *configuration = [SPAuthenticationConfiguration sharedInstance];
+    NSString *forgotPasswordURL = configuration.forgotPasswordURL;
+    
+    // Post the email already entered in the Username Field. This allows us to prefill the Forgot Password Form
+    if (self.usernameField.text.length) {
+        NSString *parameters = [NSString stringWithFormat:@"?email=%@", self.usernameField.text];
+        forgotPasswordURL = [forgotPasswordURL stringByAppendingString:parameters];
+    }
+    
     [self showWebviewWithURL:forgotPasswordURL];
 }
 
@@ -586,9 +595,9 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     _signingIn = !_signingIn;
     NSArray *indexPaths = @[ [self confirmIndexPath] ];
     if (_signingIn) {
-        [self.tableView deleteRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
+        [self.tableView deleteRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationTop];
     } else {
-        [self.tableView insertRowsAtIndexPaths: indexPaths withRowAnimation:UITableViewRowAnimationTop];
+        [self.tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationTop];
     }
     
     [self.usernameField becomeFirstResponder];
