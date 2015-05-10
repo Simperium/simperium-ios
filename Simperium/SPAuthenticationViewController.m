@@ -177,9 +177,10 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     NSString *usernameText = @"email@email.com";
     self.usernameField = [self textFieldWithPlaceholder:usernameText secure:NO];
     _usernameField.keyboardType = UIKeyboardTypeEmailAddress;
-    if (_signingIn && [[SPAuthenticationConfiguration sharedInstance] previousUsernameEnabled]) {
+    
+    if (_signingIn && configuration.previousUsernameEnabled && configuration.previousUsernameLogged) {
         // Get previous username, to display as last used username in authentication view
-        _usernameField.text = [[NSUserDefaults standardUserDefaults] objectForKey:@"SPUsernamePrevious"];
+        _usernameField.text = configuration.previousUsernameLogged;
     }
     
     // Password Field

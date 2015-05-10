@@ -19,9 +19,11 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSString *SPAuthenticationDefaultRegularFontName = @"HelveticaNeue";
-static NSString *SPAuthenticationDefaultMediumFontName  = @"HelveticaNeue-Medium";
-static NSString *SPAuthenticationTestString             = @"Testyj";
+static NSString *SPAuthenticationDefaultRegularFontName     = @"HelveticaNeue";
+static NSString *SPAuthenticationDefaultMediumFontName      = @"HelveticaNeue-Medium";
+static BOOL SPAuthenticationDefaultPreviousUsernameEnabled  = NO;
+static NSString *SPAuthenticationTestString                 = @"Testyj";
+static NSString *SPAuthenticationPreviousUsernameKey        = @"SPUsernamePrevious";
 
 
 #pragma mark ====================================================================================
@@ -47,7 +49,7 @@ static NSString *SPAuthenticationTestString             = @"Testyj";
         _regularFontName            = SPAuthenticationDefaultRegularFontName;
         _mediumFontName             = SPAuthenticationDefaultMediumFontName;
         _termsOfServiceURL          = SPTermsOfServiceURL;
-        _previousUsernameEnabled    = YES;
+        _previousUsernameEnabled    = SPAuthenticationDefaultPreviousUsernameEnabled;
         
 #if !TARGET_OS_IPHONE
         _controlColor       = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
@@ -58,7 +60,7 @@ static NSString *SPAuthenticationTestString             = @"Testyj";
 }
 
 
-#pragma mark - Custom Setters
+#pragma mark - Custom Properties
 
 - (void)setForgotPasswordURL:(NSString *)forgotPasswordURL {
     NSAssert(!forgotPasswordURL || forgotPasswordURL.sp_isValidUrl, @"Simperium: Invalid Forgot Password URL");
@@ -68,6 +70,15 @@ static NSString *SPAuthenticationTestString             = @"Testyj";
 - (void)setTermsOfServiceURL:(NSString *)termsOfServiceURL {
     NSAssert(!termsOfServiceURL || termsOfServiceURL.sp_isValidUrl, @"Simperium: Invalid Terms of Service URL");
     _termsOfServiceURL = termsOfServiceURL;
+}
+
+- (void)setPreviousUsernameLogged:(NSString *)username {
+    [[NSUserDefaults standardUserDefaults] setObject:username forKey:SPAuthenticationPreviousUsernameKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (NSString *)previousUsernameLogged {
+    return [[NSUserDefaults standardUserDefaults] objectForKey:SPAuthenticationPreviousUsernameKey];
 }
 
 
