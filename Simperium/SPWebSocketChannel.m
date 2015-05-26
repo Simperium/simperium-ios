@@ -435,7 +435,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     NSString *key       = [responseString substringToIndex:keyRange.location];
     NSString *version   = [responseString substringWithRange:versionRange];
     NSString *payload   = [responseString substringFromIndex:headerRange.location + headerRange.length];
-    SPLogVerbose(@"Simperium received version (%@): %@", self.name, responseString);
+    SPLogInfo(@"Simperium received version (%@): %@", self.name, responseString);
     
     // With websockets, the data is wrapped up (somewhat annoyingly) in a dictionary, so unwrap it
     // This processing should probably be moved off the main thread (or improved at the protocol level)
