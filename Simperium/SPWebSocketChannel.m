@@ -700,7 +700,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 - (void)allVersionsFinishedForBucket:(SPBucket *)bucket {
     [self processVersionsBatchForBucket:bucket];
 
-    SPLogVerbose(@"Simperium finished processing all objects from index (%@)", self.name);
+    SPLogInfo(@"Simperium finished processing all objects from index (%@)", self.name);
     
     // Update the Bucket's lastChangeSignature
     bucket.lastChangeSignature      = self.pendingLastChangeSignature;
