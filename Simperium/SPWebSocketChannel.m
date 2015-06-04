@@ -407,6 +407,8 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 }
 
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
+    NSAssert([NSThread isMainThread], @"This method should get called on the main thread");
+    
     if ([responseString isEqualToString:@"?"]) {
         SPLogError(@"Simperium error: '?' response during version retrieval (%@)", bucket.name);
         _objectVersionsPending--;
