@@ -55,7 +55,6 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 @property (nonatomic, strong) NSTimer                       *syncTimeoutTimer;
 @property (nonatomic, strong) NSMutableArray                *versionsBatch;
 @property (nonatomic, strong) NSMutableArray                *changesBatch;
-@property (nonatomic, assign) NSInteger                     retryDelay;
 @property (nonatomic, assign) NSInteger                     objectVersionsPending;
 @property (nonatomic, assign) BOOL                          started;
 @property (nonatomic, assign) BOOL                          indexing;
