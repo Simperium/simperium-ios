@@ -34,9 +34,10 @@ typedef NS_ENUM(NSInteger, SPWebsocketAuthError) {
     SPWebsocketAuthErrorTokenInvalid                        = 401
 };
 
+static int const SPWebsocketMaxPendingVersions              = 200;
 static int const SPWebsocketChangesBatchSize                = 20;
 static int const SPWebsocketIndexPageSize                   = 500;
-static int const SPWebsocketIndexBatchSize                  = 10;
+static int const SPWebsocketIndexBatchSize                  = 20;
 static NSString* const SPWebsocketErrorMark                 = @"{";
 static NSString* const SPWebsocketErrorCodeKey              = @"code";
 static NSTimeInterval const SPWebSocketSyncTimeoutInterval  = 180;
@@ -55,6 +56,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 @property (nonatomic, strong) NSTimer                       *syncTimeoutTimer;
 @property (nonatomic, strong) NSMutableArray                *versionsBatch;
 @property (nonatomic, strong) NSMutableArray                *changesBatch;
+@property (nonatomic, strong) NSMutableDictionary           *versionsPending;
 @property (nonatomic, assign) NSInteger                     objectVersionsPending;
 @property (nonatomic, assign) BOOL                          started;
 @property (nonatomic, assign) BOOL                          indexing;
@@ -73,10 +75,11 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 - (instancetype)initWithSimperium:(Simperium *)s {
     self = [super init];
     if (self) {
-        _simperium      = s;
-        _indexArray     = [NSMutableArray arrayWithCapacity:200];
-        _changesBatch   = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
-        _versionsBatch  = [NSMutableArray arrayWithCapacity:SPWebsocketIndexBatchSize];
+        _simperium          = s;
+        _indexArray         = [NSMutableArray arrayWithCapacity:200];
+        _changesBatch       = [NSMutableArray arrayWithCapacity:SPWebsocketChangesBatchSize];
+        _versionsBatch      = [NSMutableArray arrayWithCapacity:SPWebsocketIndexBatchSize];
+        _versionsPending    = [NSMutableDictionary dictionary];
     }
     
     return self;
@@ -138,6 +141,41 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     SPLogVerbose(@"Simperium downloading entity (%@) %@.%@", self.name, simperiumKey, version);
     NSString *message = [NSString stringWithFormat:@"%d:e:%@.%@", self.number, simperiumKey, version];
     [self.webSocketManager send:message];
+}
+
+- (void)requestVersionsInBatch:(NSDictionary *)versions {
+    
+    NSAssert([NSThread isMainThread], @"This method should get called on the main thread!");
+
+    [self.versionsPending addEntriesFromDictionary:versions];
+    [self requestPendingVersionsIfNeeded];
+}
+
+- (void)requestPendingVersionsIfNeeded {
+    
+    NSAssert([NSThread isMainThread], @"This method should get called on the main thread!");
+    
+    NSMutableSet *requestedKeys = [NSMutableSet set];
+  
+    for (NSString *simperiumKey in self.versionsPending.allKeys) {
+        if ([self reachedMaximumPendingVersions]) {
+            break;
+        }
+
+        [self requestVersion:self.versionsPending[simperiumKey] forObjectWithKey:simperiumKey];
+        [requestedKeys addObject:simperiumKey];
+    }
+
+    // Remember what's missing!
+    [self.versionsPending removeObjectsForKeys:requestedKeys.allObjects];
+}
+
+- (BOOL)hasPendingVersionRequests {
+    return self.versionsPending.count != 0;
+}
+
+- (BOOL)reachedMaximumPendingVersions {
+    return self.objectVersionsPending > SPWebsocketMaxPendingVersions;
 }
 
 
@@ -257,7 +295,9 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     self.simperium.user.email       = responseString;
     self.onLocalChangesSent         = nil;
     self.objectVersionsPending      = 0;
-
+    
+    [self.versionsPending removeAllObjects];
+    
     // Reset disable-rebase mechanism + reset reload mechanism
     dispatch_async(bucket.processorQueue, ^{
         [bucket.indexProcessor enableRebaseForAllObjects];
@@ -409,6 +449,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 - (void)handleVersionResponse:(NSString *)responseString bucket:(SPBucket *)bucket {
     NSAssert([NSThread isMainThread], @"This method should get called on the main thread");
     
+    // Handle Error messages
     if ([responseString isEqualToString:@"?"]) {
         SPLogError(@"Simperium error: '?' response during version retrieval (%@)", bucket.name);
         _objectVersionsPending--;
@@ -625,6 +666,9 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
 }
 
 - (void)processVersionsBatchForBucket:(SPBucket *)bucket {
+    // Request any pending versions, if needed
+    [self requestPendingVersionsIfNeeded];
+    
     if (self.versionsBatch.count == 0) {
         return;
     }
@@ -632,7 +676,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     NSMutableArray *batch   = [self.versionsBatch copy];
     NSInteger newPendings   = MAX(0, _objectVersionsPending - batch.count);
     
-    BOOL shouldHitFinished  = (_indexing && newPendings == 0);
+    BOOL shouldHitFinished  = (_indexing && newPendings == 0 && !self.hasPendingVersionRequests);
     
     dispatch_async(bucket.processorQueue, ^{
         if (!self.authenticated) {
@@ -674,24 +718,23 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     NSArray *indexArrayCopy = [currentIndexArray copy];
     dispatch_async(bucket.processorQueue, ^{
         if (self.authenticated) {
-            __block NSInteger requestedVersions = 0;
+            NSMutableDictionary *pendingVersionRequests = [NSMutableDictionary dictionary];
             
             [bucket.indexProcessor processIndex:indexArrayCopy bucket:bucket versionHandler:^(NSString *key, NSString *version) {
-                // For each version that is processed, create a network request
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self requestVersion:version forObjectWithKey:key];
-                });
-                
-                ++requestedVersions;
+                [pendingVersionRequests setObject:version forKey:key];
             }];
 
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self requestVersionsInBatch:pendingVersionRequests];
+            });
+            
             // If no requests were queued, then all is good; back to processing
-            if (requestedVersions == 0) {
+            if (pendingVersionRequests.count == 0) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self allVersionsFinishedForBucket:bucket];
                 });   
             } else {
-                SPLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)requestedVersions, bucket.name);
+                SPLogInfo(@"Simperium enqueuing %ld object requests (%@)", (long)pendingVersionRequests.count, bucket.name);
             }
         }
     });
