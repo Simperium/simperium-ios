@@ -55,4 +55,13 @@
     }
 }
 
+- (void)testTrimingString
+{
+    NSString *sample = @"abc";
+    NSString *paddedSample = [NSString stringWithFormat:@"  %@  ", sample];
+
+    NSString *trimmedSample = [paddedSample sp_trim];
+    XCTAssertTrue([trimmedSample isEqualToString:sample], @"Extra white space should have been trimmed.");
+}
+
 @end

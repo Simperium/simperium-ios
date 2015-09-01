@@ -21,5 +21,6 @@
 
 - (NSString *)sp_urlEncodeString;
 - (NSArray *)sp_componentsSeparatedByString:(NSString *)separator limit:(NSInteger)limit;
+- (NSString *)sp_trim;
 
 @end

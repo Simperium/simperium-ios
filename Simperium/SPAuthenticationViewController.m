@@ -17,7 +17,7 @@
 #import "SPWebViewController.h"
 
 #import "JSONKit+Simperium.h"
-
+#import "NSString+Simperium.h"
 
 #pragma mark ====================================================================================
 #pragma mark Private Properties
@@ -427,7 +427,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 #pragma mark Validation
 
 - (BOOL)validateUsername {
-    if (![self.validator validateUsername:self.usernameField.text]) {
+    if (![self.validator validateUsername:[self.usernameField.text sp_trim]]) {
         NSString *errorText = NSLocalizedString(@"Your email address is not valid.", @"Message displayed when email address is invalid");
         [self.actionButton showErrorMessage:errorText];
         [self earthquake:[self.tableView cellForRowAtIndexPath:[self emailIndexPath]]];
@@ -478,7 +478,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
 
-    [self.authenticator authenticateWithUsername:self.usernameField.text
+    [self.authenticator authenticateWithUsername:[self.usernameField.text sp_trim]
                                         password:self.passwordField.text
                                          success:^{
                                             [self.progressView setHidden:YES];
@@ -536,7 +536,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     // Try to login and sync after entering password?
     [self.progressView setHidden: NO];
     [self.progressView startAnimating];
-    [self.authenticator createWithUsername:self.usernameField.text
+    [self.authenticator createWithUsername:[self.usernameField.text sp_trim]
                                 password:self.passwordField.text
                                   success:^{
                                       [self.progressView setHidden: YES];
@@ -583,8 +583,9 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     NSString *forgotPasswordURL = configuration.forgotPasswordURL;
     
     // Post the email already entered in the Username Field. This allows us to prefill the Forgot Password Form
-    if (self.usernameField.text.length) {
-        NSString *parameters = [NSString stringWithFormat:@"?email=%@", self.usernameField.text];
+    NSString *username = [self.usernameField.text sp_trim];
+    if (username.length) {
+        NSString *parameters = [NSString stringWithFormat:@"?email=%@", username];
         forgotPasswordURL = [forgotPasswordURL stringByAppendingString:parameters];
     }
     
