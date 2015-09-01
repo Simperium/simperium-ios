@@ -301,15 +301,19 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
         }
         
         NSURL *baseURL  = [self baseURL];
-        
         NSError *error  = nil;
-        BOOL success    = [[NSFileManager defaultManager] createDirectoryAtURL:baseURL withIntermediateDirectories:YES attributes:nil error:&error];
         
-        if (!success) {
-            NSString *reason        = [NSString stringWithFormat:@"Could not create baseURL %@. Error: %@", baseURL, error];
-            NSString *name          = NSStringFromClass([self class]);
-            NSException *exception  = [NSException exceptionWithName:name reason:reason userInfo:nil];
-            @throw exception;
+        // Create the Container Folder, if needed
+        if (![[NSFileManager defaultManager] fileExistsAtPath:baseURL.path])
+        {
+            BOOL success = [[NSFileManager defaultManager] createDirectoryAtURL:baseURL withIntermediateDirectories:YES attributes:nil error:&error];
+            
+            if (!success) {
+                NSString *reason        = [NSString stringWithFormat:@"Could not create baseURL %@. Error: %@", baseURL, error];
+                NSString *name          = NSStringFromClass([self class]);
+                NSException *exception  = [NSException exceptionWithName:name reason:reason userInfo:nil];
+                @throw exception;
+            }
         }
         
         // We've moved the store location to NSApplicationSupportDirectory. Let's move old folders, if needed
