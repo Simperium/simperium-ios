@@ -221,7 +221,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     
     // Post the email already entered in the Username Field. This allows us to prefill the Forgot Password Form
     if (self.usernameField.stringValue.length) {
-        NSString *parameters = [NSString stringWithFormat:@"?email=%@", self.usernameField.stringValue];
+        NSString *parameters = [NSString stringWithFormat:@"?email=%@", self.usernameField.stringValue.sp_trim];
         forgotPasswordURL = [forgotPasswordURL stringByAppendingString:parameters];
     }
     
@@ -276,7 +276,8 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self.changeToSignUpButton setEnabled:NO];
     [self.usernameField setEnabled:NO];
     [self.passwordField setEnabled:NO];
-    [self.authenticator authenticateWithUsername:[self.usernameField stringValue] password:[self.passwordField stringValue]
+    [self.authenticator authenticateWithUsername:self.usernameField.stringValue.sp_trim
+                                        password:self.passwordField.stringValue
                                        success:^{
                                        }
                                        failure:^(int responseCode, NSString *responseString) {
@@ -305,7 +306,8 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self.passwordField setEnabled:NO];
     [self.confirmField setEnabled:NO];
 
-    [self.authenticator createWithUsername:[self.usernameField stringValue] password:[self.passwordField stringValue]
+    [self.authenticator createWithUsername:self.usernameField.stringValue.sp_trim
+                                  password:self.passwordField.stringValue
                                  success:^{
                                      //[self close];
                                  }
@@ -330,7 +332,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 # pragma mark Validation and Error Handling
 
 - (BOOL)validateUsername {
-    if (![self.validator validateUsername:self.usernameField.stringValue]) {
+    if (![self.validator validateUsername:self.usernameField.stringValue.sp_trim]) {
         [self earthquake:self.usernameField];
         [self showAuthenticationError:NSLocalizedString(@"Not a valid email address", @"Error when you enter a bad email address")];
         
