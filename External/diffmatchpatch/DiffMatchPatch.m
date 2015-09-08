@@ -2102,13 +2102,23 @@ NS_INLINE NSString * diff_charsToTokenString(NSString *charsString, NSArray *tok
 
   // Look for the first and last matches of pattern in text.  If two
   // different matches are found, increase the pattern length.
-  while ([text rangeOfString:pattern options:NSLiteralSearch].location
-      != [text rangeOfString:pattern options:(NSLiteralSearch | NSBackwardsSearch)].location
-      && pattern.length < (Match_MaxBits - Patch_Margin - Patch_Margin)) {
+    
+  // MJ: changed this logic to match dmp-js to fix a transform discrepancy (buy eggs milk butter vs. buy eggs butter milk)
+  NSUInteger startLoc = [text rangeOfString:pattern options:NSLiteralSearch].location;
+  NSUInteger endLoc = [text rangeOfString:pattern options:(NSLiteralSearch | NSBackwardsSearch)].location;
+
+  // MJ: js matches an empty pattern on a string as the length of the string
+  if (pattern.length == 0)
+    endLoc = text.length;
+
+  while (startLoc != endLoc && pattern.length < (Match_MaxBits - Patch_Margin - Patch_Margin)) {
     padding += Patch_Margin;
     pattern = [text diff_javaSubstringFromStart:MAX_OF_CONST_AND_DIFF(0, patch.start2, padding)
-        toEnd:MIN(text.length, patch.start2 + patch.length1 + padding)];
+                                          toEnd:MIN(text.length, patch.start2 + patch.length1 + padding)];
+    startLoc = [text rangeOfString:pattern options:NSLiteralSearch].location;
+    endLoc = [text rangeOfString:pattern options:(NSLiteralSearch | NSBackwardsSearch)].location;
   }
+    
   // Add one chunk for good luck.
   padding += Patch_Margin;
 
