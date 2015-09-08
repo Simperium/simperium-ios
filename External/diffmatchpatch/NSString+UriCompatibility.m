@@ -22,6 +22,7 @@
 
 #import "NSString+UriCompatibility.h"
 
+
 @implementation NSString (UriCompatibility)
 
 /**
@@ -38,8 +39,7 @@
                                   CFSTR(" !~*'();/?:@&=+$,#"),
                                   NULL,
                                   kCFStringEncodingUTF8);
-  CFMakeCollectable(urlString);
-  return [(NSString *)urlString autorelease];
+  return [NSMakeCollectable(urlString) autorelease];
 }
 
 /**
@@ -55,8 +55,7 @@
                                             (CFStringRef)self, 
                                             CFSTR(""), 
                                             kCFStringEncodingUTF8);
-  CFMakeCollectable(decodedString);
-  return [(NSString *)decodedString autorelease];
+  return [NSMakeCollectable(decodedString) autorelease];
 }
 
 @end
