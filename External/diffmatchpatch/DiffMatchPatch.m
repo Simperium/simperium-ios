@@ -496,13 +496,19 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 
   NSString *longtext = text1.length > text2.length ? text1 : text2;
   NSString *shorttext = text1.length > text2.length ? text2 : text1;
-  NSUInteger i = [longtext rangeOfString:shorttext].location;
-  if (i != NSNotFound) {
+  NSRange shortTextRange = [longtext rangeOfString:shorttext];
+
+  if (shortTextRange.location != NSNotFound) {
     // Shorter text is inside the longer text (speedup).
     Operation op = (text1.length > text2.length) ? DIFF_DELETE : DIFF_INSERT;
-    [diffs addObject:[Diff diffWithOperation:op andText:[longtext substringToIndex:i]]];
+    [diffs addObject:[Diff diffWithOperation:op andText:[longtext substringToIndex:shortTextRange.location]]];
     [diffs addObject:[Diff diffWithOperation:DIFF_EQUAL andText:shorttext]];
-    [diffs addObject:[Diff diffWithOperation:op andText:[longtext substringFromIndex:(i + shorttext.length)]]];
+      
+    // JLP:
+    // 'rangeOfString'.length may differ from 'shortText.length', due to composed characters. This fixes an ugly crash.
+    // Extra safety was also added (MIN FTW!)
+    NSUInteger substringIndex = MIN((shortTextRange.location + shortTextRange.length), longtext.length);
+    [diffs addObject:[Diff diffWithOperation:op andText:[longtext substringFromIndex:substringIndex]]];
     return diffs;
   }
   
