@@ -11,14 +11,10 @@ Pod::Spec.new do |s|
   #
   s.source     = { :git => "https://github.com/Simperium/simperium-ios.git", :tag => "v" << s.version.to_s }
   s.osx.deployment_target = '10.8'
-  s.source_files = 'Simperium/*.{h,m}', 'Simperium-OSX/**/*.{h,m}', 'External/JRSwizzle/*', 'External/SPReachability/*', 'External/SocketRocket/*', 'External/SSKeychain/*'
+  s.source_files = 'Simperium/*.{h,m}', 'Simperium-OSX/**/*.{h,m}', 'External/**/*.{h,m}'
   s.exclude_files = 'Simperium/SPAuthenticationViewController.{h,m}', 'Simperium/SPWebViewController.{h,m}', 'Simperium/SPAuthenticationButton.{h,m}'
 
   # Required by SocketRocket
   s.libraries = "icucore"
   s.requires_arc = true
-
-  # Dependencies
-  #
-  s.dependency 'Google-Diff-Match-Patch'
 end
