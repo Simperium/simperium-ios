@@ -1243,7 +1243,7 @@
   XCTAssertEqualObjects(@"x123\ttrue", resultStr, @"patch_apply: Edge partial match.");
 }
 
-- (void)testComposedCharacterStringsCrash {
+- (void)testComposedCharacterStringsSimperiumFix {
     NSString *oldString = @"あ ご a ご";
     NSString *newString = @"ご a ご";
     
