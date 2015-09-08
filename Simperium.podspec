@@ -11,13 +11,40 @@ Pod::Spec.new do |s|
   #
   s.source     = { :git => "https://github.com/Simperium/simperium-ios.git", :tag => "v" << s.version.to_s }
   s.ios.deployment_target = '6.0'
-  s.source_files = 'Simperium/*.{h,m}', 'External/**/*.{h,m}'
+  s.source_files = 'Simperium/*.{h,m}'
 
   # Frameworks
   #
   s.frameworks = 'Security', 'MobileCoreServices', 'CoreData', 'CFNetwork', 'SystemConfiguration', 'Foundation', 'UIKit', 'CoreGraphics'
 
-  # Required by SocketRocket
-  s.libraries = "icucore"
+  # Settings
   s.requires_arc = true
+
+  # Subspecs: DiffMatchPatch
+  s.subspec "DiffMatchPach" do |dmp|
+    dmp.source_files = "External/diffmatchpatch/*.{h,c,m}"
+    dmp.requires_arc = false
+    dmp.compiler_flags = '-fno-objc-arc'
+  end
+
+  # Subspecs: JRSwizzle
+  s.subspec "JRSwizzle" do |jrs|
+    jrs.source_files = "External/jrswizzle/*.{h,m}"
+  end
+
+  # Subspecs: SocketRocket
+  s.subspec "SocketRocket" do |sr|
+    sr.source_files = "External/SocketRocket/*.{h,m}"
+    sr.libraries = "icucore"
+  end
+
+  # Subspecs: SPReachability
+  s.subspec "SPReachability" do |spr|
+    spr.source_files = "External/SPReachability/*.{h,m}"
+  end
+
+  # Subspecs: SSKeychain
+  s.subspec "SSKeychain" do |ssk|
+    ssk.source_files = "External/SSKeychain/*.{h,m}"
+  end
 end
