@@ -22,13 +22,13 @@
 
 #import "NSString+UnicharUtilities.h"
 
+
 @implementation NSString (UnicharUtilities)
 
 + (NSString *)diff_stringFromUnichar:(unichar)ch;
 {
   CFStringRef c = CFStringCreateWithCharacters(kCFAllocatorDefault, &ch, 1);
-  CFMakeCollectable(c);
-  return [(NSString *)c autorelease];
+  return [NSMakeCollectable(c) autorelease];
 }
 
 - (NSString *)diff_substringWithCharacterAtIndex:(NSUInteger)anIndex;

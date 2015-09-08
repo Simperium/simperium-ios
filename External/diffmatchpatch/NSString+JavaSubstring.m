@@ -29,8 +29,7 @@
 - (NSString *)diff_javaSubstringFromStart:(NSUInteger)start toEnd:(NSUInteger)end;
 {
   CFStringRef c = diff_CFStringCreateJavaSubstring((CFStringRef)self, (CFIndex)start, (CFIndex)end);
-  CFMakeCollectable(c);
-  return [(NSString *)c autorelease];
+  return [NSMakeCollectable(c) autorelease];
 }
 
 @end
