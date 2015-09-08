@@ -1243,6 +1243,15 @@
   XCTAssertEqualObjects(@"x123\ttrue", resultStr, @"patch_apply: Edge partial match.");
 }
 
+- (void)testComposedCharacterStringsCrash {
+    NSString *oldString = @"あ ご a ご";
+    NSString *newString = @"ご a ご";
+    
+    DiffMatchPatch *dmp = [DiffMatchPatch new];
+    XCTAssertNoThrow([dmp diff_computeFromOldString:oldString andNewString:newString checkLines:YES deadline:0]);
+}
+
+
 
 #pragma mark Test Utility Functions
 //  TEST UTILITY FUNCTIONS
