@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   #
   s.source     = { :git => "https://github.com/Simperium/simperium-ios.git", :tag => "v" << s.version.to_s }
   s.ios.deployment_target = '6.0'
-  s.source_files = 'Simperium/*.{h,m}', 'External/JRSwizzle/*', 'External/SPReachability/*', 'External/SocketRocket/*', 'External/SSKeychain/*'
+  s.source_files = 'Simperium/*.{h,m}', 'External/**/*.{h,m}'
 
   # Frameworks
   #
@@ -20,8 +20,4 @@ Pod::Spec.new do |s|
   # Required by SocketRocket
   s.libraries = "icucore"
   s.requires_arc = true
-
-  # Dependencies
-  #
-  s.dependency 'Google-Diff-Match-Patch'
 end
