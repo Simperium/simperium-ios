@@ -324,7 +324,7 @@
 		46DD162B17A1B9660093678C /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		46EA1AEA17569EA0009AC5AA /* SPNetworkInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPNetworkInterface.h; path = ../../Simperium/SPNetworkInterface.h; sourceTree = "<group>"; };
 		46EA1AEC17569EB4009AC5AA /* SPWebSocketInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPWebSocketInterface.h; path = ../../Simperium/SPWebSocketInterface.h; sourceTree = "<group>"; };
-		46EA1AED17569EB4009AC5AA /* SPWebSocketInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocketInterface.m; path = ../../Simperium/SPWebSocketInterface.m; sourceTree = "<group>"; };
+		46EA1AED17569EB4009AC5AA /* SPWebSocketInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocketInterface.m; path = ../../Simperium/SPWebSocketInterface.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		B5008F5618B55D5100AC0337 /* SPMemberJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMemberJSON.h; path = ../../Simperium/SPMemberJSON.h; sourceTree = "<group>"; };
 		B5008F5718B55D5100AC0337 /* SPMemberJSON.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMemberJSON.m; path = ../../Simperium/SPMemberJSON.m; sourceTree = "<group>"; };
 		B504EF47182818BE002FA5A1 /* SPHttpRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPHttpRequest.h; path = ../../Simperium/SPHttpRequest.h; sourceTree = "<group>"; };
@@ -948,7 +948,7 @@
 		268EDEBF155F06D5006B566F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = Simperium;
 				TargetAttributes = {
 					B5D581BC183565A700B08996 = {
@@ -1156,9 +1156,11 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -1195,6 +1197,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -1224,6 +1227,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Simperium-OSX/Simperium-OSX-Prefix.pch";
 				INFOPLIST_FILE = "Simperium-OSX/Simperium-OSX-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.simperium.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = framework;
 			};
@@ -1245,6 +1249,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Simperium-OSX/Simperium-OSX-Prefix.pch";
 				INFOPLIST_FILE = "Simperium-OSX/Simperium-OSX-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.simperium.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = framework;
 			};
@@ -1272,6 +1277,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				INFOPLIST_FILE = "Simperium-OSX Tests/Simperium-OSX Tests-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.automattic.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -1296,6 +1302,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				INFOPLIST_FILE = "Simperium-OSX Tests/Simperium-OSX Tests-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.automattic.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;
 			};

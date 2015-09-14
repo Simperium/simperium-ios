@@ -87,7 +87,11 @@ static NSString *SPAuthenticationPreviousUsernameKey        = @"SPUsernamePrevio
 #if TARGET_OS_IPHONE
 
 - (float)regularFontHeightForSize:(float)size {
-    return [SPAuthenticationTestString sizeWithFont:[UIFont fontWithName:self.regularFontName size:size]].height;
+    NSDictionary *attributes = @{
+        NSFontAttributeName : [UIFont fontWithName:self.regularFontName size:size],
+    };
+    
+    return [SPAuthenticationTestString sizeWithAttributes:attributes].height;
 }
 
 #else
