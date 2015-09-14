@@ -321,12 +321,8 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     return !_editing;
 }
 
-- (NSUInteger)supportedInterfaceOrientations {
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-        return UIInterfaceOrientationMaskPortrait;
-    }
-    
-    return UIInterfaceOrientationMaskAll;
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) ? UIInterfaceOrientationMaskPortrait : UIInterfaceOrientationMaskAll;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
