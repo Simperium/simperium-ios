@@ -206,8 +206,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     
     // Verify if the certificate hasn't expired!
     if ([currentDate compare:expirationDate] == NSOrderedAscending) {
-        
-        NSData *rawCertificate              = [[NSData alloc] initWithBase64Encoding:SPCertificatePayload];
+        NSData *rawCertificate              = [[NSData alloc] initWithBase64EncodedString:SPCertificatePayload options:NSDataBase64DecodingIgnoreUnknownCharacters];
         SecCertificateRef parsedCertificate = SecCertificateCreateWithData(NULL, (CFDataRef)rawCertificate);
         
         if (parsedCertificate) {
