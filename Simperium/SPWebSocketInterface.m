@@ -208,11 +208,11 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     if ([currentDate compare:expirationDate] == NSOrderedAscending) {
         
         NSData *rawCertificate              = [[NSData alloc] initWithBase64Encoding:SPCertificatePayload];
-        SecCertificateRef parsedCertificate = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)rawCertificate);
+        SecCertificateRef parsedCertificate = SecCertificateCreateWithData(NULL, (CFDataRef)rawCertificate);
         
         if (parsedCertificate) {
             SPLogVerbose(@"Pinned Certificate is Valid: Proceeding with extra checks!");
-            allowedCertificates = @[ (__bridge id)parsedCertificate ];
+            allowedCertificates = @[ (id)CFBridgingRelease(parsedCertificate) ];
         } else {
             SPLogError(@"Error: Could not load Pinned Certificate Payload!");
         }
