@@ -1784,7 +1784,7 @@ static NSRunLoop *networkRunLoop = nil;
     sr_dispatch_release(_waitGroup);
 }
 
-- (id)init
+- (instancetype)init
 {
     self = [super init];
     if (self) {
