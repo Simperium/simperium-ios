@@ -35,7 +35,7 @@ static CGFloat const SPAuthenticationFieldHeight            = 38.0f;
 
 static CGFloat const SPAuthenticationTableWidthMax          = 400.0f;
 static CGFloat const SPAuthenticationCompactPaddingY        = 20.0f;
-static CGFloat const SPAuthenticationRegularPaddingY        = 180.0f;
+static CGFloat const SPAuthenticationRegularPaddingY        = 160.0f;
 
 
 static CGFloat const SPAuthenticationLinkHeight             = 24.0f;
@@ -345,11 +345,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     // Logo
     CGSize logoSize             = _logoView.frame.size;
     CGFloat contentHeight       = logoSize.height + _tableView.contentSize.height;
-    CGFloat topPadding          = SPAuthenticationRegularPaddingY;
-    
-    if ((contentHeight + 2 * topPadding) > targetSize.height) {
-        topPadding = SPAuthenticationCompactPaddingY;
-    }
+    CGFloat topPadding          = self.isRunningOnPad ? SPAuthenticationRegularPaddingY : SPAuthenticationCompactPaddingY;
     
     _logoView.frame             = CGRectIntegral(CGRectMake((targetSize.width - logoSize.width) * 0.5,
                                                             topPadding + self.topInset,
