@@ -420,7 +420,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 
-#pragma mark Validation
+#pragma mark - Validation
 
 - (BOOL)validateUsername {
     if (![self.validator validateUsername:[self.usernameField.text sp_trim]]) {
@@ -463,7 +463,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 
-#pragma mark Login
+#pragma mark - Login
 
 - (void)performLogin {
     self.view.userInteractionEnabled = NO;
@@ -509,7 +509,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 
-#pragma mark Creation
+#pragma mark - Creation
 
 - (void)restoreCreationSettings {
     self.actionButton.enabled = YES;
@@ -567,7 +567,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 
-#pragma mark Actions
+#pragma mark - Actions
 
 - (IBAction)termsAction:(id)sender {
     NSString *termsOfServiceURL = [[SPAuthenticationConfiguration sharedInstance] termsOfServiceURL];
@@ -627,7 +627,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 
-#pragma mark Text Field
+#pragma mark - Text Field
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
     [self.actionButton clearErrorMessage];
@@ -691,7 +691,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 
-#pragma mark Table Data Source Methods
+#pragma mark - Table Data Source Methods
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
     return 4.0;
@@ -741,7 +741,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 
-#pragma mark Helpers
+#pragma mark - Helpers
 
 - (void)earthquake:(UIView*)itemView {
     // From http://stackoverflow.com/a/1827373/1379066
