@@ -351,7 +351,9 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 
-#pragma mark Keyboard
+
+
+#pragma mark - Keyboard
 
 - (void)keyboardWillShow:(NSNotification *)notification {
     
@@ -376,7 +378,6 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 - (void)positionTableViewWithDuration:(CGFloat)duration {
     CGRect newFrame = self.view.bounds;
-    
     if (_keyboardHeight > 0) {
         CGFloat maxHeight = newFrame.size.height - _keyboardHeight - self.topInset;
         CGFloat tableViewHeight = [self.tableView tableFooterView].frame.origin.y + [self.tableView tableFooterView].frame.size.height;
