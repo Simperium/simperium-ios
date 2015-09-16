@@ -344,7 +344,6 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 - (void)layoutViewsForTargetSize:(CGSize)targetSize {
     // Logo
     CGSize logoSize             = _logoView.frame.size;
-    CGFloat contentHeight       = logoSize.height + _tableView.contentSize.height;
     CGFloat topPadding          = self.isRunningOnPad ? SPAuthenticationRegularPaddingY : SPAuthenticationCompactPaddingY;
     
     _logoView.frame             = CGRectIntegral(CGRectMake((targetSize.width - logoSize.width) * 0.5,
