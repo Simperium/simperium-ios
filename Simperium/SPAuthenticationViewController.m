@@ -354,7 +354,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     
     // Table
     CGFloat tableViewOriginY    = CGRectGetMaxY(_logoView.frame);
-    CGFloat tableViewWidth      = self.isRunningOnPad ? SPAuthenticationTableWidthMax : targetSize.width;
+    CGFloat tableViewWidth      = self.isRunningOnPad ? MIN(SPAuthenticationTableWidthMax, targetSize.width) : targetSize.width;
     
     _tableView.frame            = CGRectIntegral(CGRectMake((targetSize.width - tableViewWidth) * 0.5,
                                                             tableViewOriginY,
