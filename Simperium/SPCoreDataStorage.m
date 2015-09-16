@@ -714,45 +714,4 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     return lightweightMigrationNeeded;
 }
 
-// Need to perform a manual migration in a particular case. Do this according to Apple's guidelines.
-- (BOOL)migrateStore:(NSURL *)storeURL
-         sourceModel:(NSManagedObjectModel *)srcModel
-    destinationModel:(NSManagedObjectModel *)dstModel
-{
-    NSError *error = nil;
-    NSMappingModel *mappingModel = [NSMappingModel inferredMappingModelForSourceModel:srcModel
-                                                                     destinationModel:dstModel
-                                                                                error:&error];
-    if (error) {
-        NSString *message = [NSString stringWithFormat:@"Inferring failed %@ [%@]",
-                             error.description, (error.userInfo.description ?: @"no user info")];
-        NSLog(@"Migration failure message: %@", message);
-        
-        return NO;
-    }
-    
-    NSValue *classValue = [[NSPersistentStoreCoordinator registeredStoreTypes] objectForKey:NSSQLiteStoreType];
-    Class sqliteStoreClass = (Class)[classValue pointerValue];
-    Class sqliteStoreMigrationManagerClass = [sqliteStoreClass migrationManagerClass];
-    
-    NSMigrationManager *manager = [[sqliteStoreMigrationManagerClass alloc]
-                                   initWithSourceModel:srcModel destinationModel:dstModel];
-    
-    if (![manager migrateStoreFromURL:storeURL
-                                 type:NSSQLiteStoreType
-                              options:nil
-                     withMappingModel:mappingModel
-                     toDestinationURL:nil
-                      destinationType:NSSQLiteStoreType
-                   destinationOptions:nil
-                                error:&error]) {
-        
-        NSString *message = [NSString stringWithFormat:@"Migration failed %@ [%@]",
-                             error.description, (error.userInfo.description ?: @"no user info")];
-        NSLog(@"Migration failure message: %@", message);
-        return NO;
-    }
-    return YES;
-}
-
 @end

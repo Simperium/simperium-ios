@@ -17,14 +17,14 @@
 #import <Foundation/Foundation.h>
 #import <Security/SecCertificate.h>
 
-typedef enum {
+typedef NS_ENUM(NSInteger, SPRReadyState) {
     SPR_CONNECTING   = 0,
     SPR_OPEN         = 1,
     SPR_CLOSING      = 2,
     SPR_CLOSED       = 3,
-} SPRReadyState;
+};
 
-typedef enum SPRStatusCode : NSInteger {
+typedef NS_ENUM(NSInteger, SPRStatusCode) {
     SPRStatusCodeNormal = 1000,
     SPRStatusCodeGoingAway = 1001,
     SPRStatusCodeProtocolError = 1002,
@@ -35,7 +35,7 @@ typedef enum SPRStatusCode : NSInteger {
     SPRStatusCodeInvalidUTF8 = 1007,
     SPRStatusCodePolicyViolated = 1008,
     SPRStatusCodeMessageTooBig = 1009,
-} SPRStatusCode;
+};
 
 @class SPRWebSocket;
 

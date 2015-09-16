@@ -18,7 +18,7 @@
 NSString* const SPBaseURL = @"https://api.simperium.com/1/";
 NSString* const SPAuthURL = @"https://auth.simperium.com/1/";
 NSString* const SPWebsocketURL = @"wss://api.simperium.com/sock/1";
-NSString* const SPTermsOfServiceURL = @"http://simperium.com/tos/";
+NSString* const SPTermsOfServiceURL = @"https://simperium.com/tos/";
 
 NSString* const SPAPIVersion = @"1.1";
 
@@ -30,7 +30,7 @@ NSString* const SPLibraryID = @"osx";
 #endif
 
 // TODO: Update this automatically via a script that looks at current git tag
-NSString* const SPLibraryVersion = @"0.8.3";
+NSString* const SPLibraryVersion = @"0.8.4";
 
 // SSL Certificate Expiration: '2016-09-07 02:36:04 +0000' expressed as seconds since 1970
 NSTimeInterval const SPCertificateExpiration = 1473215764;
