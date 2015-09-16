@@ -15,7 +15,6 @@
 		268EDF30155F08A2006B566F /* NSDate+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDEE5155F089C006B566F /* NSDate+Simperium.m */; };
 		268EDF31155F08A2006B566F /* NSString+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEE6155F089C006B566F /* NSString+Simperium.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		268EDF32155F08A2006B566F /* NSString+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDEE7155F089C006B566F /* NSString+Simperium.m */; };
-		268EDF33155F08A2006B566F /* Simperium-complete.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEE8155F089C006B566F /* Simperium-complete.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		268EDF35155F08A2006B566F /* Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEEA155F089D006B566F /* Simperium.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		268EDF36155F08A2006B566F /* Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 268EDEEB155F089D006B566F /* Simperium.m */; };
 		268EDF37155F08A2006B566F /* SPAuthenticator.h in Headers */ = {isa = PBXBuildFile; fileRef = 268EDEEC155F089D006B566F /* SPAuthenticator.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -223,7 +222,6 @@
 		268EDEE5155F089C006B566F /* NSDate+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSDate+Simperium.m"; path = "../../Simperium/NSDate+Simperium.m"; sourceTree = "<group>"; };
 		268EDEE6155F089C006B566F /* NSString+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSString+Simperium.h"; path = "../../Simperium/NSString+Simperium.h"; sourceTree = "<group>"; };
 		268EDEE7155F089C006B566F /* NSString+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+Simperium.m"; path = "../../Simperium/NSString+Simperium.m"; sourceTree = "<group>"; };
-		268EDEE8155F089C006B566F /* Simperium-complete.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Simperium-complete.h"; path = "../../Simperium/Simperium-complete.h"; sourceTree = "<group>"; };
 		268EDEEA155F089D006B566F /* Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Simperium.h; path = ../../Simperium/Simperium.h; sourceTree = "<group>"; };
 		268EDEEB155F089D006B566F /* Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Simperium.m; path = ../../Simperium/Simperium.m; sourceTree = "<group>"; };
 		268EDEEC155F089D006B566F /* SPAuthenticator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPAuthenticator.h; path = ../../Simperium/SPAuthenticator.h; sourceTree = "<group>"; };
@@ -335,7 +333,7 @@
 		B51CB9F418AD8E55009FF0DE /* SPLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPLogger.h; path = ../../Simperium/SPLogger.h; sourceTree = "<group>"; };
 		B51CB9F518AD8E55009FF0DE /* SPLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPLogger.m; path = ../../Simperium/SPLogger.m; sourceTree = "<group>"; };
 		B525F1F018842757003E4AA0 /* SPWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPWebSocket.h; path = ../../Simperium/SPWebSocket.h; sourceTree = "<group>"; };
-		B525F1F118842757003E4AA0 /* SPWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocket.m; path = ../../Simperium/SPWebSocket.m; sourceTree = "<group>"; };
+		B525F1F118842757003E4AA0 /* SPWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPWebSocket.m; path = ../../Simperium/SPWebSocket.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		B53E4886182AAC58000AA4C8 /* NSURLResponse+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSURLResponse+Simperium.h"; path = "../../Simperium/NSURLResponse+Simperium.h"; sourceTree = "<group>"; };
 		B53E4887182AAC58000AA4C8 /* NSURLResponse+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSURLResponse+Simperium.m"; path = "../../Simperium/NSURLResponse+Simperium.m"; sourceTree = "<group>"; };
 		B53FA6F81ABB5B1E00F5EEDD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = SPKeychain.strings; sourceTree = "<group>"; };
@@ -487,95 +485,19 @@
 		268EDED2155F06D5006B566F /* Simperium-OSX */ = {
 			isa = PBXGroup;
 			children = (
-				B5E811491994060D002C5546 /* SPRelationship.h */,
-				B5E8114A1994060D002C5546 /* SPRelationship.m */,
-				B5E8114B1994060D002C5546 /* SPRelationshipResolver+Internals.h */,
-				26F1C7001562E76B002172D5 /* Auth */,
-				B5E03DA7182C237B00412572 /* Extensions */,
-				B5F43C2E194F56D300495590 /* SPProcessorConstants.h */,
-				B5F43C2F194F56D300495590 /* SPProcessorConstants.m */,
-				B525F1F018842757003E4AA0 /* SPWebSocket.h */,
-				B525F1F118842757003E4AA0 /* SPWebSocket.m */,
-				46EA1AEC17569EB4009AC5AA /* SPWebSocketInterface.h */,
-				46EA1AED17569EB4009AC5AA /* SPWebSocketInterface.m */,
-				26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */,
-				26C3E14E1666FE7500620306 /* SPWebSocketChannel.m */,
-				46EA1AEA17569EA0009AC5AA /* SPNetworkInterface.h */,
-				466FFEA117CBEE7A00399652 /* SPNetworkInterface.m */,
-				46D5BC3F174C2A9B0027DBAF /* SPRelationshipResolver.h */,
-				46D5BC40174C2A9B0027DBAF /* SPRelationshipResolver.m */,
-				2698BE3915C908C60020565F /* SPBucket.h */,
-				B59C7524186DAB70003A1C8D /* SPBucket+Internals.h */,
-				2698BE3A15C908C60020565F /* SPBucket.m */,
-				2698BE3B15C908C70020565F /* SPDiffable.h */,
-				2698BE3C15C908C70020565F /* SPDiffer.h */,
-				2698BE3D15C908C70020565F /* SPDiffer.m */,
-				2698BE3E15C908C70020565F /* SPJSONStorage.h */,
-				2698BE3F15C908C70020565F /* SPJSONStorage.m */,
-				2698BE4015C908C70020565F /* SPObject.h */,
-				2698BE4115C908C70020565F /* SPObject.m */,
-				2698BE4215C908C70020565F /* SPSchema.h */,
-				2698BE4315C908C70020565F /* SPSchema.m */,
-				2698BE4415C908C70020565F /* SPStorageProvider.h */,
-				268EDEE8155F089C006B566F /* Simperium-complete.h */,
 				268EDEEA155F089D006B566F /* Simperium.h */,
-				B56612881A1E1E280064A625 /* Simperium+Internals.h */,
 				268EDEEB155F089D006B566F /* Simperium.m */,
-				B58EC3121885B6C400ED37E5 /* SPPersistentMutableDictionary.h */,
-				B58EC3131885B6C400ED37E5 /* SPPersistentMutableDictionary.m */,
-				B58EC3141885B6C400ED37E5 /* SPPersistentMutableSet.h */,
-				B58EC3151885B6C400ED37E5 /* SPPersistentMutableSet.m */,
-				B59AAC93185B90F000B557D3 /* SPThreadsafeMutableSet.h */,
-				B59AAC94185B90F000B557D3 /* SPThreadsafeMutableSet.m */,
-				268EDEF3155F089D006B566F /* SPChangeProcessor.h */,
-				268EDEF4155F089E006B566F /* SPChangeProcessor.m */,
-				268EDEF5155F089E006B566F /* SPCoreDataExporter.h */,
-				268EDEF6155F089E006B566F /* SPCoreDataExporter.m */,
-				268EDEF7155F089E006B566F /* SPCoreDataStorage.h */,
-				268EDEF8155F089E006B566F /* SPCoreDataStorage.m */,
 				268EDEFB155F089E006B566F /* SPEnvironment.h */,
 				268EDEFC155F089E006B566F /* SPEnvironment.m */,
-				268EDEFD155F089E006B566F /* SPGhost.h */,
-				268EDEFE155F089E006B566F /* SPGhost.m */,
-				268EDF01155F089E006B566F /* SPIndexProcessor.h */,
-				268EDF02155F089F006B566F /* SPIndexProcessor.m */,
-				268EDF05155F089F006B566F /* SPManagedObject.h */,
-				B5F65F7B1847DE3E00CEF48D /* SPManagedObject+Internals.h */,
-				268EDF06155F089F006B566F /* SPManagedObject.m */,
-				268EDF07155F089F006B566F /* SPMember.h */,
-				268EDF08155F089F006B566F /* SPMember.m */,
-				268EDF09155F089F006B566F /* SPMemberBase64.h */,
-				268EDF0A155F089F006B566F /* SPMemberBase64.m */,
-				268EDF0D155F08A0006B566F /* SPMemberDate.h */,
-				268EDF0E155F08A0006B566F /* SPMemberDate.m */,
-				268EDF0F155F08A0006B566F /* SPMemberDouble.h */,
-				268EDF10155F08A0006B566F /* SPMemberDouble.m */,
-				268EDF11155F08A0006B566F /* SPMemberEntity.h */,
-				268EDF12155F08A0006B566F /* SPMemberEntity.m */,
-				268EDF13155F08A0006B566F /* SPMemberFloat.h */,
-				268EDF14155F08A0006B566F /* SPMemberFloat.m */,
-				268EDF15155F08A0006B566F /* SPMemberInt.h */,
-				268EDF16155F08A0006B566F /* SPMemberInt.m */,
-				B5008F5618B55D5100AC0337 /* SPMemberJSON.h */,
-				B5008F5718B55D5100AC0337 /* SPMemberJSON.m */,
-				46DD15C4179A6DAC0093678C /* SPMemberJSONList.h */,
-				46DD15C5179A6DAC0093678C /* SPMemberJSONList.m */,
-				268EDF17155F08A0006B566F /* SPMemberList.h */,
-				268EDF18155F08A1006B566F /* SPMemberList.m */,
-				268EDF19155F08A1006B566F /* SPMemberText.h */,
-				268EDF1A155F08A1006B566F /* SPMemberText.m */,
-				268EDF25155F08A2006B566F /* SPStorage.h */,
-				268EDF26155F08A2006B566F /* SPStorage.m */,
-				268EDF27155F08A2006B566F /* SPStorageObserver.h */,
-				268EDF28155F08A2006B566F /* SPUser.h */,
-				268EDF29155F08A2006B566F /* SPUser.m */,
-				B504EF47182818BE002FA5A1 /* SPHttpRequest.h */,
-				B504EF48182818BE002FA5A1 /* SPHttpRequest.m */,
-				B504EF49182818BE002FA5A1 /* SPHttpRequest+Internals.h */,
-				B504EF4A182818BE002FA5A1 /* SPHttpRequestQueue.h */,
-				B504EF4B182818BE002FA5A1 /* SPHttpRequestQueue.m */,
-				B51CB9F418AD8E55009FF0DE /* SPLogger.h */,
-				B51CB9F518AD8E55009FF0DE /* SPLogger.m */,
+				B562221F1BAA0F6900329BEE /* Object */,
+				B56222241BAA109100329BEE /* Diffing */,
+				B56222231BAA106B00329BEE /* System */,
+				B56222201BAA0FA600329BEE /* Storage */,
+				26F1C7001562E76B002172D5 /* Authentication */,
+				B56222221BAA100400329BEE /* Networking */,
+				B56222211BAA0FB700329BEE /* User */,
+				B56222251BAA10E300329BEE /* Helpers */,
+				B5E03DA7182C237B00412572 /* Extensions */,
 				268EDED3155F06D5006B566F /* Supporting Files */,
 			);
 			path = "Simperium-OSX";
@@ -634,7 +556,7 @@
 			path = jrswizzle;
 			sourceTree = "<group>";
 		};
-		26F1C7001562E76B002172D5 /* Auth */ = {
+		26F1C7001562E76B002172D5 /* Authentication */ = {
 			isa = PBXGroup;
 			children = (
 				268EDEEC155F089D006B566F /* SPAuthenticator.h */,
@@ -656,7 +578,7 @@
 				466EB40B17BC194D005F7599 /* SPAuthenticationValidator.h */,
 				466EB40C17BC194D005F7599 /* SPAuthenticationValidator.m */,
 			);
-			name = Auth;
+			name = Authentication;
 			sourceTree = "<group>";
 		};
 		4617AEB8179A1A3400545BD9 /* SPReachability */ = {
@@ -675,6 +597,137 @@
 				B5E083501ABB687700E618D0 /* SPRWebSocket.m */,
 			);
 			path = SocketRocket;
+			sourceTree = "<group>";
+		};
+		B562221F1BAA0F6900329BEE /* Object */ = {
+			isa = PBXGroup;
+			children = (
+				2698BE3B15C908C70020565F /* SPDiffable.h */,
+				2698BE4015C908C70020565F /* SPObject.h */,
+				2698BE4115C908C70020565F /* SPObject.m */,
+				268EDEFD155F089E006B566F /* SPGhost.h */,
+				268EDEFE155F089E006B566F /* SPGhost.m */,
+				268EDF05155F089F006B566F /* SPManagedObject.h */,
+				B5F65F7B1847DE3E00CEF48D /* SPManagedObject+Internals.h */,
+				268EDF06155F089F006B566F /* SPManagedObject.m */,
+			);
+			name = Object;
+			sourceTree = "<group>";
+		};
+		B56222201BAA0FA600329BEE /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				2698BE3E15C908C70020565F /* SPJSONStorage.h */,
+				2698BE3F15C908C70020565F /* SPJSONStorage.m */,
+				2698BE4415C908C70020565F /* SPStorageProvider.h */,
+				268EDEF7155F089E006B566F /* SPCoreDataStorage.h */,
+				268EDEF8155F089E006B566F /* SPCoreDataStorage.m */,
+				268EDF25155F08A2006B566F /* SPStorage.h */,
+				268EDF26155F08A2006B566F /* SPStorage.m */,
+				268EDF27155F08A2006B566F /* SPStorageObserver.h */,
+			);
+			name = Storage;
+			sourceTree = "<group>";
+		};
+		B56222211BAA0FB700329BEE /* User */ = {
+			isa = PBXGroup;
+			children = (
+				268EDF28155F08A2006B566F /* SPUser.h */,
+				268EDF29155F08A2006B566F /* SPUser.m */,
+			);
+			name = User;
+			sourceTree = "<group>";
+		};
+		B56222221BAA100400329BEE /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				B525F1F018842757003E4AA0 /* SPWebSocket.h */,
+				B525F1F118842757003E4AA0 /* SPWebSocket.m */,
+				46EA1AEA17569EA0009AC5AA /* SPNetworkInterface.h */,
+				466FFEA117CBEE7A00399652 /* SPNetworkInterface.m */,
+				46EA1AEC17569EB4009AC5AA /* SPWebSocketInterface.h */,
+				46EA1AED17569EB4009AC5AA /* SPWebSocketInterface.m */,
+				26C3E14D1666FE7500620306 /* SPWebSocketChannel.h */,
+				26C3E14E1666FE7500620306 /* SPWebSocketChannel.m */,
+				B504EF47182818BE002FA5A1 /* SPHttpRequest.h */,
+				B504EF48182818BE002FA5A1 /* SPHttpRequest.m */,
+				B504EF49182818BE002FA5A1 /* SPHttpRequest+Internals.h */,
+				B504EF4A182818BE002FA5A1 /* SPHttpRequestQueue.h */,
+				B504EF4B182818BE002FA5A1 /* SPHttpRequestQueue.m */,
+			);
+			name = Networking;
+			sourceTree = "<group>";
+		};
+		B56222231BAA106B00329BEE /* System */ = {
+			isa = PBXGroup;
+			children = (
+				B56612881A1E1E280064A625 /* Simperium+Internals.h */,
+				B5F43C2E194F56D300495590 /* SPProcessorConstants.h */,
+				B5F43C2F194F56D300495590 /* SPProcessorConstants.m */,
+				2698BE3915C908C60020565F /* SPBucket.h */,
+				B59C7524186DAB70003A1C8D /* SPBucket+Internals.h */,
+				2698BE3A15C908C60020565F /* SPBucket.m */,
+				268EDF01155F089E006B566F /* SPIndexProcessor.h */,
+				268EDF02155F089F006B566F /* SPIndexProcessor.m */,
+				268EDEF3155F089D006B566F /* SPChangeProcessor.h */,
+				268EDEF4155F089E006B566F /* SPChangeProcessor.m */,
+				B5E811491994060D002C5546 /* SPRelationship.h */,
+				B5E8114A1994060D002C5546 /* SPRelationship.m */,
+				B5E8114B1994060D002C5546 /* SPRelationshipResolver+Internals.h */,
+				46D5BC3F174C2A9B0027DBAF /* SPRelationshipResolver.h */,
+				46D5BC40174C2A9B0027DBAF /* SPRelationshipResolver.m */,
+			);
+			name = System;
+			sourceTree = "<group>";
+		};
+		B56222241BAA109100329BEE /* Diffing */ = {
+			isa = PBXGroup;
+			children = (
+				2698BE4215C908C70020565F /* SPSchema.h */,
+				2698BE4315C908C70020565F /* SPSchema.m */,
+				2698BE3C15C908C70020565F /* SPDiffer.h */,
+				2698BE3D15C908C70020565F /* SPDiffer.m */,
+				268EDF07155F089F006B566F /* SPMember.h */,
+				268EDF08155F089F006B566F /* SPMember.m */,
+				268EDF09155F089F006B566F /* SPMemberBase64.h */,
+				268EDF0A155F089F006B566F /* SPMemberBase64.m */,
+				268EDF0D155F08A0006B566F /* SPMemberDate.h */,
+				268EDF0E155F08A0006B566F /* SPMemberDate.m */,
+				268EDF0F155F08A0006B566F /* SPMemberDouble.h */,
+				268EDF10155F08A0006B566F /* SPMemberDouble.m */,
+				268EDF11155F08A0006B566F /* SPMemberEntity.h */,
+				268EDF12155F08A0006B566F /* SPMemberEntity.m */,
+				268EDF13155F08A0006B566F /* SPMemberFloat.h */,
+				268EDF14155F08A0006B566F /* SPMemberFloat.m */,
+				268EDF15155F08A0006B566F /* SPMemberInt.h */,
+				268EDF16155F08A0006B566F /* SPMemberInt.m */,
+				B5008F5618B55D5100AC0337 /* SPMemberJSON.h */,
+				B5008F5718B55D5100AC0337 /* SPMemberJSON.m */,
+				46DD15C4179A6DAC0093678C /* SPMemberJSONList.h */,
+				46DD15C5179A6DAC0093678C /* SPMemberJSONList.m */,
+				268EDF17155F08A0006B566F /* SPMemberList.h */,
+				268EDF18155F08A1006B566F /* SPMemberList.m */,
+				268EDF19155F08A1006B566F /* SPMemberText.h */,
+				268EDF1A155F08A1006B566F /* SPMemberText.m */,
+			);
+			name = Diffing;
+			sourceTree = "<group>";
+		};
+		B56222251BAA10E300329BEE /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				B58EC3121885B6C400ED37E5 /* SPPersistentMutableDictionary.h */,
+				B58EC3131885B6C400ED37E5 /* SPPersistentMutableDictionary.m */,
+				B58EC3141885B6C400ED37E5 /* SPPersistentMutableSet.h */,
+				B58EC3151885B6C400ED37E5 /* SPPersistentMutableSet.m */,
+				B59AAC93185B90F000B557D3 /* SPThreadsafeMutableSet.h */,
+				B59AAC94185B90F000B557D3 /* SPThreadsafeMutableSet.m */,
+				268EDEF5155F089E006B566F /* SPCoreDataExporter.h */,
+				268EDEF6155F089E006B566F /* SPCoreDataExporter.m */,
+				B51CB9F418AD8E55009FF0DE /* SPLogger.h */,
+				B51CB9F518AD8E55009FF0DE /* SPLogger.m */,
+			);
+			name = Helpers;
 			sourceTree = "<group>";
 		};
 		B566128D1A1E1E670064A625 /* Adapters */ = {
@@ -825,7 +878,6 @@
 				268EDF2D155F08A2006B566F /* NSData+Simperium.h in Headers */,
 				B5F43C30194F56D300495590 /* SPProcessorConstants.h in Headers */,
 				268EDF2F155F08A2006B566F /* NSDate+Simperium.h in Headers */,
-				268EDF33155F08A2006B566F /* Simperium-complete.h in Headers */,
 				268EDF31155F08A2006B566F /* NSString+Simperium.h in Headers */,
 				B51CB9F618AD8E55009FF0DE /* SPLogger.h in Headers */,
 				B56612891A1E1E280064A625 /* Simperium+Internals.h in Headers */,
