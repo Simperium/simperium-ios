@@ -33,6 +33,11 @@ static CGFloat const SPAuthenticationFieldPaddingX          = 10.0f;
 static CGFloat const SPAuthenticationFieldWidth             = 280.0f;
 static CGFloat const SPAuthenticationFieldHeight            = 38.0f;
 
+static CGFloat const SPAuthenticationTableWidthMax          = 400.0f;
+static CGFloat const SPAuthenticationCompactPaddingY        = 20.0f;
+static CGFloat const SPAuthenticationRegularPaddingY        = 180.0f;
+
+
 static CGFloat const SPAuthenticationLinkHeight             = 24.0f;
 static CGFloat const SPAuthenticationLinkFontSize           = 10.0f;
 static CGFloat const SPAuthenticationLinkPadding            = 10.0f;
@@ -279,9 +284,8 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     tapGesture.numberOfTapsRequired = 1;
     [self.tableView addGestureRecognizer:tapGesture];
     
-    // Refresh + Layout
+    // Refresh Buttons
     [self refreshButtons];
-    [self layoutViewsForInterfaceOrientation:self.interfaceOrientation];
 }
 
 - (CGFloat)topInset {
@@ -289,33 +293,20 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     return navigationBarHeight > 0 ? navigationBarHeight : 20.0; // 20.0 refers to the status bar height
 }
 
-- (void)layoutViewsForInterfaceOrientation:(UIInterfaceOrientation)orientation {
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+    [super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
     
-    CGFloat viewWidth;
-    if (UIInterfaceOrientationIsPortrait(orientation)) {
-        viewWidth = MIN(self.view.frame.size.width, self.view.frame.size.height);
-    } else {
-        viewWidth = MAX(self.view.frame.size.width, self.view.frame.size.height);
+    CGSize toSize = self.view.bounds.size;
+    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
+        toSize = CGSizeMake(MAX(toSize.width, toSize.height), MIN(toSize.width, toSize.height));
     }
     
-    _logoView.frame = CGRectIntegral(CGRectMake((viewWidth - _logoView.frame.size.width) / 2.0,
-                                                (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 180.0 : 20.0 + self.topInset,
-                                                _logoView.frame.size.width,
-                                                _logoView.frame.size.height));
-    
-    CGFloat tableViewYOrigin = _logoView.frame.origin.y + _logoView.frame.size.height;
-    CGFloat tableViewWidth = (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 400 : viewWidth;
-    
-    _tableView.frame = CGRectIntegral(CGRectMake((viewWidth - tableViewWidth) / 2.0,
-                                                tableViewYOrigin,
-                                                tableViewWidth,
-                                                self.view.frame.size.height - tableViewYOrigin));
-    
-    [self.view sendSubviewToBack:_logoView];
+    [self layoutViewsForTargetSize:toSize];
 }
-
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    [self layoutViewsForInterfaceOrientation:toInterfaceOrientation];
+    
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    [self layoutViewsForTargetSize:size];
 }
 
 - (BOOL)shouldAutorotate {
@@ -333,6 +324,9 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     [nc addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    
+    // Layout please!
+    [self layoutViewsForTargetSize:self.view.bounds.size];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -345,6 +339,34 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 
+#pragma mark - Layout Helpers
+
+- (void)layoutViewsForTargetSize:(CGSize)targetSize {
+    // Logo
+    CGSize logoSize             = _logoView.frame.size;
+    CGFloat contentHeight       = logoSize.height + _tableView.contentSize.height;
+    CGFloat topPadding          = SPAuthenticationRegularPaddingY;
+    
+    if ((contentHeight + 2 * topPadding) > targetSize.height) {
+        topPadding = SPAuthenticationCompactPaddingY;
+    }
+    
+    _logoView.frame             = CGRectIntegral(CGRectMake((targetSize.width - logoSize.width) * 0.5,
+                                                            topPadding + self.topInset,
+                                                            logoSize.width,
+                                                            logoSize.height));
+    
+    // Table
+    CGFloat tableViewOriginY    = CGRectGetMaxY(_logoView.frame);
+    CGFloat tableViewWidth      = MIN(targetSize.width, SPAuthenticationTableWidthMax);
+    
+    _tableView.frame            = CGRectIntegral(CGRectMake((targetSize.width - tableViewWidth) * 0.5,
+                                                            tableViewOriginY,
+                                                            tableViewWidth,
+                                                            self.view.frame.size.height - tableViewOriginY));
+    
+    [self.view sendSubviewToBack:_logoView];
+}
 
 
 #pragma mark - Keyboard
