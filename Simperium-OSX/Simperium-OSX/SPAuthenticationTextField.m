@@ -9,15 +9,67 @@
 #import "SPAuthenticationTextField.h"
 #import "SPAuthenticationConfiguration.h"
 
-@interface SPAuthenticationTextField() {
-    BOOL hasFocus;
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirstResponder";
+
+
+#pragma mark ====================================================================================
+#pragma mark Private Helper: SPTextField
+#pragma mark ====================================================================================
+
+@interface SPTextField : NSTextField
+
+@end
+
+@implementation SPTextField
+
+- (BOOL)becomeFirstResponder {
+    [[NSNotificationCenter defaultCenter] postNotificationName:SPTextFieldDidBecomeFirstResponder object:self];
+    return [super becomeFirstResponder];
 }
 
 @end
 
+
+
+#pragma mark ====================================================================================
+#pragma mark Private Helper: SPSecureTextField
+#pragma mark ====================================================================================
+
+@interface SPSecureTextField : NSSecureTextField
+@end
+
+@implementation SPSecureTextField
+
+- (BOOL)becomeFirstResponder {
+    [[NSNotificationCenter defaultCenter] postNotificationName:SPTextFieldDidBecomeFirstResponder object:self];
+    return [super becomeFirstResponder];
+}
+
+@end
+
+
+
+#pragma mark ====================================================================================
+#pragma mark SPAuthenticationTextField
+#pragma mark ====================================================================================
+
+@interface SPAuthenticationTextField()
+@property (nonatomic, assign) BOOL isWindowFistResponder;
+@end
+
 @implementation SPAuthenticationTextField
 
-- (id)initWithFrame:(NSRect)frame secure:(BOOL)secure {
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (instancetype)initWithFrame:(NSRect)frame secure:(BOOL)secure {
     self = [super initWithFrame:frame];
     if (self) {
         // Center the textField vertically
@@ -27,7 +79,7 @@
         CGFloat fieldY = (self.frame.size.height - fieldHeight) / 2;
         CGRect textFrame = NSMakeRect(paddingX, fieldY, frame.size.width-paddingX*2, fieldHeight);
 
-        Class textFieldClass = secure ? [NSSecureTextField class] : [NSTextField class];
+        Class textFieldClass = secure ? [SPSecureTextField class] : [SPTextField class];
         _textField = [[textFieldClass alloc] initWithFrame:textFrame];
         NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
         [_textField setFont:font];
@@ -39,6 +91,10 @@
         [[_textField cell] setWraps:NO];
         [[_textField cell] setScrollable:YES];
         [self addSubview:_textField];
+        
+        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+        [nc addObserver:self selector:@selector(handleTextFieldDidBeginEditing:) name:SPTextFieldDidBecomeFirstResponder object:_textField];
+        [nc addObserver:self selector:@selector(handleTextFieldDidFinishEditing:) name:NSControlTextDidEndEditingNotification object:_textField];
     }
     
     return self;
@@ -69,42 +125,34 @@
     [_textField setEditable:enabled];
 }
 
-- (BOOL)hasFirstResponder {
-	BOOL hasFirstResponder = NO;
-	
-	hasFirstResponder = ([[[_textField window] firstResponder] isKindOfClass:[NSTextView class]]
-			   && [[_textField window] fieldEditor:NO forObject:nil]!=nil
-			   && [_textField isEqualTo:(id)[(NSTextView *)[[_textField window] firstResponder]delegate]]);
-	
-	return hasFirstResponder;
-}
-
 - (void)drawRect:(NSRect)dirtyRect {
     NSBezierPath *betterBounds = [NSBezierPath bezierPathWithRoundedRect:self.bounds xRadius:12.0 yRadius:12.0];
     [betterBounds addClip];
     
-    
-    if ([self hasFirstResponder]) {
+    if (self.isWindowFistResponder) {
         [[NSColor colorWithCalibratedWhite:0.9 alpha:1.0] setFill];
         [betterBounds fill];
         
-        if (!hasFocus) {
-            hasFocus = YES;
-            [self setNeedsDisplay:YES];
-        }
     } else {
         [[NSColor colorWithCalibratedWhite:250.f/255.f alpha:1.0] setFill];
         [betterBounds fill];
 
-        
         [[NSColor colorWithCalibratedWhite:218.f/255.f alpha:1.0] setStroke];
         [betterBounds stroke];
-        
-        if (hasFocus) {
-            hasFocus = NO;
-            [self setNeedsDisplay:YES];
-        }
     }
+}
+
+
+#pragma mark - Notification Helpers
+
+- (void)handleTextFieldDidBeginEditing:(NSNotification *)note {
+    self.isWindowFistResponder = YES;
+    [self setNeedsDisplay:YES];
+}
+
+- (void)handleTextFieldDidFinishEditing:(NSNotification *)note {
+    self.isWindowFistResponder = NO;
+    [self setNeedsDisplay:YES];
 }
 
 @end
