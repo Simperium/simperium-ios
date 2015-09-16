@@ -152,6 +152,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     _tableView.backgroundView = nil;
     _tableView.separatorColor = lightGreyColor;
     _tableView.clipsToBounds = NO;
+    _tableView.scrollEnabled = NO;
     [self.view addSubview:_tableView];
     
     if (self.view.bounds.size.height <= 480.0) {
@@ -328,14 +329,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    self.tableView.scrollEnabled = NO;
-    
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        self.tableView.scrollEnabled = NO;
-        [self.tableView setBackgroundView:nil];
-    }
-
-    // register for keyboard notifications
+    // Register for keyboard notifications
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     [nc addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
