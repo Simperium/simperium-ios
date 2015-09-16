@@ -314,7 +314,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) ? UIInterfaceOrientationMaskPortrait : UIInterfaceOrientationMaskAll;
+    return self.isRunningOnPad ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskPortrait;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -358,7 +358,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     
     // Table
     CGFloat tableViewOriginY    = CGRectGetMaxY(_logoView.frame);
-    CGFloat tableViewWidth      = MIN(targetSize.width, SPAuthenticationTableWidthMax);
+    CGFloat tableViewWidth      = self.isRunningOnPad ? SPAuthenticationTableWidthMax : targetSize.width;
     
     _tableView.frame            = CGRectIntegral(CGRectMake((targetSize.width - tableViewWidth) * 0.5,
                                                             tableViewOriginY,
@@ -366,6 +366,10 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
                                                             self.view.frame.size.height - tableViewOriginY));
     
     [self.view sendSubviewToBack:_logoView];
+}
+
+- (BOOL)isRunningOnPad {
+    return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
 }
 
 
