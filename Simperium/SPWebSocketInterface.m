@@ -206,8 +206,19 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     
     // Verify if the certificate hasn't expired!
     if ([currentDate compare:expirationDate] == NSOrderedAscending) {
-        NSData *rawCertificate              = [[NSData alloc] initWithBase64EncodedString:SPCertificatePayload options:NSDataBase64DecodingIgnoreUnknownCharacters];
-        SecCertificateRef parsedCertificate = SecCertificateCreateWithData(NULL, (CFDataRef)rawCertificate);
+        NSData *rawCertificate              = nil;
+        
+        if ([NSData instancesRespondToSelector:@selector(initWithBase64EncodedString:options:)]) {
+            rawCertificate = [[NSData alloc] initWithBase64EncodedString:SPCertificatePayload options:NSDataBase64DecodingIgnoreUnknownCharacters];
+        } else {
+            // Let's shut off the warning, please!
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            rawCertificate = [[NSData alloc] initWithBase64Encoding:SPCertificatePayload];
+#pragma clang diagnostic pop
+        }
+        
+        SecCertificateRef parsedCertificate = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)rawCertificate);
         
         if (parsedCertificate) {
             SPLogVerbose(@"Pinned Certificate is Valid: Proceeding with extra checks!");

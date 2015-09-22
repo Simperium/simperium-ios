@@ -7,6 +7,7 @@
 //
 
 #import "SPWebViewController.h"
+#import "UIDevice+Simperium.h"
 
 
 
@@ -62,6 +63,10 @@
     
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:self.targetURL];
     [self.webView loadRequest:request];
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return [UIDevice sp_isPad] ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskPortrait;
 }
 
 
