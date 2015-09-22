@@ -1397,6 +1397,27 @@ static const size_t SRFrameHeaderOverhead = 32;
     [self _writeData:frame];
 }
 
+- (BOOL)isServerTrustworthy:(SecTrustRef)secTrust
+{
+    // Issue #514:
+    // On Mountain Lion, SecTrustRef may not make available its certificates, until SecTrustEvaluate has been called.
+    // To minimize potential side effects, we're restricting method to be only executed when needed.
+    //
+    
+#if TARGET_OS_IPHONE
+    return YES;
+#else
+    if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_8) {
+        return YES;
+    }
+    
+    SecTrustResultType result;
+    SecTrustEvaluate(secTrust, &result);
+    
+    return result == kSecTrustResultUnspecified || kSecTrustResultProceed;
+#endif
+}
+
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode;
 {
     __weak typeof(self) weakSelf = self;
@@ -1406,7 +1427,7 @@ static const size_t SRFrameHeaderOverhead = 32;
         NSArray *sslCerts = [_urlRequest SPR_SSLPinnedCertificates];
         if (sslCerts) {
             SecTrustRef secTrust = (__bridge SecTrustRef)[aStream propertyForKey:(__bridge id)kCFStreamPropertySSLPeerTrust];
-            if (secTrust) {
+            if (secTrust && [self isServerTrustworthy:secTrust]) {
                 NSInteger numCerts = SecTrustGetCertificateCount(secTrust);
                 for (NSInteger i = 0; i < numCerts && !_pinnedCertFound; i++) {
                     SecCertificateRef cert = SecTrustGetCertificateAtIndex(secTrust, i);
