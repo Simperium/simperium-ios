@@ -165,11 +165,14 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
         return;
     }
     
+    SPUser *user = self.simperium.user;
+    
     NSDictionary *jsonData = @{
         @"api"      : @(SPAPIVersion.floatValue),
         @"clientid" : self.simperium.clientID,
         @"app_id"   : self.simperium.appID,
-        @"token"    : self.simperium.user.authToken,
+        @"username" : user.email ?: [NSString string],
+        @"token"    : user.authToken,
         @"name"     : channel.remoteName,
         @"library"  : SPLibraryID,
         @"version"  : SPLibraryVersion
