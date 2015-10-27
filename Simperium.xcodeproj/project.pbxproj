@@ -168,12 +168,14 @@
 		797D270119F1B72700DEF569 /* SPKeychainQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 797D26FD19F1B72700DEF569 /* SPKeychainQuery.m */; };
 		B51397F11947612B004C1416 /* SPChangeProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B51397F01947612B004C1416 /* SPChangeProcessorTests.m */; };
 		B52674721858EC4800A89D7A /* Simperium+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B52674701858EC4800A89D7A /* Simperium+Internals.h */; };
-		B52DB6991BAC8F0A0039B6AE /* UIDevice+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B52DB6971BAC8F0A0039B6AE /* UIDevice+Simperium.h */; settings = {ASSET_TAGS = (); }; };
-		B52DB69A1BAC8F0A0039B6AE /* UIDevice+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B52DB6981BAC8F0A0039B6AE /* UIDevice+Simperium.m */; settings = {ASSET_TAGS = (); }; };
+		B52DB6991BAC8F0A0039B6AE /* UIDevice+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B52DB6971BAC8F0A0039B6AE /* UIDevice+Simperium.h */; };
+		B52DB69A1BAC8F0A0039B6AE /* UIDevice+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B52DB6981BAC8F0A0039B6AE /* UIDevice+Simperium.m */; };
 		B53F75A91A1BAB4600C0DDFB /* SPStorageObserverAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = B53F75A81A1BAB4600C0DDFB /* SPStorageObserverAdapter.m */; };
 		B5549FE318457F72007EA226 /* SPThreadsafeMutableSet.h in Headers */ = {isa = PBXBuildFile; fileRef = B5549FE118457F72007EA226 /* SPThreadsafeMutableSet.h */; };
 		B5549FE418457F72007EA226 /* SPThreadsafeMutableSet.m in Sources */ = {isa = PBXBuildFile; fileRef = B5549FE218457F72007EA226 /* SPThreadsafeMutableSet.m */; };
 		B5549FE6184581BF007EA226 /* SPThreadsafeMutableSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5549FE5184581BF007EA226 /* SPThreadsafeMutableSetTests.m */; };
+		B55E98E21BDFFD5A0087CA48 /* UIViewController+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B55E98E01BDFFD5A0087CA48 /* UIViewController+Simperium.h */; };
+		B55E98E31BDFFD5A0087CA48 /* UIViewController+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B55E98E11BDFFD5A0087CA48 /* UIViewController+Simperium.m */; };
 		B56091551A717EE700A4E64A /* NSConditionLock+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B56091531A717EE700A4E64A /* NSConditionLock+Simperium.h */; };
 		B56091561A717EE700A4E64A /* NSConditionLock+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B56091541A717EE700A4E64A /* NSConditionLock+Simperium.m */; };
 		B565ECA2183261A600D162FF /* Test1.xcdatamodeld in Resources */ = {isa = PBXBuildFile; fileRef = 26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */; };
@@ -425,6 +427,8 @@
 		B5549FE118457F72007EA226 /* SPThreadsafeMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = SPThreadsafeMutableSet.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		B5549FE218457F72007EA226 /* SPThreadsafeMutableSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPThreadsafeMutableSet.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		B5549FE5184581BF007EA226 /* SPThreadsafeMutableSetTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPThreadsafeMutableSetTests.m; sourceTree = "<group>"; };
+		B55E98E01BDFFD5A0087CA48 /* UIViewController+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIViewController+Simperium.h"; sourceTree = "<group>"; };
+		B55E98E11BDFFD5A0087CA48 /* UIViewController+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+Simperium.m"; sourceTree = "<group>"; };
 		B56091531A717EE700A4E64A /* NSConditionLock+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSConditionLock+Simperium.h"; sourceTree = "<group>"; };
 		B56091541A717EE700A4E64A /* NSConditionLock+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSConditionLock+Simperium.m"; sourceTree = "<group>"; };
 		B565ECA71832940B00D162FF /* XCTestCase+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "XCTestCase+Simperium.h"; sourceTree = "<group>"; };
@@ -815,6 +819,8 @@
 				B5C91A0D1827E9CB0002D306 /* NSURLResponse+Simperium.m */,
 				B52DB6971BAC8F0A0039B6AE /* UIDevice+Simperium.h */,
 				B52DB6981BAC8F0A0039B6AE /* UIDevice+Simperium.m */,
+				B55E98E01BDFFD5A0087CA48 /* UIViewController+Simperium.h */,
+				B55E98E11BDFFD5A0087CA48 /* UIViewController+Simperium.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -1032,6 +1038,7 @@
 				2622FD10147F24CC00C8EEB4 /* SPMemberInt.h in Headers */,
 				B5DF229218B41E3200874C75 /* SPMemberJSON.h in Headers */,
 				B5C91A0A1827E8600002D306 /* SPHttpRequestQueue.h in Headers */,
+				B55E98E21BDFFD5A0087CA48 /* UIViewController+Simperium.h in Headers */,
 				B56091551A717EE700A4E64A /* NSConditionLock+Simperium.h in Headers */,
 				2622FD14147F24D700C8EEB4 /* SPMemberDouble.h in Headers */,
 				2622FD18147F24E000C8EEB4 /* SPMemberFloat.h in Headers */,
@@ -1316,6 +1323,7 @@
 				B5DF229318B41E3200874C75 /* SPMemberJSON.m in Sources */,
 				46DD15CB179A6F4B0093678C /* SPMemberJSONList.m in Sources */,
 				466EB41517BC45F5005F7599 /* SPAuthenticationConfiguration.m in Sources */,
+				B55E98E31BDFFD5A0087CA48 /* UIViewController+Simperium.m in Sources */,
 				466EB41717BC45F5005F7599 /* SPAuthenticationValidator.m in Sources */,
 				466EB41B17BC4890005F7599 /* SPAuthenticationButton.m in Sources */,
 				466FFEA417CBF53200399652 /* SPNetworkInterface.m in Sources */,
