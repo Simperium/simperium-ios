@@ -831,7 +831,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     self.authenticationViewController               = loginController;
     
     if (!self.rootViewController) {
-        UIWindow *window = [[[UIApplication sharedApplication] windows] firstObject];
+        UIWindow *window = [[UIApplication sharedApplication] keyWindow];
         self.rootViewController = [window rootViewController];
         NSAssert(self.rootViewController, @"Simperium error: to use built-in authentication, you must configure a rootViewController when you "
                                             "initialize Simperium, or call setParentViewControllerForAuthentication:. "
