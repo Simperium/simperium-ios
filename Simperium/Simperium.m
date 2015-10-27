@@ -22,6 +22,10 @@
 #import "SPLogger.h"
 #import "SPAuthenticationConfiguration.h"
 
+#if TARGET_OS_IPHONE
+#import "UIViewController+Simperium.h"
+#endif
+
 
 
 #pragma mark ====================================================================================
@@ -801,27 +805,14 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [self openAuthViewControllerAnimated:YES];
 }
 
-- (BOOL)isAuthVisible {
-#if TARGET_OS_IPHONE
-    // Login can either be its own root, or the first child of a nav controller if auth is optional
-    NSArray *childViewControllers = self.rootViewController.presentedViewController.childViewControllers;
-    BOOL isNotNil = (self.authenticationViewController != nil);
-    BOOL isRoot = (self.rootViewController.presentedViewController == self.authenticationViewController);
-    BOOL isChild = (childViewControllers.count > 0 && childViewControllers[0] == self.authenticationViewController);
-
-    return (isNotNil && (isRoot || isChild));
-#else
-    return (self.authenticationWindowController != nil && self.authenticationWindowController.window.isVisible);
-#endif
-}
-
 - (void)openAuthViewControllerAnimated:(BOOL)animated {
     // Get previous username, if available the sign-in view should be set as default
     SPAuthenticationConfiguration *configuration = [SPAuthenticationConfiguration sharedInstance];
     self.shouldSignIn = configuration.previousUsernameEnabled && configuration.previousUsernameLogged;
 
 #if TARGET_OS_IPHONE
-    if ([self isAuthVisible]) {
+    if (self.authenticationViewController.sp_isViewOnscreen) {
+        SPLogError(@"Error: Authentication Screen was already open");
         return;
     }
     
@@ -865,7 +856,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 - (void)closeAuthViewControllerAnimated:(BOOL)animated {
 #if TARGET_OS_IPHONE
     // Login can either be its own root, or the first child of a nav controller if auth is optional
-    if ([self isAuthVisible]) {
+    if (self.authenticationViewController.sp_isViewOnscreen) {
         [self.rootViewController dismissViewControllerAnimated:animated completion:nil];
     }
     self.authenticationViewController = nil;
