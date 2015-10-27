@@ -835,7 +835,11 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         controller = [[UINavigationController alloc] initWithRootViewController:self.authenticationViewController];
     }
     
-    [self.rootViewController presentViewController:controller animated:animated completion:nil];
+    // Note:
+    // The RootViewController instance might be already presented another VC.
+    // Let's figure out which one is the leaf, and present form there.
+    //
+    [self.rootViewController.sp_leafViewController presentViewController:controller animated:animated completion:nil];
 #else
     if (!self.authenticationWindowController) {
         self.authenticationWindowController                 = [[self.authenticationWindowControllerClass alloc] init];
