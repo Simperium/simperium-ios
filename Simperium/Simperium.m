@@ -773,8 +773,11 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 }
 
 - (void)authenticationDidFail {
+    // Note:
+    // We're only nuking the authToken from memory (and not resetting the actual keychain), so that, in case of an (unknown)
+    // glitch (such as inaccessible token) we may just recover upon reauth // relaunch.
+    //
     [self stopNetworkManagers];
-    [self.authenticator reset];
     self.user.authToken = nil;
     
     [self failWithErrorCode:SPSimperiumErrorsInvalidToken];
