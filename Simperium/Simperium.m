@@ -831,10 +831,8 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
     
     UIViewController *controller = self.authenticationViewController;
-    UINavigationController *navController = nil;
     if (self.authenticationOptional) {
-        navController = [[UINavigationController alloc] initWithRootViewController: self.authenticationViewController];
-        controller = navController;
+        controller = [[UINavigationController alloc] initWithRootViewController:self.authenticationViewController];
     }
     
     [self.rootViewController presentViewController:controller animated:animated completion:nil];
