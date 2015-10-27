@@ -811,7 +811,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     self.shouldSignIn = configuration.previousUsernameEnabled && configuration.previousUsernameLogged;
 
 #if TARGET_OS_IPHONE
-    if (self.authenticationViewController.sp_isViewOnscreen) {
+    if (self.authenticationViewController.sp_isViewAttached) {
         SPLogError(@"Error: Authentication Screen was already open");
         return;
     }
@@ -836,8 +836,8 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
     
     // Note:
-    // The RootViewController instance might be already presented another VC.
-    // Let's figure out which one is the leaf, and present form there.
+    // The RootViewController instance might be already presenting another VC.
+    // Let's figure out which one is the leaf, and present from there.
     //
     [self.rootViewController.sp_leafViewController presentViewController:controller animated:animated completion:nil];
 #else
@@ -858,7 +858,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 - (void)closeAuthViewControllerAnimated:(BOOL)animated {
 #if TARGET_OS_IPHONE
     // Login can either be its own root, or the first child of a nav controller if auth is optional
-    if (self.authenticationViewController.sp_isViewOnscreen) {
+    if (self.authenticationViewController.sp_isViewAttached) {
         [self.rootViewController dismissViewControllerAnimated:animated completion:nil];
     }
     self.authenticationViewController = nil;

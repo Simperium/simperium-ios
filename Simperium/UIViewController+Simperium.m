@@ -10,13 +10,9 @@
 
 @implementation UIViewController (Simperium)
 
-- (BOOL)sp_isViewOnscreen
+- (BOOL)sp_isViewAttached
 {
-    BOOL visibleAsRoot          = self.view.window.rootViewController == self;
-    BOOL visibleAsTopOnStack    = self.navigationController.topViewController == self;
-    BOOL visibleAsPresented     = [self.view.window.rootViewController sp_leafViewController] == self;
-    
-    return visibleAsRoot || visibleAsTopOnStack || visibleAsPresented;
+    return self.view.window != nil;
 }
 
 - (UIViewController *)sp_leafViewController
