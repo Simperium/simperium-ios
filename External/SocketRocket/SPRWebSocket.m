@@ -1620,7 +1620,7 @@ static const size_t SRFrameHeaderOverhead = 32;
 @end
 
 
-@implementation  NSURLRequest (CertificateAdditions)
+@implementation  NSURLRequest (SPRCertificateAdditions)
 
 - (NSArray *)SPR_SSLPinnedCertificates;
 {
@@ -1629,7 +1629,7 @@ static const size_t SRFrameHeaderOverhead = 32;
 
 @end
 
-@implementation  NSMutableURLRequest (CertificateAdditions)
+@implementation  NSMutableURLRequest (SPRCertificateAdditions)
 
 - (NSArray *)SPR_SSLPinnedCertificates;
 {
