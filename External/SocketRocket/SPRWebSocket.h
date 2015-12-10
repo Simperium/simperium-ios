@@ -107,7 +107,7 @@ extern NSString *const SPRHTTPResponseErrorKey;
 
 @end
 
-#pragma mark - NSURLRequest (CertificateAdditions)
+#pragma mark - NSURLRequest (SPRCertificateAdditions)
 
 @interface NSURLRequest (SPRCertificateAdditions)
 
@@ -115,9 +115,9 @@ extern NSString *const SPRHTTPResponseErrorKey;
 
 @end
 
-#pragma mark - NSMutableURLRequest (CertificateAdditions)
+#pragma mark - NSMutableURLRequest (SPRCertificateAdditions)
 
-@interface NSMutableURLRequest (CertificateAdditions)
+@interface NSMutableURLRequest (SPRCertificateAdditions)
 
 @property (nonatomic, retain) NSArray *SPR_SSLPinnedCertificates;
 
