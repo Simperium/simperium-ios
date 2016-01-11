@@ -65,11 +65,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
 - (NSDictionary *)transform:(id)thisValue otherValue:(id)otherValue oldValue:(id)oldValue error:(NSError **)error {
     // By default, don't transform anything, and take the local pending value
-    thisValue = thisValue ?: [self defaultValue];
-    return @{
-        OP_OP       : OP_REPLACE,
-        OP_VALUE    : thisValue
-    };
+    return [NSDictionary dictionaryWithObjectsAndKeys:OP_REPLACE, OP_OP, thisValue, OP_VALUE, nil];
 }
 
 @end
