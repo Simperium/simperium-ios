@@ -62,8 +62,8 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 }
 
 - (id)applyDiff:(id)thisValue otherValue:(id)otherValue error:(NSError **)error {
-    NSAssert([thisValue isKindOfClass:[NSNumber class]] && [otherValue isKindOfClass:[NSNumber class]],
-            @"Simperium error: couldn't apply diff to ints because their classes weren't NSNumber");
+    NSAssert(thisValue == nil || [thisValue isKindOfClass:[NSNumber class]], @"Simperium error: couldn't apply diff to double because its class wasn't NSNumber");
+    NSAssert(otherValue == nil || [otherValue isKindOfClass:[NSNumber class]], @"Simperium error: couldn't apply diff to double because its class wasn't NSNumber");
     
     // Integer changes just replace the previous value by default
     // TODO: Not sure if this should be a copy or not...
