@@ -15,6 +15,8 @@
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>
+#else
+#import <AppKit/AppKit.h>
 #endif
 
 

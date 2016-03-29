@@ -6,6 +6,7 @@
 //  Copyright (c) 2011 Simperium. All rights reserved.
 //
 
+#import <CoreData/CoreData.h>
 #import "SPStorage.h"
 #import "SPStorageObserver.h"
 #import "SPStorageProvider.h"

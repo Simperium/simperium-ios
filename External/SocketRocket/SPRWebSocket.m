@@ -29,6 +29,7 @@
 #import <Endian.h>
 #else
 #import <CoreServices/CoreServices.h>
+#import <AppKit/AppKit.h>
 #endif
 
 #import <CommonCrypto/CommonDigest.h>
