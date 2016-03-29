@@ -595,6 +595,7 @@
 		B5CAA6581CAAF38E006FE048 /* UIViewController+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIViewController+Simperium.m"; path = "Simperium-iOS/UIViewController+Simperium.m"; sourceTree = SOURCE_ROOT; };
 		B5CAA65B1CAAF3F6006FE048 /* UIDevice+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIDevice+Simperium.h"; path = "Simperium-iOS/UIDevice+Simperium.h"; sourceTree = SOURCE_ROOT; };
 		B5CAA65C1CAAF3F6006FE048 /* UIDevice+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIDevice+Simperium.m"; path = "Simperium-iOS/UIDevice+Simperium.m"; sourceTree = SOURCE_ROOT; };
+		B5CAA65F1CAAF881006FE048 /* Simperium-OSX.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Simperium-OSX.podspec"; sourceTree = SOURCE_ROOT; };
 		B5CDDC59190878BE005577AA /* SPRelationshipResolver+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPRelationshipResolver+Internals.h"; sourceTree = "<group>"; };
 		B5DE0E0E1850D0200080C44D /* SPCoreDataStorageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCoreDataStorageTests.m; sourceTree = "<group>"; };
 		B5DF229018B41E3200874C75 /* SPMemberJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberJSON.h; sourceTree = "<group>"; };
@@ -889,6 +890,7 @@
 				264CD901135DFD7A00C51BAD /* Supporting Files */,
 				265D80061475C2CE00002A19 /* Categories */,
 				B5F4FE6818A3D7B8006F50C5 /* Simperium.podspec */,
+				B5CAA65F1CAAF881006FE048 /* Simperium-OSX.podspec */,
 			);
 			path = Simperium;
 			sourceTree = "<group>";
