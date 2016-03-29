@@ -6,6 +6,8 @@
 //  Copyright (c) 2013 Simperium. All rights reserved.
 //
 
+#import <Foundation/Foundation.h>
+
 
 // Adapters to NSJSONSerializer using the JSONKit interface
 @interface NSArray (SPJSONKitAdapterCategories)

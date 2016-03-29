@@ -28,31 +28,31 @@
 		26CEF5FA14EC418A00BEC0BF /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5F914EC418A00BEC0BF /* MobileCoreServices.framework */; };
 		26CEF5FC14EC419100BEC0BF /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5FB14EC419100BEC0BF /* SystemConfiguration.framework */; };
 		26CEF5FE14EC41AD00BEC0BF /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5FD14EC41AD00BEC0BF /* libz.dylib */; };
-		46B787EA16B70429001AA908 /* libSimperium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 46B787E716B70402001AA908 /* libSimperium.a */; };
 		46CC658F16B09C7700D5DC22 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */; };
+		B5CAA5621CAAE7B1006FE048 /* Simperium_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5CAA5611CAAE7AC006FE048 /* Simperium_iOS.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		2457B1931798E134008266B3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 264CD8FA135DFD7A00C51BAD;
-			remoteInfo = Simperium;
-		};
-		46B787E616B70402001AA908 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 264CD8FB135DFD7A00C51BAD;
-			remoteInfo = Simperium;
-		};
 		46B787E816B70402001AA908 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 264CD908135DFD7A00C51BAD;
 			remoteInfo = SimperiumTests;
+		};
+		B5CAA55B1CAAE7AC006FE048 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = B5CAA4B31CAAB369006FE048;
+			remoteInfo = Simperium_iOS;
+		};
+		B5CAA5601CAAE7AC006FE048 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46B787DD16B70402001AA908 /* Simperium.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B5CAA4B41CAAB369006FE048;
+			remoteInfo = Simperium_iOS;
 		};
 		B5D907191A2E72C600B64A4F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -101,7 +101,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46B787EA16B70429001AA908 /* libSimperium.a in Frameworks */,
+				B5CAA5621CAAE7B1006FE048 /* Simperium_iOS.framework in Frameworks */,
 				266F06E515E60C3F00308C5D /* libicucore.dylib in Frameworks */,
 				266F06E215E60C3700308C5D /* Security.framework in Frameworks */,
 				26CEF5FE14EC41AD00BEC0BF /* libz.dylib in Frameworks */,
@@ -190,7 +190,7 @@
 		46B787DE16B70402001AA908 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				46B787E716B70402001AA908 /* libSimperium.a */,
+				B5CAA5611CAAE7AC006FE048 /* Simperium_iOS.framework */,
 				46B787E916B70402001AA908 /* IntegrationTests.xctest */,
 				B5D9071A1A2E72C600B64A4F /* UnitTests.xctest */,
 			);
@@ -211,7 +211,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				2457B1941798E134008266B3 /* PBXTargetDependency */,
+				B5CAA55C1CAAE7AC006FE048 /* PBXTargetDependency */,
 			);
 			name = SimpletodoFinal;
 			productName = Simpletodo;
@@ -224,7 +224,7 @@
 		26156ABE14EC3D4C003332BA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0730;
 			};
 			buildConfigurationList = 26156AC114EC3D4C003332BA /* Build configuration list for PBXProject "SimpletodoFinal" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -250,18 +250,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		46B787E716B70402001AA908 /* libSimperium.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libSimperium.a;
-			remoteRef = 46B787E616B70402001AA908 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		46B787E916B70402001AA908 /* IntegrationTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = IntegrationTests.xctest;
 			remoteRef = 46B787E816B70402001AA908 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		B5CAA5611CAAE7AC006FE048 /* Simperium_iOS.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Simperium_iOS.framework;
+			remoteRef = B5CAA5601CAAE7AC006FE048 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		B5D9071A1A2E72C600B64A4F /* UnitTests.xctest */ = {
@@ -306,10 +306,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		2457B1941798E134008266B3 /* PBXTargetDependency */ = {
+		B5CAA55C1CAAE7AC006FE048 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = Simperium;
-			targetProxy = 2457B1931798E134008266B3 /* PBXContainerItemProxy */;
+			name = Simperium_iOS;
+			targetProxy = B5CAA55B1CAAE7AC006FE048 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -356,8 +356,10 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -395,6 +397,7 @@
 				COPY_PHASE_STRIP = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
@@ -420,10 +423,12 @@
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SimpletodoFinal/SimpletodoFinal-Prefix.pch";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../..\"";
 				INFOPLIST_FILE = "SimpletodoFinal/SimpletodoFinal-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.codality.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = SimpletodoFinal;
 				PUBLIC_HEADERS_FOLDER_PATH = "";
 				WRAPPER_EXTENSION = app;
@@ -439,10 +444,12 @@
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SimpletodoFinal/SimpletodoFinal-Prefix.pch";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../..\"";
 				INFOPLIST_FILE = "SimpletodoFinal/SimpletodoFinal-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.codality.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = SimpletodoFinal;
 				PUBLIC_HEADERS_FOLDER_PATH = "";
 				WRAPPER_EXTENSION = app;
