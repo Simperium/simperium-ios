@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0700"
+   LastUpgradeVersion = "0730"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "264CD8FA135DFD7A00C51BAD"
-               BuildableName = "libSimperium.a"
-               BlueprintName = "Simperium"
+               BlueprintIdentifier = "B5CAA4B31CAAB369006FE048"
+               BuildableName = "Simperium_iOS.framework"
+               BlueprintName = "Simperium_iOS"
                ReferencedContainer = "container:Simperium.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -49,6 +49,15 @@
             </BuildableReference>
          </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "B5CAA4B31CAAB369006FE048"
+            BuildableName = "Simperium_iOS.framework"
+            BlueprintName = "Simperium_iOS"
+            ReferencedContainer = "container:Simperium.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -65,9 +74,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "264CD8FA135DFD7A00C51BAD"
-            BuildableName = "libSimperium.a"
-            BlueprintName = "Simperium"
+            BlueprintIdentifier = "B5CAA4B31CAAB369006FE048"
+            BuildableName = "Simperium_iOS.framework"
+            BlueprintName = "Simperium_iOS"
             ReferencedContainer = "container:Simperium.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -80,6 +89,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "B5CAA4B31CAAB369006FE048"
+            BuildableName = "Simperium_iOS.framework"
+            BlueprintName = "Simperium_iOS"
+            ReferencedContainer = "container:Simperium.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
