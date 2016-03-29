@@ -148,7 +148,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     // The cancel button will only be visible if there's a navigation controller, which will only happen
     // if authenticationOptional has been set on the Simperium instance.
     NSString *cancelTitle = NSLocalizedString(@"Cancel", @"Cancel button for authentication");
-    self.cancelButton = [[UIBarButtonItem alloc] initWithTitle:cancelTitle style:UIBarButtonItemStyleBordered target:self action:@selector(cancelAction:)];
+    self.cancelButton = [[UIBarButtonItem alloc] initWithTitle:cancelTitle style:UIBarButtonItemStylePlain target:self action:@selector(cancelAction:)];
     self.navigationItem.rightBarButtonItem = self.cancelButton;
 
     // TableView
@@ -369,11 +369,11 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 - (CGSize)viewSizeForCurrentOrientation {
     CGSize size = self.view.bounds.size;
-    if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation)) {
+    if (UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation])) {
         return CGSizeMake(MAX(size.width, size.height), MIN(size.width, size.height));
-    } else {
-        return CGSizeMake(MIN(size.width, size.height), MAX(size.width, size.height));
     }
+    
+    return CGSizeMake(MIN(size.width, size.height), MAX(size.width, size.height));
 }
 
 
