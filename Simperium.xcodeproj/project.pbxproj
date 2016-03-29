@@ -562,11 +562,11 @@
 		B5C91A061827E8600002D306 /* SPHttpRequestQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHttpRequestQueue.m; sourceTree = "<group>"; };
 		B5C91A0C1827E9CB0002D306 /* NSURLResponse+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURLResponse+Simperium.h"; sourceTree = "<group>"; };
 		B5C91A0D1827E9CB0002D306 /* NSURLResponse+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURLResponse+Simperium.m"; sourceTree = "<group>"; };
-		B5CAA4B41CAAB369006FE048 /* Simperium_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Simperium_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5CAA4B41CAAB369006FE048 /* Simperium.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Simperium.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5CAA5531CAAC4B1006FE048 /* libicucore.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libicucore.tbd; path = usr/lib/libicucore.tbd; sourceTree = SDKROOT; };
 		B5CAA5551CAAC870006FE048 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B5CAA5571CAACC30006FE048 /* Simperium_iOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Simperium_iOS.h; path = Headers/Simperium_iOS.h; sourceTree = SOURCE_ROOT; };
-		B5CAA60B1CAAED3D006FE048 /* Simperium_OSX.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Simperium_OSX.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5CAA60B1CAAED3D006FE048 /* Simperium.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Simperium.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5CAA60D1CAAEE30006FE048 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/AppKit.framework; sourceTree = DEVELOPER_DIR; };
 		B5CAA60F1CAAEE4E006FE048 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		B5CAA6111CAAEE7F006FE048 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
@@ -842,8 +842,8 @@
 			children = (
 				264CD908135DFD7A00C51BAD /* IntegrationTests.xctest */,
 				B5E8D33A1831237500AE2C5A /* UnitTests.xctest */,
-				B5CAA4B41CAAB369006FE048 /* Simperium_iOS.framework */,
-				B5CAA60B1CAAED3D006FE048 /* Simperium_OSX.framework */,
+				B5CAA4B41CAAB369006FE048 /* Simperium.framework */,
+				B5CAA60B1CAAED3D006FE048 /* Simperium.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1396,7 +1396,7 @@
 			);
 			name = Simperium_iOS;
 			productName = "Simperium-iOS";
-			productReference = B5CAA4B41CAAB369006FE048 /* Simperium_iOS.framework */;
+			productReference = B5CAA4B41CAAB369006FE048 /* Simperium.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		B5CAA56A1CAAED3D006FE048 /* Simperium_OSX */ = {
@@ -1414,7 +1414,7 @@
 			);
 			name = Simperium_OSX;
 			productName = "Simperium-iOS";
-			productReference = B5CAA60B1CAAED3D006FE048 /* Simperium_OSX.framework */;
+			productReference = B5CAA60B1CAAED3D006FE048 /* Simperium.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		B5E8D30A1831237500AE2C5A /* UnitTests */ = {
@@ -1852,7 +1852,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.automattic.simperium;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Simperium;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "arm64 armv7 armv7s x86_64";
@@ -1901,7 +1901,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.automattic.simperium;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Simperium;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -1956,7 +1956,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.automattic.simperium;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Simperium;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -2007,7 +2007,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.automattic.simperium;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Simperium;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
