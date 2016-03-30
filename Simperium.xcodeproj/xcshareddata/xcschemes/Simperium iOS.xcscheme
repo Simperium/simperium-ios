@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B5CAA4B31CAAB369006FE048"
-               BuildableName = "Simperium_iOS.framework"
+               BuildableName = "Simperium.framework"
                BlueprintName = "Simperium_iOS"
                ReferencedContainer = "container:Simperium.xcodeproj">
             </BuildableReference>
@@ -53,7 +53,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B5CAA4B31CAAB369006FE048"
-            BuildableName = "Simperium_iOS.framework"
+            BuildableName = "Simperium.framework"
             BlueprintName = "Simperium_iOS"
             ReferencedContainer = "container:Simperium.xcodeproj">
          </BuildableReference>
@@ -75,7 +75,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B5CAA4B31CAAB369006FE048"
-            BuildableName = "Simperium_iOS.framework"
+            BuildableName = "Simperium.framework"
             BlueprintName = "Simperium_iOS"
             ReferencedContainer = "container:Simperium.xcodeproj">
          </BuildableReference>
@@ -93,7 +93,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B5CAA4B31CAAB369006FE048"
-            BuildableName = "Simperium_iOS.framework"
+            BuildableName = "Simperium.framework"
             BlueprintName = "Simperium_iOS"
             ReferencedContainer = "container:Simperium.xcodeproj">
          </BuildableReference>
