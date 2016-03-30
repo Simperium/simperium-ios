@@ -3,3 +3,5 @@ language: objective-c
 xcode_project: Simperium.xcodeproj
 xcode_scheme: Simperium iOS
 xcode_sdk: iphonesimulator
+script:
+- set -o pipefail && xcodebuild -project Simperium.xcodeproj -scheme "Simperium iOS" -sdk iphonesimulator build test | xcpretty -c
