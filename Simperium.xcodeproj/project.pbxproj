@@ -383,6 +383,8 @@
 		B5EC2C28188595420067E3B8 /* SPPersistentMutableSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5EC2C27188595420067E3B8 /* SPPersistentMutableSetTests.m */; };
 		B5F068B1186223DF00D0D7B7 /* DiffMatchPatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F068B0186223DF00D0D7B7 /* DiffMatchPatchTest.m */; };
 		B5F3C60D1A84FA49000CE940 /* SPManagedObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F3C60C1A84FA49000CE940 /* SPManagedObjectTests.m */; };
+		E16CFCAF1CAB9610002DF86A /* Simperium.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5CAA4B41CAAB369006FE048 /* Simperium.framework */; };
+		E16CFCB01CAB96A0002DF86A /* Simperium.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5CAA4B41CAAB369006FE048 /* Simperium.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -634,6 +636,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E16CFCB01CAB96A0002DF86A /* Simperium.framework in Frameworks */,
 				26ED43DC146CD87000C3D7D6 /* CoreData.framework in Frameworks */,
 				B5E8D3091831221100AE2C5A /* XCTest.framework in Frameworks */,
 				264AE59D15DC67C900E5E04E /* libicucore.dylib in Frameworks */,
@@ -683,6 +686,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E16CFCAF1CAB9610002DF86A /* Simperium.framework in Frameworks */,
 				B5E8D3251831237500AE2C5A /* XCTest.framework in Frameworks */,
 				B5E8D3261831237500AE2C5A /* libicucore.dylib in Frameworks */,
 				B5E8D3271831237500AE2C5A /* Security.framework in Frameworks */,
