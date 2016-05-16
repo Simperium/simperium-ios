@@ -313,7 +313,10 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
             if (oldDiff.count) {
                 // The local client version changed in the meantime, so transform the diff before applying it
                 SPLogVerbose(@"Simperium applying transform to diff: %@", diff);
-                NSDictionary *localDiff = [bucket.differ transform:object diff:oldDiff oldDiff:diff oldGhost:oldGhost error:&theError];
+                NSDictionary *diffPreferingLocalData = [bucket.differ transform:object diff:oldDiff oldDiff:diff oldGhost:oldGhost error:&theError];
+                
+                diff = [bucket.differ diffByMergingDiff:diff intoDiff:diffPreferingLocalData overwrite:NO];
+                
                 if (theError) {
                     SPLogError(@"Simperium error during diff transform: %@", theError.localizedDescription);
                     if (error) {
@@ -325,7 +328,7 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
                 // Load from the ghost data so the subsequent diff is applied to the correct data
                 // Do an extra check in case there was a problem with the transform/diff, e.g. if a client's own change was misinterpreted
                 // as another client's change, in other words not properly acknowledged.
-                if (localDiff.count) {
+                if (diffPreferingLocalData.count) {
                     [object loadMemberData:object.ghost.memberData];
                     [self enqueueObjectForMoreChanges:simperiumKey bucket:bucket];
                 } else {

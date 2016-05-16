@@ -288,4 +288,16 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
     return newDiff;
 }
 
+- (NSDictionary *)diffByMergingDiff:(NSDictionary *)diff2 intoDiff:(NSDictionary *)diff1 overwrite:(BOOL)overwrite{
+    //if overwite == NO, then only add value from diff2 if it doesn't exist in diff1
+    NSMutableDictionary *combinedDiff = [diff1 mutableCopy] ?: [[NSMutableDictionary alloc] init];
+    for (NSString *key in diff2) {
+        if (overwrite || (!overwrite && !diff1[key])) {
+            combinedDiff[key] = diff2[key];
+        }
+    }
+    
+    return [combinedDiff copy];
+}
+
 @end

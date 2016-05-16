@@ -29,5 +29,5 @@
 - (BOOL)applyDiffFromDictionary:(NSDictionary *)diff toObject:(id<SPDiffable>)object error:(NSError **)error;
 - (BOOL)applyGhostDiffFromDictionary:(NSDictionary *)diff toObject:(id<SPDiffable>)object error:(NSError **)error;
 - (NSDictionary *)transform:(id<SPDiffable>)object diff:(NSDictionary *)diff oldDiff:(NSDictionary *)oldDiff oldGhost:(SPGhost *)oldGhost error:(NSError **)error;
-
+- (NSDictionary *)diffByMergingDiff:(NSDictionary *)diff2 intoDiff:(NSDictionary *)diff1 overwrite:(BOOL)overwrite;
 @end
