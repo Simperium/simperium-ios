@@ -765,6 +765,13 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
 }
 
+- (void)authenticationDidCreateAccount
+{
+    if ([self.delegate respondsToSelector:@selector(simperiumDidCreateAccount:)]) {
+        [self.delegate simperiumDidCreateAccount:self];
+    }
+}
+
 - (void)authenticationDidCancel {
     [self stopNetworkManagers];
     [self.authenticator reset];

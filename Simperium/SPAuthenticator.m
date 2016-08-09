@@ -200,6 +200,15 @@ static NSString * SPUsername    = @"SPUsername";
     [self performSelector:@selector(delayedAuthenticationDidFinish) withObject:nil afterDelay:0.1];
 }
 
+- (void)authWithCreationDidSucceed:(SPHttpRequest *)request
+{
+    [self authDidSucceed:request];
+
+    if ([self.delegate respondsToSelector:@selector(authenticationDidCreateAccount)]) {
+        [self.delegate authenticationDidCreateAccount];
+    }
+}
+
 - (void)authDidFail:(SPHttpRequest *)request {
     if (self.failedBlock) {
         self.failedBlock(request.responseCode, request.responseString);
@@ -250,7 +259,7 @@ static NSString * SPUsername    = @"SPUsername";
     
     // Selectors are for auth-related handling
     request.delegate = self;
-    request.selectorSuccess = @selector(authDidSucceed:);
+    request.selectorSuccess = @selector(authWithCreationDidSucceed:);
     request.selectorFailed = @selector(authDidFail:);
 
     [[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];

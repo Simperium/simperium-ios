@@ -58,6 +58,7 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
 - (void)simperiumDidLogin:(Simperium *)simperium;
 - (void)simperiumDidLogout:(Simperium *)simperium;
 - (void)simperiumDidCancelLogin:(Simperium *)simperium;
+- (void)simperiumDidCreateAccount:(Simperium *)simperium;
 @end
 
 
