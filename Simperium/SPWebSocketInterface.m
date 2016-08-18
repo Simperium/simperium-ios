@@ -188,53 +188,17 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(openWebSocket) object:nil];
     
     // Prepare the Request: Handle certificate pinning stuff
-    NSString *urlString                 = [NSString stringWithFormat:@"%@/%@/websocket", SPWebsocketURL, self.simperium.appID];
-    NSMutableURLRequest *request        = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
-    request.SPR_SSLPinnedCertificates   = [self loadTrustedCertificates];
+    NSString *urlString             = [NSString stringWithFormat:@"%@/%@/websocket", SPWebsocketURL, self.simperium.appID];
+    NSURLRequest *request           = [NSURLRequest requestWithURL:[NSURL URLWithString:urlString]];
 
     // Open the socket!
-    SPWebSocket *newWebSocket           = [[SPWebSocket alloc] initWithURLRequest:request];
-    self.webSocket                      = newWebSocket;
-    self.webSocket.delegate             = self;
-    self.open                           = NO;
+    SPWebSocket *newWebSocket       = [[SPWebSocket alloc] initWithURLRequest:request];
+    self.webSocket                  = newWebSocket;
+    self.webSocket.delegate         = self;
+    self.open                       = NO;
     
     SPLogVerbose(@"Simperium opening WebSocket connection...");
     [self.webSocket open];
-}
-
-- (NSArray *)loadTrustedCertificates {
-    NSArray *allowedCertificates    = nil;
-    NSDate *expirationDate          = [NSDate dateWithTimeIntervalSince1970:SPCertificateExpiration];
-    NSDate *currentDate             = [NSDate date];
-    
-    // Verify if the certificate hasn't expired!
-    if ([currentDate compare:expirationDate] == NSOrderedAscending) {
-        NSData *rawCertificate              = nil;
-        
-        if ([NSData instancesRespondToSelector:@selector(initWithBase64EncodedString:options:)]) {
-            rawCertificate = [[NSData alloc] initWithBase64EncodedString:SPCertificatePayload options:NSDataBase64DecodingIgnoreUnknownCharacters];
-        } else {
-            // Let's shut off the warning, please!
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            rawCertificate = [[NSData alloc] initWithBase64Encoding:SPCertificatePayload];
-#pragma clang diagnostic pop
-        }
-        
-        SecCertificateRef parsedCertificate = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)rawCertificate);
-        
-        if (parsedCertificate) {
-            SPLogVerbose(@"Pinned Certificate is Valid: Proceeding with extra checks!");
-            allowedCertificates = @[ (id)CFBridgingRelease(parsedCertificate) ];
-        } else {
-            SPLogError(@"Error: Could not load Pinned Certificate Payload!");
-        }
-        
-    } else {
-        SPLogError(@"Error: Simperium's Pinned Certificate has Expired!");
-    }
-    
-    return allowedCertificates;
 }
 
 - (void)start:(SPBucket *)bucket {
