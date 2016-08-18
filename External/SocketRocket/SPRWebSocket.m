@@ -16,6 +16,7 @@
 
 
 #import "SPRWebSocket.h"
+#import "TrustKit.h"
 
 #if TARGET_OS_IPHONE
 #define HAS_ICU
@@ -1424,26 +1425,14 @@ static const size_t SRFrameHeaderOverhead = 32;
     __weak typeof(self) weakSelf = self;
     
     if (_secure && !_pinnedCertFound && (eventCode == NSStreamEventHasBytesAvailable || eventCode == NSStreamEventHasSpaceAvailable)) {
-        
-        NSArray *sslCerts = [_urlRequest SPR_SSLPinnedCertificates];
-        if (sslCerts) {
+
+        BOOL wasTrustKitInitialized = [TrustKit configuration] != nil;
+        if (wasTrustKitInitialized) {
+
             SecTrustRef secTrust = (__bridge SecTrustRef)[aStream propertyForKey:(__bridge id)kCFStreamPropertySSLPeerTrust];
             if (secTrust && [self isServerTrustworthy:secTrust]) {
-                NSInteger numCerts = SecTrustGetCertificateCount(secTrust);
-                for (NSInteger i = 0; i < numCerts && !_pinnedCertFound; i++) {
-                    SecCertificateRef cert = SecTrustGetCertificateAtIndex(secTrust, i);
-                    NSData *certData = CFBridgingRelease(SecCertificateCopyData(cert));
-                    
-                    for (id ref in sslCerts) {
-                        SecCertificateRef trustedCert = (__bridge SecCertificateRef)ref;
-                        NSData *trustedCertData = CFBridgingRelease(SecCertificateCopyData(trustedCert));
-                        
-                        if ([trustedCertData isEqualToData:certData]) {
-                            _pinnedCertFound = YES;
-                            break;
-                        }
-                    }
-                }
+                TSKTrustDecision result = [TSKPinningValidator evaluateTrust:secTrust forHostname:_url.host];
+                _pinnedCertFound = (result != TSKTrustDecisionShouldBlockConnection);
             }
             
             if (!_pinnedCertFound) {
