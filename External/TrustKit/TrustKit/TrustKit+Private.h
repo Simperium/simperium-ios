@@ -29,8 +29,6 @@ void sendValidationNotification_async(NSString *serverHostname, SecTrustRef serv
 + (void) resetConfiguration;
 + (BOOL) wasTrustKitInitialized;
 + (NSString *) getDefaultReportUri;
-+ (TSKBackgroundReporter *) getGlobalPinFailureReporter;
-+ (void) setGlobalPinFailureReporter:(TSKBackgroundReporter *) reporter;
 
 @end
 
