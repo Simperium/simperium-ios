@@ -31,8 +31,8 @@
     }
     CFRetain(serverTrust);
     
-    // Register start time for duration computations
-    NSTimeInterval validationStartTime = [NSDate timeIntervalSinceReferenceDate];
+//    // Register start time for duration computations
+//    NSTimeInterval validationStartTime = [NSDate timeIntervalSinceReferenceDate];
     
     // Retrieve the pinning configuration for this specific domain, if there is one
     NSDictionary *trustKitConfig = [TrustKit configuration];
@@ -89,9 +89,9 @@
                 }
             }
         }
-        // Send a notification after all validation is done; this will also trigger a report if pin validation failed
-        NSTimeInterval validationDuration = [NSDate timeIntervalSinceReferenceDate] - validationStartTime;
-        sendValidationNotification_async(serverHostname, serverTrust, domainConfigKey, validationResult, finalTrustDecision, validationDuration);
+//        // Send a notification after all validation is done; this will also trigger a report if pin validation failed
+//        NSTimeInterval validationDuration = [NSDate timeIntervalSinceReferenceDate] - validationStartTime;
+//        sendValidationNotification_async(serverHostname, serverTrust, domainConfigKey, validationResult, finalTrustDecision, validationDuration);
     }
     CFRelease(serverTrust);
     
