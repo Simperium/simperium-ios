@@ -753,7 +753,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 
 
 #pragma mark ====================================================================================
-#pragma mark Authentication Helpers
+#pragma mark SSL Pinning Helpers
 #pragma mark ====================================================================================
 
 - (void)setupTrustKitIfNeeded {
