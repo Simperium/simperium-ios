@@ -30,9 +30,10 @@
         return finalTrustDecision;
     }
     CFRetain(serverTrust);
-    
-    // Register start time for duration computations
-    NSTimeInterval validationStartTime = [NSDate timeIntervalSinceReferenceDate];
+
+// Simperium Update: Ref. https://github.com/Simperium/simperium-ios/pull/553#issuecomment-240839215
+//    // Register start time for duration computations
+//    NSTimeInterval validationStartTime = [NSDate timeIntervalSinceReferenceDate];
     
     // Retrieve the pinning configuration for this specific domain, if there is one
     NSDictionary *trustKitConfig = [TrustKit configuration];
@@ -89,9 +90,10 @@
                 }
             }
         }
-        // Send a notification after all validation is done; this will also trigger a report if pin validation failed
-        NSTimeInterval validationDuration = [NSDate timeIntervalSinceReferenceDate] - validationStartTime;
-        sendValidationNotification_async(serverHostname, serverTrust, domainConfigKey, validationResult, finalTrustDecision, validationDuration);
+// Simperium Update: Ref. https://github.com/Simperium/simperium-ios/pull/553#issuecomment-240839215
+//        // Send a notification after all validation is done; this will also trigger a report if pin validation failed
+//        NSTimeInterval validationDuration = [NSDate timeIntervalSinceReferenceDate] - validationStartTime;
+//        sendValidationNotification_async(serverHostname, serverTrust, domainConfigKey, validationResult, finalTrustDecision, validationDuration);
     }
     CFRelease(serverTrust);
     

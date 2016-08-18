@@ -12,16 +12,13 @@
 #ifndef TrustKit_TrustKit_Private____FILEEXTENSION___
 #define TrustKit_TrustKit_Private____FILEEXTENSION___
 
-#import <TrustKit/TrustKit.h>
+#import "TrustKit.h"
 #import "ssl_pin_verifier.h"
-#import "TSKBackgroundReporter.h"
 
 
 #pragma mark Utility functions
 
 void TSKLog(NSString *format, ...);
-
-void sendValidationNotification_async(NSString *serverHostname, SecTrustRef serverTrust, NSString *notedHostname, TSKPinValidationResult validationResult, TSKTrustDecision finalTrustDecision, NSTimeInterval validationDuration);
 
 #pragma mark Methods for the unit tests
 
@@ -30,8 +27,6 @@ void sendValidationNotification_async(NSString *serverHostname, SecTrustRef serv
 + (void) resetConfiguration;
 + (BOOL) wasTrustKitInitialized;
 + (NSString *) getDefaultReportUri;
-+ (TSKBackgroundReporter *) getGlobalPinFailureReporter;
-+ (void) setGlobalPinFailureReporter:(TSKBackgroundReporter *) reporter;
 
 @end
 
