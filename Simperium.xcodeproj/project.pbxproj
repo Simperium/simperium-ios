@@ -383,6 +383,40 @@
 		B5EC2C28188595420067E3B8 /* SPPersistentMutableSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5EC2C27188595420067E3B8 /* SPPersistentMutableSetTests.m */; };
 		B5F068B1186223DF00D0D7B7 /* DiffMatchPatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F068B0186223DF00D0D7B7 /* DiffMatchPatchTest.m */; };
 		B5F3C60D1A84FA49000CE940 /* SPManagedObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F3C60C1A84FA49000CE940 /* SPManagedObjectTests.m */; };
+		B5FC089E1D662D5300045DB9 /* RSSwizzle.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC088B1D662D5300045DB9 /* RSSwizzle.h */; };
+		B5FC089F1D662D5300045DB9 /* RSSwizzle.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC088B1D662D5300045DB9 /* RSSwizzle.h */; };
+		B5FC08A01D662D5300045DB9 /* RSSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC088C1D662D5300045DB9 /* RSSwizzle.m */; };
+		B5FC08A11D662D5300045DB9 /* RSSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC088C1D662D5300045DB9 /* RSSwizzle.m */; };
+		B5FC08A21D662D5300045DB9 /* parse_configuration.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC088D1D662D5300045DB9 /* parse_configuration.h */; };
+		B5FC08A31D662D5300045DB9 /* parse_configuration.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC088D1D662D5300045DB9 /* parse_configuration.h */; };
+		B5FC08A41D662D5300045DB9 /* parse_configuration.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC088E1D662D5300045DB9 /* parse_configuration.m */; };
+		B5FC08A51D662D5300045DB9 /* parse_configuration.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC088E1D662D5300045DB9 /* parse_configuration.m */; };
+		B5FC08A61D662D5300045DB9 /* public_key_utils.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC08901D662D5300045DB9 /* public_key_utils.h */; };
+		B5FC08A71D662D5300045DB9 /* public_key_utils.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC08901D662D5300045DB9 /* public_key_utils.h */; };
+		B5FC08A81D662D5300045DB9 /* public_key_utils.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC08911D662D5300045DB9 /* public_key_utils.m */; };
+		B5FC08A91D662D5300045DB9 /* public_key_utils.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC08911D662D5300045DB9 /* public_key_utils.m */; };
+		B5FC08AA1D662D5300045DB9 /* ssl_pin_verifier.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC08921D662D5300045DB9 /* ssl_pin_verifier.h */; };
+		B5FC08AB1D662D5300045DB9 /* ssl_pin_verifier.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC08921D662D5300045DB9 /* ssl_pin_verifier.h */; };
+		B5FC08AC1D662D5300045DB9 /* ssl_pin_verifier.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC08931D662D5300045DB9 /* ssl_pin_verifier.m */; };
+		B5FC08AD1D662D5300045DB9 /* ssl_pin_verifier.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC08931D662D5300045DB9 /* ssl_pin_verifier.m */; };
+		B5FC08AE1D662D5300045DB9 /* TSKPinningValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC08941D662D5300045DB9 /* TSKPinningValidator.h */; };
+		B5FC08AF1D662D5300045DB9 /* TSKPinningValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC08941D662D5300045DB9 /* TSKPinningValidator.h */; };
+		B5FC08B01D662D5300045DB9 /* TSKPinningValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC08951D662D5300045DB9 /* TSKPinningValidator.m */; };
+		B5FC08B11D662D5300045DB9 /* TSKPinningValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC08951D662D5300045DB9 /* TSKPinningValidator.m */; };
+		B5FC08B21D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC08971D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.h */; };
+		B5FC08B31D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC08971D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.h */; };
+		B5FC08B41D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC08981D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.m */; };
+		B5FC08B51D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC08981D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.m */; };
+		B5FC08B61D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC08991D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.h */; };
+		B5FC08B71D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC08991D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.h */; };
+		B5FC08B81D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC089A1D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.m */; };
+		B5FC08B91D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC089A1D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.m */; };
+		B5FC08BA1D662D5300045DB9 /* TrustKit+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC089B1D662D5300045DB9 /* TrustKit+Private.h */; };
+		B5FC08BB1D662D5300045DB9 /* TrustKit+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC089B1D662D5300045DB9 /* TrustKit+Private.h */; };
+		B5FC08BC1D662D5300045DB9 /* TrustKit.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC089C1D662D5300045DB9 /* TrustKit.h */; };
+		B5FC08BD1D662D5300045DB9 /* TrustKit.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FC089C1D662D5300045DB9 /* TrustKit.h */; };
+		B5FC08BE1D662D5300045DB9 /* TrustKit.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC089D1D662D5300045DB9 /* TrustKit.m */; };
+		B5FC08BF1D662D5300045DB9 /* TrustKit.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FC089D1D662D5300045DB9 /* TrustKit.m */; };
 		E16CFCAF1CAB9610002DF86A /* Simperium.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5CAA4B41CAAB369006FE048 /* Simperium.framework */; };
 		E16CFCB01CAB96A0002DF86A /* Simperium.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5CAA4B41CAAB369006FE048 /* Simperium.framework */; };
 /* End PBXBuildFile section */
@@ -629,6 +663,23 @@
 		B5F4C84418FC1B04009F8643 /* NSError+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSError+Simperium.m"; sourceTree = "<group>"; };
 		B5F4FE6818A3D7B8006F50C5 /* Simperium.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = Simperium.podspec; sourceTree = SOURCE_ROOT; };
 		B5F65F791847DE0100CEF48D /* SPManagedObject+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPManagedObject+Internals.h"; sourceTree = "<group>"; };
+		B5FC088B1D662D5300045DB9 /* RSSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSSwizzle.h; sourceTree = "<group>"; };
+		B5FC088C1D662D5300045DB9 /* RSSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSSwizzle.m; sourceTree = "<group>"; };
+		B5FC088D1D662D5300045DB9 /* parse_configuration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parse_configuration.h; sourceTree = "<group>"; };
+		B5FC088E1D662D5300045DB9 /* parse_configuration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = parse_configuration.m; sourceTree = "<group>"; };
+		B5FC08901D662D5300045DB9 /* public_key_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = public_key_utils.h; sourceTree = "<group>"; };
+		B5FC08911D662D5300045DB9 /* public_key_utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = public_key_utils.m; sourceTree = "<group>"; };
+		B5FC08921D662D5300045DB9 /* ssl_pin_verifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ssl_pin_verifier.h; sourceTree = "<group>"; };
+		B5FC08931D662D5300045DB9 /* ssl_pin_verifier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ssl_pin_verifier.m; sourceTree = "<group>"; };
+		B5FC08941D662D5300045DB9 /* TSKPinningValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TSKPinningValidator.h; sourceTree = "<group>"; };
+		B5FC08951D662D5300045DB9 /* TSKPinningValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TSKPinningValidator.m; sourceTree = "<group>"; };
+		B5FC08971D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TSKNSURLConnectionDelegateProxy.h; sourceTree = "<group>"; };
+		B5FC08981D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TSKNSURLConnectionDelegateProxy.m; sourceTree = "<group>"; };
+		B5FC08991D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TSKNSURLSessionDelegateProxy.h; sourceTree = "<group>"; };
+		B5FC089A1D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TSKNSURLSessionDelegateProxy.m; sourceTree = "<group>"; };
+		B5FC089B1D662D5300045DB9 /* TrustKit+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TrustKit+Private.h"; sourceTree = "<group>"; };
+		B5FC089C1D662D5300045DB9 /* TrustKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrustKit.h; sourceTree = "<group>"; };
+		B5FC089D1D662D5300045DB9 /* TrustKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TrustKit.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -936,6 +987,7 @@
 		264CD94B135DFE7E00C51BAD /* External */ = {
 			isa = PBXGroup;
 			children = (
+				B5FC08881D662D5300045DB9 /* TrustKit */,
 				797D26F719F1B72700DEF569 /* SSKeychain */,
 				26653CF815FE5DE900461A28 /* SPReachability */,
 				2618987315D2EB310013CBC9 /* SocketRocket */,
@@ -1192,6 +1244,63 @@
 			name = Mocks;
 			sourceTree = "<group>";
 		};
+		B5FC08881D662D5300045DB9 /* TrustKit */ = {
+			isa = PBXGroup;
+			children = (
+				B5FC08891D662D5300045DB9 /* Dependencies */,
+				B5FC088D1D662D5300045DB9 /* parse_configuration.h */,
+				B5FC088E1D662D5300045DB9 /* parse_configuration.m */,
+				B5FC088F1D662D5300045DB9 /* Pinning */,
+				B5FC08961D662D5300045DB9 /* Swizzling */,
+				B5FC089B1D662D5300045DB9 /* TrustKit+Private.h */,
+				B5FC089C1D662D5300045DB9 /* TrustKit.h */,
+				B5FC089D1D662D5300045DB9 /* TrustKit.m */,
+			);
+			name = TrustKit;
+			path = TrustKit/TrustKit;
+			sourceTree = "<group>";
+		};
+		B5FC08891D662D5300045DB9 /* Dependencies */ = {
+			isa = PBXGroup;
+			children = (
+				B5FC088A1D662D5300045DB9 /* RSSwizzle */,
+			);
+			path = Dependencies;
+			sourceTree = "<group>";
+		};
+		B5FC088A1D662D5300045DB9 /* RSSwizzle */ = {
+			isa = PBXGroup;
+			children = (
+				B5FC088B1D662D5300045DB9 /* RSSwizzle.h */,
+				B5FC088C1D662D5300045DB9 /* RSSwizzle.m */,
+			);
+			path = RSSwizzle;
+			sourceTree = "<group>";
+		};
+		B5FC088F1D662D5300045DB9 /* Pinning */ = {
+			isa = PBXGroup;
+			children = (
+				B5FC08901D662D5300045DB9 /* public_key_utils.h */,
+				B5FC08911D662D5300045DB9 /* public_key_utils.m */,
+				B5FC08921D662D5300045DB9 /* ssl_pin_verifier.h */,
+				B5FC08931D662D5300045DB9 /* ssl_pin_verifier.m */,
+				B5FC08941D662D5300045DB9 /* TSKPinningValidator.h */,
+				B5FC08951D662D5300045DB9 /* TSKPinningValidator.m */,
+			);
+			path = Pinning;
+			sourceTree = "<group>";
+		};
+		B5FC08961D662D5300045DB9 /* Swizzling */ = {
+			isa = PBXGroup;
+			children = (
+				B5FC08971D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.h */,
+				B5FC08981D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.m */,
+				B5FC08991D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.h */,
+				B5FC089A1D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.m */,
+			);
+			path = Swizzling;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1201,6 +1310,7 @@
 			files = (
 				B5CAA4BC1CAAB3D5006FE048 /* Simperium.h in Headers */,
 				B5CAA64E1CAAF2F8006FE048 /* SPAuthenticationButton.h in Headers */,
+				B5FC08AE1D662D5300045DB9 /* TSKPinningValidator.h in Headers */,
 				B5CAA6501CAAF2F8006FE048 /* SPAuthenticationViewController.h in Headers */,
 				B5CAA4C71CAAB459006FE048 /* SPAuthenticationConfiguration.h in Headers */,
 				B5CAA4C31CAAB421006FE048 /* SPAuthenticator.h in Headers */,
@@ -1209,10 +1319,12 @@
 				B5CAA4C51CAAB446006FE048 /* SPDiffable.h in Headers */,
 				B5CAA4BE1CAAB3F7006FE048 /* SPLogger.h in Headers */,
 				B5CAA4BD1CAAB3E6006FE048 /* SPManagedObject.h in Headers */,
+				B5FC08BA1D662D5300045DB9 /* TrustKit+Private.h in Headers */,
 				B5CAA4C11CAAB40F006FE048 /* SPNetworkInterface.h in Headers */,
 				B5CAA4C61CAAB44E006FE048 /* SPStorageProvider.h in Headers */,
 				B5CAA4C01CAAB405006FE048 /* SPUser.h in Headers */,
 				B5CAA4C81CAAB50E006FE048 /* SPSwizzle.h in Headers */,
+				B5FC08A21D662D5300045DB9 /* parse_configuration.h in Headers */,
 				B5CAA4C91CAAB516006FE048 /* SPHttpRequest.h in Headers */,
 				B5CAA4CA1CAAB51B006FE048 /* SPEnvironment.h in Headers */,
 				B5CAA4CB1CAAB523006FE048 /* SPGhost.h in Headers */,
@@ -1226,9 +1338,11 @@
 				B5CAA4D41CAAB57F006FE048 /* NSString+UnicharUtilities.h in Headers */,
 				B5CAA4D51CAAB585006FE048 /* NSString+UriCompatibility.h in Headers */,
 				B5CAA4D61CAAB59E006FE048 /* Simperium+Internals.h in Headers */,
+				B5FC08BC1D662D5300045DB9 /* TrustKit.h in Headers */,
 				B5CAA4D71CAAB5A8006FE048 /* NSData+Simperium.h in Headers */,
 				B5CAA4D81CAAB5B1006FE048 /* SPHttpRequest+Internals.h in Headers */,
 				B5CAA4D91CAAB5BE006FE048 /* SPChangeProcessor.h in Headers */,
+				B5FC08A61D662D5300045DB9 /* public_key_utils.h in Headers */,
 				B5CAA4DA1CAAB5E0006FE048 /* SPPersistentMutableDictionary.h in Headers */,
 				B5CAA4DB1CAAB5F1006FE048 /* SPIndexProcessor.h in Headers */,
 				B5CAA4DC1CAAB5F9006FE048 /* SPStorage.h in Headers */,
@@ -1238,6 +1352,8 @@
 				B5CAA4DF1CAAB620006FE048 /* NSURLResponse+Simperium.h in Headers */,
 				B5CAA4E01CAAB63B006FE048 /* SPMemberText.h in Headers */,
 				B5CAA4E11CAAB63E006FE048 /* SPMemberDate.h in Headers */,
+				B5FC08AA1D662D5300045DB9 /* ssl_pin_verifier.h in Headers */,
+				B5FC08B61D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.h in Headers */,
 				B5CAA4E21CAAB643006FE048 /* SPMemberInt.h in Headers */,
 				B5CAA4E31CAAB648006FE048 /* SPMemberJSON.h in Headers */,
 				B5CAA4E41CAAB659006FE048 /* SPHttpRequestQueue.h in Headers */,
@@ -1258,6 +1374,7 @@
 				B5CAA6591CAAF38E006FE048 /* UIViewController+Simperium.h in Headers */,
 				B5CAA6521CAAF2F8006FE048 /* SPWebViewController.h in Headers */,
 				B5CAA4F31CAAB736006FE048 /* SPSchema.h in Headers */,
+				B5FC08B21D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.h in Headers */,
 				B5CAA4F41CAAB774006FE048 /* SPThreadsafeMutableSet.h in Headers */,
 				B5CAA4F51CAAB77C006FE048 /* SPRelationshipResolver+Internals.h in Headers */,
 				B5CAA4F61CAAB7B1006FE048 /* SPRWebSocket.h in Headers */,
@@ -1273,6 +1390,7 @@
 				B5CAA5001CAAB834006FE048 /* SPMemberJSONList.h in Headers */,
 				B5CAA5011CAAB83D006FE048 /* SPAuthenticationValidator.h in Headers */,
 				B5CAA5031CAAB84F006FE048 /* SPManagedObject+Internals.h in Headers */,
+				B5FC089E1D662D5300045DB9 /* RSSwizzle.h in Headers */,
 				B5CAA5041CAAB85C006FE048 /* SPProcessorConstants.h in Headers */,
 				B5CAA5051CAAB865006FE048 /* SPKeychain.h in Headers */,
 				B5CAA5061CAAB869006FE048 /* SPKeychainQuery.h in Headers */,
@@ -1287,13 +1405,16 @@
 				B5CAA5BC1CAAED3D006FE048 /* SPAuthenticationConfiguration.h in Headers */,
 				B5CAA5BD1CAAED3D006FE048 /* SPAuthenticator.h in Headers */,
 				B5CAA5BE1CAAED3D006FE048 /* SPBucket.h in Headers */,
+				B5FC08AB1D662D5300045DB9 /* ssl_pin_verifier.h in Headers */,
 				B5CAA5BF1CAAED3D006FE048 /* SPCoreDataExporter.h in Headers */,
+				B5FC08AF1D662D5300045DB9 /* TSKPinningValidator.h in Headers */,
 				B5CAA5C01CAAED3D006FE048 /* SPDiffable.h in Headers */,
 				B5CAA5C11CAAED3D006FE048 /* SPLogger.h in Headers */,
 				B5CAA63F1CAAF1D9006FE048 /* SPAuthenticationTextField.h in Headers */,
 				B5CAA5C21CAAED3D006FE048 /* SPManagedObject.h in Headers */,
 				B5CAA5C31CAAED3D006FE048 /* SPNetworkInterface.h in Headers */,
 				B5CAA5C41CAAED3D006FE048 /* SPStorageProvider.h in Headers */,
+				B5FC08A71D662D5300045DB9 /* public_key_utils.h in Headers */,
 				B5CAA5C51CAAED3D006FE048 /* SPUser.h in Headers */,
 				B5CAA5C61CAAED3D006FE048 /* SPSwizzle.h in Headers */,
 				B5CAA5C71CAAED3D006FE048 /* SPHttpRequest.h in Headers */,
@@ -1302,7 +1423,9 @@
 				B5CAA5CA1CAAED3D006FE048 /* SPMember.h in Headers */,
 				B5CAA5CB1CAAED3D006FE048 /* DiffMatchPatch.h in Headers */,
 				B5CAA5CD1CAAED3D006FE048 /* DiffMatchPatchCFUtilities.h in Headers */,
+				B5FC08B31D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.h in Headers */,
 				B5CAA5CE1CAAED3D006FE048 /* MinMaxMacros.h in Headers */,
+				B5FC08BB1D662D5300045DB9 /* TrustKit+Private.h in Headers */,
 				B5CAA5CF1CAAED3D006FE048 /* NSMutableDictionary+DMPExtensions.h in Headers */,
 				B5CAA5D01CAAED3D006FE048 /* NSDate+Simperium.h in Headers */,
 				B5CAA5D11CAAED3D006FE048 /* NSString+JavaSubstring.h in Headers */,
@@ -1318,6 +1441,7 @@
 				B5CAA5D91CAAED3D006FE048 /* SPIndexProcessor.h in Headers */,
 				B5CAA6451CAAF1D9006FE048 /* SPAuthenticationWindowController.h in Headers */,
 				B5CAA5DA1CAAED3D006FE048 /* SPStorage.h in Headers */,
+				B5FC08B71D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.h in Headers */,
 				B5CAA5DB1CAAED3D006FE048 /* SPCoreDataStorage.h in Headers */,
 				B5CAA5DC1CAAED3D006FE048 /* SPStorageObserver.h in Headers */,
 				B5CAA5DE1CAAED3D006FE048 /* NSURLResponse+Simperium.h in Headers */,
@@ -1335,6 +1459,7 @@
 				B5CAA5EA1CAAED3D006FE048 /* SPRelationship.h in Headers */,
 				B5CAA5EB1CAAED3D006FE048 /* SPMemberList.h in Headers */,
 				B5CAA5EC1CAAED3D006FE048 /* SPMemberBase64.h in Headers */,
+				B5FC08BD1D662D5300045DB9 /* TrustKit.h in Headers */,
 				B5CAA5ED1CAAED3D006FE048 /* Simperium_iOS.h in Headers */,
 				B5CAA5EE1CAAED3D006FE048 /* NSMutableDictionary+Simperium.h in Headers */,
 				B5CAA5EF1CAAED3D006FE048 /* SPDiffer.h in Headers */,
@@ -1358,9 +1483,11 @@
 				B5CAA5FF1CAAED3D006FE048 /* SPBucket+Internals.h in Headers */,
 				B5CAA6001CAAED3D006FE048 /* SPMemberJSONList.h in Headers */,
 				B5CAA6011CAAED3D006FE048 /* SPAuthenticationValidator.h in Headers */,
+				B5FC08A31D662D5300045DB9 /* parse_configuration.h in Headers */,
 				B5CAA6031CAAED3D006FE048 /* SPManagedObject+Internals.h in Headers */,
 				B5CAA6041CAAED3D006FE048 /* SPProcessorConstants.h in Headers */,
 				B5CAA6051CAAED3D006FE048 /* SPKeychain.h in Headers */,
+				B5FC089F1D662D5300045DB9 /* RSSwizzle.h in Headers */,
 				B5CAA6061CAAED3D006FE048 /* SPKeychainQuery.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1546,6 +1673,7 @@
 				B5CAA64F1CAAF2F8006FE048 /* SPAuthenticationButton.m in Sources */,
 				B5CAA5101CAAB9AD006FE048 /* DiffMatchPatch.m in Sources */,
 				B5CAA5111CAAB9B2006FE048 /* DiffMatchPatchCFUtilities.c in Sources */,
+				B5FC08B81D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.m in Sources */,
 				B5CAA5121CAAB9BC006FE048 /* NSMutableDictionary+DMPExtensions.m in Sources */,
 				B5CAA5131CAAB9C7006FE048 /* NSString+JavaSubstring.m in Sources */,
 				B5CAA5141CAAB9CB006FE048 /* NSString+UnicharUtilities.m in Sources */,
@@ -1553,18 +1681,21 @@
 				B5CAA5161CAAB9DC006FE048 /* SPSwizzle.m in Sources */,
 				B5CAA5171CAAB9E4006FE048 /* SPCoreDataExporter.m in Sources */,
 				B5CAA5181CAAB9F0006FE048 /* SPUser.m in Sources */,
+				B5FC08BE1D662D5300045DB9 /* TrustKit.m in Sources */,
 				B5CAA5191CAABA2B006FE048 /* NSDate+Simperium.m in Sources */,
 				B5CAA51A1CAABA2E006FE048 /* NSData+Simperium.m in Sources */,
 				B5CAA51B1CAABA37006FE048 /* SPIndexProcessor.m in Sources */,
 				B5CAA51C1CAABA40006FE048 /* SPStorage.m in Sources */,
 				B5CAA51D1CAABA47006FE048 /* SPCoreDataStorage.m in Sources */,
 				B5CAA51F1CAABA5A006FE048 /* SPChangeProcessor.m in Sources */,
+				B5FC08AC1D662D5300045DB9 /* ssl_pin_verifier.m in Sources */,
 				B5CAA5201CAABA63006FE048 /* SPRelationship.m in Sources */,
 				B5CAA5211CAABA72006FE048 /* SPHttpRequest.m in Sources */,
 				B5CAA5221CAABA7A006FE048 /* SPMemberText.m in Sources */,
 				B5CAA5231CAABA81006FE048 /* SPMemberDate.m in Sources */,
 				B5CAA5241CAABA87006FE048 /* SPMemberInt.m in Sources */,
 				B5CAA5251CAABA8C006FE048 /* SPMemberDouble.m in Sources */,
+				B5FC08B41D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.m in Sources */,
 				B5CAA5261CAABA95006FE048 /* NSConditionLock+Simperium.m in Sources */,
 				B5CAA5271CAABA9B006FE048 /* SPMemberFloat.m in Sources */,
 				B5CAA5281CAABAA3006FE048 /* SPMemberEntity.m in Sources */,
@@ -1583,14 +1714,18 @@
 				B5CAA5341CAABB0E006FE048 /* SPDiffer.m in Sources */,
 				B5CAA65A1CAAF38E006FE048 /* UIViewController+Simperium.m in Sources */,
 				B5CAA5361CAABB1F006FE048 /* SPJSONStorage.m in Sources */,
+				B5FC08B01D662D5300045DB9 /* TSKPinningValidator.m in Sources */,
 				B5CAA5371CAABB27006FE048 /* SPKeychain.m in Sources */,
 				B5CAA5381CAABB2D006FE048 /* SPObject.m in Sources */,
+				B5FC08A41D662D5300045DB9 /* parse_configuration.m in Sources */,
 				B5CAA5391CAABB36006FE048 /* SPSchema.m in Sources */,
 				B5CAA53A1CAABB40006FE048 /* NSURLResponse+Simperium.m in Sources */,
 				B5CAA53B1CAABB47006FE048 /* SPRWebSocket.m in Sources */,
+				B5FC08A81D662D5300045DB9 /* public_key_utils.m in Sources */,
 				B5CAA53C1CAABB59006FE048 /* SPWebSocketInterface.m in Sources */,
 				B5CAA53D1CAABB67006FE048 /* SPWebSocketChannel.m in Sources */,
 				B5CAA53E1CAABB87006FE048 /* SPRelationshipResolver.m in Sources */,
+				B5FC08A01D662D5300045DB9 /* RSSwizzle.m in Sources */,
 				B5CAA53F1CAABB8D006FE048 /* SPReachability.m in Sources */,
 				B5CAA5401CAABBB5006FE048 /* SPThreadsafeMutableSet.m in Sources */,
 				B5CAA5411CAABBBE006FE048 /* NSString+Simperium.m in Sources */,
@@ -1613,13 +1748,18 @@
 				B5CAA56C1CAAED3D006FE048 /* Simperium.m in Sources */,
 				B5CAA56D1CAAED3D006FE048 /* SPLogger.m in Sources */,
 				B5CAA6401CAAF1D9006FE048 /* SPAuthenticationTextField.m in Sources */,
+				B5FC08A11D662D5300045DB9 /* RSSwizzle.m in Sources */,
+				B5FC08A51D662D5300045DB9 /* parse_configuration.m in Sources */,
 				B5CAA56E1CAAED3D006FE048 /* JSONKit+Simperium.m in Sources */,
 				B5CAA56F1CAAED3D006FE048 /* SPManagedObject.m in Sources */,
 				B5CAA5701CAAED3D006FE048 /* SPEnvironment.m in Sources */,
 				B5CAA5711CAAED3D006FE048 /* SPPersistentMutableSet.m in Sources */,
+				B5FC08B11D662D5300045DB9 /* TSKPinningValidator.m in Sources */,
+				B5FC08AD1D662D5300045DB9 /* ssl_pin_verifier.m in Sources */,
 				B5CAA5721CAAED3D006FE048 /* SPGhost.m in Sources */,
 				B5CAA5731CAAED3D006FE048 /* SPMember.m in Sources */,
 				B5CAA5741CAAED3D006FE048 /* DiffMatchPatch.m in Sources */,
+				B5FC08A91D662D5300045DB9 /* public_key_utils.m in Sources */,
 				B5CAA5751CAAED3D006FE048 /* DiffMatchPatchCFUtilities.c in Sources */,
 				B5CAA5761CAAED3D006FE048 /* NSMutableDictionary+DMPExtensions.m in Sources */,
 				B5CAA5771CAAED3D006FE048 /* NSString+JavaSubstring.m in Sources */,
@@ -1637,8 +1777,10 @@
 				B5CAA5831CAAED3D006FE048 /* SPChangeProcessor.m in Sources */,
 				B5CAA5841CAAED3D006FE048 /* SPRelationship.m in Sources */,
 				B5CAA5851CAAED3D006FE048 /* SPHttpRequest.m in Sources */,
+				B5FC08B91D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.m in Sources */,
 				B5CAA5861CAAED3D006FE048 /* SPMemberText.m in Sources */,
 				B5CAA5871CAAED3D006FE048 /* SPMemberDate.m in Sources */,
+				B5FC08BF1D662D5300045DB9 /* TrustKit.m in Sources */,
 				B5CAA5881CAAED3D006FE048 /* SPMemberInt.m in Sources */,
 				B5CAA5891CAAED3D006FE048 /* SPMemberDouble.m in Sources */,
 				B5CAA58A1CAAED3D006FE048 /* NSConditionLock+Simperium.m in Sources */,
@@ -1662,6 +1804,7 @@
 				B5CAA59D1CAAED3D006FE048 /* SPSchema.m in Sources */,
 				B5CAA59E1CAAED3D006FE048 /* NSURLResponse+Simperium.m in Sources */,
 				B5CAA6421CAAF1D9006FE048 /* SPAuthenticationView.m in Sources */,
+				B5FC08B51D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.m in Sources */,
 				B5CAA59F1CAAED3D006FE048 /* SPRWebSocket.m in Sources */,
 				B5CAA6441CAAF1D9006FE048 /* SPAuthenticationWindow.m in Sources */,
 				B5CAA5A01CAAED3D006FE048 /* SPWebSocketInterface.m in Sources */,
