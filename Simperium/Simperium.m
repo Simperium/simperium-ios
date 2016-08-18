@@ -21,6 +21,7 @@
 #import "NSString+Simperium.h"
 #import "SPLogger.h"
 #import "SPAuthenticationConfiguration.h"
+#import "TrustKit.h"
 
 #if TARGET_OS_IPHONE
 #import "UIViewController+Simperium.h"
@@ -110,6 +111,8 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         [self setupNotifications];
         
         [self setupCoreDataWithModel:model context:context coordinator:coordinator];
+
+        [self setupTrustKitIfNeeded];
     }
 
     return self;
@@ -158,6 +161,26 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     
     // Load metadata for pending references among objects
     [self.relationshipResolver loadPendingRelationships:storage];
+}
+
+- (void)setupTrustKitIfNeeded {
+    if ([TrustKit configuration] != nil) {
+        return;
+    }
+
+    SPLogVerbose(@"Initializing TrustKit...");
+
+    NSDictionary *trustKitConfig = @{
+        kTSKSwizzleNetworkDelegates: @NO,
+        kTSKPinnedDomains : @{
+            SPPinnedDomain : @{
+                kTSKPublicKeyAlgorithms : @[kTSKAlgorithmRsa2048],
+                kTSKPublicKeyHashes     : @[SPPinnedPublicKeyHash]
+            }
+        }
+    };
+
+    [TrustKit initializeWithConfiguration:trustKitConfig];
 }
 
 
