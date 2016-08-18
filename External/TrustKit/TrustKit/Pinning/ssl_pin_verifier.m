@@ -24,6 +24,7 @@ NSString *getPinningConfigurationKeyForDomain(NSString *hostname, NSDictionary *
     
     if (domainsPinningPolicy[hostname] == nil)
     {
+// Simperium Update: Ref. https://github.com/Simperium/simperium-ios/pull/553#issuecomment-240839215
 //        // No pins explicitly configured for this domain
 //        // Look for an includeSubdomain pin that applies
 //        for (NSString *pinnedServerName in domainsPinningPolicy)
