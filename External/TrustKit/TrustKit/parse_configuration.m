@@ -68,6 +68,7 @@ NSDictionary *parseTrustKitConfiguration(NSDictionary *TrustKitArguments)
     
     for (NSString *domainName in TrustKitArguments[kTSKPinnedDomains])
     {
+// Simperium Update: Ref. https://github.com/Simperium/simperium-ios/pull/553#issuecomment-240839215
 //        // Sanity checks on the domain name
 //        if (GetRegistryLength([domainName UTF8String]) == 0)
 //        {
@@ -92,6 +93,7 @@ NSDictionary *parseTrustKitConfiguration(NSDictionary *TrustKitArguments)
         {
             if ([shouldIncludeSubdomains boolValue] == YES)
             {
+// Simperium Update: Ref. https://github.com/Simperium/simperium-ios/pull/553#issuecomment-240839215
 //                // Prevent pinning on *.com
 //                // Ran into this issue with *.appspot.com which is part of the public suffix list
 //                if (GetRegistryLength([domainName UTF8String]) == [domainName length])
