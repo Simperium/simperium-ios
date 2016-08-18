@@ -111,8 +111,6 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         [self setupNotifications];
         
         [self setupCoreDataWithModel:model context:context coordinator:coordinator];
-
-        [self setupTrustKitIfNeeded];
     }
 
     return self;
@@ -161,26 +159,6 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     
     // Load metadata for pending references among objects
     [self.relationshipResolver loadPendingRelationships:storage];
-}
-
-- (void)setupTrustKitIfNeeded {
-    if ([TrustKit configuration] != nil) {
-        return;
-    }
-
-    SPLogVerbose(@"Initializing TrustKit...");
-
-    NSDictionary *trustKitConfig = @{
-        kTSKSwizzleNetworkDelegates: @NO,
-        kTSKPinnedDomains : @{
-            SPPinnedDomain : @{
-                kTSKPublicKeyAlgorithms : @[kTSKAlgorithmRsa2048],
-                kTSKPublicKeyHashes     : @[SPPinnedPublicKeyHash]
-            }
-        }
-    };
-
-    [TrustKit initializeWithConfiguration:trustKitConfig];
 }
 
 
@@ -738,6 +716,11 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     self.appURL = [_rootURL stringByAppendingFormat:@"%@/", self.appID];
 }
 
+- (void)setCertificatePinningEnabled:(BOOL)enabled {
+    _certificatePinningEnabled = enabled;
+    [self setupTrustKitIfNeeded];
+}
+
 - (void)setVerboseLoggingEnabled:(BOOL)on {
     _verboseLoggingEnabled = on;
     [[SPLogger sharedInstance] setSharedLogLevel:on ? SPLogLevelsVerbose : SPLogLevelsWarn];
@@ -766,6 +749,34 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 
 - (NSUInteger)bytesReceived {
     return self.network.bytesReceived;
+}
+
+
+#pragma mark ====================================================================================
+#pragma mark Authentication Helpers
+#pragma mark ====================================================================================
+
+- (void)setupTrustKitIfNeeded {
+    // Always nuke the internal setup
+    [TrustKit resetConfiguration];
+
+    if (_certificatePinningEnabled == false) {
+        return;
+    }
+
+    SPLogVerbose(@"Initializing TrustKit...");
+
+    NSDictionary *trustKitConfig = @{
+        kTSKSwizzleNetworkDelegates: @NO,
+        kTSKPinnedDomains : @{
+             SPPinnedDomain : @{
+                     kTSKPublicKeyAlgorithms : @[kTSKAlgorithmRsa2048],
+                     kTSKPublicKeyHashes     : @[SPPinnedPublicKeyHash]
+             }
+        }
+    };
+
+    [TrustKit initializeWithConfiguration:trustKitConfig];
 }
 
 
