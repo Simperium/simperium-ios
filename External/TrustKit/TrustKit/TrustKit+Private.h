@@ -24,8 +24,6 @@ void TSKLog(NSString *format, ...);
 
 @interface TrustKit(Private)
 
-+ (void) resetConfiguration;
-+ (BOOL) wasTrustKitInitialized;
 + (NSString *) getDefaultReportUri;
 
 @end

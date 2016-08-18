@@ -266,6 +266,18 @@ FOUNDATION_EXPORT NSString * const kTSKValidationServerHostnameNotificationKey;
 /// @name Current Configuration
 ///----------------------------
 
+
+/**
+ Resets TrustKit Internal Configuration.
+ */
++ (void) resetConfiguration;
+
+
+/**
+ Verifies if TrustKit was previously initialized, or not.
+ */
++ (BOOL) wasTrustKitInitialized;
+
 /**
  Retrieve a copy of the global SSL pinning policy.
  
