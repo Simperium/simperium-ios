@@ -1426,8 +1426,7 @@ static const size_t SRFrameHeaderOverhead = 32;
     
     if (_secure && !_pinnedCertFound && (eventCode == NSStreamEventHasBytesAvailable || eventCode == NSStreamEventHasSpaceAvailable)) {
 
-        BOOL wasTrustKitInitialized = [TrustKit configuration] != nil;
-        if (wasTrustKitInitialized) {
+        if ([TrustKit wasTrustKitInitialized]) {
 
             SecTrustRef secTrust = (__bridge SecTrustRef)[aStream propertyForKey:(__bridge id)kCFStreamPropertySSLPeerTrust];
             if (secTrust && [self isServerTrustworthy:secTrust]) {
