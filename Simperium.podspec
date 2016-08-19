@@ -47,4 +47,9 @@ Pod::Spec.new do |s|
   s.subspec "SSKeychain" do |ssk|
     ssk.source_files = "External/SSKeychain/*.{h,m}"
   end
+
+  # Subspecs: TrustKit
+  s.subspec "TrustKit" do |ssk|
+    ssk.source_files = "External/TrustKit/TrustKit/**/*.{h,m}"
+  end
 end

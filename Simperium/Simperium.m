@@ -21,6 +21,7 @@
 #import "NSString+Simperium.h"
 #import "SPLogger.h"
 #import "SPAuthenticationConfiguration.h"
+#import "TrustKit.h"
 
 #if TARGET_OS_IPHONE
 #import "UIViewController+Simperium.h"
@@ -715,6 +716,11 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     self.appURL = [_rootURL stringByAppendingFormat:@"%@/", self.appID];
 }
 
+- (void)setCertificatePinningEnabled:(BOOL)enabled {
+    _certificatePinningEnabled = enabled;
+    [self setupTrustKitIfNeeded];
+}
+
 - (void)setVerboseLoggingEnabled:(BOOL)on {
     _verboseLoggingEnabled = on;
     [[SPLogger sharedInstance] setSharedLogLevel:on ? SPLogLevelsVerbose : SPLogLevelsWarn];
@@ -747,6 +753,34 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 
 
 #pragma mark ====================================================================================
+#pragma mark SSL Pinning Helpers
+#pragma mark ====================================================================================
+
+- (void)setupTrustKitIfNeeded {
+    // Always nuke the internal setup
+    [TrustKit resetConfiguration];
+
+    if (_certificatePinningEnabled == false) {
+        return;
+    }
+
+    SPLogVerbose(@"Initializing TrustKit...");
+
+    NSDictionary *trustKitConfig = @{
+        kTSKSwizzleNetworkDelegates: @NO,
+        kTSKPinnedDomains : @{
+             SPPinnedDomain : @{
+                     kTSKPublicKeyAlgorithms : @[kTSKAlgorithmRsa2048],
+                     kTSKPublicKeyHashes     : @[SPPinnedPublicKeyHash]
+             }
+        }
+    };
+
+    [TrustKit initializeWithConfiguration:trustKitConfig];
+}
+
+
+#pragma mark ====================================================================================
 #pragma mark Authentication Helpers
 #pragma mark ====================================================================================
 
@@ -762,6 +796,13 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     
     if ([self.delegate respondsToSelector:@selector(simperiumDidLogin:)]) {
         [self.delegate simperiumDidLogin:self];
+    }
+}
+
+- (void)authenticationDidCreateAccount
+{
+    if ([self.delegate respondsToSelector:@selector(simperiumDidCreateAccount:)]) {
+        [self.delegate simperiumDidCreateAccount:self];
     }
 }
 

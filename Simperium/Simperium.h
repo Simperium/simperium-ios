@@ -58,6 +58,7 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
 - (void)simperiumDidLogin:(Simperium *)simperium;
 - (void)simperiumDidLogout:(Simperium *)simperium;
 - (void)simperiumDidCancelLogin:(Simperium *)simperium;
+- (void)simperiumDidCreateAccount:(Simperium *)simperium;
 @end
 
 
@@ -155,6 +156,9 @@ typedef void (^SimperiumSignoutCompletion)(void);
 
 // Set this to true if you need to be able to cancel the authentication dialog.
 @property (nonatomic, readwrite, assign) BOOL authenticationOptional;
+
+// Toggle Simperium's Backend Pinning.
+@property (nonatomic, readwrite, assign) BOOL certificatePinningEnabled;
 
 // Toggle verbose logging.
 @property (nonatomic, readwrite, assign) BOOL verboseLoggingEnabled;

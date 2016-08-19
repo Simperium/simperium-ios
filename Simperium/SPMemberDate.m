@@ -29,6 +29,10 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 }
 
 - (id)dateValueFromNumber:(id)value {
+    if (!value || [value isEqual:[NSNull null]]){
+        return nil;
+    }
+    
     if ([value isKindOfClass:[NSNumber class]])
         return value;
     
@@ -39,7 +43,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
 - (id)getValueFromDictionary:(NSDictionary *)dict key:(NSString *)key object:(id<SPDiffable>)object {
     id value = [dict objectForKey:key];
-    if (!value) {
+    if (!value || [value isEqual:[NSNull null]]) {
         return nil;
     }
     
