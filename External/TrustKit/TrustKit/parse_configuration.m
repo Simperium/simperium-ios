@@ -201,7 +201,7 @@ NSDictionary *parseTrustKitConfiguration(NSDictionary *TrustKitArguments)
             [serverSslPinsSet addObject:pinnedKeyHash];
         }
         
-        if ([serverSslPinsSet count] < 2)
+        if ([serverSslPinsSet count] < 1)
         {
             [NSException raise:@"TrustKit configuration invalid"
                         format:@"TrustKit was initialized with less than two pins (ie. no backup pins) for domain %@. This might brick your App; please review the Getting Started guide in ./docs/getting-started.md", domainName];
