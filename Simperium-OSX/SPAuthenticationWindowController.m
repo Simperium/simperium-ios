@@ -41,7 +41,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 #pragma mark Private
 #pragma mark ====================================================================================
 
-@interface SPAuthenticationWindowController () <NSTextFieldDelegate>
+@interface SPAuthenticationWindowController () <NSTextFieldDelegate, CAAnimationDelegate>
 @property (nonatomic, strong) NSImageView               *logoImageView;
 @property (nonatomic, strong) NSButton                  *cancelButton;
 @property (nonatomic, strong) SPAuthenticationTextField *usernameField;
