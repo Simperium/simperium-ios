@@ -185,7 +185,7 @@
         NSSet *set = (NSSet *)notification.userInfo[@"keys"];
         NSString *key = [[set allObjects] objectAtIndex:0];
         NSArray *changedMembers = (NSArray *)[notification.userInfo objectForKey:@"changedMembers"];
-        [self.delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeUpdate memberNames:changedMembers];
+        [self.delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeTypeUpdate memberNames:changedMembers];
     }
 }
 
@@ -199,7 +199,7 @@
     // Also notify the delegate since the referenced objects are now accessible
     if ([self.delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:memberNames:)]) {
         for (NSString *key in set) {
-            [self.delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeInsert memberNames:nil];
+            [self.delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeTypeInsert memberNames:nil];
         }
     }
 }
@@ -211,7 +211,7 @@
     for (NSString *key in set) {
         [self.storage stopManagingObjectWithKey:key];
         if (delegateRespondsToSelector) {
-            [self.delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeDelete memberNames:nil];
+            [self.delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeTypeDelete memberNames:nil];
         }
     }
 }
@@ -220,7 +220,7 @@
     if ([self.delegate respondsToSelector:@selector(bucket:didChangeObjectForKey:forChangeType:memberNames:)]) {
         NSSet *set = (NSSet *)notification.userInfo[@"keys"];
         for (NSString *key in set) {
-            [self.delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeAcknowledge memberNames:nil];
+            [self.delegate bucket:self didChangeObjectForKey:key forChangeType:SPBucketChangeTypeAcknowledge memberNames:nil];
         }
     }
 }

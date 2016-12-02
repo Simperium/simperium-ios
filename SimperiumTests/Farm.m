@@ -115,23 +115,23 @@
 
 - (void)bucket:(SPBucket *)bucket didChangeObjectForKey:(NSString *)key forChangeType:(SPBucketChangeType)change memberNames:(NSArray *)memberNames {
     switch(change) {
-        case SPBucketChangeAcknowledge:
+        case SPBucketChangeTypeAcknowledge:
             self.expectedAcknowledgments -= 1;
             NSLog(@"[%@] %@ acknowledged (%d)", NSStringFromClass([self class]), self.simperium.label, self.expectedAcknowledgments);
             break;
-        case SPBucketChangeDelete:
+        case SPBucketChangeTypeDelete:
             self.expectedDeletions -= 1;
             NSLog(@"[%@] %@ received deletion (%d)", NSStringFromClass([self class]), self.simperium.label, self.expectedDeletions);
             break;
-        case SPBucketChangeInsert:
+        case SPBucketChangeTypeInsert:
             self.expectedAdditions -= 1;
             NSLog(@"[%@] %@ received insert (%d)", NSStringFromClass([self class]), self.simperium.label, self.expectedAdditions);
             break;
-        case SPBucketChangeUpdate:
+        case SPBucketChangeTypeUpdate:
             self.expectedChanges -= 1;
             NSLog(@"[%@] %@ received change (%d)", NSStringFromClass([self class]), self.simperium.label, self.expectedChanges);
 			break;
-		case SPBucketChangeMove:
+		case SPBucketChangeTypeMove:
 // TODO: Implement!
 			break;
     }
