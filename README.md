@@ -14,7 +14,7 @@ Adding Simperium to your project
 --------------------------------
 The easiest way to add Simperium is to [download the latest release](https://github.com/Simperium/simperium-ios/releases/latest). Unzip the source code somewhere convenient.
 
-Then, drag and drop Simperium.xcodeproj into your application's project, and add libSimperium.a in your target's Build Phase tab (under Link Binary with Libraries). You'll still need to [add some dependencies](http://simperium.com/docs/ios/#add).
+Then, drag and drop Simperium.xcodeproj into your application's project, and add Simperium.framework in your target's Build Phase tab (under Link Binary with Libraries). You'll still need to [add some dependencies](http://simperium.com/docs/ios/#add).
 
 OSX
 ---

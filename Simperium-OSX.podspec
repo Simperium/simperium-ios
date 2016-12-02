@@ -28,9 +28,9 @@ Pod::Spec.new do |s|
     jrs.source_files = "External/jrswizzle/*.{h,m}"
   end
 
-  # Subspecs: SocketRocket
+  # Subspecs: SocketRocket + TrustKit
   s.subspec "SocketRocket" do |sr|
-    sr.source_files = "External/SocketRocket/*.{h,m}"
+    sr.source_files = "External/SocketRocket/*.{h,m}", "External/TrustKit/TrustKit/**/*.{h,m}"
     sr.libraries = "icucore"
   end
 
@@ -42,10 +42,5 @@ Pod::Spec.new do |s|
   # Subspecs: SSKeychain
   s.subspec "SSKeychain" do |ssk|
     ssk.source_files = "External/SSKeychain/*.{h,m}"
-  end
-
-  # Subspecs: TrustKit
-  s.subspec "TrustKit" do |ssk|
-    ssk.source_files = "External/TrustKit/TrustKit/**/*.{h,m}"
   end
 end
