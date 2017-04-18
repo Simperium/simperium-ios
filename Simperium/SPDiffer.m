@@ -248,7 +248,6 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
         
         if (!ghostValue) {
             SPLogError(@"Simperium error: transform diff for a ghost member (ghost %@, memberData %@) that doesn't exist (%@): %@", oldGhost, oldGhost.memberData, key, [change description]);
-            continue;
         }
         
         // Could handle some weird cases here related to dynamically adding/removing members; ignore for now
