@@ -388,7 +388,7 @@ void diff_mungeHelper(CFStringRef token, CFMutableArrayRef tokenArray, CFMutable
   } else {
     CFArrayAppendValue(tokenArray, token);
     hash = CFArrayGetCount(tokenArray) - 1;
-    check_string(hash <= diff_UniCharMax, "Hash value has exceeded UniCharMax!");
+//    check_string(hash <= diff_UniCharMax, "Hash value has exceeded UniCharMax!");
     CFDictionaryAddValue(tokenHash, token, (void *)hash);
     const UniChar hashChar = (UniChar)hash;
     CFStringAppendCharacters(chars, &hashChar, 1);
@@ -631,9 +631,9 @@ CFIndex diff_cleanupSemanticScore(CFStringRef one, CFStringRef two) {
     // Define some regex patterns for matching boundaries.
     int status;
     status = regcomp(&blankLineEndRegEx, "\n\r?\n$", REG_EXTENDED | REG_NOSUB);
-    check(status == 0);
+//    check(status == 0);
     status = regcomp(&blankLineStartRegEx, "^\r?\n\r?\n", REG_EXTENDED | REG_NOSUB);
-    check(status == 0);
+//    check(status == 0);
 
     firstRun = false;
   }
