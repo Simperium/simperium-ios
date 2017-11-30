@@ -429,7 +429,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
     if ([current isKindOfClass:[NSNumber class]]) {
         current = [NSString stringWithFormat:@"%ld", (long)[current integerValue]];
     }
-    self.pendingLastChangeSignature = [current length] > 0 ? [NSString stringWithFormat:@"%@", current] : nil;
+    self.pendingLastChangeSignature = [current length] > 0 ? [NSString stringWithFormat:@"%@", current] : @"";
     self.nextMark                   = responseDict[@"mark"];
     
     // Remember all the retrieved data in case there's more to get
