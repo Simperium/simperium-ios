@@ -23,4 +23,6 @@
 - (IBAction)signUpAction:(id)sender;
 - (IBAction)signInAction:(id)sender;
 
+- (void)setSigningIn:(BOOL)signingIn;
+
 @end
