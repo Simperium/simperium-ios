@@ -18,6 +18,10 @@
 
 #import "XCTestCase+Simperium.h"
 
+@interface Simperium (Private)
+- (void)startNetworkManagers;
+- (void)stopNetworkManagers;
+@end
 
 @implementation Farm
 @synthesize managedObjectContext		= __managedObjectContext;

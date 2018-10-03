@@ -19,7 +19,6 @@
 		2673D725147A018000B7B6B3 /* PostComment.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D724147A018000B7B6B3 /* PostComment.m */; };
 		2673D728147A3BEB00B7B6B3 /* TestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2673D727147A3BEB00B7B6B3 /* TestObject.m */; };
 		2678E4C31656D5A10018EE35 /* SimperiumTypeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2678E4C21656D5A10018EE35 /* SimperiumTypeTests.m */; };
-		269CAC2E146DF84C00584C56 /* Test1.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */; };
 		269CAC2F146DF86000584C56 /* Test1.xcdatamodeld in Resources */ = {isa = PBXBuildFile; fileRef = 26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */; };
 		26ED43D8146CD84E00C3D7D6 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */; };
 		26ED43DA146CD85800C3D7D6 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBCD13DCFDA700B8AC56 /* CFNetwork.framework */; };
@@ -1660,7 +1659,6 @@
 				264CD91B135DFD7A00C51BAD /* SimperiumTests.m in Sources */,
 				26ED4418146CF6D000C3D7D6 /* Config.m in Sources */,
 				26ED441B146CF8E600C3D7D6 /* Farm.m in Sources */,
-				269CAC2E146DF84C00584C56 /* Test1.xcdatamodeld in Sources */,
 				2673D71B1479F4C000B7B6B3 /* SimperiumRelationshipTests.m in Sources */,
 				2673D722147A018000B7B6B3 /* Post.m in Sources */,
 				2673D725147A018000B7B6B3 /* PostComment.m in Sources */,
