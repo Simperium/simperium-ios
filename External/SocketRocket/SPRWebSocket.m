@@ -465,10 +465,10 @@ static __strong NSData *CRLFCRLF;
     }
                         
     [self _readUntilHeaderCompleteWithCallback:^(SPRWebSocket *self,  NSData *data) {
-        CFHTTPMessageAppendBytes(_receivedHTTPHeaders, (const UInt8 *)data.bytes, data.length);
+        CFHTTPMessageAppendBytes(self->_receivedHTTPHeaders, (const UInt8 *)data.bytes, data.length);
         
-        if (CFHTTPMessageIsHeaderComplete(_receivedHTTPHeaders)) {
-            SRFastLog(@"Finished reading headers %@", CFBridgingRelease(CFHTTPMessageCopyAllHeaderFields(_receivedHTTPHeaders)));
+        if (CFHTTPMessageIsHeaderComplete(self->_receivedHTTPHeaders)) {
+            SRFastLog(@"Finished reading headers %@", CFBridgingRelease(CFHTTPMessageCopyAllHeaderFields(self->_receivedHTTPHeaders)));
             [self _HTTPHeadersDidFinish];
         } else {
             [self _readHTTPHeader];
