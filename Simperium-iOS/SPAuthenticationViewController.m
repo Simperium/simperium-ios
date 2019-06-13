@@ -166,6 +166,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     _tableView.separatorColor = lightGreyColor;
     _tableView.clipsToBounds = NO;
     _tableView.scrollEnabled = NO;
+    _tableView.translatesAutoresizingMaskIntoConstraints = false;
     [self.view addSubview:_tableView];
     
     if (self.view.bounds.size.height <= 480.0) {
@@ -271,6 +272,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     self.logoView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, logo.size.width, logo.size.height)];
     _logoView.image = logo;
     _logoView.contentMode = UIViewContentModeCenter;
+    _logoView.translatesAutoresizingMaskIntoConstraints = false;
     [self.view addSubview:_logoView];
     
     // Setup TableView's Footer
@@ -294,6 +296,47 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     
     // Refresh Buttons
     [self refreshButtons];
+
+    [self configureViewConstraints];
+}
+
+- (void)configureViewConstraints {
+    NSLayoutConstraint *logoTopConstraint = [_logoView.topAnchor constraintEqualToAnchor:topAnchor];
+    NSLayoutConstraint *tableWidthConstraint = [_tableView.widthAnchor constraintEqualToConstant:SPAuthenticationTableWidthMax];
+    NSLayoutConstraint *tableLeadingConstraint = [_tableView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor];
+    NSLayoutConstraint *tableCenterConstraint = [_tableView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor];
+    NSLayoutConstraint *tableTrailingConstraint = [_tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor];
+    NSLayoutAnchor *topAnchor = self.view.topAnchor;
+
+    if (@available(iOS 11, *)) {
+        topAnchor = self.view.safeAreaLayoutGuide.topAnchor;
+    }
+
+    [NSLayoutConstraint activateConstraints:@[
+        logoTopConstraint,
+        [_logoView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+        [_tableView.topAnchor constraintEqualToAnchor:_logoView.bottomAnchor],
+        [_tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        tableLeadingConstraint,
+        tableCenterConstraint,
+        tableTrailingConstraint,
+    ]];
+
+    self.logoTopConstraint = logoTopConstraint;
+    self.tableLeadingConstraint = tableLeadingConstraint;
+    self.tableWidthConstraint = tableWidthConstraint;
+    self.tableTrailingConstraint = tableTrailingConstraint;
+}
+
+- (void)updateViewConstraints {
+    [super updateViewConstraints];
+
+    BOOL isRegulardByRegular = [self isRegulardByRegularSizeClass];
+
+    self.logoTopConstraint.constant = [self logoPaddingTop];
+    self.tableLeadingConstraint.active = !isRegulardByRegular;
+    self.tableTrailingConstraint.active = !isRegulardByRegular;
+    self.tableWidthConstraint.active = isRegulardByRegular;
 }
 
 - (CGFloat)topInset {
