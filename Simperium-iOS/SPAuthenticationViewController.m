@@ -301,17 +301,6 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     return navigationBarHeight > 0 ? navigationBarHeight : 20.0; // 20.0 refers to the status bar height
 }
 
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    [super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
-    
-    CGSize toSize = self.view.bounds.size;
-    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
-        toSize = CGSizeMake(MAX(toSize.width, toSize.height), MIN(toSize.width, toSize.height));
-    }
-    
-    [self layoutViewsForTargetSize:toSize];
-}
-    
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     [self layoutViewsForTargetSize:size];
