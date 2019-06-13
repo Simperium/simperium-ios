@@ -78,6 +78,12 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 @property (nonatomic, assign) BOOL                      editing;
 
+#pragma mark - Layout Constraints
+@property (nonatomic, strong) NSLayoutConstraint        *logoTopConstraint;
+@property (nonatomic, strong) NSLayoutConstraint        *tableLeadingConstraint;
+@property (nonatomic, strong) NSLayoutConstraint        *tableTrailingConstraint;
+@property (nonatomic, strong) NSLayoutConstraint        *tableWidthConstraint;
+
 - (void)earthquake:(UIView*)itemView;
 - (void)changeAction:(id)sender;
 
