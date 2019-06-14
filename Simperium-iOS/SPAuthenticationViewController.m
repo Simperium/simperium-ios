@@ -313,6 +313,8 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     NSLayoutConstraint *tableCenterConstraint = [_tableView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor];
     NSLayoutConstraint *tableTrailingConstraint = [_tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor];
 
+    tableWidthConstraint.priority = UILayoutPriorityDefaultHigh;
+
     [NSLayoutConstraint activateConstraints:@[
         logoTopConstraint,
         [_logoView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
@@ -325,21 +327,21 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
     self.logoTopConstraint = logoTopConstraint;
     self.tableLeadingConstraint = tableLeadingConstraint;
-    self.tableTrailingConstraint = tableTrailingConstraint;
     self.tableCenterConstraint = tableCenterConstraint;
+    self.tableTrailingConstraint = tableTrailingConstraint;
     self.tableWidthConstraint = tableWidthConstraint;
 }
 
 - (void)updateViewConstraints {
-    [super updateViewConstraints];
-
     BOOL isRegulardByRegular = [self isRegulardByRegularSizeClass];
 
     self.logoTopConstraint.constant = [self logoPaddingTop];
-    self.tableCenterConstraint.active = isRegulardByRegular;
     self.tableLeadingConstraint.active = !isRegulardByRegular;
     self.tableTrailingConstraint.active = !isRegulardByRegular;
+    self.tableCenterConstraint.active = isRegulardByRegular;
     self.tableWidthConstraint.active = isRegulardByRegular;
+
+    [super updateViewConstraints];
 }
 
 - (CGFloat)topInset {
