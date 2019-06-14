@@ -82,6 +82,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 @property (nonatomic, strong) NSLayoutConstraint        *logoTopConstraint;
 @property (nonatomic, strong) NSLayoutConstraint        *tableLeadingConstraint;
 @property (nonatomic, strong) NSLayoutConstraint        *tableTrailingConstraint;
+@property (nonatomic, strong) NSLayoutConstraint        *tableCenterConstraint;
 @property (nonatomic, strong) NSLayoutConstraint        *tableWidthConstraint;
 
 - (void)earthquake:(UIView*)itemView;
@@ -301,16 +302,16 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 - (void)configureViewConstraints {
+    NSLayoutAnchor *topAnchor = self.view.topAnchor;
+    if (@available(iOS 11, *)) {
+        topAnchor = self.view.safeAreaLayoutGuide.topAnchor;
+    }
+
     NSLayoutConstraint *logoTopConstraint = [_logoView.topAnchor constraintEqualToAnchor:topAnchor];
     NSLayoutConstraint *tableWidthConstraint = [_tableView.widthAnchor constraintEqualToConstant:SPAuthenticationTableWidthMax];
     NSLayoutConstraint *tableLeadingConstraint = [_tableView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor];
     NSLayoutConstraint *tableCenterConstraint = [_tableView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor];
     NSLayoutConstraint *tableTrailingConstraint = [_tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor];
-    NSLayoutAnchor *topAnchor = self.view.topAnchor;
-
-    if (@available(iOS 11, *)) {
-        topAnchor = self.view.safeAreaLayoutGuide.topAnchor;
-    }
 
     [NSLayoutConstraint activateConstraints:@[
         logoTopConstraint,
@@ -324,8 +325,9 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
     self.logoTopConstraint = logoTopConstraint;
     self.tableLeadingConstraint = tableLeadingConstraint;
-    self.tableWidthConstraint = tableWidthConstraint;
     self.tableTrailingConstraint = tableTrailingConstraint;
+    self.tableCenterConstraint = tableCenterConstraint;
+    self.tableWidthConstraint = tableWidthConstraint;
 }
 
 - (void)updateViewConstraints {
@@ -334,6 +336,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     BOOL isRegulardByRegular = [self isRegulardByRegularSizeClass];
 
     self.logoTopConstraint.constant = [self logoPaddingTop];
+    self.tableCenterConstraint.active = isRegulardByRegular;
     self.tableLeadingConstraint.active = !isRegulardByRegular;
     self.tableTrailingConstraint.active = !isRegulardByRegular;
     self.tableWidthConstraint.active = isRegulardByRegular;
@@ -346,7 +349,12 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    [self layoutViews];
+    [self.view setNeedsUpdateConstraints];
+}
+
+- (void)willTransitionToTraitCollection:(UITraitCollection *)newCollection withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator {
+    [super willTransitionToTraitCollection:newCollection withTransitionCoordinator:coordinator];
+    [self.view setNeedsUpdateConstraints];
 }
 
 - (BOOL)shouldAutorotate {
@@ -364,9 +372,6 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     [nc addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-    
-    // Layout please!
-    [self layoutViews];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -380,12 +385,6 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 
 #pragma mark - Layout Helpers
-
-- (void)layoutViews {
-
-//    CGFloat topPadding          = isPad ? SPAuthenticationRegularPaddingY : SPAuthenticationCompactPaddingY + self.topInset;
-//    CGFloat tableViewWidth      = isPad ? SPAuthenticationTableWidthMax;
-}
 
 - (CGFloat)logoPaddingTop {
     return [self isRegulardByRegularSizeClass] ? SPAuthenticationRegularPaddingY : SPAuthenticationCompactPaddingY;
