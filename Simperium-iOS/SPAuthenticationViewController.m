@@ -78,6 +78,13 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 @property (nonatomic, assign) BOOL                      editing;
 
+#pragma mark - Layout Constraints
+@property (nonatomic, strong) NSLayoutConstraint        *logoTopConstraint;
+@property (nonatomic, strong) NSLayoutConstraint        *tableLeadingConstraint;
+@property (nonatomic, strong) NSLayoutConstraint        *tableTrailingConstraint;
+@property (nonatomic, strong) NSLayoutConstraint        *tableCenterConstraint;
+@property (nonatomic, strong) NSLayoutConstraint        *tableWidthConstraint;
+
 - (void)earthquake:(UIView*)itemView;
 - (void)changeAction:(id)sender;
 
@@ -160,6 +167,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     _tableView.separatorColor = lightGreyColor;
     _tableView.clipsToBounds = NO;
     _tableView.scrollEnabled = NO;
+    _tableView.translatesAutoresizingMaskIntoConstraints = false;
     [self.view addSubview:_tableView];
     
     if (self.view.bounds.size.height <= 480.0) {
@@ -265,6 +273,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     self.logoView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, logo.size.width, logo.size.height)];
     _logoView.image = logo;
     _logoView.contentMode = UIViewContentModeCenter;
+    _logoView.translatesAutoresizingMaskIntoConstraints = false;
     [self.view addSubview:_logoView];
     
     // Setup TableView's Footer
@@ -288,6 +297,51 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     
     // Refresh Buttons
     [self refreshButtons];
+
+    [self configureViewConstraints];
+}
+
+- (void)configureViewConstraints {
+    NSLayoutAnchor *topAnchor = self.view.topAnchor;
+    if (@available(iOS 11, *)) {
+        topAnchor = self.view.safeAreaLayoutGuide.topAnchor;
+    }
+
+    NSLayoutConstraint *logoTopConstraint = [_logoView.topAnchor constraintEqualToAnchor:topAnchor];
+    NSLayoutConstraint *tableWidthConstraint = [_tableView.widthAnchor constraintEqualToConstant:SPAuthenticationTableWidthMax];
+    NSLayoutConstraint *tableLeadingConstraint = [_tableView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor];
+    NSLayoutConstraint *tableCenterConstraint = [_tableView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor];
+    NSLayoutConstraint *tableTrailingConstraint = [_tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor];
+
+    tableWidthConstraint.priority = UILayoutPriorityDefaultHigh;
+
+    [NSLayoutConstraint activateConstraints:@[
+        logoTopConstraint,
+        [_logoView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+        [_tableView.topAnchor constraintEqualToAnchor:_logoView.bottomAnchor],
+        [_tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        tableLeadingConstraint,
+        tableCenterConstraint,
+        tableTrailingConstraint,
+    ]];
+
+    self.logoTopConstraint = logoTopConstraint;
+    self.tableLeadingConstraint = tableLeadingConstraint;
+    self.tableCenterConstraint = tableCenterConstraint;
+    self.tableTrailingConstraint = tableTrailingConstraint;
+    self.tableWidthConstraint = tableWidthConstraint;
+}
+
+- (void)updateViewConstraints {
+    BOOL isRegulardByRegular = [self isRegulardByRegularSizeClass];
+
+    self.logoTopConstraint.constant = [self logoPaddingTop];
+    self.tableLeadingConstraint.active = !isRegulardByRegular;
+    self.tableTrailingConstraint.active = !isRegulardByRegular;
+    self.tableCenterConstraint.active = isRegulardByRegular;
+    self.tableWidthConstraint.active = isRegulardByRegular;
+
+    [super updateViewConstraints];
 }
 
 - (CGFloat)topInset {
@@ -295,20 +349,14 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     return navigationBarHeight > 0 ? navigationBarHeight : 20.0; // 20.0 refers to the status bar height
 }
 
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    [super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
-    
-    CGSize toSize = self.view.bounds.size;
-    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
-        toSize = CGSizeMake(MAX(toSize.width, toSize.height), MIN(toSize.width, toSize.height));
-    }
-    
-    [self layoutViewsForTargetSize:toSize];
-}
-    
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    [self layoutViewsForTargetSize:size];
+    [self.view setNeedsUpdateConstraints];
+}
+
+- (void)willTransitionToTraitCollection:(UITraitCollection *)newCollection withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator {
+    [super willTransitionToTraitCollection:newCollection withTransitionCoordinator:coordinator];
+    [self.view setNeedsUpdateConstraints];
 }
 
 - (BOOL)shouldAutorotate {
@@ -326,9 +374,6 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     [nc addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-    
-    // Layout please!
-    [self layoutViewsForTargetSize:self.viewSizeForCurrentOrientation];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -343,37 +388,13 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 #pragma mark - Layout Helpers
 
-- (void)layoutViewsForTargetSize:(CGSize)targetSize {
-    BOOL isPad                  = [UIDevice sp_isPad];
-    
-    // Logo
-    CGSize logoSize             = _logoView.frame.size;
-    CGFloat topPadding          = isPad ? SPAuthenticationRegularPaddingY : SPAuthenticationCompactPaddingY;
-    
-    _logoView.frame             = CGRectIntegral(CGRectMake((targetSize.width - logoSize.width) * 0.5,
-                                                            topPadding + self.topInset,
-                                                            logoSize.width,
-                                                            logoSize.height));
-    
-    // Table
-    CGFloat tableViewOriginY    = CGRectGetMaxY(_logoView.frame);
-    CGFloat tableViewWidth      = isPad ? MIN(SPAuthenticationTableWidthMax, targetSize.width) : targetSize.width;
-    
-    _tableView.frame            = CGRectIntegral(CGRectMake((targetSize.width - tableViewWidth) * 0.5,
-                                                            tableViewOriginY,
-                                                            tableViewWidth,
-                                                            self.view.frame.size.height - tableViewOriginY));
-    
-    [self.view sendSubviewToBack:_logoView];
+- (CGFloat)logoPaddingTop {
+    return [self isRegulardByRegularSizeClass] ? SPAuthenticationRegularPaddingY : SPAuthenticationCompactPaddingY;
 }
 
-- (CGSize)viewSizeForCurrentOrientation {
-    CGSize size = self.view.bounds.size;
-    if (UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation])) {
-        return CGSizeMake(MAX(size.width, size.height), MIN(size.width, size.height));
-    }
-    
-    return CGSizeMake(MIN(size.width, size.height), MAX(size.width, size.height));
+- (BOOL)isRegulardByRegularSizeClass {
+    return self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular &&
+            self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
 }
 
 
@@ -679,7 +700,6 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     
     return YES;
 }
-
 
 - (UITextField *)textFieldWithPlaceholder:(NSString *)placeholder secure:(BOOL)secure {
     CGRect textFieldFrame = CGRectMake(0.0f, 0.0f, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight);
