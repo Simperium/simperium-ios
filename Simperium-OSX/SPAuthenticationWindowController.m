@@ -100,7 +100,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         [self.usernameField setPlaceholderString:NSLocalizedString(@"Email Address", @"Placeholder text for login field")];
         
         SPAuthenticationConfiguration *authConfig = [SPAuthenticationConfiguration sharedInstance];
-        if (_shouldSignIn && authConfig.previousUsernameEnabled && authConfig.previousUsernameLogged) {
+        if (_signingIn && authConfig.previousUsernameEnabled && authConfig.previousUsernameLogged) {
             // Get previous username, to display as last used username in authentication view
             [self.usernameField setStringValue:authConfig.previousUsernameLogged];
         }
@@ -230,33 +230,33 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 }
 
 - (IBAction)toggleAuthenticationMode:(id)sender {
-	self.shouldSignIn = (sender == self.changeToSignInButton);
+	self.signingIn = (sender == self.changeToSignInButton);
 }
 
-- (void)setShouldSignIn:(BOOL)shouldSignIn {
-    _shouldSignIn = shouldSignIn;
+- (void)setSigningIn:(BOOL)signingIn {
+    _signingIn = signingIn;
 	[self refreshFields];
 }
 
 - (void)refreshFields {
     // Refresh Buttons
-    [self.signInButton setHidden:!_shouldSignIn];
-    [self.signInButton setEnabled:_shouldSignIn];
-    [self.signUpButton setHidden:_shouldSignIn];
-    [self.signUpButton setEnabled:!_shouldSignIn];
-    [self.changeToSignInButton setHidden:_shouldSignIn];
-    [self.changeToSignInButton setEnabled:!_shouldSignIn];
-    [self.changeToSignUpButton setHidden:!_shouldSignIn];
-    [self.changeToSignUpButton setEnabled:_shouldSignIn];
-    [self.changeToSignInField setHidden:_shouldSignIn];
-    [self.changeToSignUpField setHidden:!_shouldSignIn];
-    [self.confirmField setHidden:_shouldSignIn];
+    [self.signInButton setHidden:!_signingIn];
+    [self.signInButton setEnabled:_signingIn];
+    [self.signUpButton setHidden:_signingIn];
+    [self.signUpButton setEnabled:!_signingIn];
+    [self.changeToSignInButton setHidden:_signingIn];
+    [self.changeToSignInButton setEnabled:!_signingIn];
+    [self.changeToSignUpButton setHidden:!_signingIn];
+    [self.changeToSignUpButton setEnabled:_signingIn];
+    [self.changeToSignInField setHidden:_signingIn];
+    [self.changeToSignUpField setHidden:!_signingIn];
+    [self.confirmField setHidden:_signingIn];
     
     // Remove any pending errors
     [self clearAuthenticationError];
     
     // Forgot Password
-    BOOL shouldDisplayForgotPassword = _shouldSignIn && [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
+    BOOL shouldDisplayForgotPassword = _signingIn && [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
     [self.forgotPasswordButton setHidden:!shouldDisplayForgotPassword];
     
     // Refresh the entire View
@@ -468,9 +468,9 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     BOOL retval = NO;
     
     if (commandSelector == @selector(insertNewline:)) {
-        if (_shouldSignIn && [control isEqual:self.passwordField.textField]) {
+        if (_signingIn && [control isEqual:self.passwordField.textField]) {
             [self signInAction:nil];
-        } else if (!_shouldSignIn && [control isEqual:self.confirmField.textField]) {
+        } else if (!_signingIn && [control isEqual:self.confirmField.textField]) {
             [self signUpAction:nil];
         }
     }
@@ -487,9 +487,9 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     // Intercept return and invoke actions
     NSEvent *currentEvent = [NSApp currentEvent];
     if (currentEvent.type == NSKeyDown && [currentEvent.charactersIgnoringModifiers isEqualToString:@"\r"]) {
-        if (_shouldSignIn && [[obj object] isEqual:self.passwordField.textField]) {
+        if (_signingIn && [[obj object] isEqual:self.passwordField.textField]) {
             [self signInAction:nil];
-        } else if (!_shouldSignIn && [[obj object] isEqual:self.confirmField.textField]) {
+        } else if (!_signingIn && [[obj object] isEqual:self.confirmField.textField]) {
             [self signUpAction:nil];
         }
     }

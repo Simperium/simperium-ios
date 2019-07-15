@@ -13,12 +13,12 @@
 @class SPAuthenticationTextField;
 @class SPAuthenticationValidator;
 
-@interface SPAuthenticationWindowController <SPAuthenticationInterface> : NSWindowController
+@interface SPAuthenticationWindowController : NSWindowController
 
 @property (nonatomic, strong) SPAuthenticator           *authenticator;
 @property (nonatomic, strong) SPAuthenticationValidator *validator;
 @property (nonatomic, assign) BOOL                      optional;
-@property (nonatomic, assign) BOOL                      shouldSignIn;
+@property (nonatomic, assign) BOOL                      signingIn;
 
 - (IBAction)signUpAction:(id)sender;
 - (IBAction)signInAction:(id)sender;
