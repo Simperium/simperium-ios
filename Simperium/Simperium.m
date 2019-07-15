@@ -877,7 +877,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
     
     UIViewController *controller = self.authenticationViewController;
-    if (self.authenticationOptional) {
+    if (self.authenticationOptional || self.authenticationShouldBeEmbeddedInNavigationController) {
         controller = [[UINavigationController alloc] initWithRootViewController:self.authenticationViewController];
     }
     
