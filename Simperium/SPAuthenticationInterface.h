@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Simperium Authentication API's
 ///
-@property (nonatomic, strong) SPAuthenticator *authenticator;
+@property (nullable, nonatomic, strong) SPAuthenticator *authenticator;
 
 /// Indicates if the Authentication Dialog should be dismissable
 ///
