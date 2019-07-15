@@ -12,7 +12,7 @@
 #import "SPLogger.h"
 #import "SPJSONStorage.h"
 #import "SPReachability.h"
-
+#import "SPAuthenticationInterface.h"
 
 #if TARGET_OS_IPHONE
 #import "SPAuthenticationViewController.h"
@@ -48,9 +48,9 @@
 @property (nonatomic, assign) BOOL                      logoutInProgress;
 
 #if TARGET_OS_IPHONE
-@property (nonatomic, strong) SPAuthenticationViewController *authenticationViewController;
+@property (nonatomic, strong) UIViewController<SPAuthenticationInterface> *authenticationViewController;
 #else
-@property (nonatomic, strong) SPAuthenticationWindowController *authenticationWindowController;
+@property (nonatomic, strong) NSWindowController<SPAuthenticationInterface> *authenticationWindowController;
 #endif
 
 - (instancetype)initWithModel:(NSManagedObjectModel *)model

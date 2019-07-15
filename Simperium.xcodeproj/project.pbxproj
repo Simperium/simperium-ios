@@ -47,6 +47,8 @@
 		B57FA3B21900568A00957205 /* SPRelationshipResolverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B57FA3B11900568A00957205 /* SPRelationshipResolverTests.m */; };
 		B597DD59183128FE005E95D7 /* SPWebSocketInterfaceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B597DD58183128FE005E95D7 /* SPWebSocketInterfaceTests.m */; };
 		B5A57EAC1951C128006E2455 /* SPIndexProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A57EAB1951C128006E2455 /* SPIndexProcessorTests.m */; };
+		B5A8773422DCD37F00FC22C7 /* SPAuthenticationInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A8773322DCD37F00FC22C7 /* SPAuthenticationInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		B5A8773522DCD37F00FC22C7 /* SPAuthenticationInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A8773322DCD37F00FC22C7 /* SPAuthenticationInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5B69C0318325B2C001F0DE1 /* MockSimperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5B69C0218325B2C001F0DE1 /* MockSimperium.m */; };
 		B5C6300D186321E0008C42B7 /* DiffMatchPatchArrayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C6300C186321E0008C42B7 /* DiffMatchPatchArrayTests.m */; };
 		B5C7D7F9183411B900E9109C /* SPPersistentMutableDictionaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C7D7F8183411B900E9109C /* SPPersistentMutableDictionaryTests.m */; };
@@ -602,6 +604,7 @@
 		B5A19D5718806BBC0059AA36 /* SPWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = SPWebSocket.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		B5A19D5818806BBC0059AA36 /* SPWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPWebSocket.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		B5A57EAB1951C128006E2455 /* SPIndexProcessorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPIndexProcessorTests.m; sourceTree = "<group>"; };
+		B5A8773322DCD37F00FC22C7 /* SPAuthenticationInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationInterface.h; sourceTree = "<group>"; };
 		B5AC545C1857917800608CAC /* SPBucket+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPBucket+Internals.h"; sourceTree = "<group>"; };
 		B5B69C0118325B2C001F0DE1 /* MockSimperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockSimperium.h; sourceTree = "<group>"; };
 		B5B69C0218325B2C001F0DE1 /* MockSimperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MockSimperium.m; sourceTree = "<group>"; };
@@ -1192,6 +1195,7 @@
 			children = (
 				B5CAA6481CAAF2F8006FE048 /* SPAuthenticationButton.h */,
 				B5CAA6491CAAF2F8006FE048 /* SPAuthenticationButton.m */,
+				B5A8773322DCD37F00FC22C7 /* SPAuthenticationInterface.h */,
 				B5CAA64A1CAAF2F8006FE048 /* SPAuthenticationViewController.h */,
 				B5CAA64B1CAAF2F8006FE048 /* SPAuthenticationViewController.m */,
 				B5CAA64C1CAAF2F8006FE048 /* SPWebViewController.h */,
@@ -1326,6 +1330,7 @@
 			files = (
 				B5CAA4BC1CAAB3D5006FE048 /* Simperium.h in Headers */,
 				B5CAA64E1CAAF2F8006FE048 /* SPAuthenticationButton.h in Headers */,
+				B5A8773422DCD37F00FC22C7 /* SPAuthenticationInterface.h in Headers */,
 				B5FC08AE1D662D5300045DB9 /* TSKPinningValidator.h in Headers */,
 				B5CAA6501CAAF2F8006FE048 /* SPAuthenticationViewController.h in Headers */,
 				B5CAA4C71CAAB459006FE048 /* SPAuthenticationConfiguration.h in Headers */,
@@ -1418,6 +1423,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B5CAA5BA1CAAED3D006FE048 /* Simperium.h in Headers */,
+				B5A8773522DCD37F00FC22C7 /* SPAuthenticationInterface.h in Headers */,
 				B5CAA5BC1CAAED3D006FE048 /* SPAuthenticationConfiguration.h in Headers */,
 				B5CAA5BD1CAAED3D006FE048 /* SPAuthenticator.h in Headers */,
 				B5CAA5BE1CAAED3D006FE048 /* SPBucket.h in Headers */,

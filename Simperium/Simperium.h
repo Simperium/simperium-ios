@@ -11,6 +11,7 @@
 #import "SPBucket.h"
 #import "SPManagedObject.h"
 #import "SPAuthenticator.h"
+#import "SPAuthenticationInterface.h"
 #import "SPUser.h"
 
 #if TARGET_OS_IPHONE

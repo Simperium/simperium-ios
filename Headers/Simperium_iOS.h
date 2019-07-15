@@ -20,6 +20,7 @@ FOUNDATION_EXPORT const unsigned char Simperium_OSXVersionString[];
 #pragma mark ====================================================================================
 
 #import <Simperium/Simperium.h>
+#import <Simperium/SPAuthenticationInterface.h>
 #import <Simperium/SPAuthenticationViewController.h>
 #import <Simperium/SPAuthenticationConfiguration.h>
 #import <Simperium/SPAuthenticator.h>
