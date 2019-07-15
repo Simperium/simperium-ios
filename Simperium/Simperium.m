@@ -862,7 +862,9 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     
     UIViewController<SPAuthenticationInterface> *loginController = [self.authenticationViewControllerClass new];
     loginController.authenticator = self.authenticator;
-    loginController.shouldSignIn = self.shouldSignIn;
+    if ([loginController respondsToSelector:@selector(setShouldSignIn:)]) {
+        loginController.signingIn = self.shouldSignIn;
+    }
     self.authenticationViewController = loginController;
     
     if (!self.rootViewController) {
@@ -889,7 +891,10 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         self.authenticationWindowController                 = [[self.authenticationWindowControllerClass alloc] init];
         self.authenticationWindowController.authenticator   = self.authenticator;
         self.authenticationWindowController.optional        = self.authenticationOptional;
-        self.authenticationWindowController.shouldSignIn    = self.shouldSignIn;
+
+        if ([self.authenticationWindowController respondsToSelector:@selector(setShouldSignIn:)]) {
+            self.authenticationWindowController.signingIn   = self.shouldSignIn;
+        }
     }
     
     // Hide the main window and show the auth window instead

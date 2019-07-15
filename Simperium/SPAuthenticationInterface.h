@@ -17,9 +17,11 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 @property (nonatomic, assign) BOOL optional;
 
+@optional
+
 /// Hints if the UI should be initially rendered in SignIn mode. That is: if the user was previously logged in.
 ///
-@property (nonatomic, assign) BOOL shouldSignIn;
+@property (nonatomic, assign) BOOL signingIn;
 
 @end
 
