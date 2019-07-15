@@ -100,24 +100,24 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _shouldSignIn = NO;
+        _signingIn = NO;
     }
     return self;
 }
 
-- (void)setShouldSignIn:(BOOL)shouldSignIn {
-    _shouldSignIn = shouldSignIn;
+- (void)setSigningIn:(BOOL)bCreating {
+    _signingIn = bCreating;
     [self refreshButtons];
 }
 
 - (void)refreshButtons {
-    NSString *actionTitle = _shouldSignIn ?
+    NSString *actionTitle = _signingIn ?
         NSLocalizedString(@"Sign In", @"Title of button for logging in (must be short)") :
         NSLocalizedString(@"Sign Up", @"Title of button to create a new account (must be short)");
-    NSString *changeTitle = _shouldSignIn ?
+    NSString *changeTitle = _signingIn ?
         NSLocalizedString(@"Sign up", @"A short link to access the account creation screen") :
         NSLocalizedString(@"Sign in", @"A short link to access the account login screen");
-    NSString *changeDetailTitle = _shouldSignIn ?
+    NSString *changeDetailTitle = _signingIn ?
         NSLocalizedString(@"Don't have an account?", @"A short description to access the account creation screen") :
         NSLocalizedString(@"Already have an account?", @"A short description to access the account login screen");
 
@@ -129,8 +129,8 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
     // Refresh Terms + Forgot Password
     SPAuthenticationConfiguration *configuration = [SPAuthenticationConfiguration sharedInstance];
-    BOOL shouldShowTerms = !_shouldSignIn && configuration.termsOfServiceURL;
-    BOOL shouldShowForgot = _shouldSignIn && configuration.forgotPasswordURL;
+    BOOL shouldShowTerms = !_signingIn && configuration.termsOfServiceURL;
+    BOOL shouldShowForgot = _signingIn && configuration.forgotPasswordURL;
     
     self.termsButton.hidden = !shouldShowTerms;
     self.forgotPasswordButton.hidden = !shouldShowForgot;
@@ -194,7 +194,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     self.usernameField = [self textFieldWithPlaceholder:usernameText secure:NO];
     _usernameField.keyboardType = UIKeyboardTypeEmailAddress;
     
-    if (_shouldSignIn && configuration.previousUsernameEnabled && configuration.previousUsernameLogged) {
+    if (_signingIn && configuration.previousUsernameEnabled && configuration.previousUsernameLogged) {
         // Get previous username, to display as last used username in authentication view
         _usernameField.text = configuration.previousUsernameLogged;
     }
@@ -627,17 +627,17 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 - (IBAction)changeAction:(id)sender {
-    _shouldSignIn = !_shouldSignIn;
+    _signingIn = !_signingIn;
     NSArray *indexPaths = @[ [self confirmIndexPath] ];
-    if (_shouldSignIn) {
+    if (_signingIn) {
         [self.tableView deleteRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationTop];
     } else {
         [self.tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationTop];
     }
     
     [self.usernameField becomeFirstResponder];
-
-    [self setShouldSignIn:_shouldSignIn];
+    
+    [self setSigningIn:_signingIn];
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [self positionTableViewWithDuration:0.3];
@@ -646,7 +646,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 
 - (IBAction)performAction:(id)sender {
     if ([self validateData]) {
-        if (!_shouldSignIn && self.passwordConfirmField.text.length > 0) {
+        if (!_signingIn && self.passwordConfirmField.text.length > 0) {
             if ([self validatePasswordConfirmation]) {
                 [self performCreation];
             }
@@ -684,7 +684,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
         return NO;
     } else if (theTextField == self.passwordField) {
         if ([self validatePassword]) {
-            if (_shouldSignIn) {
+            if (_signingIn) {
                 [self performLogin];
             } else {
                 // Advance to next field and don't dismiss keyboard
@@ -693,7 +693,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
             }
         }
     } else {
-        if (!_shouldSignIn && [self validatePasswordConfirmation] && [self validateData]) {
+        if (!_signingIn && [self validatePasswordConfirmation] && [self validateData]) {
             [self performCreation];
         }
     }
@@ -735,7 +735,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section  {
-    return _shouldSignIn ? (SPAuthenticationRowsPassword + 1) : (SPAuthenticationRowsConfirm + 1);
+    return _signingIn ? (SPAuthenticationRowsPassword + 1) : (SPAuthenticationRowsConfirm + 1);
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -760,7 +760,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
             [cell.contentView addSubview:_passwordField];
         }
         
-        self.passwordField.returnKeyType = _shouldSignIn ? UIReturnKeyGo : UIReturnKeyNext;
+        self.passwordField.returnKeyType = _signingIn ? UIReturnKeyGo : UIReturnKeyNext;
     } else {
         cell = [tView dequeueReusableCellWithIdentifier:SPAuthenticationConfirmCellIdentifier];
         // Password Confirmation

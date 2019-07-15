@@ -19,7 +19,7 @@
 #pragma mark SPAuthenticationViewController
 #pragma mark ====================================================================================
 
-@interface SPAuthenticationViewController <SPAuthenticationInterface> : UIViewController
+@interface SPAuthenticationViewController : UIViewController
 
 @property (nonatomic, strong,  readonly) UITableView        *tableView;
 @property (nonatomic, strong,  readonly) UIImageView        *logoView;
@@ -29,7 +29,7 @@
 @property (nonatomic, strong,  readonly) UITextField        *passwordConfirmField;
 
 @property (nonatomic, strong, readwrite) SPAuthenticator    *authenticator;
-@property (nonatomic, assign, readwrite) BOOL               shouldSignIn;
+@property (nonatomic, assign, readwrite) BOOL               signingIn;
 
 /**
     Performs the current action: Validates the fields, and hits the backend, if needed
