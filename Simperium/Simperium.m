@@ -862,7 +862,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     
     UIViewController<SPAuthenticationInterface> *loginController = [self.authenticationViewControllerClass new];
     loginController.authenticator = self.authenticator;
-    if ([loginController respondsToSelector:@selector(setShouldSignIn:)]) {
+    if ([loginController respondsToSelector:@selector(setSigningIn:)]) {
         loginController.signingIn = self.shouldSignIn;
     }
     self.authenticationViewController = loginController;
@@ -892,7 +892,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         self.authenticationWindowController.authenticator   = self.authenticator;
         self.authenticationWindowController.optional        = self.authenticationOptional;
 
-        if ([self.authenticationWindowController respondsToSelector:@selector(setShouldSignIn:)]) {
+        if ([self.authenticationWindowController respondsToSelector:@selector(setSigningIn:)]) {
             self.authenticationWindowController.signingIn   = self.shouldSignIn;
         }
     }
