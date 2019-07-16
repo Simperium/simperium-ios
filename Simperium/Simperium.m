@@ -888,12 +888,15 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [self.rootViewController.sp_leafViewController presentViewController:controller animated:animated completion:nil];
 #else
     if (!self.authenticationWindowController) {
-        self.authenticationWindowController                 = [[self.authenticationWindowControllerClass alloc] init];
-        self.authenticationWindowController.authenticator   = self.authenticator;
-        self.authenticationWindowController.optional        = self.authenticationOptional;
+        self.authenticationWindowController = [[self.authenticationWindowControllerClass alloc] init];
+        self.authenticationWindowController.authenticator = self.authenticator;
+
+        if ([self.authenticationWindowController respondsToSelector:@selector(setOptional:)]) {
+            self.authenticationWindowController.optional = self.authenticationOptional;
+        }
 
         if ([self.authenticationWindowController respondsToSelector:@selector(setSigningIn:)]) {
-            self.authenticationWindowController.signingIn   = self.shouldSignIn;
+            self.authenticationWindowController.signingIn = self.shouldSignIn;
         }
     }
     

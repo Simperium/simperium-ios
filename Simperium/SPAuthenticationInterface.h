@@ -13,11 +13,11 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 @property (nullable, nonatomic, strong) SPAuthenticator *authenticator;
 
+@optional
+
 /// Indicates if the Authentication Dialog should be dismissable
 ///
 @property (nonatomic, assign) BOOL optional;
-
-@optional
 
 /// Hints if the UI should be initially rendered in SignIn mode. That is: if the user was previously logged in.
 ///
