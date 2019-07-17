@@ -103,9 +103,10 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         logger.delegate                     = self;
         
 #if TARGET_OS_IPHONE
-        self.authenticationViewControllerClass      = [SPAuthenticationViewController class];
+        self.authenticationViewControllerClass          = [SPAuthenticationViewController class];
+        self.authenticationNavigationControllerClass    = [UINavigationController class];
 #else
-        self.authenticationWindowControllerClass    = [SPAuthenticationWindowController class];
+        self.authenticationWindowControllerClass        = [SPAuthenticationWindowController class];
 #endif
         
         [self setupNotifications];
@@ -878,7 +879,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     
     UIViewController *controller = self.authenticationViewController;
     if (self.authenticationOptional || self.authenticationShouldBeEmbeddedInNavigationController) {
-        controller = [[UINavigationController alloc] initWithRootViewController:self.authenticationViewController];
+        controller = [[self.authenticationNavigationControllerClass alloc] initWithRootViewController:self.authenticationViewController];
     }
     
     // Note:
