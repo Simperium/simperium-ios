@@ -16,6 +16,7 @@
 
 #if TARGET_OS_IPHONE
 #import "SPAuthenticationViewController.h"
+#import "SPAuthenticationNavigationController.h"
 #else
 #import "SPAuthenticationWindowController.h"
 #endif

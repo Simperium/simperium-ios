@@ -222,12 +222,9 @@ typedef void (^SimperiumSignoutCompletion)(void);
 
 // You can implement your own subclass of SPAuthenticationViewController (iOS) or
 // SPAuthenticationWindowController (OSX) to customize authentication.
-// Aditionally you can provide your custom UINavigationController Subclass, to be used whenever authentication is Optional, or it should be explicitly
-// embedded into a UINavigationController.
 //
 #if TARGET_OS_IPHONE
 @property (nonatomic, readwrite, weak) Class authenticationViewControllerClass;
-@property (nonatomic, readwrite, weak) Class authenticationNavigationControllerClass;
 #else
 @property (nonatomic, readwrite, weak) Class authenticationWindowControllerClass;
 #endif

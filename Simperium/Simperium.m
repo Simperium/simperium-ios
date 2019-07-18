@@ -104,7 +104,6 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         
 #if TARGET_OS_IPHONE
         self.authenticationViewControllerClass          = [SPAuthenticationViewController class];
-        self.authenticationNavigationControllerClass    = [UINavigationController class];
 #else
         self.authenticationWindowControllerClass        = [SPAuthenticationWindowController class];
 #endif
@@ -879,7 +878,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     
     UIViewController *controller = self.authenticationViewController;
     if (self.authenticationOptional || self.authenticationShouldBeEmbeddedInNavigationController) {
-        controller = [[self.authenticationNavigationControllerClass alloc] initWithRootViewController:self.authenticationViewController];
+        controller = [[SPAuthenticationNavigationController alloc] initWithRootViewController:self.authenticationViewController];
     }
     
     // Note:
