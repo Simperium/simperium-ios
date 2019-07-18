@@ -5,20 +5,22 @@
 
 - (BOOL)shouldAutorotate
 {
-    if (self.topViewController == nil) {
+    UIViewController *firstViewController = self.viewControllers.firstObject;
+    if (firstViewController == nil) {
         return YES;
     }
 
-    return self.topViewController.shouldAutorotate;
+    return firstViewController.shouldAutorotate;
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
-    if (self.topViewController == nil) {
+    UIViewController *firstViewController = self.viewControllers.firstObject;
+    if (firstViewController == nil) {
         return UIInterfaceOrientationMaskAll;
     }
 
-    return self.topViewController.supportedInterfaceOrientations;
+    return firstViewController.supportedInterfaceOrientations;
 }
 
 @end
