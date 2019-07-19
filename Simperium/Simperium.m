@@ -910,7 +910,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 - (void)closeAuthViewControllerAnimated:(BOOL)animated {
 #if TARGET_OS_IPHONE
     // Login can either be its own root, or the first child of a nav controller if auth is optional
-    if (self.authenticationViewController.sp_isViewAttached) {
+    if (self.authenticationViewController.sp_isViewAttached || self.authenticationViewController.navigationController.sp_isViewAttached) {
         [self.rootViewController dismissViewControllerAnimated:animated completion:nil];
     }
     self.authenticationViewController = nil;
