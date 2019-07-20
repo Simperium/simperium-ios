@@ -855,7 +855,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     self.shouldSignIn = configuration.previousUsernameEnabled && configuration.previousUsernameLogged;
 
 #if TARGET_OS_IPHONE
-    if (self.authenticationViewController.sp_isViewAttached) {
+    if (self.authenticationViewController.sp_isViewAttachedOrStacked) {
         SPLogError(@"Error: Authentication Screen was already open");
         return;
     }
@@ -910,7 +910,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 - (void)closeAuthViewControllerAnimated:(BOOL)animated {
 #if TARGET_OS_IPHONE
     // Login can either be its own root, or the first child of a nav controller if auth is optional
-    if (self.authenticationViewController.sp_isViewAttached || self.authenticationViewController.navigationController.sp_isViewAttached) {
+    if (self.authenticationViewController.sp_isViewAttachedOrStacked) {
         [self.rootViewController dismissViewControllerAnimated:animated completion:nil];
     }
     self.authenticationViewController = nil;
