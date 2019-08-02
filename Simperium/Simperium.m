@@ -879,6 +879,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     UIViewController *controller = self.authenticationViewController;
     if (self.authenticationOptional || self.authenticationShouldBeEmbeddedInNavigationController) {
         controller = [[SPAuthenticationNavigationController alloc] initWithRootViewController:self.authenticationViewController];
+        controller.modalPresentationStyle = UIModalPresentationFullScreen;
     }
     
     // Note:
