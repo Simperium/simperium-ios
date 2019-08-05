@@ -13,7 +13,7 @@
 @class SPAuthenticationTextField;
 @class SPAuthenticationValidator;
 
-@interface SPAuthenticationWindowController : NSWindowController
+@interface SPAuthenticationWindowController <SPAuthenticationInterface> : NSWindowController
 
 @property (nonatomic, strong) SPAuthenticator           *authenticator;
 @property (nonatomic, strong) SPAuthenticationValidator *validator;

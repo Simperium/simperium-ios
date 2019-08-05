@@ -34,6 +34,8 @@
 		46EE3D44171C978E00E6F0A5 /* SimperiumAuxiliaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D43171C978D00E6F0A5 /* SimperiumAuxiliaryTests.m */; };
 		46EE3D57171D0C8E00E6F0A5 /* SimperiumErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EE3D56171D0C8E00E6F0A5 /* SimperiumErrorTests.m */; };
 		B51397F11947612B004C1416 /* SPChangeProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B51397F01947612B004C1416 /* SPChangeProcessorTests.m */; };
+		B526FA7322E00C4E00831994 /* SPAuthenticationNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = B526FA7122E00C4E00831994 /* SPAuthenticationNavigationController.h */; };
+		B526FA7422E00C4E00831994 /* SPAuthenticationNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = B526FA7222E00C4E00831994 /* SPAuthenticationNavigationController.m */; };
 		B53F75A91A1BAB4600C0DDFB /* SPStorageObserverAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = B53F75A81A1BAB4600C0DDFB /* SPStorageObserverAdapter.m */; };
 		B5549FE6184581BF007EA226 /* SPThreadsafeMutableSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5549FE5184581BF007EA226 /* SPThreadsafeMutableSetTests.m */; };
 		B565ECA2183261A600D162FF /* Test1.xcdatamodeld in Resources */ = {isa = PBXBuildFile; fileRef = 26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */; };
@@ -47,6 +49,8 @@
 		B57FA3B21900568A00957205 /* SPRelationshipResolverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B57FA3B11900568A00957205 /* SPRelationshipResolverTests.m */; };
 		B597DD59183128FE005E95D7 /* SPWebSocketInterfaceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B597DD58183128FE005E95D7 /* SPWebSocketInterfaceTests.m */; };
 		B5A57EAC1951C128006E2455 /* SPIndexProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A57EAB1951C128006E2455 /* SPIndexProcessorTests.m */; };
+		B5A8773422DCD37F00FC22C7 /* SPAuthenticationInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A8773322DCD37F00FC22C7 /* SPAuthenticationInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		B5A8773522DCD37F00FC22C7 /* SPAuthenticationInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A8773322DCD37F00FC22C7 /* SPAuthenticationInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5B69C0318325B2C001F0DE1 /* MockSimperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5B69C0218325B2C001F0DE1 /* MockSimperium.m */; };
 		B5C6300D186321E0008C42B7 /* DiffMatchPatchArrayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C6300C186321E0008C42B7 /* DiffMatchPatchArrayTests.m */; };
 		B5C7D7F9183411B900E9109C /* SPPersistentMutableDictionaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C7D7F8183411B900E9109C /* SPPersistentMutableDictionaryTests.m */; };
@@ -580,6 +584,8 @@
 		797D26FD19F1B72700DEF569 /* SPKeychainQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPKeychainQuery.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		B51397F01947612B004C1416 /* SPChangeProcessorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPChangeProcessorTests.m; sourceTree = "<group>"; };
 		B52674701858EC4800A89D7A /* Simperium+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Simperium+Internals.h"; sourceTree = "<group>"; };
+		B526FA7122E00C4E00831994 /* SPAuthenticationNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SPAuthenticationNavigationController.h; path = "Simperium-iOS/SPAuthenticationNavigationController.h"; sourceTree = SOURCE_ROOT; };
+		B526FA7222E00C4E00831994 /* SPAuthenticationNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SPAuthenticationNavigationController.m; path = "Simperium-iOS/SPAuthenticationNavigationController.m"; sourceTree = SOURCE_ROOT; };
 		B53F75A71A1BAB4600C0DDFB /* SPStorageObserverAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStorageObserverAdapter.h; sourceTree = "<group>"; };
 		B53F75A81A1BAB4600C0DDFB /* SPStorageObserverAdapter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStorageObserverAdapter.m; sourceTree = "<group>"; };
 		B5549FE118457F72007EA226 /* SPThreadsafeMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = SPThreadsafeMutableSet.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
@@ -602,6 +608,7 @@
 		B5A19D5718806BBC0059AA36 /* SPWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = SPWebSocket.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		B5A19D5818806BBC0059AA36 /* SPWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPWebSocket.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		B5A57EAB1951C128006E2455 /* SPIndexProcessorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPIndexProcessorTests.m; sourceTree = "<group>"; };
+		B5A8773322DCD37F00FC22C7 /* SPAuthenticationInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationInterface.h; sourceTree = "<group>"; };
 		B5AC545C1857917800608CAC /* SPBucket+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPBucket+Internals.h"; sourceTree = "<group>"; };
 		B5B69C0118325B2C001F0DE1 /* MockSimperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockSimperium.h; sourceTree = "<group>"; };
 		B5B69C0218325B2C001F0DE1 /* MockSimperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MockSimperium.m; sourceTree = "<group>"; };
@@ -1192,8 +1199,11 @@
 			children = (
 				B5CAA6481CAAF2F8006FE048 /* SPAuthenticationButton.h */,
 				B5CAA6491CAAF2F8006FE048 /* SPAuthenticationButton.m */,
+				B5A8773322DCD37F00FC22C7 /* SPAuthenticationInterface.h */,
 				B5CAA64A1CAAF2F8006FE048 /* SPAuthenticationViewController.h */,
 				B5CAA64B1CAAF2F8006FE048 /* SPAuthenticationViewController.m */,
+				B526FA7122E00C4E00831994 /* SPAuthenticationNavigationController.h */,
+				B526FA7222E00C4E00831994 /* SPAuthenticationNavigationController.m */,
 				B5CAA64C1CAAF2F8006FE048 /* SPWebViewController.h */,
 				B5CAA64D1CAAF2F8006FE048 /* SPWebViewController.m */,
 				B5CAA65B1CAAF3F6006FE048 /* UIDevice+Simperium.h */,
@@ -1326,6 +1336,7 @@
 			files = (
 				B5CAA4BC1CAAB3D5006FE048 /* Simperium.h in Headers */,
 				B5CAA64E1CAAF2F8006FE048 /* SPAuthenticationButton.h in Headers */,
+				B5A8773422DCD37F00FC22C7 /* SPAuthenticationInterface.h in Headers */,
 				B5FC08AE1D662D5300045DB9 /* TSKPinningValidator.h in Headers */,
 				B5CAA6501CAAF2F8006FE048 /* SPAuthenticationViewController.h in Headers */,
 				B5CAA4C71CAAB459006FE048 /* SPAuthenticationConfiguration.h in Headers */,
@@ -1347,6 +1358,7 @@
 				B5CAA4CC1CAAB52D006FE048 /* SPMember.h in Headers */,
 				B5CAA4CD1CAAB537006FE048 /* DiffMatchPatch.h in Headers */,
 				B5CAA4CF1CAAB54E006FE048 /* DiffMatchPatchCFUtilities.h in Headers */,
+				B526FA7322E00C4E00831994 /* SPAuthenticationNavigationController.h in Headers */,
 				B5CAA4D01CAAB557006FE048 /* MinMaxMacros.h in Headers */,
 				B5CAA4D11CAAB55E006FE048 /* NSMutableDictionary+DMPExtensions.h in Headers */,
 				B5CAA4D21CAAB56F006FE048 /* NSDate+Simperium.h in Headers */,
@@ -1418,6 +1430,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B5CAA5BA1CAAED3D006FE048 /* Simperium.h in Headers */,
+				B5A8773522DCD37F00FC22C7 /* SPAuthenticationInterface.h in Headers */,
 				B5CAA5BC1CAAED3D006FE048 /* SPAuthenticationConfiguration.h in Headers */,
 				B5CAA5BD1CAAED3D006FE048 /* SPAuthenticator.h in Headers */,
 				B5CAA5BE1CAAED3D006FE048 /* SPBucket.h in Headers */,
@@ -1702,6 +1715,7 @@
 				B5CAA5191CAABA2B006FE048 /* NSDate+Simperium.m in Sources */,
 				B5CAA51A1CAABA2E006FE048 /* NSData+Simperium.m in Sources */,
 				B5CAA51B1CAABA37006FE048 /* SPIndexProcessor.m in Sources */,
+				B526FA7422E00C4E00831994 /* SPAuthenticationNavigationController.m in Sources */,
 				B5CAA51C1CAABA40006FE048 /* SPStorage.m in Sources */,
 				B5CAA51D1CAABA47006FE048 /* SPCoreDataStorage.m in Sources */,
 				B5CAA51F1CAABA5A006FE048 /* SPChangeProcessor.m in Sources */,

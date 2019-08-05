@@ -103,9 +103,9 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         logger.delegate                     = self;
         
 #if TARGET_OS_IPHONE
-        self.authenticationViewControllerClass      = [SPAuthenticationViewController class];
+        self.authenticationViewControllerClass          = [SPAuthenticationViewController class];
 #else
-        self.authenticationWindowControllerClass    = [SPAuthenticationWindowController class];
+        self.authenticationWindowControllerClass        = [SPAuthenticationWindowController class];
 #endif
         
         [self setupNotifications];
@@ -855,15 +855,17 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     self.shouldSignIn = configuration.previousUsernameEnabled && configuration.previousUsernameLogged;
 
 #if TARGET_OS_IPHONE
-    if (self.authenticationViewController.sp_isViewAttached) {
+    if (self.authenticationViewController.sp_isViewAttachedOrStacked) {
         SPLogError(@"Error: Authentication Screen was already open");
         return;
     }
     
-    SPAuthenticationViewController *loginController = [[self.authenticationViewControllerClass alloc] init];
-    loginController.authenticator                   = self.authenticator;
-    loginController.signingIn                       = self.shouldSignIn;
-    self.authenticationViewController               = loginController;
+    UIViewController<SPAuthenticationInterface> *loginController = [self.authenticationViewControllerClass new];
+    loginController.authenticator = self.authenticator;
+    if ([loginController respondsToSelector:@selector(setSigningIn:)]) {
+        loginController.signingIn = self.shouldSignIn;
+    }
+    self.authenticationViewController = loginController;
     
     if (!self.rootViewController) {
         UIWindow *window = [[UIApplication sharedApplication] keyWindow];
@@ -875,8 +877,9 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
     
     UIViewController *controller = self.authenticationViewController;
-    if (self.authenticationOptional) {
-        controller = [[UINavigationController alloc] initWithRootViewController:self.authenticationViewController];
+    if (self.authenticationOptional || self.authenticationShouldBeEmbeddedInNavigationController) {
+        controller = [[SPAuthenticationNavigationController alloc] initWithRootViewController:self.authenticationViewController];
+        controller.modalPresentationStyle = UIModalPresentationFullScreen;
     }
     
     // Note:
@@ -886,10 +889,16 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [self.rootViewController.sp_leafViewController presentViewController:controller animated:animated completion:nil];
 #else
     if (!self.authenticationWindowController) {
-        self.authenticationWindowController                 = [[self.authenticationWindowControllerClass alloc] init];
-        self.authenticationWindowController.authenticator   = self.authenticator;
-        self.authenticationWindowController.optional        = self.authenticationOptional;
-        self.authenticationWindowController.signingIn       = self.shouldSignIn;
+        self.authenticationWindowController = [[self.authenticationWindowControllerClass alloc] init];
+        self.authenticationWindowController.authenticator = self.authenticator;
+
+        if ([self.authenticationWindowController respondsToSelector:@selector(setOptional:)]) {
+            self.authenticationWindowController.optional = self.authenticationOptional;
+        }
+
+        if ([self.authenticationWindowController respondsToSelector:@selector(setSigningIn:)]) {
+            self.authenticationWindowController.signingIn = self.shouldSignIn;
+        }
     }
     
     // Hide the main window and show the auth window instead
@@ -902,7 +911,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 - (void)closeAuthViewControllerAnimated:(BOOL)animated {
 #if TARGET_OS_IPHONE
     // Login can either be its own root, or the first child of a nav controller if auth is optional
-    if (self.authenticationViewController.sp_isViewAttached) {
+    if (self.authenticationViewController.sp_isViewAttachedOrStacked) {
         [self.rootViewController dismissViewControllerAnimated:animated completion:nil];
     }
     self.authenticationViewController = nil;
