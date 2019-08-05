@@ -12,6 +12,7 @@
 @interface UIViewController (Simperium)
 
 - (BOOL)sp_isViewAttached;
+- (BOOL)sp_isViewAttachedOrStacked;
 - (UIViewController *)sp_leafViewController;
 
 @end

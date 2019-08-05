@@ -11,6 +11,7 @@
 #import "SPBucket.h"
 #import "SPManagedObject.h"
 #import "SPAuthenticator.h"
+#import "SPAuthenticationInterface.h"
 #import "SPUser.h"
 
 #if TARGET_OS_IPHONE
@@ -157,6 +158,9 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // Set this to true if you need to be able to cancel the authentication dialog.
 @property (nonatomic, readwrite, assign) BOOL authenticationOptional;
 
+// Indiccates if the Authentication UI should be embedded in a NavigationController
+@property (nonatomic, readwrite, assign) BOOL authenticationShouldBeEmbeddedInNavigationController;
+
 // Toggle Simperium's Backend Pinning.
 @property (nonatomic, readwrite, assign) BOOL certificatePinningEnabled;
 
@@ -218,6 +222,7 @@ typedef void (^SimperiumSignoutCompletion)(void);
 
 // You can implement your own subclass of SPAuthenticationViewController (iOS) or
 // SPAuthenticationWindowController (OSX) to customize authentication.
+//
 #if TARGET_OS_IPHONE
 @property (nonatomic, readwrite, weak) Class authenticationViewControllerClass;
 #else

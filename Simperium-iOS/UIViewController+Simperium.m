@@ -15,6 +15,11 @@
     return self.view.window != nil;
 }
 
+- (BOOL)sp_isViewAttachedOrStacked
+{
+    return self.sp_isViewAttached || self.navigationController.sp_isViewAttached;
+}
+
 - (UIViewController *)sp_leafViewController
 {
     UIViewController *leafViewController = self;

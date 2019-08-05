@@ -19,7 +19,7 @@
 #pragma mark SPAuthenticationViewController
 #pragma mark ====================================================================================
 
-@interface SPAuthenticationViewController : UIViewController
+@interface SPAuthenticationViewController <SPAuthenticationInterface> : UIViewController
 
 @property (nonatomic, strong,  readonly) UITableView        *tableView;
 @property (nonatomic, strong,  readonly) UIImageView        *logoView;
