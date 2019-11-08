@@ -48,6 +48,17 @@
   XCTAssertEqual((NSUInteger)4, [dmp diff_commonPrefixOfFirstString:@"1234" andSecondString:@"1234xyz"], @"Common suffix whole case failed.");
 }
 
+- (void)testDiffCommonPrefixDoesntSplitSurrogatePairs {
+  DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+  NSString *pristine = @"☺️🖖🏿";
+  NSString *edited = @"☺️😃🖖🏿";
+  NSString *common = @"☺️";
+
+  NSUInteger prefix = [dmp diff_commonPrefixOfFirstString:pristine andSecondString:edited];
+  XCTAssertEqual(prefix, common.length, @"Common Prefix should match the common emoji's length");
+}
+
 - (void)testDiffCommonSuffixTest {
   DiffMatchPatch *dmp = [DiffMatchPatch new];
 
@@ -60,6 +71,19 @@
 
   // Whole case.
   XCTAssertEqual((NSUInteger)4, [dmp diff_commonSuffixOfFirstString:@"1234" andSecondString:@"xyz1234"], @"Detect any common suffix. Whole case.");
+}
+
+- (void)testDiffCommonSuffixDoesntSplitSurrogatePairs {
+    DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+    NSString *pristine = @"☺️🖖🏿";
+    NSString *edited = @"☺️😃🖖🏿";
+    NSString *expected = @"🖖🏿";
+
+    NSUInteger suffix = [dmp diff_commonSuffixOfFirstString:pristine andSecondString:edited];
+    NSString *common = [pristine substringFromIndex:pristine.length - suffix];
+
+    XCTAssertEqualObjects(expected, common, @"Common Suffix should match the last emoji");
 }
 
 - (void)testDiffCommonOverlapTest {
