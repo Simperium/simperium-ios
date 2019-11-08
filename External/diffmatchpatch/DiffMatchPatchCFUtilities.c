@@ -692,7 +692,7 @@ CFIndex diff_cleanupSemanticScore(CFStringRef one, CFStringRef two) {
   } else if (whitespace1 || whitespace2) {
     // Two points for whitespace.
     return 2;
-  } else if (nonAlphaNumeric1 && !char1IsSurrogate || nonAlphaNumeric2 && !char1IsSurrogate) {
+  } else if ((nonAlphaNumeric1 && !char1IsSurrogate) || (nonAlphaNumeric2 && !char2IsSurrogate)) {
     // One point for non-alphanumeric.
     return 1;
   }
