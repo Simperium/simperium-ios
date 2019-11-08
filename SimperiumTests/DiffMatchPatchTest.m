@@ -412,6 +412,21 @@
   XCTAssertEqualObjects(expectedResult, diffs, @"Sentence boundaries.");
 }
 
+- (void)testDiffCleanupSemanticLosslessDoesNotTamperWithSurrogatePairsTest {
+    NSArray *expected = @[
+        [Diff diffWithOperation:DIFF_EQUAL andText:@"☺️"],
+        [Diff diffWithOperation:DIFF_INSERT andText:@"😃"],
+        [Diff diffWithOperation:DIFF_EQUAL andText:@"🖖🏿"]
+    ];
+
+    NSMutableArray *diffs = [expected mutableCopy];
+
+    DiffMatchPatch *dmp = [DiffMatchPatch new];
+    [dmp diff_cleanupSemanticLossless:diffs];
+
+    XCTAssertEqualObjects(diffs, expected, @"The result should match the input!");
+}
+
 - (void)testDiffCleanupSemanticTest {
   DiffMatchPatch *dmp = [DiffMatchPatch new];
   NSMutableArray *expectedResult = nil;
