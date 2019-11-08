@@ -112,6 +112,9 @@ CFIndex diff_commonPrefix(CFStringRef text1, CFStringRef text2) {
     char2 = CFStringGetCharacterFromInlineBuffer(&text2_inlineBuffer, i);
 
     if (char1 != char2) {
+        if ( CFStringIsSurrogateLowCharacter(char1) || CFStringIsSurrogateHighCharacter(char1) ) {
+            i = MAX(i - 1, 0);
+        }
       return i;
     }
   }
@@ -142,7 +145,11 @@ CFIndex diff_commonSuffix(CFStringRef text1, CFStringRef text2) {
     char2 = CFStringGetCharacterFromInlineBuffer(&text2_inlineBuffer, (text2_length - i));
 
     if (char1 != char2) {
-      return i - 1;
+        if ( CFStringIsSurrogateLowCharacter(char1) || CFStringIsSurrogateHighCharacter(char1) ) {
+            return MIN(i - 2, 0);
+        }
+
+        return i - 1;
     }
   }
   return n;
