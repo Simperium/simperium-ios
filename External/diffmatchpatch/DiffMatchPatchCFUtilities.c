@@ -655,27 +655,19 @@ CFIndex diff_cleanupSemanticScore(CFStringRef one, CFStringRef two) {
   // 'whitespace'.  Since this function's purpose is largely cosmetic,
   // the choice has been made to use each language's native features
   // rather than force total conformity.
-  UniChar char1 =
-  CFStringGetCharacterAtIndex(one, (CFStringGetLength(one) - 1));
-  UniChar char2 =
-  CFStringGetCharacterAtIndex(two, 0);
-  Boolean nonAlphaNumeric1 =
-  !CFCharacterSetIsCharacterMember(alphaNumericSet, char1);
-  Boolean nonAlphaNumeric2 =
-  !CFCharacterSetIsCharacterMember(alphaNumericSet, char2);
-  Boolean whitespace1 =
-  nonAlphaNumeric1 && CFCharacterSetIsCharacterMember(whiteSpaceSet, char1);
-  Boolean whitespace2 =
-  nonAlphaNumeric2 && CFCharacterSetIsCharacterMember(whiteSpaceSet, char2);
-  Boolean lineBreak1 =
-  whitespace1 && CFCharacterSetIsCharacterMember(controlSet, char1);
-  Boolean lineBreak2 =
-  whitespace2 && CFCharacterSetIsCharacterMember(controlSet, char2);
-  Boolean blankLine1 =
-  lineBreak1 && diff_regExMatch(one, &blankLineEndRegEx);
-  Boolean blankLine2 =
-  lineBreak2 && diff_regExMatch(two, &blankLineStartRegEx);
-  
+  UniChar char1 = CFStringGetCharacterAtIndex(one, (CFStringGetLength(one) - 1));
+  UniChar char2 = CFStringGetCharacterAtIndex(two, 0);
+  Boolean char1IsSurrogate = CFStringIsSurrogateLowCharacter(char1) || CFStringIsSurrogateHighCharacter(char1);
+  Boolean char2IsSurrogate = CFStringIsSurrogateLowCharacter(char2) || CFStringIsSurrogateHighCharacter(char1);
+  Boolean nonAlphaNumeric1 = !CFCharacterSetIsCharacterMember(alphaNumericSet, char1);
+  Boolean nonAlphaNumeric2 = !CFCharacterSetIsCharacterMember(alphaNumericSet, char2);
+  Boolean whitespace1 = nonAlphaNumeric1 && CFCharacterSetIsCharacterMember(whiteSpaceSet, char1);
+  Boolean whitespace2 = nonAlphaNumeric2 && CFCharacterSetIsCharacterMember(whiteSpaceSet, char2);
+  Boolean lineBreak1 = whitespace1 && CFCharacterSetIsCharacterMember(controlSet, char1);
+  Boolean lineBreak2 = whitespace2 && CFCharacterSetIsCharacterMember(controlSet, char2);
+  Boolean blankLine1 = lineBreak1 && diff_regExMatch(one, &blankLineEndRegEx);
+  Boolean blankLine2 = lineBreak2 && diff_regExMatch(two, &blankLineStartRegEx);
+
   if (blankLine1 || blankLine2) {
     // Five points for blank lines.
     return 5;
@@ -688,7 +680,7 @@ CFIndex diff_cleanupSemanticScore(CFStringRef one, CFStringRef two) {
   } else if (whitespace1 || whitespace2) {
     // Two points for whitespace.
     return 2;
-  } else if (nonAlphaNumeric1 || nonAlphaNumeric2) {
+  } else if (nonAlphaNumeric1 && !char1IsSurrogate || nonAlphaNumeric2 && !char1IsSurrogate) {
     // One point for non-alphanumeric.
     return 1;
   }
