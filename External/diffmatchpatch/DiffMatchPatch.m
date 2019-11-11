@@ -1519,6 +1519,9 @@ NS_INLINE NSString * diff_charsToTokenString(NSString *charsString, NSArray *tok
     }
 
     lastEnd = thisEnd;
+    if (0 == [aDiff.text length]) {
+      continue;
+    }
 
     switch (aDiff.operation) {
       case DIFF_INSERT:
