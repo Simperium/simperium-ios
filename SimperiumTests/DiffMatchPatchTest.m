@@ -64,7 +64,7 @@
 - (void)testDiffToDeltaWithEmojisCanBeProperlyAppliedToOriginalString {
   DiffMatchPatch *dmp = [DiffMatchPatch new];
 
-    NSString *pristine = @"☺️🖖🏿";
+  NSString *pristine = @"☺️🖖🏿";
   NSString *edited = @"☺️😃🖖🏿";
 
   NSMutableArray *diffs = [dmp diff_mainOfOldString:pristine andNewString:edited];
