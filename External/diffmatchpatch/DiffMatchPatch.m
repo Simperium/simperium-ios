@@ -1503,7 +1503,23 @@ NS_INLINE NSString * diff_charsToTokenString(NSString *charsString, NSArray *tok
 - (NSString *)diff_toDelta:(NSMutableArray *)diffs;
 {
   NSMutableString *delta = [NSMutableString string];
+  unichar lastEnd = 0;
+
   for (Diff *aDiff in diffs) {
+
+    unichar thisTop = [aDiff.text characterAtIndex:0];
+    unichar thisEnd = [aDiff.text characterAtIndex:(aDiff.text.length - 1)];
+
+    if (CFStringIsSurrogateHighCharacter(thisEnd)) {
+        aDiff.text = [aDiff.text substringToIndex:(aDiff.text.length - 1)];
+    }
+
+    if (lastEnd != 0 && CFStringIsSurrogateHighCharacter(lastEnd) && CFStringIsSurrogateLowCharacter(thisTop)) {
+        aDiff.text = [NSString stringWithFormat:@"%C%@", lastEnd, aDiff.text];
+    }
+
+    lastEnd = thisEnd;
+
     switch (aDiff.operation) {
       case DIFF_INSERT:
         [delta appendFormat:@"+%@\t", [[aDiff.text diff_stringByAddingPercentEscapesForEncodeUriCompatibility]
