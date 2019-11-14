@@ -48,6 +48,33 @@
   XCTAssertEqual((NSUInteger)4, [dmp diff_commonPrefixOfFirstString:@"1234" andSecondString:@"1234xyz"], @"Common suffix whole case failed.");
 }
 
+- (void)testDiffToDeltaDoesNotProduceNullsWhenDealingWithEmojis {
+  DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+  NSString *pristine = @"☺️🖖🏿";
+  NSString *edited = @"☺️😃🖖🏿";
+  NSString *expected = @"=2\t+%F0%9F%98%83\t=4";
+
+  NSMutableArray *diffs = [dmp diff_mainOfOldString:pristine andNewString:edited];
+  NSString *delta = [dmp diff_toDelta:diffs];
+
+  XCTAssertEqualObjects(delta, expected, @"Delta should match the expected string");
+}
+
+- (void)testDiffToDeltaWithEmojisCanBeProperlyAppliedToOriginalString {
+  DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+  NSString *pristine = @"☺️🖖🏿";
+  NSString *edited = @"☺️😃🖖🏿";
+
+  NSMutableArray *diffs = [dmp diff_mainOfOldString:pristine andNewString:edited];
+  NSArray *patches = [dmp patch_makeFromDiffs:diffs];
+  NSArray *result = [dmp patch_apply:patches toString:pristine];
+
+  NSString *output = [result firstObject];
+  XCTAssertEqualObjects(edited, output, @"Output String should match the Edited one!");
+}
+
 - (void)testDiffCommonSuffixTest {
   DiffMatchPatch *dmp = [DiffMatchPatch new];
 
