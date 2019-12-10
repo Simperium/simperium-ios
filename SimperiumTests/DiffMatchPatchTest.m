@@ -61,6 +61,21 @@
   XCTAssertEqualObjects(delta, expected, @"Delta should match the expected string");
 }
 
+- (void)testDiffToDeltaDoesCrashOnEmptyTextDiffs {
+  DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+  NSString *pristine = @"😃🖖🏻🖖🏻🖖🏿\n🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉\n\n.👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽s👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿.\n🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉\n.👉🏽👈🏿👈🏿👈🏿🥶🥶🥶🥶🥶👈🏼🖖🏻👈🏼s🖖🏻👈🏼😋\n\ndasdas\ndasvafksdldasfadsxc vzx";
+  NSString *edited = @"😃🖖🏻🖖🏻🖖🏿\n🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉\nfds\n.👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽s👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿.\n🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉fdsvadsfewdsfdsafsdafsd";
+
+  NSMutableArray *diffs = [dmp diff_mainOfOldString:pristine andNewString:edited];
+  if (diffs.count > 2) {
+    [dmp diff_cleanupSemantic:diffs];
+    [dmp diff_cleanupEfficiency:diffs];
+  }
+
+  XCTAssertNoThrow([dmp diff_toDelta:diffs]);
+}
+
 - (void)testDiffToDeltaWithEmojisCanBeProperlyAppliedToOriginalString {
   DiffMatchPatch *dmp = [DiffMatchPatch new];
 
