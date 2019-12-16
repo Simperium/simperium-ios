@@ -61,6 +61,21 @@
   XCTAssertEqualObjects(delta, expected, @"Delta should match the expected string");
 }
 
+- (void)testDiffToDeltaDoesNotCrashOnEmptyTextDiffs {
+  DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+  NSString *pristine = @"😃🖖🏻🖖🏻🖖🏿\n🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉\n\n.👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽s👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿.\n🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉\n.👉🏽👈🏿👈🏿👈🏿🥶🥶🥶🥶🥶👈🏼🖖🏻👈🏼s🖖🏻👈🏼😋\n\ndasdas\ndasvafksdldasfadsxc vzx";
+  NSString *edited = @"😃🖖🏻🖖🏻🖖🏿\n🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉\nfds\n.👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽👉🏽s👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿👈🏿.\n🥶🥶🥶👈🏼🖖🏻😉🖖🏽🖖🏿😉fdsvadsfewdsfdsafsdafsd";
+
+  NSMutableArray *diffs = [dmp diff_mainOfOldString:pristine andNewString:edited];
+  if (diffs.count > 2) {
+    [dmp diff_cleanupSemantic:diffs];
+    [dmp diff_cleanupEfficiency:diffs];
+  }
+
+  XCTAssertNoThrow([dmp diff_toDelta:diffs]);
+}
+
 - (void)testDiffToDeltaWithEmojisCanBeProperlyAppliedToOriginalString {
   DiffMatchPatch *dmp = [DiffMatchPatch new];
 
@@ -73,6 +88,75 @@
 
   NSString *output = [result firstObject];
   XCTAssertEqualObjects(edited, output, @"Output String should match the Edited one!");
+}
+
+- (void)testInsertingSimilarSurrogatePairsAtTheBeginningProduceProperDelta {
+    DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+    NSMutableArray *diffs = [NSMutableArray arrayWithObjects:
+                             [Diff diffWithOperation:DIFF_INSERT andText:@"🅱"],
+                             [Diff diffWithOperation:DIFF_EQUAL andText:@"🅰🅱"],
+                             nil];
+    XCTAssertEqualObjects( [dmp diff_toDelta:diffs], [dmp diff_toDelta:[dmp diff_mainOfOldString:@"🅰🅱" andNewString:@"🅱🅰🅱"]]);
+}
+
+- (void)testInsertingSimilarSurrogatePairsInTheMiddleProduceProperDelta {
+    DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+    NSMutableArray *diffs = [NSMutableArray arrayWithObjects:
+                             [Diff diffWithOperation:DIFF_EQUAL andText:@"🅰"],
+                             [Diff diffWithOperation:DIFF_INSERT andText:@"🅰"],
+                             [Diff diffWithOperation:DIFF_EQUAL andText:@"🅱"],
+                             nil];
+    XCTAssertEqualObjects( [dmp diff_toDelta:diffs], [dmp diff_toDelta:[dmp diff_mainOfOldString:@"🅰🅱" andNewString:@"🅰🅰🅱"]]);
+}
+
+- (void)testDeletingSimilarSurrogatePairsAtTheBeginningProduceProperDelta {
+    DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+    NSMutableArray *diffs = [NSMutableArray arrayWithObjects:
+                             [Diff diffWithOperation:DIFF_DELETE andText:@"🅱"],
+                             [Diff diffWithOperation:DIFF_EQUAL andText:@"🅰🅱"],
+                             nil];
+    XCTAssertEqualObjects( [dmp diff_toDelta:diffs], [dmp diff_toDelta:[dmp diff_mainOfOldString:@"🅱🅰🅱" andNewString:@"🅰🅱"]]);
+}
+
+- (void)testDeletingSimilarSurrogatePairsInTheMiddleProduceProperDelta {
+    DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+    NSMutableArray *diffs = [NSMutableArray arrayWithObjects:
+                             [Diff diffWithOperation:DIFF_EQUAL andText:@"🅰"],
+                             [Diff diffWithOperation:DIFF_DELETE andText:@"🅲"],
+                             [Diff diffWithOperation:DIFF_EQUAL andText:@"🅱"],
+                             nil];
+    XCTAssertEqualObjects( [dmp diff_toDelta:diffs], [dmp diff_toDelta:[dmp diff_mainOfOldString:@"🅰🅲🅱" andNewString:@"🅰🅱"]]);
+}
+
+- (void)testSwappingSurrogatePairsProduceProperDelta {
+    DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+    NSMutableArray *diffs = [NSMutableArray arrayWithObjects:
+                             [Diff diffWithOperation:DIFF_DELETE andText:@"🅰"],
+                             [Diff diffWithOperation:DIFF_INSERT andText:@"🅱"],
+                             nil];
+    XCTAssertEqualObjects( [dmp diff_toDelta:diffs], [dmp diff_toDelta:[dmp diff_mainOfOldString:@"🅰" andNewString:@"🅱"]]);
+}
+
+- (void)testSwappingSurrogatePairsProduceProperDeltaWhenVerifiedAgainstManuallyGeneratedDiffs {
+    DiffMatchPatch *dmp = [DiffMatchPatch new];
+
+    NSMutableArray *diffs = [NSMutableArray arrayWithObjects:
+                             [Diff diffWithOperation:DIFF_DELETE andText:@"🅰"],
+                             [Diff diffWithOperation:DIFF_INSERT andText:@"🅱"],
+                             nil];
+
+    NSMutableArray *expected = [NSMutableArray arrayWithObjects:
+                                [Diff diffWithOperation:DIFF_EQUAL andText:[NSString stringWithFormat:@"%C", 0xd83c]],
+                                [Diff diffWithOperation:DIFF_DELETE andText:[NSString stringWithFormat:@"%C", 0xdd70]],
+                                [Diff diffWithOperation:DIFF_INSERT andText:[NSString stringWithFormat:@"%C", 0xdd71]],
+                                nil];
+
+    XCTAssertEqualObjects( [dmp diff_toDelta:diffs], [dmp diff_toDelta:expected] );
 }
 
 - (void)testDiffCommonSuffixTest {
