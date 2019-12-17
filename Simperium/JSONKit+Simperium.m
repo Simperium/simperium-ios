@@ -95,6 +95,11 @@ static NSJSONWritingOptions const SPJSONWritingOptions = 0;
 
 @implementation NSDictionary (SPJSONKitAdapterCategories)
 
+- (BOOL)sp_isValidJsonObject
+{
+    return [NSJSONSerialization isValidJSONObject:self];
+}
+
 - (NSString *)sp_JSONString
 {
     return [NSJSONSerialization sp_JSONStringFromObject:self error:nil];
