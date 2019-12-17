@@ -16,7 +16,7 @@
 @implementation NSDictionarySimperiumTests
 
 - (void)testStringsContainingBrokenSurrogatePairsAreDetectedAsInvalidObject {
-    NSString *invalid = [NSString stringWithFormat:@"%C%C%C%C%C%C%C%C%C%C%C%C", 9786, 65039, 55357, 40, 110, 117, 108, 108, 41, 56726, 55356, 57343];
+    NSString *invalid = [NSString stringWithFormat:@"%C%C%C%C%C%C%C%C%C%C%C%C", 0x263a, 0xfe0f, 0xd83d, 0x28, 0x6e, 0x75, 0x6c, 0x6c, 0x29, 0xdd96, 0xd83c, 0xdfff];
     NSDictionary *invalidObject = @{
         @"content": invalid,
     };
@@ -32,6 +32,43 @@
     };
 
     XCTAssertTrue([invalidObject sp_isValidJsonObject], @"Dictionary is expected to be a valid json");
+}
+
+- (void)testStringContainingAllPossibleUnicodeCharactersDoesNotCauseInvalidJsonFlag {
+
+    NSMutableString *sample = [[NSMutableString alloc] initWithCapacity:USHRT_MAX];
+    unichar const surrogateLowest = 0xDC00UL;
+    unichar const surrogateHighest = 0xDFFFUL;
+    NSInteger index = -1;
+
+    while (++index != USHRT_MAX) {
+        unichar character = (unichar)index;
+
+        // Lower Surrogate: Skip
+        if (CFStringIsSurrogateLowCharacter(character)) {
+            continue;
+        }
+
+        // Regular Character
+        if (CFStringIsSurrogateHighCharacter(character) == false) {
+            [sample appendFormat:@"%C", character];
+            continue;
+        }
+
+        // Higher Surrogate: Build *every* High / Lower possible combination
+        unichar pair = surrogateLowest;
+
+        while (pair != surrogateHighest) {
+            [sample appendFormat:@"%C%C", character, pair];
+            pair += 1;
+        }
+    }
+
+    NSDictionary *validObject = @{
+        NSStringFromClass([self class]): sample,
+    };
+
+    XCTAssertTrue([validObject sp_isValidJsonObject], @"Dictionary is expected to be a valid json");
 }
 
 @end
