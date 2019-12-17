@@ -299,7 +299,16 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
         }
         
         object.ghost.version = endVersion;
-        
+
+        // Ensure the Ghost's Integrity: On error we'll reload the entity
+        if (object.ghost.dictionary != nil && [object.ghost.dictionary sp_isValidJsonObject] == false) {
+            SPLogError(@"Simperium Error: Ghost Integrity Check Failure");
+            if (error) {
+                *error = [NSError sp_errorWithDomain:NSStringFromClass([self class]) code:SPProcessorErrorsEntityGhostIntegrity description:theError.description];
+            }
+            return NO;
+        }
+
         // Slight hack to ensure Core Data realizes the object has changed and needs a save
         NSString *ghostDataCopy = [[[object.ghost dictionary] sp_JSONString] copy];
         object.ghostData        = ghostDataCopy;
