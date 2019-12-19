@@ -583,4 +583,79 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     }];
 }
 
+- (void)testInvalidDeltaCausesGhostIntegrityError {
+
+    // ===================================================================================================
+    // Payload
+    // ===================================================================================================
+    //
+    NSString *localGhostData        = @"☺️🖖🏿";
+    NSString *localMemberData       = @"☺️😃🖖🏿";
+    NSString *delta                 = @"=3\t+(null)\t=3";
+
+
+    // ===================================================================================================
+    // Insert Config
+    // ===================================================================================================
+    //
+    Config* config                  = [_storage insertNewObjectForBucketName:_configBucket.name simperiumKey:nil];
+    config.captainsLog              = localGhostData;
+    [config test_simulateGhostData];
+
+    config.captainsLog              = localMemberData;
+
+    [_simperium saveWithoutSyncing];
+    [_storage test_waitUntilSaveCompletes];
+
+
+    // ===================================================================================================
+    // Prepare Remote Changes
+    // ===================================================================================================
+    //
+    NSMutableDictionary *changes    = [NSMutableDictionary dictionary];
+    NSString *changeVersion         = [NSString sp_makeUUID];
+    NSString *startVersion          = config.ghost.version;
+    NSString *endVersion            = [NSString stringWithFormat:@"%d", startVersion.intValue + 1];
+
+    // Prepare the change itself
+    changes[config.simperiumKey]    = @{
+                                        CH_CLIENT_ID        : SPRemoteClientID,
+                                        CH_CHANGE_VERSION   : changeVersion,
+                                        CH_START_VERSION    : startVersion,
+                                        CH_END_VERSION      : endVersion,
+                                        CH_KEY              : config.simperiumKey,
+                                        CH_OPERATION        : CH_MODIFY,
+                                        CH_VALUE            : @{
+                                                NSStringFromSelector(@selector(captainsLog))    : @{
+                                                        CH_OPERATION    : CH_DATA,
+                                                        CH_VALUE        : delta
+                                                        }
+                                                }
+                                    };
+
+
+    // ===================================================================================================
+    // Process remote changes
+    // ===================================================================================================
+    //
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Process Expectation"];
+
+    dispatch_async(_configBucket.processorQueue, ^{
+        [_configBucket.changeProcessor processRemoteChanges:changes.allValues
+                                                     bucket:_configBucket
+                                             successHandler:^(NSString *simperiumKey, NSString *version) {
+                                                    XCTFail(@"We're expecting an actual error here!");
+                                                }
+                                               errorHandler:^(NSString *simperiumKey, NSString *version, NSError *error) {
+                                                    XCTAssert(error.code == SPProcessorErrorsEntityGhostIntegrity, @"We're expecting an Integrity Error");
+                                                }];
+
+        [expectation fulfill];
+    });
+
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
+        XCTAssertNil(error, @"Expectations Timeout");
+    }];
+}
+
 @end

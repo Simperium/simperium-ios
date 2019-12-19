@@ -17,6 +17,7 @@
 @end
 
 @interface NSDictionary (SPJSONKitAdapterCategories)
+- (BOOL)sp_isValidJsonObject;
 - (NSString *)sp_JSONString;
 - (NSString *)sp_JSONStringWithError:(NSError **)error;
 @end
