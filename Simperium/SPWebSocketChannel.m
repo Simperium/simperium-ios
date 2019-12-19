@@ -382,7 +382,12 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         } else if (error.code == SPProcessorErrorsSentInvalidChange) {
             [changeProcessor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
             [indexProcessor disableRebaseForObjectWithKey:simperiumKey];
-            
+
+        } else if (error.code == SPProcessorErrorsEntityGhostIntegrity) {
+            [indexProcessor disableRebaseForObjectWithKey:simperiumKey];
+            [changeProcessor discardPendingChanges:simperiumKey bucket:bucket];
+            [changeProcessor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:YES];
+
         } else if (error.code == SPProcessorErrorsServerError) {
             [changeProcessor enqueueObjectForRetry:simperiumKey bucket:bucket overrideRemoteData:NO];
             

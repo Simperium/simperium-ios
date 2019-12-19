@@ -25,6 +25,7 @@ typedef NS_ENUM(NSInteger, SPProcessorErrors) {
     SPProcessorErrorsSentInvalidChange,         // Send Full Data: The backend couldn't apply our diff
     SPProcessorErrorsReceivedUnknownChange,     // No need to handle: We've received a change for an unknown entity
     SPProcessorErrorsReceivedInvalidChange,     // Should Redownload the Entity: We couldn't apply a remote diff
+    SPProcessorErrorsEntityGhostIntegrity,      // Entity's Ghost Integrity has been compromised. We'll reload the remote entity
     SPProcessorErrorsClientOutOfSync,           // We received a change with an SV != local version: Reindex is required
     SPProcessorErrorsClientError,               // Should Nuke PendingChange: Catch-all client errors
     SPProcessorErrorsServerError                // Should Retry: Catch-all server errors
