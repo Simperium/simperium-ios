@@ -159,10 +159,7 @@ static NSString * SPUsername    = @"SPUsername";
 - (void)delayedAuthenticationDidFinish {
     if (self.succeededBlock) {
         self.succeededBlock();
-        
-        // Cleanup!
-        self.failedBlock = nil;
-        self.succeededBlock = nil;
+        [self resetCallbackBlocks];
     }
     
     SPLogInfo(@"Simperium authentication success!");
@@ -172,6 +169,11 @@ static NSString * SPUsername    = @"SPUsername";
     }
 }
 
+- (void)resetCallbackBlocks {
+    self.failedBlock = nil;
+    self.succeededBlock = nil;
+}
+
 - (void)authDidSucceed:(SPHttpRequest *)request {
     if (request.responseCode != 200) {
         [self authDidFail:request];
@@ -179,7 +181,8 @@ static NSString * SPUsername    = @"SPUsername";
     }
 
     if (![self isLoginAllowedWithResponseCode:request.responseCode]) {
-        [self cancel];
+        SPLogInfo(@"Simperium Login Policy: DENY!");
+        [self resetCallbackBlocks];
         return;
     }
 
@@ -224,10 +227,7 @@ static NSString * SPUsername    = @"SPUsername";
 - (void)authDidFail:(SPHttpRequest *)request {
     if (self.failedBlock) {
         self.failedBlock(request.responseCode, request.responseString);
-        
-        // Cleanup!
-        self.failedBlock = nil;
-        self.succeededBlock = nil;
+        [self resetCallbackBlocks];
     }
     
     SPLogError(@"Simperium authentication error (%d): %@", request.responseCode, request.responseError);
