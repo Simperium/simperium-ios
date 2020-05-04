@@ -835,6 +835,15 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [self performSelector:@selector(delayedOpenAuthViewController) withObject:nil afterDelay:0.1];
 }
 
+- (SPAuthenticatorLoginResponsePolicy)authenticationDecidePolicyForLoginResponseCode:(NSInteger)responseCode {
+
+    if ([self.authDelegate respondsToSelector:@selector(simperium:decidePolicyForLoginResponseCode:)]) {
+        return [self.authDelegate simperium:self decidePolicyForLoginResponseCode:responseCode];
+    }
+
+    return YES;
+}
+
 - (BOOL)authenticateIfNecessary {
     if (!self.networkEnabled || !self.authenticationEnabled || !self.appID) {
         return NO;
