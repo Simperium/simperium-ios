@@ -11,7 +11,6 @@
 static int kDefaultMinimumPasswordLength = 4;
 
 @implementation SPAuthenticationValidator
-@synthesize minimumPasswordLength;
 
 - (instancetype)init {
     self = [super init];
