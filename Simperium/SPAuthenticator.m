@@ -173,13 +173,21 @@ static NSString * SPUsername    = @"SPUsername";
 }
 
 - (void)authDidSucceed:(SPHttpRequest *)request {
-    NSString *tokenResponse = request.responseString;
     if (request.responseCode != 200) {
         [self authDidFail:request];
         return;
     }
-    
-    NSDictionary *userDict  = [tokenResponse sp_objectFromJSONString];
+
+    if (![self isLoginAllowedWithResponseCode:request.responseCode]) {
+        [self cancel];
+        return;
+    }
+
+    [self performSimperiumAuthenticationWithResponseString:request.responseString];
+}
+
+- (void)performSimperiumAuthenticationWithResponseString:(NSString *)responseString {
+    NSDictionary *userDict  = [responseString sp_objectFromJSONString];
     NSString *username      = userDict[@"username"];
     NSString *token         = userDict[@"access_token"];
     
@@ -200,9 +208,13 @@ static NSString * SPUsername    = @"SPUsername";
     [self performSelector:@selector(delayedAuthenticationDidFinish) withObject:nil afterDelay:0.1];
 }
 
-- (void)authWithCreationDidSucceed:(SPHttpRequest *)request
-{
-    [self authDidSucceed:request];
+- (void)authWithCreationDidSucceed:(SPHttpRequest *)request {
+    if (request.responseCode != 200) {
+        [self authDidFail:request];
+        return;
+    }
+
+    [self performSimperiumAuthenticationWithResponseString:request.responseString];
 
     if ([self.delegate respondsToSelector:@selector(authenticationDidCreateAccount)]) {
         [self.delegate authenticationDidCreateAccount];
@@ -287,6 +299,18 @@ static NSString * SPUsername    = @"SPUsername";
     if ([self.delegate respondsToSelector:@selector(authenticationDidCancel)]) {
         [self.delegate authenticationDidCancel];
     }
+}
+
+
+#pragma mark - Login Policy Helpers
+
+- (BOOL)isLoginAllowedWithResponseCode:(NSInteger)responseCode {
+    if (![self.delegate respondsToSelector:@selector(authenticationDecidePolicyForLoginResponseCode:)]) {
+        return YES;
+    }
+
+    SPAuthenticatorLoginResponsePolicy policy = [self.delegate authenticationDecidePolicyForLoginResponseCode:responseCode];
+    return policy != SPAuthenticatorLoginResponsePolicyCancel;
 }
 
 

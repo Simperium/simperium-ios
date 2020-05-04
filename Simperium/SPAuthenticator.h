@@ -16,11 +16,22 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 
 
 #pragma mark ====================================================================================
+#pragma mark SPAuthenticatorLoginResponsePolicy
+#pragma mark ====================================================================================
+
+typedef enum SPAuthenticatorLoginResponsePolicy : NSInteger {
+    SPAuthenticatorLoginResponsePolicyAllow,
+    SPAuthenticatorLoginResponsePolicyCancel
+} SPAuthenticatorLoginResponsePolicy;
+
+
+#pragma mark ====================================================================================
 #pragma mark SPAuthenticatorDelegate
 #pragma mark ====================================================================================
 
 @protocol SPAuthenticatorDelegate <NSObject>
 @optional
+- (SPAuthenticatorLoginResponsePolicy)authenticationDecidePolicyForLoginResponseCode:(NSInteger)responseCode;
 - (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token;
 - (void)authenticationDidCreateAccount;
 - (void)authenticationDidFail;
