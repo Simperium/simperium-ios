@@ -46,5 +46,4 @@ static int kDefaultMinimumPasswordLength = 4;
     return YES;
 }
 
-
 @end

@@ -841,7 +841,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         return [self.authDelegate simperium:self decidePolicyForLoginResponseCode:responseCode];
     }
 
-    return YES;
+    return SPAuthenticatorLoginResponsePolicyAllow;
 }
 
 - (BOOL)authenticateIfNecessary {
