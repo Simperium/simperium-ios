@@ -129,7 +129,16 @@ static NSString * SPUsername    = @"SPUsername";
                         password:(NSString *)password
                          success:(SucceededBlockType)successBlock
                          failure:(FailedBlockType)failureBlock
-{    
+{
+    [self authenticateWithUsername:username password:password decisionHandler:nil success:successBlock failure:failureBlock];
+}
+
+- (void)authenticateWithUsername:(NSString *)username
+                        password:(NSString *)password
+                 decisionHandler:(DecisionHandlerBlockType)decisionBlock
+                         success:(SucceededBlockType)successBlock
+                         failure:(FailedBlockType)failureBlock
+{
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]];
     SPLogInfo(@"Simperium authenticating: %@", [NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]);
     SPLogVerbose(@"Simperium username is %@", username);
@@ -307,7 +316,7 @@ static NSString * SPUsername    = @"SPUsername";
     }
 
     __block BOOL isAllowed = YES;
-    self.decisionHandler( ^(SPAuthenticatorPolicy policy) {
+    self.decisionHandler(responseCode, ^(SPAuthenticatorPolicy policy) {
         isAllowed = (policy == SPAuthenticatorPolicyAllow);
     });
 

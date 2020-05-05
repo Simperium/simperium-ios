@@ -12,9 +12,7 @@
 @class Simperium;
 
 
-#pragma mark ====================================================================================
-#pragma mark SPAuthenticatorPolicy
-#pragma mark ====================================================================================
+#pragma mark - SPAuthenticatorPolicy
 
 typedef enum SPAuthenticatorPolicy : NSInteger {
     SPAuthenticatorPolicyAllow,
@@ -22,9 +20,7 @@ typedef enum SPAuthenticatorPolicy : NSInteger {
 } SPAuthenticatorPolicy;
 
 
-#pragma mark ====================================================================================
-#pragma mark SPAuthenticatorDelegate
-#pragma mark ====================================================================================
+#pragma mark - SPAuthenticatorDelegate
 
 @protocol SPAuthenticatorDelegate <NSObject>
 @optional
@@ -35,18 +31,14 @@ typedef enum SPAuthenticatorPolicy : NSInteger {
 @end
 
 
-#pragma mark ====================================================================================
-#pragma mark Block Types
-#pragma mark ====================================================================================
+#pragma mark - Block Types
 
 typedef void(^FailedBlockType)(NSInteger responseCode, NSString *responseString);
 typedef void(^SucceededBlockType)(void);
-typedef void(^DecisionHandlerBlockType)(void (^)(SPAuthenticatorPolicy));
+typedef void(^DecisionHandlerBlockType)(NSInteger responseCode, void (^)(SPAuthenticatorPolicy));
 
 
-#pragma mark ====================================================================================
-#pragma mark SPAuthenticator
-#pragma mark ====================================================================================
+#pragma mark - SPAuthenticator
 
 @interface SPAuthenticator : NSObject
 
@@ -54,9 +46,24 @@ typedef void(^DecisionHandlerBlockType)(void (^)(SPAuthenticatorPolicy));
 @property (nonatomic, assign,  readonly) BOOL       connected;
 
 - (instancetype)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s;
+
 - (BOOL)authenticateIfNecessary;
-- (void)authenticateWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock;
-- (void)createWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock;
+
+- (void)authenticateWithUsername:(NSString *)username
+                        password:(NSString *)password
+                         success:(SucceededBlockType)successBlock
+                         failure:(FailedBlockType)failureBlock;
+
+- (void)authenticateWithUsername:(NSString *)username
+                        password:(NSString *)password
+                 decisionHandler:(DecisionHandlerBlockType)decisionBlock
+                         success:(SucceededBlockType)successBlock
+                         failure:(FailedBlockType)failureBlock;
+
+- (void)createWithUsername:(NSString *)username
+                  password:(NSString *)password
+                   success:(SucceededBlockType)successBlock
+                   failure:(FailedBlockType)failureBlock;
 - (void)reset;
 - (void)cancel;
 
