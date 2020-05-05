@@ -45,6 +45,7 @@ static NSString * SPUsername    = @"SPUsername";
 @property (nonatomic,   weak, readwrite) Simperium                      *simperium;
 @property (nonatomic,   copy, readwrite) SucceededBlockType             succeededBlock;
 @property (nonatomic,   copy, readwrite) FailedBlockType                failedBlock;
+@property (nonatomic,   copy, readwrite) DecisionHandlerBlockType       decisionHandler;
 @property (nonatomic, assign, readwrite) BOOL                           connected;
 @end
 
@@ -124,7 +125,10 @@ static NSString * SPUsername    = @"SPUsername";
 }
 
 // Perform the actual authentication calls to Simperium
-- (void)authenticateWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock
+- (void)authenticateWithUsername:(NSString *)username
+                        password:(NSString *)password
+                         success:(SucceededBlockType)successBlock
+                         failure:(FailedBlockType)failureBlock
 {    
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]];
     SPLogInfo(@"Simperium authenticating: %@", [NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]);
@@ -172,6 +176,7 @@ static NSString * SPUsername    = @"SPUsername";
 - (void)resetCallbackBlocks {
     self.failedBlock = nil;
     self.succeededBlock = nil;
+    self.decisionHandler = nil;
 }
 
 - (void)authDidSucceed:(SPHttpRequest *)request {
@@ -305,12 +310,19 @@ static NSString * SPUsername    = @"SPUsername";
 #pragma mark - Login Policy Helpers
 
 - (BOOL)isLoginAllowedWithResponseCode:(NSInteger)responseCode {
-    if (![self.delegate respondsToSelector:@selector(authenticationDecidePolicyForLoginResponseCode:)]) {
+
+    if (self.decisionHandler == nil) {
         return YES;
     }
 
-    SPAuthenticatorLoginResponsePolicy policy = [self.delegate authenticationDecidePolicyForLoginResponseCode:responseCode];
-    return policy != SPAuthenticatorLoginResponsePolicyCancel;
+    __block BOOL isAllowed = YES;
+    self.decisionHandler( ^(SPAuthenticatorPolicy policy) {
+        isAllowed = (policy == SPAuthenticatorPolicyAllow);
+    });
+
+    self.decisionHandler = nil;
+
+    return isAllowed;
 }
 
 

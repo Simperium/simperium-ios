@@ -9,20 +9,17 @@
 #import <Foundation/Foundation.h>
 
 
-typedef void(^SucceededBlockType)(void);
-typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
-
 @class Simperium;
 
 
 #pragma mark ====================================================================================
-#pragma mark SPAuthenticatorLoginResponsePolicy
+#pragma mark SPAuthenticatorPolicy
 #pragma mark ====================================================================================
 
-typedef enum SPAuthenticatorLoginResponsePolicy : NSInteger {
-    SPAuthenticatorLoginResponsePolicyAllow,
-    SPAuthenticatorLoginResponsePolicyCancel
-} SPAuthenticatorLoginResponsePolicy;
+typedef enum SPAuthenticatorPolicy : NSInteger {
+    SPAuthenticatorPolicyAllow,
+    SPAuthenticatorPolicyCancel
+} SPAuthenticatorPolicy;
 
 
 #pragma mark ====================================================================================
@@ -31,12 +28,20 @@ typedef enum SPAuthenticatorLoginResponsePolicy : NSInteger {
 
 @protocol SPAuthenticatorDelegate <NSObject>
 @optional
-- (SPAuthenticatorLoginResponsePolicy)authenticationDecidePolicyForLoginResponseCode:(NSInteger)responseCode;
 - (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token;
 - (void)authenticationDidCreateAccount;
 - (void)authenticationDidFail;
 - (void)authenticationDidCancel;
 @end
+
+
+#pragma mark ====================================================================================
+#pragma mark Block Types
+#pragma mark ====================================================================================
+
+typedef void(^FailedBlockType)(NSInteger responseCode, NSString *responseString);
+typedef void(^SucceededBlockType)(void);
+typedef void(^DecisionHandlerBlockType)(void (^)(SPAuthenticatorPolicy));
 
 
 #pragma mark ====================================================================================
