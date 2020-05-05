@@ -124,8 +124,46 @@ static NSString * SPUsername    = @"SPUsername";
 }
 
 // Perform the actual authentication calls to Simperium
-- (void)authenticateWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock
-{    
+- (void)authenticateWithUsername:(NSString *)username
+                        password:(NSString *)password
+                         success:(SucceededBlockType)successBlock
+                         failure:(FailedBlockType)failureBlock
+{
+    SPHttpRequest *request = [self authorizationRequestWithUsername:username password:password];
+
+    // Selectors are for auth-related handling
+    request.selectorSuccess = @selector(authDidSucceed:);
+    request.selectorFailed = @selector(authDidFail:);
+
+    // Blocks are used here for UI tasks on iOS/OSX
+    self.succeededBlock = successBlock;
+    self.failedBlock = failureBlock;
+
+    [[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
+
+}
+
+- (void)validateWithUsername:(NSString *)username
+                    password:(NSString *)password
+                     success:(SucceededBlockType)successBlock
+                     failure:(FailedBlockType)failureBlock
+{
+    SPHttpRequest *request = [self authorizationRequestWithUsername:username password:password];
+
+    // Selectors are for auth-related handling
+    request.selectorSuccess = @selector(validateDidSucceed:);
+    request.selectorFailed = @selector(validateDidFail:);
+
+    // Blocks are used here for UI tasks on iOS/OSX
+    self.succeededBlock = successBlock;
+    self.failedBlock = failureBlock;
+
+    [[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
+
+}
+
+- (SPHttpRequest *)authorizationRequestWithUsername:(NSString *)username password:(NSString *)password
+{
     NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]];
     SPLogInfo(@"Simperium authenticating: %@", [NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]);
     SPLogVerbose(@"Simperium username is %@", username);
@@ -144,25 +182,15 @@ static NSString * SPUsername    = @"SPUsername";
     request.method = SPHttpRequestMethodsPost;
     request.postData = [[authDict sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
     request.delegate = self;
-    request.selectorSuccess = @selector(authDidSucceed:);
-    request.selectorFailed = @selector(authDidFail:);
     request.timeout = 8;
-    
-    // Blocks are used here for UI tasks on iOS/OSX
-    self.succeededBlock = successBlock;
-    self.failedBlock = failureBlock;
-    
-    // Selectors are for auth-related handling
-    [[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
+
+    return request;
 }
 
 - (void)delayedAuthenticationDidFinish {
     if (self.succeededBlock) {
         self.succeededBlock();
-        
-        // Cleanup!
-        self.failedBlock = nil;
-        self.succeededBlock = nil;
+        [self resetCallbackBlocks];
     }
     
     SPLogInfo(@"Simperium authentication success!");
@@ -212,10 +240,7 @@ static NSString * SPUsername    = @"SPUsername";
 - (void)authDidFail:(SPHttpRequest *)request {
     if (self.failedBlock) {
         self.failedBlock(request.responseCode, request.responseString);
-        
-        // Cleanup!
-        self.failedBlock = nil;
-        self.succeededBlock = nil;
+        [self resetCallbackBlocks];
     }
     
     SPLogError(@"Simperium authentication error (%d): %@", request.responseCode, request.responseError);
@@ -289,6 +314,35 @@ static NSString * SPUsername    = @"SPUsername";
     }
 }
 
+#pragma mark - Validation Callbacks
+
+- (void)validateDidSucceed:(SPHttpRequest *)request {
+    SPLogInfo(@"Simperium account validated!");
+
+    if (self.succeededBlock) {
+        self.succeededBlock();
+    }
+
+    [self resetCallbackBlocks];
+}
+
+- (void)validateDidFail:(SPHttpRequest *)request {
+    SPLogInfo(@"Simperium account vaidation failure");
+
+    if (self.failedBlock) {
+        self.failedBlock(request.responseCode, request.responseString);
+    }
+
+    [self resetCallbackBlocks];
+}
+
+
+#pragma mark - Blocks Helpers
+
+- (void)resetCallbackBlocks {
+    self.succeededBlock = nil;
+    self.failedBlock = nil;
+}
 
 #pragma mark - Static Helpers
 

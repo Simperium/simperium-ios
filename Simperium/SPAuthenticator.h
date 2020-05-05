@@ -38,9 +38,24 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 @property (nonatomic, assign,  readonly) BOOL       connected;
 
 - (instancetype)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s;
+
 - (BOOL)authenticateIfNecessary;
-- (void)authenticateWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock;
-- (void)createWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock;
+
+- (void)authenticateWithUsername:(NSString *)username
+                        password:(NSString *)password
+                         success:(SucceededBlockType)successBlock
+                         failure:(FailedBlockType)failureBlock;
+
+- (void)validateWithUsername:(NSString *)username
+                    password:(NSString *)password
+                     success:(SucceededBlockType)successBlock
+                     failure:(FailedBlockType)failureBlock;
+
+- (void)createWithUsername:(NSString *)username
+                  password:(NSString *)password
+                   success:(SucceededBlockType)successBlock
+                   failure:(FailedBlockType)failureBlock;
+
 - (void)reset;
 - (void)cancel;
 
