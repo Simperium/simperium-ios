@@ -185,17 +185,13 @@ static NSString * SPUsername    = @"SPUsername";
         return;
     }
 
-    if (![self isLoginAllowedWithResponseCode:request.responseCode]) {
-        SPLogInfo(@"Simperium Login Policy: DENY!");
+    if (![self isAuthenticationAllowedWithResponseCode:request.responseCode]) {
+        SPLogInfo(@"Simperium Auth Policy: DENY!");
         [self resetCallbackBlocks];
         return;
     }
 
-    [self performSimperiumAuthenticationWithResponseString:request.responseString];
-}
-
-- (void)performSimperiumAuthenticationWithResponseString:(NSString *)responseString {
-    NSDictionary *userDict  = [responseString sp_objectFromJSONString];
+    NSDictionary *userDict  = [request.responseString sp_objectFromJSONString];
     NSString *username      = userDict[@"username"];
     NSString *token         = userDict[@"access_token"];
     
@@ -217,12 +213,7 @@ static NSString * SPUsername    = @"SPUsername";
 }
 
 - (void)authWithCreationDidSucceed:(SPHttpRequest *)request {
-    if (request.responseCode != 200) {
-        [self authDidFail:request];
-        return;
-    }
-
-    [self performSimperiumAuthenticationWithResponseString:request.responseString];
+    [self authDidSucceed:request];
 
     if ([self.delegate respondsToSelector:@selector(authenticationDidCreateAccount)]) {
         [self.delegate authenticationDidCreateAccount];
@@ -309,7 +300,7 @@ static NSString * SPUsername    = @"SPUsername";
 
 #pragma mark - Login Policy Helpers
 
-- (BOOL)isLoginAllowedWithResponseCode:(NSInteger)responseCode {
+- (BOOL)isAuthenticationAllowedWithResponseCode:(NSInteger)responseCode {
 
     if (self.decisionHandler == nil) {
         return YES;
