@@ -64,19 +64,6 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
 
 
 #pragma mark ====================================================================================
-#pragma mark SimperiumAuthenticationDelegate
-#pragma mark ====================================================================================
-
-/** Simperium's Auth Delegate allows client apps to intercept and cancel a successful authentication sequence.
-    This is specially helpful in scenarios in which we may request users to set a stronger password.
- */
-@protocol SimperiumAuthenticationDelegate <NSObject>
-@optional
-- (SPAuthenticatorLoginResponsePolicy)simperium:(Simperium *)simperium decidePolicyForLoginResponseCode:(NSInteger)responseCode;
-@end
-
-
-#pragma mark ====================================================================================
 #pragma mark Simperium: The main class through which you access Simperium.
 #pragma mark ====================================================================================
 
@@ -167,9 +154,6 @@ typedef void (^SimperiumSignoutCompletion)(void);
 
 // A SimperiumDelegate for system callbacks.
 @property (nonatomic, readwrite, weak) id<SimperiumDelegate> delegate;
-
-// A SimperiumDelegate for system callbacks.
-@property (nonatomic, readwrite, weak) id<SimperiumAuthenticationDelegate> authDelegate;
 
 // Set this to true if you need to be able to cancel the authentication dialog.
 @property (nonatomic, readwrite, assign) BOOL authenticationOptional;
