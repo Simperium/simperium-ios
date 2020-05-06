@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0CD3AD8D17A83A9800E9CCFE /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0CD3AD8C17A83A9800E9CCFE /* Default-568h@2x.png */; };
 		26156ACC14EC3D4C003332BA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26156ACB14EC3D4C003332BA /* UIKit.framework */; };
 		26156ACE14EC3D4C003332BA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26156ACD14EC3D4C003332BA /* Foundation.framework */; };
 		26156AD014EC3D4C003332BA /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26156ACF14EC3D4C003332BA /* CoreGraphics.framework */; };
@@ -23,10 +22,10 @@
 		26156AF714EC405F003332BA /* Todo.m in Sources */ = {isa = PBXBuildFile; fileRef = 26156AF614EC405F003332BA /* Todo.m */; };
 		26C93A7514F86D1800BE99F5 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 26C93A7214F86D1800BE99F5 /* icon.png */; };
 		26C93A7614F86D1800BE99F5 /* icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 26C93A7314F86D1800BE99F5 /* icon@2x.png */; };
+		B5B45EFE24631794005D7ADD /* Launch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5B45EFD24631794005D7ADD /* Launch.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0CD3AD8C17A83A9800E9CCFE /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		26156AC714EC3D4C003332BA /* Simpletodo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Simpletodo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		26156ACB14EC3D4C003332BA /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		26156ACD14EC3D4C003332BA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -49,6 +48,7 @@
 		2620CFC8153DEC2B00AD5E5F /* Simpletodo-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Simpletodo-Info.plist"; sourceTree = "<group>"; };
 		26C93A7214F86D1800BE99F5 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		26C93A7314F86D1800BE99F5 /* icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon@2x.png"; sourceTree = "<group>"; };
+		B5B45EFD24631794005D7ADD /* Launch.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Launch.storyboard; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,7 +69,6 @@
 		26156ABC14EC3D4C003332BA = {
 			isa = PBXGroup;
 			children = (
-				0CD3AD8C17A83A9800E9CCFE /* Default-568h@2x.png */,
 				26C93A7214F86D1800BE99F5 /* icon.png */,
 				26C93A7314F86D1800BE99F5 /* icon@2x.png */,
 				26156AD314EC3D4C003332BA /* Simpletodo */,
@@ -104,6 +103,7 @@
 				26156AF614EC405F003332BA /* Todo.m */,
 				26156ADC14EC3D4C003332BA /* SPAppDelegate.h */,
 				26156ADD14EC3D4C003332BA /* SPAppDelegate.m */,
+				B5B45EFD24631794005D7ADD /* Launch.storyboard */,
 				26156ADF14EC3D4C003332BA /* MainStoryboard_iPhone.storyboard */,
 				26156AE214EC3D4C003332BA /* MainStoryboard_iPad.storyboard */,
 				26156AE814EC3D4C003332BA /* SPMasterViewController.h */,
@@ -160,6 +160,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 26156ABC14EC3D4C003332BA;
@@ -182,7 +183,7 @@
 				26156AE414EC3D4C003332BA /* MainStoryboard_iPad.storyboard in Resources */,
 				26C93A7514F86D1800BE99F5 /* icon.png in Resources */,
 				26C93A7614F86D1800BE99F5 /* icon@2x.png in Resources */,
-				0CD3AD8D17A83A9800E9CCFE /* Default-568h@2x.png in Resources */,
+				B5B45EFE24631794005D7ADD /* Launch.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -312,7 +313,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Simpletodo/Simpletodo-Prefix.pch";
 				INFOPLIST_FILE = "Simpletodo/Simpletodo-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Simpletodo;
@@ -330,7 +331,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Simpletodo/Simpletodo-Prefix.pch";
 				INFOPLIST_FILE = "Simpletodo/Simpletodo-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Simpletodo;
