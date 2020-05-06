@@ -64,7 +64,6 @@
 
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:self.targetURL];
     [self.webView loadRequest:request];
-    [self.activityIndicator startAnimating];
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
@@ -75,12 +74,17 @@
 #pragma mark - Helpers
 
 - (IBAction)dismissAction:(id)sender {
-    
+
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 
 #pragma mark UIWebViewDelegate Methods
+
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation
+{
+    [self.activityIndicator startAnimating];
+}
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
