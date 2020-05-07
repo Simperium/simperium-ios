@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
 
   # Frameworks
   #
-  s.frameworks = 'Security', 'MobileCoreServices', 'CoreData', 'CFNetwork', 'SystemConfiguration', 'Foundation', 'UIKit', 'CoreGraphics'
+  s.frameworks = 'Security', 'CoreServices', 'CoreData', 'CFNetwork', 'SystemConfiguration', 'Foundation', 'UIKit', 'CoreGraphics', 'WebKit'
 
   # Settings
   s.requires_arc = true

@@ -8,6 +8,7 @@
 
 #import "SPWebViewController.h"
 #import "UIDevice+Simperium.h"
+#import <WebKit/WebKit.h>
 
 
 
@@ -15,9 +16,9 @@
 #pragma mark Private
 #pragma mark ====================================================================================
 
-@interface SPWebViewController () <UIWebViewDelegate>
+@interface SPWebViewController () <WKNavigationDelegate>
 @property (nonatomic, strong) NSURL                     *targetURL;
-@property (nonatomic, strong) UIWebView                 *webView;
+@property (nonatomic, strong) WKWebView                 *webView;
 @property (nonatomic, strong) UIActivityIndicatorView   *activityIndicator;
 @end
 
@@ -42,9 +43,9 @@
 
 - (void)loadView {
     
-    self.webView            = [[UIWebView alloc] init];
-    self.webView.delegate   = self;
-    self.view               = self.webView;
+    self.webView = [WKWebView new];
+    self.webView.navigationDelegate = self;
+    self.view = self.webView;
 }
 
 - (void)viewDidLoad {
@@ -60,7 +61,7 @@
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                                                                            target:self
                                                                                            action:@selector(dismissAction:)];
-    
+
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:self.targetURL];
     [self.webView loadRequest:request];
 }
@@ -73,22 +74,26 @@
 #pragma mark - Helpers
 
 - (IBAction)dismissAction:(id)sender {
-    
+
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 
 #pragma mark UIWebViewDelegate Methods
 
-- (void)webViewDidStartLoad:(UIWebView *)webView {
-    
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation
+{
     [self.activityIndicator startAnimating];
 }
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView {
-    
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
+{
     [self.activityIndicator stopAnimating];
 }
 
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+    [self.activityIndicator stopAnimating];
+}
 
 @end

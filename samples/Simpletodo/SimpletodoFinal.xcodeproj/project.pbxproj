@@ -28,8 +28,8 @@
 		26CEF5FA14EC418A00BEC0BF /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5F914EC418A00BEC0BF /* MobileCoreServices.framework */; };
 		26CEF5FC14EC419100BEC0BF /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5FB14EC419100BEC0BF /* SystemConfiguration.framework */; };
 		26CEF5FE14EC41AD00BEC0BF /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26CEF5FD14EC41AD00BEC0BF /* libz.dylib */; };
-		46CC658F16B09C7700D5DC22 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */; };
 		B535CFEC1E570E8300E932FF /* Simperium.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B5CAA5611CAAE7AC006FE048 /* Simperium.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		B5B45F0424631807005D7ADD /* Launch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5B45F0324631807005D7ADD /* Launch.storyboard */; };
 		B5CAA5621CAAE7B1006FE048 /* Simperium.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5CAA5611CAAE7AC006FE048 /* Simperium.framework */; };
 /* End PBXBuildFile section */
 
@@ -122,7 +122,7 @@
 		26CEF5FB14EC419100BEC0BF /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		26CEF5FD14EC41AD00BEC0BF /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		46B787DD16B70402001AA908 /* Simperium.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Simperium.xcodeproj; path = ../../Simperium.xcodeproj; sourceTree = "<group>"; };
-		46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		B5B45F0324631807005D7ADD /* Launch.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Launch.storyboard; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,7 +153,6 @@
 				46B787DD16B70402001AA908 /* Simperium.xcodeproj */,
 				26C93A7214F86D1800BE99F5 /* icon.png */,
 				26C93A7314F86D1800BE99F5 /* icon@2x.png */,
-				46CC658E16B09C7700D5DC22 /* Default-568h@2x.png */,
 				26156AD314EC3D4C003332BA /* Simpletodo */,
 				26156ACA14EC3D4C003332BA /* Frameworks */,
 				26156AC814EC3D4C003332BA /* Products */,
@@ -193,6 +192,7 @@
 				26156AF514EC405F003332BA /* Todo.h */,
 				26156AF614EC405F003332BA /* Todo.m */,
 				26156AE514EC3D4C003332BA /* Simpletodo.xcdatamodeld */,
+				B5B45F0324631807005D7ADD /* Launch.storyboard */,
 				26156ADF14EC3D4C003332BA /* MainStoryboard_iPhone.storyboard */,
 				26156AE214EC3D4C003332BA /* MainStoryboard_iPad.storyboard */,
 				26156AE814EC3D4C003332BA /* SPMasterViewController.h */,
@@ -263,6 +263,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 26156ABC14EC3D4C003332BA;
@@ -322,7 +323,7 @@
 				26156AE414EC3D4C003332BA /* MainStoryboard_iPad.storyboard in Resources */,
 				26C93A7514F86D1800BE99F5 /* icon.png in Resources */,
 				26C93A7614F86D1800BE99F5 /* icon@2x.png in Resources */,
-				46CC658F16B09C7700D5DC22 /* Default-568h@2x.png in Resources */,
+				B5B45F0424631807005D7ADD /* Launch.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
