@@ -36,6 +36,8 @@
 		B51397F11947612B004C1416 /* SPChangeProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B51397F01947612B004C1416 /* SPChangeProcessorTests.m */; };
 		B526FA7322E00C4E00831994 /* SPAuthenticationNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = B526FA7122E00C4E00831994 /* SPAuthenticationNavigationController.h */; };
 		B526FA7422E00C4E00831994 /* SPAuthenticationNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = B526FA7222E00C4E00831994 /* SPAuthenticationNavigationController.m */; };
+		B5298C102463147B00FE1E2D /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5298C0F2463147B00FE1E2D /* WebKit.framework */; };
+		B5298C162463152400FE1E2D /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5298C152463152400FE1E2D /* CoreServices.framework */; };
 		B53F75A91A1BAB4600C0DDFB /* SPStorageObserverAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = B53F75A81A1BAB4600C0DDFB /* SPStorageObserverAdapter.m */; };
 		B5549FE6184581BF007EA226 /* SPThreadsafeMutableSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5549FE5184581BF007EA226 /* SPThreadsafeMutableSetTests.m */; };
 		B565ECA2183261A600D162FF /* Test1.xcdatamodeld in Resources */ = {isa = PBXBuildFile; fileRef = 26ED4412146CF03A00C3D7D6 /* Test1.xcdatamodeld */; };
@@ -191,7 +193,6 @@
 		B5CAA54B1CAABC23006FE048 /* NSError+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5F4C84418FC1B04009F8643 /* NSError+Simperium.m */; };
 		B5CAA54C1CAAC21C006FE048 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 466EB41C17BC49DB005F7599 /* QuartzCore.framework */; };
 		B5CAA54D1CAAC222006FE048 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 264AE51015D3094D00E5E04E /* Security.framework */; };
-		B5CAA54E1CAAC228006FE048 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */; };
 		B5CAA54F1CAAC22C006FE048 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBCD13DCFDA700B8AC56 /* CFNetwork.framework */; };
 		B5CAA5501CAAC233006FE048 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F4BBCB13DCFD9E00B8AC56 /* SystemConfiguration.framework */; };
 		B5CAA5511CAAC237006FE048 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 264CD9B0135DFFFF00C51BAD /* CoreData.framework */; };
@@ -587,6 +588,8 @@
 		B52674701858EC4800A89D7A /* Simperium+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Simperium+Internals.h"; sourceTree = "<group>"; };
 		B526FA7122E00C4E00831994 /* SPAuthenticationNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SPAuthenticationNavigationController.h; path = "Simperium-iOS/SPAuthenticationNavigationController.h"; sourceTree = SOURCE_ROOT; };
 		B526FA7222E00C4E00831994 /* SPAuthenticationNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SPAuthenticationNavigationController.m; path = "Simperium-iOS/SPAuthenticationNavigationController.m"; sourceTree = SOURCE_ROOT; };
+		B5298C0F2463147B00FE1E2D /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		B5298C152463152400FE1E2D /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		B53F75A71A1BAB4600C0DDFB /* SPStorageObserverAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStorageObserverAdapter.h; sourceTree = "<group>"; };
 		B53F75A81A1BAB4600C0DDFB /* SPStorageObserverAdapter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStorageObserverAdapter.m; sourceTree = "<group>"; };
 		B5549FE118457F72007EA226 /* SPThreadsafeMutableSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = SPThreadsafeMutableSet.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
@@ -734,9 +737,10 @@
 				B5CAA5541CAAC4B1006FE048 /* libicucore.tbd in Frameworks */,
 				B5CAA5521CAAC23E006FE048 /* Foundation.framework in Frameworks */,
 				B5CAA5511CAAC237006FE048 /* CoreData.framework in Frameworks */,
+				B5298C162463152400FE1E2D /* CoreServices.framework in Frameworks */,
 				B5CAA5501CAAC233006FE048 /* SystemConfiguration.framework in Frameworks */,
 				B5CAA54F1CAAC22C006FE048 /* CFNetwork.framework in Frameworks */,
-				B5CAA54E1CAAC228006FE048 /* MobileCoreServices.framework in Frameworks */,
+				B5298C102463147B00FE1E2D /* WebKit.framework in Frameworks */,
 				B5CAA54D1CAAC222006FE048 /* Security.framework in Frameworks */,
 				B5CAA54C1CAAC21C006FE048 /* QuartzCore.framework in Frameworks */,
 			);
@@ -931,6 +935,8 @@
 		264CD8FD135DFD7A00C51BAD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B5298C152463152400FE1E2D /* CoreServices.framework */,
+				B5298C0F2463147B00FE1E2D /* WebKit.framework */,
 				B5CAA6151CAAEEAF006FE048 /* libz.tbd */,
 				B5CAA6131CAAEE9F006FE048 /* SystemConfiguration.framework */,
 				B5CAA6111CAAEE7F006FE048 /* CoreServices.framework */,
