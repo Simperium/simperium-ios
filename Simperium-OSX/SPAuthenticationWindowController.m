@@ -267,6 +267,8 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 #pragma mark Actions
 
 - (IBAction)signInAction:(id)sender {
+    [self clearAuthenticationError];
+
     if (![self validateSignIn]) {
         return;
     }
@@ -299,10 +301,16 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 }
 
 - (IBAction)signUpAction:(id)sender {
+    [self clearAuthenticationError];
+
     if (![self validateSignUp]) {
         return;
     }
 
+    [self performSignup];
+}
+
+- (void)performSignup {
     self.signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
     [self.signUpProgress startAnimation:self];
     [self.signUpButton setEnabled:NO];
@@ -386,14 +394,12 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 }
 
 - (BOOL)validateSignIn {
-    [self clearAuthenticationError];
     return [self validateConnection] &&
            [self validateUsername] &&
            [self validatePasswordSecurity];
 }
 
 - (BOOL)validateSignUp {
-    [self clearAuthenticationError];
     return [self validateConnection] &&
            [self validateUsername] &&
            [self validatePasswordsMatch] &&
