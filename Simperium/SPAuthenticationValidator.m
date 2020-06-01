@@ -7,16 +7,20 @@
 //
 
 #import "SPAuthenticationValidator.h"
+#import "NSError+Simperium.h"
 
-static int kDefaultMinimumPasswordLength = 4;
+static NSInteger SPAuthenticationDefaultMinPasswordLength = 8;
+static NSInteger SPAuthenticationLegacyMinPasswordLength = 4;
+
+NSString* const SPAuthenticationErrorDomain = @"SPAuthenticationValidatorDomain";
 
 @implementation SPAuthenticationValidator
-@synthesize minimumPasswordLength;
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        self.minimumPasswordLength = kDefaultMinimumPasswordLength;
+        self.strongMinimumPasswordLength = SPAuthenticationDefaultMinPasswordLength;
+        self.legacyMinimumPasswordLength = SPAuthenticationLegacyMinPasswordLength;
     }
     
     return self;
@@ -33,13 +37,54 @@ static int kDefaultMinimumPasswordLength = 4;
     return [emailTest evaluateWithObject:checkString];
 }
 
-- (BOOL)validateUsername:(NSString *)username {
-    // Expect email addresses by default
-    return [self isValidEmail:username];
+- (BOOL)validateUsername:(NSString *)username error:(NSError **)error {
+    if ([self isValidEmail:username]) {
+        return YES;
+    }
+
+    if (error) {
+        NSString *description = NSLocalizedString(@"Not a valid email address", @"Error when you enter a bad email address");
+
+        *error = [NSError sp_errorWithDomain:SPAuthenticationErrorDomain
+                                        code:SPAuthenticationErrorsEmailInvalid
+                                 description:description];
+    }
+
+    return NO;
 }
 
-- (BOOL)validatePasswordSecurity:(NSString *)password {
-    if ([password length] < self.minimumPasswordLength) {
+- (BOOL)validatePasswordWithUsername:(NSString *)username password:(NSString *)password error:(NSError **)error {
+    if (password.length < self.strongMinimumPasswordLength) {
+        if (error) {
+            NSString *description = NSLocalizedString(@"Password must contain at least %d characters", comment: @"Message displayed when password is too short. Please preserve the Percent D!");
+            NSString *formattedDescription = [NSString stringWithFormat:description, self.strongMinimumPasswordLength];
+
+            *error = [NSError sp_errorWithDomain:SPAuthenticationErrorDomain
+                                            code:SPAuthenticationErrorsPasswordTooShort
+                                     description:formattedDescription];
+        }
+        return NO;
+    }
+
+    if ([username isEqualToString:password]) {
+        if (error) {
+            NSString *description = NSLocalizedString(@"Password cannot match email", @"Message displayed when password is invalid (Signup)");
+            *error = [NSError sp_errorWithDomain:SPAuthenticationErrorDomain
+                                            code:SPAuthenticationErrorsPasswordMatchesUsername
+                                     description:description];
+        }
+
+        return NO;
+    }
+
+    if ([password containsString:@"\n"] || [password containsString:@"\t"]) {
+        if (error) {
+            NSString *description = NSLocalizedString(@"Password must not contain tabs nor newlines", comment: @"Message displayed when a password contains a disallowed character");
+            *error = [NSError sp_errorWithDomain:SPAuthenticationErrorDomain
+                                            code:SPAuthenticationErrorsPasswordContainsInvalidCharacter
+                                     description:description];
+        }
+
         return NO;
     }
     
@@ -47,5 +92,12 @@ static int kDefaultMinimumPasswordLength = 4;
     return YES;
 }
 
+- (BOOL)mustPerformPasswordResetWithUsername:(NSString *)username password:(NSString *)password {
+
+    BOOL isValidLegacyPassword = (password.length >= self.legacyMinimumPasswordLength);
+    BOOL isValidStrongPassword = [self validatePasswordWithUsername:username password:password error:nil];
+
+    return isValidLegacyPassword && !isValidStrongPassword;
+}
 
 @end
