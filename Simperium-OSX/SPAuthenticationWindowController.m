@@ -220,7 +220,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     NSString *forgotPasswordURL = [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
     
     // Post the email already entered in the Username Field. This allows us to prefill the Forgot Password Form
-    NSString *username = self.usernameField.stringValue.sp_trim;
+    NSString *username = self.usernameText;
     if (username.length) {
         NSString *parameters = [NSString stringWithFormat:@"?email=%@", username];
         forgotPasswordURL = [forgotPasswordURL stringByAppendingString:parameters];
@@ -263,8 +263,18 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self.window.contentView setNeedsDisplay:YES];
 }
 
+#pragma mark - Dynamic Properties
 
-#pragma mark Actions
+- (NSString *)usernameText {
+    return self.usernameField.stringValue.sp_trim ?: @"";
+}
+
+- (NSString *)passwordText {
+    return self.passwordField.stringValue ?: @"";
+}
+
+
+#pragma mark - Actions
 
 - (IBAction)signInAction:(id)sender {
     [self clearAuthenticationError];
@@ -283,8 +293,8 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self.changeToSignUpButton setEnabled:NO];
     [self.usernameField setEnabled:NO];
     [self.passwordField setEnabled:NO];
-    [self.authenticator authenticateWithUsername:self.usernameField.stringValue.sp_trim
-                                        password:self.passwordField.stringValue
+    [self.authenticator authenticateWithUsername:self.usernameText
+                                        password:self.passwordText
                                        success:^{
                                        }
                                        failure:^(int responseCode, NSString *responseString) {
@@ -319,8 +329,8 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self.passwordField setEnabled:NO];
     [self.confirmField setEnabled:NO];
 
-    [self.authenticator createWithUsername:self.usernameField.stringValue.sp_trim
-                                  password:self.passwordField.stringValue
+    [self.authenticator createWithUsername:self.usernameText
+                                  password:self.passwordText
                                  success:^{
                                      //[self close];
                                  }
@@ -346,7 +356,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
 - (BOOL)validateUsername {
     NSError *error = nil;
-    if ([self.validator validateUsername:self.usernameField.stringValue.sp_trim
+    if ([self.validator validateUsername:self.usernameText
                                    error:&error]) {
         return YES;
     }
@@ -359,8 +369,8 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
 - (BOOL)validatePasswordSecurity {
     NSError *error = nil;
-    if ([self.validator validatePasswordWithUsername:self.usernameField.stringValue.sp_trim
-                                            password:self.passwordField.stringValue
+    if ([self.validator validatePasswordWithUsername:self.usernameText
+                                            password:self.passwordText
                                                error:&error]) {
         return YES;
     }
@@ -374,7 +384,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 }
 
 - (BOOL)validatePasswordsMatch {
-    if (![self.passwordField.stringValue isEqualToString:self.confirmField.stringValue]) {
+    if (![self.passwordText isEqualToString:self.confirmField.stringValue]) {
         [self earthquake:self.passwordField];
         [self earthquake:self.confirmField];
 
