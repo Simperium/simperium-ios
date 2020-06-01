@@ -28,7 +28,7 @@
     NSRectFill([self frame]);
     
     [[NSColor colorWithCalibratedWhite:1.0 alpha:1.0] set];
-    NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:[self frame] xRadius:12.0 yRadius:12.0];
+    NSBezierPath *path = [NSBezierPath bezierPathWithRect:self.frame];
     [path addClip];
     NSRectFill([self frame]);
 }
