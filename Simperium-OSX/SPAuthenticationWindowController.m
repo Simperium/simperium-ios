@@ -395,7 +395,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
 - (void)openResetPasswordURL {
     NSString *resetPasswordPath = [SPAuthenticationConfiguration.sharedInstance.resetPasswordURL stringByAppendingString:self.usernameText];
-    NSURL *targetURL = [NSURL URLWithString:resetPasswordPathWithEmail];
+    NSURL *targetURL = [NSURL URLWithString:resetPasswordPath];
 
     if (!targetURL) {
         return;
