@@ -270,7 +270,11 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     if (![self validateSignIn]) {
         return;
     }
-    
+
+    [self performAuthentication];
+}
+
+- (void)performAuthentication {
     self.signInButton.title = NSLocalizedString(@"Signing In...", @"Displayed temporarily while signing in");
     [self.signInProgress startAnimation:self];
     [self.signInButton setEnabled:NO];
@@ -298,7 +302,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     if (![self validateSignUp]) {
         return;
     }
-    
+
     self.signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
     [self.signUpProgress startAnimation:self];
     [self.signUpButton setEnabled:NO];
@@ -333,32 +337,35 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 # pragma mark Validation and Error Handling
 
 - (BOOL)validateUsername {
-    if (![self.validator validateUsername:self.usernameField.stringValue.sp_trim]) {
-        [self earthquake:self.usernameField];
-        [self showAuthenticationError:NSLocalizedString(@"Not a valid email address", @"Error when you enter a bad email address")];
-        
-        return NO;
+    NSError *error = nil;
+    if ([self.validator validateUsername:self.usernameField.stringValue.sp_trim
+                                   error:&error]) {
+        return YES;
     }
 
-    return YES;
+    [self earthquake:self.usernameField];
+    [self showAuthenticationError:error.localizedDescription];
+
+    return NO;
 }
 
 - (BOOL)validatePasswordSecurity {
-    if (![self.validator validatePasswordSecurity:self.passwordField.stringValue]) {
-        [self earthquake:self.passwordField];
-        [self earthquake:self.confirmField];
-        
-        NSString *errorStr = NSLocalizedString(@"Password should be at least %ld characters", @"Error when your password isn't long enough");
-        NSString *notLongEnough = [NSString stringWithFormat:errorStr, (long)self.validator.minimumPasswordLength];
-        [self showAuthenticationError:notLongEnough];
-        
-        return NO;
+    NSError *error = nil;
+    if ([self.validator validatePasswordWithUsername:self.usernameField.stringValue.sp_trim
+                                            password:self.passwordField.stringValue
+                                               error:&error]) {
+        return YES;
     }
-    
-    return YES;
+
+    [self earthquake:self.passwordField];
+    [self earthquake:self.confirmField];
+
+    [self showAuthenticationError:error.localizedDescription];
+
+    return NO;
 }
 
-- (BOOL)validatePasswordsMatch{
+- (BOOL)validatePasswordsMatch {
     if (![self.passwordField.stringValue isEqualToString:self.confirmField.stringValue]) {
         [self earthquake:self.passwordField];
         [self earthquake:self.confirmField];
