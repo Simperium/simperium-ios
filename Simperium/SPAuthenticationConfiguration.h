@@ -23,6 +23,7 @@
 @property (nonatomic, copy,   readwrite) NSString   *logoImageName;
 
 @property (nonatomic, strong, readwrite) NSString   *forgotPasswordURL;
+@property (nonatomic, strong, readwrite) NSString   *resetPasswordURL;
 @property (nonatomic, strong, readwrite) NSString   *termsOfServiceURL;
 
 @property (nonatomic, assign, readwrite) BOOL       previousUsernameEnabled;
