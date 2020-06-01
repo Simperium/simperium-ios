@@ -233,9 +233,32 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 	self.signingIn = (sender == self.changeToSignInButton);
 }
 
+
+#pragma mark - Dynamic Properties
+
+- (NSString *)usernameText {
+    return self.usernameField.stringValue.sp_trim ?: @"";
+}
+
+- (NSString *)passwordText {
+    return self.passwordField.stringValue ?: @"";
+}
+
 - (void)setSigningIn:(BOOL)signingIn {
     _signingIn = signingIn;
 	[self refreshFields];
+}
+
+
+#pragma mark - Interface Helpers
+
+- (void)setInterfaceEnabled:(BOOL)enabled {
+    [self.signInButton setEnabled:enabled];
+    [self.signUpButton setEnabled:enabled];
+    [self.changeToSignUpButton setEnabled:enabled];
+    [self.usernameField setEnabled:enabled];
+    [self.passwordField setEnabled:enabled];
+    [self.confirmField setEnabled:enabled];
 }
 
 - (void)refreshFields {
@@ -263,16 +286,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self.window.contentView setNeedsDisplay:YES];
 }
 
-#pragma mark - Dynamic Properties
-
-- (NSString *)usernameText {
-    return self.usernameField.stringValue.sp_trim ?: @"";
-}
-
-- (NSString *)passwordText {
-    return self.passwordField.stringValue ?: @"";
-}
-
 
 #pragma mark - Actions
 
@@ -280,7 +293,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self clearAuthenticationError];
 
     if ([self mustUpgradePasswordStrength]) {
-        [self presentPasswordResetAlert];
+        [self performCredentialsValidation];
         return;
     }
 
@@ -289,6 +302,45 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     }
 
     [self performAuthentication];
+}
+
+- (IBAction)signUpAction:(id)sender {
+    [self clearAuthenticationError];
+
+    if (![self validateSignUp]) {
+        return;
+    }
+
+    [self performSignup];
+}
+
+- (IBAction)cancelAction:(id)sender {
+    [self.authenticator cancel];
+}
+
+
+#pragma mark - Authentication Wrappers
+
+- (void)performCredentialsValidation {
+    self.signInButton.title = NSLocalizedString(@"Signing In...", @"Displayed temporarily while signing in");
+    [self.signInProgress startAnimation:self];
+
+    [self setInterfaceEnabled:NO];
+
+    [self.authenticator validateWithUsername:self.usernameText
+                                    password:self.passwordText
+                                       success:^{
+                                           [self presentPasswordResetAlert];
+                                       }
+                                       failure:^(int responseCode, NSString *responseString) {
+                                           NSLog(@"Error signing in (%d): %@", responseCode, responseString);
+
+                                           [self showAuthenticationErrorForCode:responseCode];
+                                           [self.signInProgress stopAnimation:self];
+                                           self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
+                                           [self setInterfaceEnabled:YES];
+                                       }
+     ];
 }
 
 - (void)performAuthentication {
@@ -313,25 +365,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
      ];
 }
 
-- (IBAction)signUpAction:(id)sender {
-    [self clearAuthenticationError];
-
-    if (![self validateSignUp]) {
-        return;
-    }
-
-    [self performSignup];
-}
-
-- (void)setInterfaceEnabled:(BOOL)enabled {
-    [self.signInButton setEnabled:enabled];
-    [self.signUpButton setEnabled:enabled];
-    [self.changeToSignUpButton setEnabled:enabled];
-    [self.usernameField setEnabled:enabled];
-    [self.passwordField setEnabled:enabled];
-    [self.confirmField setEnabled:enabled];
-}
-
 - (void)performSignup {
     self.signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
     [self.signUpProgress startAnimation:self];
@@ -351,10 +384,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
                                      [self setInterfaceEnabled:YES];
                                  }];
-}
-
-- (IBAction)cancelAction:(id)sender {
-    [self.authenticator cancel];
 }
 
 
