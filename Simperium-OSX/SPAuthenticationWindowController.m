@@ -437,14 +437,17 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 }
 
 - (BOOL)validatePasswordsMatch {
-    if (![self.passwordText isEqualToString:self.confirmField.stringValue]) {
-        [self earthquake:self.passwordField];
-        [self earthquake:self.confirmField];
-
-        return NO;
+    if ([self.passwordText isEqualToString:self.confirmField.stringValue]) {
+        return YES;
     }
-    
-    return YES;
+
+    [self earthquake:self.passwordField];
+    [self earthquake:self.confirmField];
+
+    NSString *message = NSLocalizedString(@"Passwords do not match", @"Password Validation: Confirmation doesn't match");
+    [self showAuthenticationError:message];
+
+    return NO;
 }
 
 - (BOOL)validateConnection {
