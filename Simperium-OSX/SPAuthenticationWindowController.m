@@ -294,23 +294,21 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 - (void)performAuthentication {
     self.signInButton.title = NSLocalizedString(@"Signing In...", @"Displayed temporarily while signing in");
     [self.signInProgress startAnimation:self];
-    [self.signInButton setEnabled:NO];
-    [self.changeToSignUpButton setEnabled:NO];
-    [self.usernameField setEnabled:NO];
-    [self.passwordField setEnabled:NO];
+
+    [self setInterfaceEnabled:NO];
+
     [self.authenticator authenticateWithUsername:self.usernameText
                                         password:self.passwordText
                                        success:^{
                                        }
                                        failure:^(int responseCode, NSString *responseString) {
                                            NSLog(@"Error signing in (%d): %@", responseCode, responseString);
+
                                            [self showAuthenticationErrorForCode:responseCode];
                                            [self.signInProgress stopAnimation:self];
                                            self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
-                                           [self.signInButton setEnabled:YES];
-                                           [self.changeToSignUpButton setEnabled:YES];
-                                           [self.usernameField setEnabled:YES];
-                                           [self.passwordField setEnabled:YES];
+                                           [self setInterfaceEnabled:YES];
+
                                        }
      ];
 }
@@ -325,14 +323,20 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self performSignup];
 }
 
+- (void)setInterfaceEnabled:(BOOL)enabled {
+    [self.signInButton setEnabled:enabled];
+    [self.signUpButton setEnabled:enabled];
+    [self.changeToSignUpButton setEnabled:enabled];
+    [self.usernameField setEnabled:enabled];
+    [self.passwordField setEnabled:enabled];
+    [self.confirmField setEnabled:enabled];
+}
+
 - (void)performSignup {
     self.signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
     [self.signUpProgress startAnimation:self];
-    [self.signUpButton setEnabled:NO];
-    [self.changeToSignInButton setEnabled:NO];
-    [self.usernameField setEnabled:NO];
-    [self.passwordField setEnabled:NO];
-    [self.confirmField setEnabled:NO];
+
+    [self setInterfaceEnabled:NO];
 
     [self.authenticator createWithUsername:self.usernameText
                                   password:self.passwordText
@@ -344,11 +348,8 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
                                      [self showAuthenticationErrorForCode:responseCode];
                                      self.signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
                                      [self.signUpProgress stopAnimation:self];
-                                     [self.signUpButton setEnabled:YES];
-                                     [self.changeToSignInButton setEnabled:YES];
-                                     [self.usernameField setEnabled:YES];
-                                     [self.passwordField setEnabled:YES];
-                                     [self.confirmField setEnabled:YES];
+
+                                     [self setInterfaceEnabled:YES];
                                  }];
 }
 
