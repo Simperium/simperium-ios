@@ -8,6 +8,7 @@
 
 #import "SPAuthenticationValidator.h"
 #import "NSError+Simperium.h"
+#import "NSString+Simperium.h"
 
 static NSInteger SPAuthenticationDefaultMinPasswordLength = 8;
 static NSInteger SPAuthenticationLegacyMinPasswordLength = 4;
@@ -77,7 +78,8 @@ NSString* const SPAuthenticationErrorDomain = @"SPAuthenticationValidatorDomain"
         return NO;
     }
 
-    if ([password containsString:@"\n"] || [password containsString:@"\t"]) {
+
+    if ([password containsString:NSString.sp_newline] || [password containsString:NSString.sp_tab]) {
         if (error) {
             NSString *description = NSLocalizedString(@"Password must not contain tabs nor newlines", comment: @"Message displayed when a password contains a disallowed character");
             *error = [NSError sp_errorWithDomain:SPAuthenticationErrorDomain

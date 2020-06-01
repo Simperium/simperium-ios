@@ -457,10 +457,10 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 }
 
 - (BOOL)mustUpgradePasswordStrength {
-    BOOL passwordUpgradeFlowEnabled = [[SPAuthenticationConfiguration sharedInstance] passwordUpgradeFlowEnabled];
-    BOOL passwordMustBeReset = [self.validator mustPerformPasswordResetWithUsername:self.usernameText password:self.passwordText];
+    BOOL passwordResetEnabled = [[SPAuthenticationConfiguration sharedInstance] passwordUpgradeFlowEnabled];
+    BOOL mustResetPassword = [self.validator mustPerformPasswordResetWithUsername:self.usernameText password:self.passwordText];
 
-    return passwordUpgradeFlowEnabled && passwordMustBeReset;
+    return passwordResetEnabled && mustResetPassword;
 }
 
 - (BOOL)validateSignIn {
