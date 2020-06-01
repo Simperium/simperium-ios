@@ -94,10 +94,11 @@ NSString* const SPAuthenticationErrorDomain = @"SPAuthenticationValidatorDomain"
 
 - (BOOL)mustPerformPasswordResetWithUsername:(NSString *)username password:(NSString *)password {
 
+    BOOL isValidUsername = [self validateUsername:username error:nil];
     BOOL isValidLegacyPassword = (password.length >= self.legacyMinimumPasswordLength);
     BOOL isValidStrongPassword = [self validatePasswordWithUsername:username password:password error:nil];
 
-    return isValidLegacyPassword && !isValidStrongPassword;
+    return isValidUsername && isValidLegacyPassword && !isValidStrongPassword;
 }
 
 @end
