@@ -94,8 +94,22 @@ NSString* const SPAuthenticationErrorDomain = @"SPAuthenticationValidatorDomain"
     return YES;
 }
 
-- (BOOL)mustPerformPasswordResetWithUsername:(NSString *)username password:(NSString *)password {
+- (BOOL)validatePasswordConfirmation:(NSString *)confirmation password:(NSString *)password error:(NSError **)error {
+    if ([confirmation isEqualToString:confirmation]) {
+        return YES;
+    }
 
+    if (error) {
+        NSString *description = NSLocalizedString(@"Passwords do not match", @"Password Validation: Confirmation doesn't match");
+        *error = [NSError sp_errorWithDomain:SPAuthenticationErrorDomain
+                                        code:SPAuthenticationErrorsConfirmationDoesntMatch
+                                 description:description];
+    }
+
+    return NO;
+}
+
+- (BOOL)mustPerformPasswordResetWithUsername:(NSString *)username password:(NSString *)password {
     BOOL isValidUsername = [self validateUsername:username error:nil];
     BOOL isValidLegacyPassword = (password.length >= self.legacyMinimumPasswordLength);
     BOOL isValidStrongPassword = [self validatePasswordWithUsername:username password:password error:nil];

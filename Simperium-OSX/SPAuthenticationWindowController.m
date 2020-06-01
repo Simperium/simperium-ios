@@ -432,8 +432,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
 - (BOOL)validateUsername {
     NSError *error = nil;
-    if ([self.validator validateUsername:self.usernameText
-                                   error:&error]) {
+    if ([self.validator validateUsername:self.usernameText error:&error]) {
         return YES;
     }
 
@@ -445,9 +444,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
 - (BOOL)validatePasswordSecurity {
     NSError *error = nil;
-    if ([self.validator validatePasswordWithUsername:self.usernameText
-                                            password:self.passwordText
-                                               error:&error]) {
+    if ([self.validator validatePasswordWithUsername:self.usernameText password:self.passwordText error:&error]) {
         return YES;
     }
 
@@ -460,15 +457,15 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 }
 
 - (BOOL)validatePasswordsMatch {
-    if ([self.passwordText isEqualToString:self.confirmField.stringValue]) {
+    NSError *error = nil;
+    if ([self.validator validatePasswordConfirmation:self.confirmField.stringValue password:self.passwordText error:&error]) {
         return YES;
     }
 
     [self earthquake:self.passwordField];
     [self earthquake:self.confirmField];
 
-    NSString *message = NSLocalizedString(@"Passwords do not match", @"Password Validation: Confirmation doesn't match");
-    [self showAuthenticationError:message];
+    [self showAuthenticationError:error.localizedDescription];
 
     return NO;
 }

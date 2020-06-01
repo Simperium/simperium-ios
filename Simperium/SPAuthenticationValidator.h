@@ -12,7 +12,8 @@ typedef NS_ENUM(NSUInteger, SPAuthenticationErrors) {
     SPAuthenticationErrorsEmailInvalid,
     SPAuthenticationErrorsPasswordTooShort,
     SPAuthenticationErrorsPasswordMatchesUsername,
-    SPAuthenticationErrorsPasswordContainsInvalidCharacter
+    SPAuthenticationErrorsPasswordContainsInvalidCharacter,
+    SPAuthenticationErrorsConfirmationDoesntMatch
 };
 
 extern NSString* const SPAuthenticationErrorDomain;
@@ -26,6 +27,10 @@ extern NSString* const SPAuthenticationErrorDomain;
                    error:(NSError **)error;
 
 - (BOOL)validatePasswordWithUsername:(NSString *)username
+                            password:(NSString *)password
+                               error:(NSError **)error;
+
+- (BOOL)validatePasswordConfirmation:(NSString *)confirmation
                             password:(NSString *)password
                                error:(NSError **)error;
 
