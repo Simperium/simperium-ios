@@ -279,6 +279,11 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 - (IBAction)signInAction:(id)sender {
     [self clearAuthenticationError];
 
+    if ([self mustUpgradePasswordStrength]) {
+        [self presentPasswordResetAlert];
+        return;
+    }
+
     if (![self validateSignIn]) {
         return;
     }
@@ -352,7 +357,53 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 }
 
 
-# pragma mark Validation and Error Handling
+#pragma mark - Password Reset Flow
+
+- (void)presentPasswordResetAlert {
+    NSAlert *alert = [NSAlert new];
+    [alert setMessageText:self.passwordResetMessageText];
+    [alert addButtonWithTitle:self.passwordResetProceedText];
+    [alert addButtonWithTitle:self.passwordResetCancelText];
+
+    __weak typeof(self) weakSelf = self;
+    [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse returnCode) {
+        if (returnCode != NSAlertFirstButtonReturn) {
+            return;
+        }
+
+        [weakSelf openResetPasswordURL];
+    }];
+}
+
+- (NSString *)passwordResetMessageText {
+    return [@[
+        NSLocalizedString(@"Your password is insecure and must be reset. The password requirements are:", comment: @"Password Requirements: Title"),
+        @"",
+        NSLocalizedString(@"- Password cannot match email",             comment: @"Password Requirement: Email Match"),
+        NSLocalizedString(@"- Minimum of 8 characters",                 comment: @"Password Requirement: Length"),
+        NSLocalizedString(@"- Neither tabs nor newlines are allowed",   comment: @"Password Requirement: Special Characters")
+    ] componentsJoinedByString:@"\n"];
+}
+
+- (NSString *)passwordResetProceedText {
+    return NSLocalizedString(@"Reset", @"Password Reset: Proceed");
+}
+
+- (NSString *)passwordResetCancelText {
+    return NSLocalizedString(@"Cancel", @"Password Reset: Cancel");
+}
+
+- (void)openResetPasswordURL {
+
+    NSString *resetPasswordURL = [[SPAuthenticationConfiguration sharedInstance] resetPasswordURL];
+    NSString *formattedString = [NSString stringWithFormat:resetPasswordURL, self.usernameText];
+    NSURL *targetURL = [NSURL URLWithString:formattedString];
+
+    [[NSWorkspace sharedWorkspace] openURL:targetURL];
+}
+
+
+#pragma mark - Validation and Error Handling
 
 - (BOOL)validateUsername {
     NSError *error = nil;
@@ -401,6 +452,13 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     }
     
     return YES;
+}
+
+- (BOOL)mustUpgradePasswordStrength {
+    BOOL passwordUpgradeFlowEnabled = [[SPAuthenticationConfiguration sharedInstance] passwordUpgradeFlowEnabled];
+    BOOL passwordMustBeReset = [self.validator mustPerformPasswordResetWithUsername:self.usernameText password:self.passwordText];
+
+    return passwordUpgradeFlowEnabled && passwordMustBeReset;
 }
 
 - (BOOL)validateSignIn {
@@ -485,7 +543,8 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self.errorField setStringValue:@""];
 }
 
-#pragma mark NSTextView delegates
+
+#pragma mark - NSTextView delegates
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)fieldEditor doCommandBySelector:(SEL)commandSelector {
     BOOL retval = NO;

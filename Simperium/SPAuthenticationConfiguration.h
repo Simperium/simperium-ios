@@ -23,11 +23,14 @@
 @property (nonatomic, copy,   readwrite) NSString   *logoImageName;
 
 @property (nonatomic, strong, readwrite) NSString   *forgotPasswordURL;
-@property (nonatomic, strong, readwrite) NSString   *resetPasswordURL;
 @property (nonatomic, strong, readwrite) NSString   *termsOfServiceURL;
+@property (nonatomic, strong, readwrite) NSString   *resetPasswordURL;
+
+@property (nonatomic, assign,  readonly) BOOL       passwordUpgradeFlowEnabled;
 
 @property (nonatomic, assign, readwrite) BOOL       previousUsernameEnabled;
 @property (nonatomic, strong, readwrite) NSString   *previousUsernameLogged;
+
 
 #if !TARGET_OS_IPHONE
 @property (nonatomic, strong, readwrite) NSColor    *controlColor;

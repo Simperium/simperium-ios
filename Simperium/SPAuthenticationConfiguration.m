@@ -81,6 +81,10 @@ static NSString *SPAuthenticationPreviousUsernameKey        = @"SPUsernamePrevio
     return [[NSUserDefaults standardUserDefaults] objectForKey:SPAuthenticationPreviousUsernameKey];
 }
 
+- (BOOL)passwordUpgradeFlowEnabled {
+    return self.resetPasswordURL != nil;
+}
+
 
 #pragma mark - Font Helpers
 
