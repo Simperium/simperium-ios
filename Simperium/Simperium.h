@@ -173,6 +173,9 @@ typedef void (^SimperiumSignoutCompletion)(void);
 // Enables or disables the network.
 @property (nonatomic, readwrite, assign) BOOL networkEnabled;
 
+// Indicates if the Authentication UI should start in LogIn mode by default
+@property (nonatomic, readwrite, assign) BOOL presentsLoginByDefault;
+
 // Delays Inserted Objects initialization until the MOC is saved. Useful for importing data while preventing duplicates.
 @property (nonatomic, readwrite, assign) BOOL delaysNewObjectsInitialization;
 

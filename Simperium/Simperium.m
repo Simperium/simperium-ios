@@ -785,10 +785,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 - (void)authenticationDidSucceedForUsername:(NSString *)username token:(NSString *)token {
-    
-    // Save username as previous username, this username is used to display as last username in authentication views
-    [[SPAuthenticationConfiguration sharedInstance] setPreviousUsernameLogged:username];
-    
+
     // It's now safe to start the network managers
     [self startNetworkManagers];
     
@@ -850,10 +847,6 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 }
 
 - (void)openAuthViewControllerAnimated:(BOOL)animated {
-    // Get previous username, if available the sign-in view should be set as default
-    SPAuthenticationConfiguration *configuration = [SPAuthenticationConfiguration sharedInstance];
-    self.shouldSignIn = configuration.previousUsernameEnabled && configuration.previousUsernameLogged;
-
 #if TARGET_OS_IPHONE
     if (self.authenticationViewController.sp_isViewAttachedOrStacked) {
         SPLogError(@"Error: Authentication Screen was already open");
@@ -863,7 +856,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     UIViewController<SPAuthenticationInterface> *loginController = [self.authenticationViewControllerClass new];
     loginController.authenticator = self.authenticator;
     if ([loginController respondsToSelector:@selector(setSigningIn:)]) {
-        loginController.signingIn = self.shouldSignIn;
+        loginController.signingIn = self.presentsLoginByDefault;
     }
     self.authenticationViewController = loginController;
     
@@ -897,7 +890,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
         }
 
         if ([self.authenticationWindowController respondsToSelector:@selector(setSigningIn:)]) {
-            self.authenticationWindowController.signingIn = self.shouldSignIn;
+            self.authenticationWindowController.signingIn = self.presentsLoginByDefault;
         }
     }
     
