@@ -64,4 +64,25 @@
     }
 }
 
+- (void)testMustPerformPasswordResetReturnsTrueWheneverPasswordIsConsideredInsecure {
+    NSString *username = @"something@here.com";
+    NSArray *passwords = @[
+        username,
+        @"1234",
+        @"12345",
+        @"123456",
+    ];
+
+    for (NSString *password in passwords) {
+        XCTAssertTrue([self.validator mustPerformPasswordResetWithUsername:username password:password]);
+    }
+}
+
+- (void)testMustPerformPasswordResetReturnsFalseWheneverPasswordIsSecure {
+    NSString *username = @"something@here.com";
+    NSString *password = @"1234568";
+
+    XCTAssertTrue([self.validator mustPerformPasswordResetWithUsername:username password:password]);
+}
+
 @end
