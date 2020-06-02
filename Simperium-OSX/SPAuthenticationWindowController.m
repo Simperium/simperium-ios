@@ -128,7 +128,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         self.signUpButton.action = @selector(signUpAction:);
         [authView addSubview:self.signUpButton];
 
-        self.signUpProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(self.signUpButton.frame.size.width - SPAuthenticationProgressSize - SPAuthenticationFieldPaddingX, (self.signUpButton.frame.size.height - SPAuthenticationProgressSize) * 0.5f, SPAuthenticationProgressSize, SPAuthenticationProgressSize)];
+1        self.signUpProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(self.signUpButton.frame.size.width - SPAuthenticationProgressSize - SPAuthenticationFieldPaddingX, (self.signUpButton.frame.size.height - SPAuthenticationProgressSize) * 0.5f, SPAuthenticationProgressSize, SPAuthenticationProgressSize)];
         [self.signUpProgress setStyle:NSProgressIndicatorSpinningStyle];
         [self.signUpProgress setDisplayedWhenStopped:NO];
         [self.signUpButton addSubview:self.signUpProgress];
