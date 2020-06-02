@@ -64,7 +64,28 @@
     }
 }
 
-- (void)testMustPerformPasswordResetReturnsTrueWheneverPasswordIsConsideredInsecure {
+- (void)testMustPerformPasswordResetReturnsFalseWheneverUsernameIsInvalid {
+    NSString *username = @"invalid";
+    NSString *password = @"12345678";
+
+    XCTAssertFalse([self.validator mustPerformPasswordResetWithUsername:username password:password]);
+}
+
+- (void)testMustPerformPasswordResetReturnsFalseWheneverThePasswordWasntSecureInLegacyStandards {
+    NSString *username = @"something@here.com";
+    NSString *password = @"12";
+
+    XCTAssertFalse([self.validator mustPerformPasswordResetWithUsername:username password:password]);
+}
+
+- (void)testMustPerformPasswordResetReturnsFalseWheneverThePasswordIsSecure {
+    NSString *username = @"something@here.com";
+    NSString *password = @"12345678";
+
+    XCTAssertFalse([self.validator mustPerformPasswordResetWithUsername:username password:password]);
+}
+
+- (void)testMustPerformPasswordResetReturnsTrueWheneverPasswordWasValidWithLegacyStandardsButIsNotStrongAEnough {
     NSString *username = @"something@here.com";
     NSArray *passwords = @[
         username,
@@ -76,13 +97,6 @@
     for (NSString *password in passwords) {
         XCTAssertTrue([self.validator mustPerformPasswordResetWithUsername:username password:password]);
     }
-}
-
-- (void)testMustPerformPasswordResetReturnsFalseWheneverPasswordIsSecure {
-    NSString *username = @"something@here.com";
-    NSString *password = @"12345678";
-
-    XCTAssertFalse([self.validator mustPerformPasswordResetWithUsername:username password:password]);
 }
 
 @end
