@@ -133,7 +133,8 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         [self.signUpButton addSubview:self.signUpProgress];
 
         // Forgot Password!
-        self.forgotPasswordButton = [self linkButtonWithText:@"Forgot your Password?" frame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*3 - 35, SPAuthenticationFieldWidth, 20)];
+        NSString *forgotText = NSLocalizedString(@"Forgot your Password?", @"Forgot Password Button");
+        self.forgotPasswordButton = [self linkButtonWithText:forgotText frame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*3 - 35, SPAuthenticationFieldWidth, 20)];
         self.forgotPasswordButton.target = self;
         self.forgotPasswordButton.action = @selector(forgotPassword:);
         [authView addSubview:self.forgotPasswordButton];
