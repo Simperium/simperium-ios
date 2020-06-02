@@ -241,6 +241,10 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 	[self refreshFields];
 }
 
+- (BOOL)isAnimatingProgress {
+    return [self.signInProgress running] || [self.signUpProgress running];
+}
+
 
 #pragma mark - Interface Helpers
 
