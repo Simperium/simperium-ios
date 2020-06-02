@@ -54,7 +54,7 @@ NSString* const SPAuthenticationErrorDomain = @"SPAuthenticationValidatorDomain"
 - (BOOL)validatePasswordWithUsername:(NSString *)username password:(NSString *)password error:(NSError **)error {
     if (password.length < self.strongMinimumPasswordLength) {
         if (error) {
-            NSString *description = NSLocalizedString(@"Password must contain at least %d characters", comment: @"Message displayed when password is too short. Please preserve the Percent D!");
+            NSString *description = NSLocalizedString(@"Password must contain at least %d characters", comment: @"Message displayed when password is too short. The %%d is a placeholder for a numeral. Please preserve it!");
             NSString *formattedDescription = [NSString stringWithFormat:description, self.strongMinimumPasswordLength];
 
             *error = [NSError sp_errorWithDomain:SPAuthenticationErrorDomain
