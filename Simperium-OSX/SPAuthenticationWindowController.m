@@ -340,9 +340,9 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self setInterfaceEnabled:NO];
 
     [self.authenticator validateWithUsername:self.usernameText password:self.passwordText success:^{
-        [self presentPasswordResetAlert];
         [self stopLoginAnimation];
         [self setInterfaceEnabled:YES];
+        [self presentPasswordResetAlert];
     } failure:^(int responseCode, NSString *responseString) {
         [self showAuthenticationErrorForCode:responseCode];
         [self stopLoginAnimation];
