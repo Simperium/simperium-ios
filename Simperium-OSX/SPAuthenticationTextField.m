@@ -126,7 +126,7 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-    NSBezierPath *betterBounds = [NSBezierPath bezierPathWithRoundedRect:self.bounds xRadius:12.0 yRadius:12.0];
+    NSBezierPath *betterBounds = [NSBezierPath bezierPathWithRect:self.bounds];
     [betterBounds addClip];
     
     if (self.isWindowFistResponder) {

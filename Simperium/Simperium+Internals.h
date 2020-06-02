@@ -44,7 +44,6 @@
 @property (nonatomic, assign) BOOL                      skipContextProcessing;
 @property (nonatomic, assign) BOOL                      networkManagersStarted;
 @property (nonatomic, assign) BOOL                      dynamicSchemaEnabled;
-@property (nonatomic, assign) BOOL                      shouldSignIn;
 @property (nonatomic, assign) BOOL                      authenticationEnabled;
 @property (nonatomic, assign) BOOL                      logoutInProgress;
 
