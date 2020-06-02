@@ -342,8 +342,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
     [self.authenticator authenticateWithUsername:self.usernameText
                                         password:self.passwordText
-                                       success:^{
-                                       }
+                                       success:^{ }
                                        failure:^(int responseCode, NSString *responseString) {
                                            NSLog(@"Error signing in (%d): %@", responseCode, responseString);
 
@@ -351,7 +350,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
                                            [self.signInProgress stopAnimation:self];
                                            self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
                                            [self setInterfaceEnabled:YES];
-
                                        }
      ];
 }
@@ -364,15 +362,13 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
     [self.authenticator createWithUsername:self.usernameText
                                   password:self.passwordText
-                                 success:^{
-                                     //[self close];
-                                 }
+                                 success:^{ }
                                  failure:^(int responseCode, NSString *responseString) {
                                      NSLog(@"Error signing up (%d): %@", responseCode, responseString);
+
                                      [self showAuthenticationErrorForCode:responseCode];
                                      self.signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
                                      [self.signUpProgress stopAnimation:self];
-
                                      [self setInterfaceEnabled:YES];
                                  }];
 }
