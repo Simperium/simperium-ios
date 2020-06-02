@@ -322,6 +322,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
                                     password:self.passwordText
                                        success:^{
                                            [self presentPasswordResetAlert];
+                                           [self setInterfaceEnabled:YES];
                                        }
                                        failure:^(int responseCode, NSString *responseString) {
                                            NSLog(@"Error signing in (%d): %@", responseCode, responseString);
