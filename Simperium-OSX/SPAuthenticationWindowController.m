@@ -56,6 +56,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 @property (nonatomic, strong) NSButton                  *changeToSignUpButton;
 @property (nonatomic, strong) NSProgressIndicator       *signInProgress;
 @property (nonatomic, strong) NSProgressIndicator       *signUpProgress;
+@property (nonatomic, assign) BOOL                      isAnimatingProgress;
 @end
 
 
@@ -241,10 +242,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 	[self refreshFields];
 }
 
-- (BOOL)isAnimatingProgress {
-    return [self.signInProgress running] || [self.signUpProgress running];
-}
-
 
 #pragma mark - Interface Helpers
 
@@ -321,21 +318,25 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 - (void)startLoginAnimation {
     self.signInButton.title = NSLocalizedString(@"Logging In...", @"Displayed temporarily while logging in");
     [self.signInProgress startAnimation:self];
+    self.isAnimatingProgress = YES;
 }
 
 - (void)stopLoginAnimation {
     self.signInButton.title = NSLocalizedString(@"Log In", @"Title of button for login");
     [self.signInProgress stopAnimation:self];
+    self.isAnimatingProgress = NO;
 }
 
 - (void)startSignupAnimation {
     self.signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
     [self.signUpProgress startAnimation:self];
+    self.isAnimatingProgress = YES;
 }
 
 - (void)stopSignupAnimation {
     self.signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
     [self.signUpProgress stopAnimation:self];
+    self.isAnimatingProgress = NO;
 }
 
 
