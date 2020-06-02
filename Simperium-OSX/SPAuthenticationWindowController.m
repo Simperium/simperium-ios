@@ -243,15 +243,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
 #pragma mark - Interface Helpers
 
-- (void)setInterfaceEnabled:(BOOL)enabled {
-    [self.signInButton setEnabled:enabled];
-    [self.signUpButton setEnabled:enabled];
-    [self.changeToSignUpButton setEnabled:enabled];
-    [self.usernameField setEnabled:enabled];
-    [self.passwordField setEnabled:enabled];
-    [self.confirmField setEnabled:enabled];
-}
-
 - (void)refreshFields {
     // Refresh Buttons
     [self.signInButton setHidden:!_signingIn];
@@ -275,6 +266,15 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     
     // Refresh the entire View
     [self.window.contentView setNeedsDisplay:YES];
+}
+
+- (void)setInterfaceEnabled:(BOOL)enabled {
+    [self.signInButton setEnabled:enabled];
+    [self.signUpButton setEnabled:enabled];
+    [self.changeToSignUpButton setEnabled:enabled];
+    [self.usernameField setEnabled:enabled];
+    [self.passwordField setEnabled:enabled];
+    [self.confirmField setEnabled:enabled];
 }
 
 
@@ -310,68 +310,70 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 }
 
 
+#pragma mark - Displaying Porgress
+
+- (void)startLoginAnimation {
+    self.signInButton.title = NSLocalizedString(@"Logging In...", @"Displayed temporarily while logging in");
+    [self.signInProgress startAnimation:self];
+}
+
+- (void)stopLoginAnimation {
+    self.signInButton.title = NSLocalizedString(@"Log In", @"Title of button for login");
+    [self.signInProgress stopAnimation:self];
+}
+
+- (void)startSignupAnimation {
+    self.signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
+    [self.signUpProgress startAnimation:self];
+}
+
+- (void)stopSignupAnimation {
+    self.signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
+    [self.signUpProgress stopAnimation:self];
+}
+
+
 #pragma mark - Authentication Wrappers
 
 - (void)performCredentialsValidation {
-    self.signInButton.title = NSLocalizedString(@"Logging In...", @"Displayed temporarily while logging in");
-    [self.signInProgress startAnimation:self];
-
+    [self startLoginAnimation];
     [self setInterfaceEnabled:NO];
 
-    [self.authenticator validateWithUsername:self.usernameText
-                                    password:self.passwordText
-                                       success:^{
-                                           [self presentPasswordResetAlert];
-                                           [self setInterfaceEnabled:YES];
-                                       }
-                                       failure:^(int responseCode, NSString *responseString) {
-                                           NSLog(@"Error signing in (%d): %@", responseCode, responseString);
-
-                                           [self showAuthenticationErrorForCode:responseCode];
-                                           [self.signInProgress stopAnimation:self];
-                                           self.signInButton.title = NSLocalizedString(@"Log In", @"Title of button for login");
-                                           [self setInterfaceEnabled:YES];
-                                       }
-     ];
+    [self.authenticator validateWithUsername:self.usernameText password:self.passwordText success:^{
+        [self presentPasswordResetAlert];
+        [self stopLoginAnimation];
+        [self setInterfaceEnabled:YES];
+    } failure:^(int responseCode, NSString *responseString) {
+        [self showAuthenticationErrorForCode:responseCode];
+        [self stopLoginAnimation];
+        [self setInterfaceEnabled:YES];
+    }];
 }
 
 - (void)performAuthentication {
-    self.signInButton.title = NSLocalizedString(@"Logging In...", @"Displayed temporarily while logging in");
-    [self.signInProgress startAnimation:self];
-
+    [self startLoginAnimation];
     [self setInterfaceEnabled:NO];
 
-    [self.authenticator authenticateWithUsername:self.usernameText
-                                        password:self.passwordText
-                                       success:^{ }
-                                       failure:^(int responseCode, NSString *responseString) {
-                                           NSLog(@"Error signing in (%d): %@", responseCode, responseString);
-
-                                           [self showAuthenticationErrorForCode:responseCode];
-                                           [self.signInProgress stopAnimation:self];
-                                           self.signInButton.title = NSLocalizedString(@"Log In", @"Title of button for login");
-                                           [self setInterfaceEnabled:YES];
-                                       }
-     ];
+    [self.authenticator authenticateWithUsername:self.usernameText password:self.passwordText success:^{
+        // NO-OP
+    } failure:^(int responseCode, NSString *responseString) {
+        [self showAuthenticationErrorForCode:responseCode];
+        [self stopLoginAnimation];
+        [self setInterfaceEnabled:YES];
+    }];
 }
 
 - (void)performSignup {
-    self.signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
-    [self.signUpProgress startAnimation:self];
-
+    [self startSignupAnimation];
     [self setInterfaceEnabled:NO];
 
-    [self.authenticator createWithUsername:self.usernameText
-                                  password:self.passwordText
-                                 success:^{ }
-                                 failure:^(int responseCode, NSString *responseString) {
-                                     NSLog(@"Error signing up (%d): %@", responseCode, responseString);
-
-                                     [self showAuthenticationErrorForCode:responseCode];
-                                     self.signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
-                                     [self.signUpProgress stopAnimation:self];
-                                     [self setInterfaceEnabled:YES];
-                                 }];
+    [self.authenticator createWithUsername:self.usernameText password:self.passwordText success:^{
+        // NO-OP
+    } failure:^(int responseCode, NSString *responseString) {
+        [self showAuthenticationErrorForCode:responseCode];
+        [self stopSignupAnimation];
+        [self setInterfaceEnabled:YES];
+    }];
 }
 
 
@@ -397,9 +399,9 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     return [@[
         NSLocalizedString(@"Your password is insecure and must be reset. The password requirements are:", comment: @"Password Requirements: Title"),
         @"",
-        NSLocalizedString(@"- Password cannot match email",             comment: @"Password Requirement: Email Match"),
-        NSLocalizedString(@"- Minimum of 8 characters",                 comment: @"Password Requirement: Length"),
-        NSLocalizedString(@"- Neither tabs nor newlines are allowed",   comment: @"Password Requirement: Special Characters")
+        NSLocalizedString(@"- Password cannot match email", comment: @"Password Requirement: Email Match"),
+        NSLocalizedString(@"- Minimum of 8 characters", comment: @"Password Requirement: Length"),
+        NSLocalizedString(@"- Neither tabs nor newlines are allowed", comment: @"Password Requirement: Special Characters")
     ] componentsJoinedByString:@"\n"];
 }
 
