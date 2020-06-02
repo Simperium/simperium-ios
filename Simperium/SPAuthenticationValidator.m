@@ -107,6 +107,13 @@ NSString* const SPAuthenticationErrorDomain = @"SPAuthenticationValidatorDomain"
 }
 
 - (BOOL)mustPerformPasswordResetWithUsername:(NSString *)username password:(NSString *)password {
+    //  Note:
+    //   1. Is the password **now** considered unsafe?
+    //   2. Was the password **then** considered safe?
+    //   3. Is the password valid (does the backend let us thru?)
+    //
+    //  If all of the above are true, we'll require the Password to be Reset
+    //
     BOOL isValidUsername = [self validateUsername:username error:nil];
     BOOL isValidLegacyPassword = (password.length >= self.legacyMinimumPasswordLength);
     BOOL isValidStrongPassword = [self validatePasswordWithUsername:username password:password error:nil];
