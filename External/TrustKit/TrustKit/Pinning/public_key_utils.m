@@ -73,7 +73,8 @@ static NSData *getPublicKeyDataFromCertificate(SecCertificateRef certificate)
     
     // Get a public key reference from the certificate
     SecTrustCreateWithCertificates(certificate, policy, &tempTrust);
-    SecTrustEvaluate(tempTrust, NULL);
+    SecTrustResultType result;
+    SecTrustEvaluate(tempTrust, &result);
     publicKey = SecTrustCopyPublicKey(tempTrust);
     CFRelease(policy);
     CFRelease(tempTrust);
@@ -159,7 +160,7 @@ static NSData *getPublicKeyDataFromCertificate(SecCertificateRef certificate)
 NSData *hashSubjectPublicKeyInfoFromCertificate(SecCertificateRef certificate, TSKPublicKeyAlgorithm publicKeyAlgorithm)
 {
     NSData *cachedSubjectPublicKeyInfo = NULL;
-    NSNumber *algorithmKey = [NSNumber numberWithInt:publicKeyAlgorithm];
+    NSNumber *algorithmKey = [NSNumber numberWithInteger:publicKeyAlgorithm];
     
     // Have we seen this certificate before? Look for the SPKI in the cache
     NSData *certificateData = (__bridge NSData *)(SecCertificateCopyData(certificate));
