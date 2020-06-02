@@ -92,7 +92,7 @@ NSString* const SPAuthenticationErrorDomain = @"SPAuthenticationValidatorDomain"
 }
 
 - (BOOL)validatePasswordConfirmation:(NSString *)confirmation password:(NSString *)password error:(NSError **)error {
-    if ([confirmation isEqualToString:confirmation]) {
+    if ([confirmation isEqualToString:password]) {
         return YES;
     }
 
