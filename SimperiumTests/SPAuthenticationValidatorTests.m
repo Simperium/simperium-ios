@@ -80,9 +80,9 @@
 
 - (void)testMustPerformPasswordResetReturnsFalseWheneverPasswordIsSecure {
     NSString *username = @"something@here.com";
-    NSString *password = @"1234568";
+    NSString *password = @"12345678";
 
-    XCTAssertTrue([self.validator mustPerformPasswordResetWithUsername:username password:password]);
+    XCTAssertFalse([self.validator mustPerformPasswordResetWithUsername:username password:password]);
 }
 
 @end
