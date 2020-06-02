@@ -273,6 +273,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self.signInButton setEnabled:enabled];
     [self.signUpButton setEnabled:enabled];
     [self.changeToSignUpButton setEnabled:enabled];
+    [self.changeToSignInButton setEnabled:enabled];
     [self.usernameField setEnabled:enabled];
     [self.passwordField setEnabled:enabled];
     [self.confirmField setEnabled:enabled];
