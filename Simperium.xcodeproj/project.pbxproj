@@ -49,6 +49,7 @@
 		B565ECAA1832940B00D162FF /* XCTestCase+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B565ECA81832940B00D162FF /* XCTestCase+Simperium.m */; };
 		B57FA3AE190052C800957205 /* MockStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = B57FA3AD190052C800957205 /* MockStorage.m */; };
 		B57FA3B21900568A00957205 /* SPRelationshipResolverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B57FA3B11900568A00957205 /* SPRelationshipResolverTests.m */; };
+		B585125A2485FE32002BD70C /* SPAuthenticationValidatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B58512592485FE32002BD70C /* SPAuthenticationValidatorTests.m */; };
 		B597DD59183128FE005E95D7 /* SPWebSocketInterfaceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B597DD58183128FE005E95D7 /* SPWebSocketInterfaceTests.m */; };
 		B59FA73723A96F0C005EC42C /* NSDictionarySimperiumTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B59FA73623A96F0C005EC42C /* NSDictionarySimperiumTests.m */; };
 		B5A57EAC1951C128006E2455 /* SPIndexProcessorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A57EAB1951C128006E2455 /* SPIndexProcessorTests.m */; };
@@ -604,6 +605,7 @@
 		B57FA3AC190052C800957205 /* MockStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockStorage.h; sourceTree = "<group>"; };
 		B57FA3AD190052C800957205 /* MockStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MockStorage.m; sourceTree = "<group>"; };
 		B57FA3B11900568A00957205 /* SPRelationshipResolverTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPRelationshipResolverTests.m; sourceTree = "<group>"; };
+		B58512592485FE32002BD70C /* SPAuthenticationValidatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SPAuthenticationValidatorTests.m; sourceTree = "<group>"; };
 		B58B22E31905A1B200190E90 /* SPRelationship.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPRelationship.h; sourceTree = "<group>"; };
 		B58B22E41905A1B200190E90 /* SPRelationship.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPRelationship.m; sourceTree = "<group>"; };
 		B597DD58183128FE005E95D7 /* SPWebSocketInterfaceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SPWebSocketInterfaceTests.m; sourceTree = "<group>"; };
@@ -1226,6 +1228,7 @@
 			isa = PBXGroup;
 			children = (
 				B59FA73623A96F0C005EC42C /* NSDictionarySimperiumTests.m */,
+				B58512592485FE32002BD70C /* SPAuthenticationValidatorTests.m */,
 				B5A57EAB1951C128006E2455 /* SPIndexProcessorTests.m */,
 				B51397F01947612B004C1416 /* SPChangeProcessorTests.m */,
 				B5C7D7F8183411B900E9109C /* SPPersistentMutableDictionaryTests.m */,
@@ -1876,6 +1879,7 @@
 				B565ECA41832643000D162FF /* PostComment.m in Sources */,
 				B565ECA51832643000D162FF /* Post.m in Sources */,
 				B5F068B1186223DF00D0D7B7 /* DiffMatchPatchTest.m in Sources */,
+				B585125A2485FE32002BD70C /* SPAuthenticationValidatorTests.m in Sources */,
 				B5E5C2171A2E34D900915DBA /* SPManagedObject+Mock.m in Sources */,
 				B565ECA61832643000D162FF /* Config.m in Sources */,
 				B5DF229518B41FB700874C75 /* SPMemberJSONTests.m in Sources */,
