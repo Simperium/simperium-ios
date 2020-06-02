@@ -9,7 +9,6 @@
 #import "SPAuthenticationWindowController.h"
 #import "Simperium.h"
 #import "NSString+Simperium.h"
-#import <QuartzCore/CoreAnimation.h>
 #import "SPAuthenticator.h"
 #import "SPAuthenticationWindow.h"
 #import "SPAuthenticationView.h"
@@ -41,7 +40,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 #pragma mark Private
 #pragma mark ====================================================================================
 
-@interface SPAuthenticationWindowController () <NSTextFieldDelegate, CAAnimationDelegate>
+@interface SPAuthenticationWindowController () <NSTextFieldDelegate>
 @property (nonatomic, strong) NSImageView               *logoImageView;
 @property (nonatomic, strong) NSButton                  *cancelButton;
 @property (nonatomic, strong) SPAuthenticationTextField *usernameField;
@@ -57,7 +56,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 @property (nonatomic, strong) NSButton                  *changeToSignUpButton;
 @property (nonatomic, strong) NSProgressIndicator       *signInProgress;
 @property (nonatomic, strong) NSProgressIndicator       *signUpProgress;
-@property (nonatomic, assign) BOOL                      earthquaking;
 @end
 
 
@@ -436,7 +434,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         return YES;
     }
 
-    [self earthquake:self.usernameField];
     [self showAuthenticationError:error.localizedDescription];
 
     return NO;
@@ -448,9 +445,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         return YES;
     }
 
-    [self earthquake:self.passwordField];
-    [self earthquake:self.confirmField];
-
     [self showAuthenticationError:error.localizedDescription];
 
     return NO;
@@ -461,9 +455,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     if ([self.validator validatePasswordConfirmation:self.confirmField.stringValue password:self.passwordText error:&error]) {
         return YES;
     }
-
-    [self earthquake:self.passwordField];
-    [self earthquake:self.confirmField];
 
     [self showAuthenticationError:error.localizedDescription];
 
@@ -499,47 +490,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
            [self validatePasswordSecurity];
 }
 
-- (void)earthquake:(NSView *)view {
-    // Quick and dirty way to prevent overlapping animations that can move the view
-    if (self.earthquaking) {
-        return;
-    }
-    
-    self.earthquaking = YES;
-    CAKeyframeAnimation *shakeAnimation = [self shakeAnimation:view.frame];
-    [view setAnimations:@{@"frameOrigin":shakeAnimation}];
-	[[view animator] setFrameOrigin:view.frame.origin];
-}
-
-- (CAKeyframeAnimation *)shakeAnimation:(NSRect)frame
-{
-    // From http://www.cimgf.com/2008/02/27/core-animation-tutorial-window-shake-effect/
-    int numberOfShakes = 4;
-    CGFloat vigourOfShake = 0.02;
-    CGFloat durationOfShake = 0.5;
-    
-    CAKeyframeAnimation *shakeAnimation = [CAKeyframeAnimation animation];
-	
-    CGMutablePathRef shakePath = CGPathCreateMutable();
-    CGPathMoveToPoint(shakePath, NULL, NSMinX(frame), NSMinY(frame));
-	int index;
-	for (index = 0; index < numberOfShakes; ++index)
-	{
-		CGPathAddLineToPoint(shakePath, NULL, NSMinX(frame) - frame.size.width * vigourOfShake, NSMinY(frame));
-		CGPathAddLineToPoint(shakePath, NULL, NSMinX(frame) + frame.size.width * vigourOfShake, NSMinY(frame));
-	}
-    CGPathCloseSubpath(shakePath);
-    shakeAnimation.path = shakePath;
-    shakeAnimation.duration = durationOfShake;
-    shakeAnimation.delegate = self;
-    
-    return shakeAnimation;
-}
-
-- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
-    self.earthquaking = NO;
-}
-
 - (void)showAuthenticationError:(NSString *)errorMessage {
     [self.errorField setStringValue:errorMessage];
 }
@@ -549,7 +499,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         case 409:
             // User already exists
             [self showAuthenticationError:NSLocalizedString(@"That email is already being used", @"Error when address is in use")];
-            [self earthquake:self.usernameField];
             [self.window makeFirstResponder:self.usernameField];
             break;
         case 401:
