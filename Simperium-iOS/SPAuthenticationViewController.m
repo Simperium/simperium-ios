@@ -194,11 +194,6 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     self.usernameField = [self textFieldWithPlaceholder:usernameText secure:NO];
     _usernameField.keyboardType = UIKeyboardTypeEmailAddress;
     
-    if (_signingIn && configuration.previousUsernameEnabled && configuration.previousUsernameLogged) {
-        // Get previous username, to display as last used username in authentication view
-        _usernameField.text = configuration.previousUsernameLogged;
-    }
-    
     // Password Field
     NSString *passwordText = NSLocalizedString(@"Password", @"Hint displayed in the password field");
     self.passwordField = [self textFieldWithPlaceholder:passwordText secure:YES];
