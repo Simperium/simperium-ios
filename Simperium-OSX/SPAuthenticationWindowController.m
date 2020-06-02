@@ -111,7 +111,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
                 
         markerY -= 30;
         self.signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*3, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight)];
-        self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
+        self.signInButton.title = NSLocalizedString(@"Log In", @"Title of button for logging in");
         self.signInButton.target = self;
         self.signInButton.action = @selector(signInAction:);
         [authView addSubview:self.signInButton];
@@ -313,7 +313,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 #pragma mark - Authentication Wrappers
 
 - (void)performCredentialsValidation {
-    self.signInButton.title = NSLocalizedString(@"Signing In...", @"Displayed temporarily while signing in");
+    self.signInButton.title = NSLocalizedString(@"Logging In...", @"Displayed temporarily while logging in");
     [self.signInProgress startAnimation:self];
 
     [self setInterfaceEnabled:NO];
@@ -328,14 +328,14 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
                                            [self showAuthenticationErrorForCode:responseCode];
                                            [self.signInProgress stopAnimation:self];
-                                           self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
+                                           self.signInButton.title = NSLocalizedString(@"Log In", @"Title of button for login");
                                            [self setInterfaceEnabled:YES];
                                        }
      ];
 }
 
 - (void)performAuthentication {
-    self.signInButton.title = NSLocalizedString(@"Signing In...", @"Displayed temporarily while signing in");
+    self.signInButton.title = NSLocalizedString(@"Logging In...", @"Displayed temporarily while logging in");
     [self.signInProgress startAnimation:self];
 
     [self setInterfaceEnabled:NO];
@@ -348,7 +348,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
                                            [self showAuthenticationErrorForCode:responseCode];
                                            [self.signInProgress stopAnimation:self];
-                                           self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
+                                           self.signInButton.title = NSLocalizedString(@"Log In", @"Title of button for login");
                                            [self setInterfaceEnabled:YES];
                                        }
      ];
