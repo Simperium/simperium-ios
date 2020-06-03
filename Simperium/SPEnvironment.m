@@ -30,7 +30,7 @@ NSString* const SPLibraryID = @"osx";
 #endif
 
 // TODO: Update this automatically via a script that looks at current git tag
-NSString* const SPLibraryVersion = @"0.8.27";
+NSString* const SPLibraryVersion = @"0.8.28";
 
 /// SSL Pinning
 ///
