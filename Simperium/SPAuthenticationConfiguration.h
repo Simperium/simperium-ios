@@ -24,6 +24,9 @@
 
 @property (nonatomic, strong, readwrite) NSString   *forgotPasswordURL;
 @property (nonatomic, strong, readwrite) NSString   *termsOfServiceURL;
+@property (nonatomic, strong, readwrite) NSString   *resetPasswordURL;
+
+@property (nonatomic, assign,  readonly) BOOL       passwordUpgradeFlowEnabled;
 
 #if !TARGET_OS_IPHONE
 @property (nonatomic, strong, readwrite) NSColor    *controlColor;

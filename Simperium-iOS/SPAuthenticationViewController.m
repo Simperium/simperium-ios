@@ -456,25 +456,29 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
 #pragma mark - Validation
 
 - (BOOL)validateUsername {
-    if (![self.validator validateUsername:[self.usernameField.text sp_trim]]) {
-        NSString *errorText = NSLocalizedString(@"Your email address is not valid.", @"Message displayed when email address is invalid");
-        [self.actionButton showErrorMessage:errorText];
-        [self earthquake:[self.tableView cellForRowAtIndexPath:[self emailIndexPath]]];
-        return NO;
+    NSError *error = nil;
+    if ([self.validator validateUsername:[self.usernameField.text sp_trim] error:&error]) {
+        return YES;
     }
-    
-    return YES;
+
+    [self.actionButton showErrorMessage:error.localizedDescription];
+    [self earthquake:[self.tableView cellForRowAtIndexPath:[self emailIndexPath]]];
+
+    return NO;
 }
 
 - (BOOL)validatePassword {
-    if (![self.validator validatePasswordSecurity:self.passwordField.text]) {
-        NSString *errorText = NSLocalizedString(@"Password must contain at least 4 characters.", @"Message displayed when password is invalid");
-        [self.actionButton showErrorMessage:errorText];
-        [self earthquake:[self.tableView cellForRowAtIndexPath:[self passwordIndexPath]]];
-        return NO;
+    NSError *error = nil;
+    if ([self.validator validatePasswordWithUsername:self.usernameField.text.sp_trim
+                                            password:self.passwordField.text
+                                               error:&error]) {
+        return YES;
     }
-        
-    return YES;
+
+    [self.actionButton showErrorMessage:error.localizedDescription];
+    [self earthquake:[self.tableView cellForRowAtIndexPath:[self passwordIndexPath]]];
+
+    return NO;
 }
 
 - (BOOL)validateData {

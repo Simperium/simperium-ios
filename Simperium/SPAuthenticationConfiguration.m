@@ -69,6 +69,10 @@ static NSString *SPAuthenticationTestString                 = @"Testyj";
     _termsOfServiceURL = termsOfServiceURL;
 }
 
+- (BOOL)passwordUpgradeFlowEnabled {
+    return self.resetPasswordURL != nil;
+}
+
 
 #pragma mark - Font Helpers
 

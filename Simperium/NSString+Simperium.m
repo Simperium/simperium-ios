@@ -113,6 +113,16 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
     return randomString;
 }
 
++ (NSString *)sp_newline
+{
+    return @"\n";
+}
+
++ (NSString *)sp_tab
+{
+    return @"\t";
+}
+
 - (BOOL)sp_isValidUrl
 {
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:self]];
