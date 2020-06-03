@@ -9,7 +9,6 @@
 #import "SPAuthenticationWindowController.h"
 #import "Simperium.h"
 #import "NSString+Simperium.h"
-#import <QuartzCore/CoreAnimation.h>
 #import "SPAuthenticator.h"
 #import "SPAuthenticationWindow.h"
 #import "SPAuthenticationView.h"
@@ -41,7 +40,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 #pragma mark Private
 #pragma mark ====================================================================================
 
-@interface SPAuthenticationWindowController () <NSTextFieldDelegate, CAAnimationDelegate>
+@interface SPAuthenticationWindowController () <NSTextFieldDelegate>
 @property (nonatomic, strong) NSImageView               *logoImageView;
 @property (nonatomic, strong) NSButton                  *cancelButton;
 @property (nonatomic, strong) SPAuthenticationTextField *usernameField;
@@ -57,7 +56,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 @property (nonatomic, strong) NSButton                  *changeToSignUpButton;
 @property (nonatomic, strong) NSProgressIndicator       *signInProgress;
 @property (nonatomic, strong) NSProgressIndicator       *signUpProgress;
-@property (nonatomic, assign) BOOL                      earthquaking;
+@property (nonatomic, assign) BOOL                      isAnimatingProgress;
 @end
 
 
@@ -96,14 +95,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
         markerY -= 30;
         self.usernameField = [[SPAuthenticationTextField alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight) secure:NO];
-        
-        [self.usernameField setPlaceholderString:NSLocalizedString(@"Email Address", @"Placeholder text for login field")];
-        
-        SPAuthenticationConfiguration *authConfig = [SPAuthenticationConfiguration sharedInstance];
-        if (_signingIn && authConfig.previousUsernameEnabled && authConfig.previousUsernameLogged) {
-            // Get previous username, to display as last used username in authentication view
-            [self.usernameField setStringValue:authConfig.previousUsernameLogged];
-        }
+        [self.usernameField setPlaceholderString:NSLocalizedString(@"Email", @"Placeholder text for login field")];
         self.usernameField.delegate = self;
         [authView addSubview:self.usernameField];
         
@@ -120,7 +112,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
                 
         markerY -= 30;
         self.signInButton = [[SPAuthenticationButton alloc] initWithFrame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*3, SPAuthenticationFieldWidth, SPAuthenticationFieldHeight)];
-        self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
+        self.signInButton.title = NSLocalizedString(@"Log In", @"Title of button for logging in");
         self.signInButton.target = self;
         self.signInButton.action = @selector(signInAction:);
         [authView addSubview:self.signInButton];
@@ -135,14 +127,15 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         self.signUpButton.target = self;
         self.signUpButton.action = @selector(signUpAction:);
         [authView addSubview:self.signUpButton];
-        
-        self.signUpProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(self.signUpProgress.frame.size.width - SPAuthenticationProgressSize - SPAuthenticationFieldPaddingX, (self.signUpProgress.frame.size.height - SPAuthenticationProgressSize) * 0.5f, SPAuthenticationProgressSize, SPAuthenticationProgressSize)];
+
+        self.signUpProgress = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(self.signUpButton.frame.size.width - SPAuthenticationProgressSize - SPAuthenticationFieldPaddingX, (self.signUpButton.frame.size.height - SPAuthenticationProgressSize) * 0.5f, SPAuthenticationProgressSize, SPAuthenticationProgressSize)];
         [self.signUpProgress setStyle:NSProgressIndicatorSpinningStyle];
         [self.signUpProgress setDisplayedWhenStopped:NO];
         [self.signUpButton addSubview:self.signUpProgress];
 
         // Forgot Password!
-        self.forgotPasswordButton = [self linkButtonWithText:@"Forgot your Password?" frame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*3 - 35, SPAuthenticationFieldWidth, 20)];
+        NSString *forgotText = NSLocalizedString(@"Forgot your Password?", @"Forgot Password Button");
+        self.forgotPasswordButton = [self linkButtonWithText:forgotText frame:NSMakeRect(SPAuthenticationFieldPaddingX, markerY - SPAuthenticationRowSize*3 - 35, SPAuthenticationFieldWidth, 20)];
         self.forgotPasswordButton.target = self;
         self.forgotPasswordButton.action = @selector(forgotPassword:);
         [authView addSubview:self.forgotPasswordButton];
@@ -220,7 +213,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     NSString *forgotPasswordURL = [[SPAuthenticationConfiguration sharedInstance] forgotPasswordURL];
     
     // Post the email already entered in the Username Field. This allows us to prefill the Forgot Password Form
-    NSString *username = self.usernameField.stringValue.sp_trim;
+    NSString *username = self.usernameText;
     if (username.length) {
         NSString *parameters = [NSString stringWithFormat:@"?email=%@", username];
         forgotPasswordURL = [forgotPasswordURL stringByAppendingString:parameters];
@@ -233,10 +226,24 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 	self.signingIn = (sender == self.changeToSignInButton);
 }
 
+
+#pragma mark - Dynamic Properties
+
+- (NSString *)usernameText {
+    return self.usernameField.stringValue.sp_trim ?: @"";
+}
+
+- (NSString *)passwordText {
+    return self.passwordField.stringValue ?: @"";
+}
+
 - (void)setSigningIn:(BOOL)signingIn {
     _signingIn = signingIn;
 	[self refreshFields];
 }
+
+
+#pragma mark - Interface Helpers
 
 - (void)refreshFields {
     // Refresh Buttons
@@ -263,66 +270,42 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self.window.contentView setNeedsDisplay:YES];
 }
 
+- (void)setInterfaceEnabled:(BOOL)enabled {
+    [self.signInButton setEnabled:enabled];
+    [self.signUpButton setEnabled:enabled];
+    [self.changeToSignUpButton setEnabled:enabled];
+    [self.changeToSignInButton setEnabled:enabled];
+    [self.usernameField setEnabled:enabled];
+    [self.passwordField setEnabled:enabled];
+    [self.confirmField setEnabled:enabled];
+}
 
-#pragma mark Actions
+
+#pragma mark - Actions
 
 - (IBAction)signInAction:(id)sender {
+    [self clearAuthenticationError];
+
+    if ([self mustUpgradePasswordStrength]) {
+        [self performCredentialsValidation];
+        return;
+    }
+
     if (![self validateSignIn]) {
         return;
     }
-    
-    self.signInButton.title = NSLocalizedString(@"Signing In...", @"Displayed temporarily while signing in");
-    [self.signInProgress startAnimation:self];
-    [self.signInButton setEnabled:NO];
-    [self.changeToSignUpButton setEnabled:NO];
-    [self.usernameField setEnabled:NO];
-    [self.passwordField setEnabled:NO];
-    [self.authenticator authenticateWithUsername:self.usernameField.stringValue.sp_trim
-                                        password:self.passwordField.stringValue
-                                       success:^{
-                                       }
-                                       failure:^(int responseCode, NSString *responseString) {
-                                           NSLog(@"Error signing in (%d): %@", responseCode, responseString);
-                                           [self showAuthenticationErrorForCode:responseCode];
-                                           [self.signInProgress stopAnimation:self];
-                                           self.signInButton.title = NSLocalizedString(@"Sign In", @"Title of button for signing in");
-                                           [self.signInButton setEnabled:YES];
-                                           [self.changeToSignUpButton setEnabled:YES];
-                                           [self.usernameField setEnabled:YES];
-                                           [self.passwordField setEnabled:YES];
-                                       }
-     ];
+
+    [self performAuthentication];
 }
 
 - (IBAction)signUpAction:(id)sender {
+    [self clearAuthenticationError];
+
     if (![self validateSignUp]) {
         return;
     }
-    
-    self.signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
-    [self.signUpProgress startAnimation:self];
-    [self.signUpButton setEnabled:NO];
-    [self.changeToSignInButton setEnabled:NO];
-    [self.usernameField setEnabled:NO];
-    [self.passwordField setEnabled:NO];
-    [self.confirmField setEnabled:NO];
 
-    [self.authenticator createWithUsername:self.usernameField.stringValue.sp_trim
-                                  password:self.passwordField.stringValue
-                                 success:^{
-                                     //[self close];
-                                 }
-                                 failure:^(int responseCode, NSString *responseString) {
-                                     NSLog(@"Error signing up (%d): %@", responseCode, responseString);
-                                     [self showAuthenticationErrorForCode:responseCode];
-                                     self.signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
-                                     [self.signUpProgress stopAnimation:self];
-                                     [self.signUpButton setEnabled:YES];
-                                     [self.changeToSignInButton setEnabled:YES];
-                                     [self.usernameField setEnabled:YES];
-                                     [self.passwordField setEnabled:YES];
-                                     [self.confirmField setEnabled:YES];
-                                 }];
+    [self performSignup];
 }
 
 - (IBAction)cancelAction:(id)sender {
@@ -330,43 +313,158 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 }
 
 
-# pragma mark Validation and Error Handling
+#pragma mark - Displaying Porgress
 
-- (BOOL)validateUsername {
-    if (![self.validator validateUsername:self.usernameField.stringValue.sp_trim]) {
-        [self earthquake:self.usernameField];
-        [self showAuthenticationError:NSLocalizedString(@"Not a valid email address", @"Error when you enter a bad email address")];
-        
-        return NO;
+- (void)startLoginAnimation {
+    self.signInButton.title = NSLocalizedString(@"Logging In...", @"Displayed temporarily while logging in");
+    [self.signInProgress startAnimation:self];
+    self.isAnimatingProgress = YES;
+}
+
+- (void)stopLoginAnimation {
+    self.signInButton.title = NSLocalizedString(@"Log In", @"Title of button for login");
+    [self.signInProgress stopAnimation:self];
+    self.isAnimatingProgress = NO;
+}
+
+- (void)startSignupAnimation {
+    self.signUpButton.title = NSLocalizedString(@"Signing Up...", @"Displayed temoprarily while signing up");
+    [self.signUpProgress startAnimation:self];
+    self.isAnimatingProgress = YES;
+}
+
+- (void)stopSignupAnimation {
+    self.signUpButton.title = NSLocalizedString(@"Sign Up", @"Title of button for signing up");
+    [self.signUpProgress stopAnimation:self];
+    self.isAnimatingProgress = NO;
+}
+
+
+#pragma mark - Authentication Wrappers
+
+- (void)performCredentialsValidation {
+    [self startLoginAnimation];
+    [self setInterfaceEnabled:NO];
+
+    [self.authenticator validateWithUsername:self.usernameText password:self.passwordText success:^{
+        [self stopLoginAnimation];
+        [self setInterfaceEnabled:YES];
+        [self presentPasswordResetAlert];
+    } failure:^(int responseCode, NSString *responseString) {
+        [self showAuthenticationErrorForCode:responseCode];
+        [self stopLoginAnimation];
+        [self setInterfaceEnabled:YES];
+    }];
+}
+
+- (void)performAuthentication {
+    [self startLoginAnimation];
+    [self setInterfaceEnabled:NO];
+
+    [self.authenticator authenticateWithUsername:self.usernameText password:self.passwordText success:^{
+        // NO-OP
+    } failure:^(int responseCode, NSString *responseString) {
+        [self showAuthenticationErrorForCode:responseCode];
+        [self stopLoginAnimation];
+        [self setInterfaceEnabled:YES];
+    }];
+}
+
+- (void)performSignup {
+    [self startSignupAnimation];
+    [self setInterfaceEnabled:NO];
+
+    [self.authenticator createWithUsername:self.usernameText password:self.passwordText success:^{
+        // NO-OP
+    } failure:^(int responseCode, NSString *responseString) {
+        [self showAuthenticationErrorForCode:responseCode];
+        [self stopSignupAnimation];
+        [self setInterfaceEnabled:YES];
+    }];
+}
+
+
+#pragma mark - Password Reset Flow
+
+- (void)presentPasswordResetAlert {
+    NSAlert *alert = [NSAlert new];
+    [alert setMessageText:self.passwordResetMessageText];
+    [alert addButtonWithTitle:self.passwordResetProceedText];
+    [alert addButtonWithTitle:self.passwordResetCancelText];
+
+    __weak typeof(self) weakSelf = self;
+    [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse returnCode) {
+        if (returnCode != NSAlertFirstButtonReturn) {
+            return;
+        }
+
+        [weakSelf openResetPasswordURL];
+    }];
+}
+
+- (NSString *)passwordResetMessageText {
+    return [@[
+        NSLocalizedString(@"Your password is insecure and must be reset. The password requirements are:", comment: @"Password Requirements: Title"),
+        @"",
+        NSLocalizedString(@"- Password cannot match email", comment: @"Password Requirement: Email Match"),
+        NSLocalizedString(@"- Minimum of 8 characters", comment: @"Password Requirement: Length"),
+        NSLocalizedString(@"- Neither tabs nor newlines are allowed", comment: @"Password Requirement: Special Characters")
+    ] componentsJoinedByString:@"\n"];
+}
+
+- (NSString *)passwordResetProceedText {
+    return NSLocalizedString(@"Reset", @"Password Reset: Proceed");
+}
+
+- (NSString *)passwordResetCancelText {
+    return NSLocalizedString(@"Cancel", @"Password Reset: Cancel");
+}
+
+- (void)openResetPasswordURL {
+    NSString *resetPasswordPath = [SPAuthenticationConfiguration.sharedInstance.resetPasswordURL stringByAppendingString:self.usernameText];
+    NSURL *targetURL = [NSURL URLWithString:resetPasswordPath];
+
+    if (!targetURL) {
+        return;
     }
 
-    return YES;
+    [[NSWorkspace sharedWorkspace] openURL:targetURL];
+}
+
+
+#pragma mark - Validation and Error Handling
+
+- (BOOL)validateUsername {
+    NSError *error = nil;
+    if ([self.validator validateUsername:self.usernameText error:&error]) {
+        return YES;
+    }
+
+    [self showAuthenticationError:error.localizedDescription];
+
+    return NO;
 }
 
 - (BOOL)validatePasswordSecurity {
-    if (![self.validator validatePasswordSecurity:self.passwordField.stringValue]) {
-        [self earthquake:self.passwordField];
-        [self earthquake:self.confirmField];
-        
-        NSString *errorStr = NSLocalizedString(@"Password should be at least %ld characters", @"Error when your password isn't long enough");
-        NSString *notLongEnough = [NSString stringWithFormat:errorStr, (long)self.validator.minimumPasswordLength];
-        [self showAuthenticationError:notLongEnough];
-        
-        return NO;
+    NSError *error = nil;
+    if ([self.validator validatePasswordWithUsername:self.usernameText password:self.passwordText error:&error]) {
+        return YES;
     }
-    
-    return YES;
+
+    [self showAuthenticationError:error.localizedDescription];
+
+    return NO;
 }
 
-- (BOOL)validatePasswordsMatch{
-    if (![self.passwordField.stringValue isEqualToString:self.confirmField.stringValue]) {
-        [self earthquake:self.passwordField];
-        [self earthquake:self.confirmField];
-
-        return NO;
+- (BOOL)validatePasswordsMatch {
+    NSError *error = nil;
+    if ([self.validator validatePasswordConfirmation:self.confirmField.stringValue password:self.passwordText error:&error]) {
+        return YES;
     }
-    
-    return YES;
+
+    [self showAuthenticationError:error.localizedDescription];
+
+    return NO;
 }
 
 - (BOOL)validateConnection {
@@ -378,60 +476,24 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     return YES;
 }
 
+- (BOOL)mustUpgradePasswordStrength {
+    BOOL passwordResetEnabled = [[SPAuthenticationConfiguration sharedInstance] passwordUpgradeFlowEnabled];
+    BOOL mustResetPassword = [self.validator mustPerformPasswordResetWithUsername:self.usernameText password:self.passwordText];
+
+    return passwordResetEnabled && mustResetPassword;
+}
+
 - (BOOL)validateSignIn {
-    [self clearAuthenticationError];
     return [self validateConnection] &&
            [self validateUsername] &&
            [self validatePasswordSecurity];
 }
 
 - (BOOL)validateSignUp {
-    [self clearAuthenticationError];
     return [self validateConnection] &&
            [self validateUsername] &&
            [self validatePasswordsMatch] &&
            [self validatePasswordSecurity];
-}
-
-- (void)earthquake:(NSView *)view {
-    // Quick and dirty way to prevent overlapping animations that can move the view
-    if (self.earthquaking) {
-        return;
-    }
-    
-    self.earthquaking = YES;
-    CAKeyframeAnimation *shakeAnimation = [self shakeAnimation:view.frame];
-    [view setAnimations:@{@"frameOrigin":shakeAnimation}];
-	[[view animator] setFrameOrigin:view.frame.origin];
-}
-
-- (CAKeyframeAnimation *)shakeAnimation:(NSRect)frame
-{
-    // From http://www.cimgf.com/2008/02/27/core-animation-tutorial-window-shake-effect/
-    int numberOfShakes = 4;
-    CGFloat vigourOfShake = 0.02;
-    CGFloat durationOfShake = 0.5;
-    
-    CAKeyframeAnimation *shakeAnimation = [CAKeyframeAnimation animation];
-	
-    CGMutablePathRef shakePath = CGPathCreateMutable();
-    CGPathMoveToPoint(shakePath, NULL, NSMinX(frame), NSMinY(frame));
-	int index;
-	for (index = 0; index < numberOfShakes; ++index)
-	{
-		CGPathAddLineToPoint(shakePath, NULL, NSMinX(frame) - frame.size.width * vigourOfShake, NSMinY(frame));
-		CGPathAddLineToPoint(shakePath, NULL, NSMinX(frame) + frame.size.width * vigourOfShake, NSMinY(frame));
-	}
-    CGPathCloseSubpath(shakePath);
-    shakeAnimation.path = shakePath;
-    shakeAnimation.duration = durationOfShake;
-    shakeAnimation.delegate = self;
-    
-    return shakeAnimation;
-}
-
-- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
-    self.earthquaking = NO;
 }
 
 - (void)showAuthenticationError:(NSString *)errorMessage {
@@ -443,7 +505,6 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         case 409:
             // User already exists
             [self showAuthenticationError:NSLocalizedString(@"That email is already being used", @"Error when address is in use")];
-            [self earthquake:self.usernameField];
             [self.window makeFirstResponder:self.usernameField];
             break;
         case 401:
@@ -462,7 +523,8 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self.errorField setStringValue:@""];
 }
 
-#pragma mark NSTextView delegates
+
+#pragma mark - NSTextView delegates
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)fieldEditor doCommandBySelector:(SEL)commandSelector {
     BOOL retval = NO;

@@ -8,11 +8,33 @@
 
 #import <Foundation/Foundation.h>
 
+typedef NS_ENUM(NSUInteger, SPAuthenticationErrors) {
+    SPAuthenticationErrorsEmailInvalid,
+    SPAuthenticationErrorsPasswordTooShort,
+    SPAuthenticationErrorsPasswordMatchesUsername,
+    SPAuthenticationErrorsPasswordContainsInvalidCharacter,
+    SPAuthenticationErrorsConfirmationDoesntMatch
+};
+
+extern NSString* const SPAuthenticationErrorDomain;
+
 @interface SPAuthenticationValidator : NSObject
 
-@property (nonatomic, assign) NSUInteger minimumPasswordLength;
+@property (nonatomic, assign) NSUInteger strongMinimumPasswordLength;
+@property (nonatomic, assign) NSUInteger legacyMinimumPasswordLength;
 
-- (BOOL)validateUsername:(NSString *)username;
-- (BOOL)validatePasswordSecurity:(NSString *)password;
+- (BOOL)validateUsername:(NSString *)username
+                   error:(NSError **)error;
+
+- (BOOL)validatePasswordWithUsername:(NSString *)username
+                            password:(NSString *)password
+                               error:(NSError **)error;
+
+- (BOOL)validatePasswordConfirmation:(NSString *)confirmation
+                            password:(NSString *)password
+                               error:(NSError **)error;
+
+- (BOOL)mustPerformPasswordResetWithUsername:(NSString *)username
+                                    password:(NSString *)password;
 
 @end

@@ -17,6 +17,9 @@
 + (NSString *)sp_md5StringFromData:(NSData *)data;
 + (NSString *)sp_randomStringOfLength:(NSUInteger)length;
 
++ (NSString *)sp_newline;
++ (NSString *)sp_tab;
+
 - (BOOL)sp_isValidUrl;
 
 - (NSString *)sp_urlEncodeString;

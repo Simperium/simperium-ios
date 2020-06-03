@@ -9,14 +9,15 @@
 #import "SPAuthenticationButtonCell.h"
 #import "SPAuthenticationConfiguration.h"
 
-@implementation SPAuthenticationButtonCell
+CGFloat const SPAuthenticationButtonRadius = 5.0;
 
+@implementation SPAuthenticationButtonCell
 
 - (void)drawBezelWithFrame:(NSRect)frame inView:(NSView *)controlView {
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
-    NSBezierPath *outerClip = [NSBezierPath bezierPathWithRoundedRect:cellFrame xRadius:12.f yRadius:12.f];
+    NSBezierPath *outerClip = [NSBezierPath bezierPathWithRoundedRect:cellFrame xRadius:SPAuthenticationButtonRadius yRadius:SPAuthenticationButtonRadius];
     [outerClip addClip];
     
     NSColor *buttonColor = [SPAuthenticationConfiguration sharedInstance].controlColor;

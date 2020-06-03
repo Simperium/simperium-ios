@@ -21,9 +21,7 @@
 
 static NSString *SPAuthenticationDefaultRegularFontName     = @"HelveticaNeue";
 static NSString *SPAuthenticationDefaultMediumFontName      = @"HelveticaNeue-Medium";
-static BOOL SPAuthenticationDefaultPreviousUsernameEnabled  = NO;
 static NSString *SPAuthenticationTestString                 = @"Testyj";
-static NSString *SPAuthenticationPreviousUsernameKey        = @"SPUsernamePrevious";
 
 
 #pragma mark ====================================================================================
@@ -49,7 +47,6 @@ static NSString *SPAuthenticationPreviousUsernameKey        = @"SPUsernamePrevio
         _regularFontName            = SPAuthenticationDefaultRegularFontName;
         _mediumFontName             = SPAuthenticationDefaultMediumFontName;
         _termsOfServiceURL          = SPTermsOfServiceURL;
-        _previousUsernameEnabled    = SPAuthenticationDefaultPreviousUsernameEnabled;
         
 #if !TARGET_OS_IPHONE
         _controlColor       = [NSColor colorWithCalibratedRed:65.f/255.f green:137.f/255.f blue:199.f/255.f alpha:1.0];
@@ -72,13 +69,8 @@ static NSString *SPAuthenticationPreviousUsernameKey        = @"SPUsernamePrevio
     _termsOfServiceURL = termsOfServiceURL;
 }
 
-- (void)setPreviousUsernameLogged:(NSString *)username {
-    [[NSUserDefaults standardUserDefaults] setObject:username forKey:SPAuthenticationPreviousUsernameKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
-- (NSString *)previousUsernameLogged {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:SPAuthenticationPreviousUsernameKey];
+- (BOOL)passwordUpgradeFlowEnabled {
+    return self.resetPasswordURL != nil;
 }
 
 
