@@ -67,7 +67,12 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 @implementation SPAuthenticationWindowController
 
 - (instancetype)init {
-    SPAuthenticationWindow *window = [[SPAuthenticationWindow alloc] initWithContentRect:NSMakeRect(0, 0, SPAuthenticationWindowWidth, SPAuthenticationWindowHeight) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+    NSWindowStyleMask styleMask = NSBorderlessWindowMask | NSWindowStyleMaskClosable | NSWindowStyleMaskTitled | NSFullSizeContentViewWindowMask;
+    CGRect windowFrame = NSMakeRect(0, 0, SPAuthenticationWindowWidth, SPAuthenticationWindowHeight);
+    SPAuthenticationWindow *window = [[SPAuthenticationWindow alloc] initWithContentRect:windowFrame styleMask:styleMask backing:NSBackingStoreBuffered defer:NO];
+
+    window.titleVisibility            = NSWindowTitleHidden;
+    window.titlebarAppearsTransparent = YES;
     
     if ((self = [super initWithWindow: window])) {
         self.validator = [[SPAuthenticationValidator alloc] init];
