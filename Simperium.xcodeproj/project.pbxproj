@@ -1624,11 +1624,11 @@
 			};
 			buildConfigurationList = 264CD8F5135DFD7900C51BAD /* Build configuration list for PBXProject "Simperium" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
-				English,
+				Base,
 			);
 			mainGroup = 264CD8F0135DFD7900C51BAD;
 			productRefGroup = 264CD8FC135DFD7A00C51BAD /* Products */;
