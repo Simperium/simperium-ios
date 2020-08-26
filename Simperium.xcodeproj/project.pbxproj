@@ -1624,11 +1624,11 @@
 			};
 			buildConfigurationList = 264CD8F5135DFD7900C51BAD /* Build configuration list for PBXProject "Simperium" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
-				English,
+				Base,
 			);
 			mainGroup = 264CD8F0135DFD7900C51BAD;
 			productRefGroup = 264CD8FC135DFD7A00C51BAD /* Products */;
@@ -2107,6 +2107,7 @@
 				PRODUCT_NAME = Simperium;
 				PUBLIC_HEADERS_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/Headers";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -2157,6 +2158,7 @@
 				PRODUCT_NAME = Simperium;
 				PUBLIC_HEADERS_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/Headers";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
