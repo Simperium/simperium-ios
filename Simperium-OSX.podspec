@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   # Sources
   #
   s.source     = { :git => "https://github.com/Simperium/simperium-ios.git", :tag => "v" << s.version.to_s }
-  s.osx.deployment_target = '10.8'
+  s.osx.deployment_target = '10.9'
   s.source_files = 'Simperium/*.{h,m}', 'Simperium-OSX/*.{h,m}'
 
   # Settings
