@@ -1,3 +1,4 @@
+os: osx
 osx_image: xcode12
 language: objective-c
 xcode_project: Simperium.xcodeproj
