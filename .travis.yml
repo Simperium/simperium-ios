@@ -5,4 +5,4 @@ xcode_project: Simperium.xcodeproj
 xcode_scheme: Simperium iOS
 xcode_sdk: iphonesimulator
 script:
-- set -o pipefail && xcodebuild -project Simperium.xcodeproj -scheme "Simperium iOS" -sdk iphonesimulator build test | xcpretty -c
+- set -o pipefail && xcodebuild -project Simperium.xcodeproj -scheme "Simperium iOS" -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 11,OS=latest' build test | xcpretty -c
