@@ -9,8 +9,8 @@
 #import <Foundation/Foundation.h>
 
 
-typedef void(^SucceededBlockType)(void);
-typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
+typedef void(^SuccessBlockType)(void);
+typedef void(^FailureBlockType)(NSInteger responseCode, NSString *responseString);
 
 @class Simperium;
 
@@ -43,18 +43,18 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 
 - (void)authenticateWithUsername:(NSString *)username
                         password:(NSString *)password
-                         success:(SucceededBlockType)successBlock
-                         failure:(FailedBlockType)failureBlock;
+                         success:(SuccessBlockType)successHandler
+                         failure:(FailureBlockType)failureHandler;
 
 - (void)validateWithUsername:(NSString *)username
                     password:(NSString *)password
-                     success:(SucceededBlockType)successBlock
-                     failure:(FailedBlockType)failureBlock;
+                     success:(SuccessBlockType)successHandler
+                     failure:(FailureBlockType)failureHandler;
 
-- (void)createWithUsername:(NSString *)username
+- (void)signupWithUsername:(NSString *)username
                   password:(NSString *)password
-                   success:(SucceededBlockType)successBlock
-                   failure:(FailedBlockType)failureBlock;
+                   success:(SuccessBlockType)successHandler
+                   failure:(FailureBlockType)failureHandler;
 
 - (void)reset;
 - (void)cancel;
