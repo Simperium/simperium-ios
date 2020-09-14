@@ -30,7 +30,7 @@ CGFloat const SPAuthenticationButtonRadius = 5.0;
 
     int fontSize = 20;
     NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
-    [style setAlignment:NSCenterTextAlignment];
+    [style setAlignment:NSTextAlignmentCenter];
     [style setMaximumLineHeight:fontSize + 8];
 
     NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
