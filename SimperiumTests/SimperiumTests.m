@@ -15,8 +15,6 @@
 #import "SPBucket.h"
 #import "SPKeychain.h"
 #import "SPAuthenticator.h"
-#import "SPHttpRequest.h"
-#import "SPHttpRequestQueue.h"
 
 
 @implementation SimperiumTests
@@ -132,7 +130,7 @@
 	NSError* error = nil;
 	NSURLResponse* response = nil;
 	NSData* responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-	
+
 	// Parse the response
 	NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
 	XCTAssertTrue([httpResponse isKindOfClass:[NSHTTPURLResponse class]], @"Please check NSURLConnection's API");
