@@ -33,6 +33,7 @@ static NSString * SPUsername    = @"SPUsername";
 #pragma mark ====================================================================================
 
 @interface SPAuthenticator()
+@property (nonatomic, strong, readwrite) NSURLSession                   *session;
 @property (nonatomic, strong, readwrite) SPReachability                 *reachability;
 @property (nonatomic,   weak, readwrite) id<SPAuthenticatorDelegate>    delegate;
 @property (nonatomic,   weak, readwrite) Simperium                      *simperium;
@@ -63,6 +64,10 @@ static NSString * SPUsername    = @"SPUsername";
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kSPReachabilityChangedNotification object:nil];
         _reachability = [SPReachability reachabilityForInternetConnection];
         _connected = self.reachability.currentReachabilityStatus != NotReachable;
+        _session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.defaultSessionConfiguration
+                                                 delegate:nil
+                                            delegateQueue:NSOperationQueue.mainQueue];
+
         [_reachability startNotifier];
     }
     return self;
@@ -144,7 +149,7 @@ static NSString * SPUsername    = @"SPUsername";
     NSURLRequest *request = [self authenticationRequestWithUsername:username password:password];
     SPLogInfo(@"Simperium authenticating: %@", request.URL);
 
-    [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
+    [self.session performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
         if ([self processAuthenticationResponse:responseString statusCode:statusCode]) {
             SPLogInfo(@"Simperium authentication success!");
             [self notifyAuthenticationDidSucceed];
@@ -185,7 +190,7 @@ static NSString * SPUsername    = @"SPUsername";
     NSURLRequest *request = [self authenticationRequestWithUsername:username password:password];
     SPLogInfo(@"Simperium Validating Credentials: %@", request.URL);
 
-    [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
+    [self.session performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
         SPUser *user = [SPUser parseUserFromResponseString:responseString];
         if (user.authenticated) {
             SPLogInfo(@"Simperium account validated!");
@@ -213,7 +218,7 @@ static NSString * SPUsername    = @"SPUsername";
     NSURLRequest *request = [self signupRequestWithUsername:username password:password];
     SPLogInfo(@"Simperium Signup: %@", request.URL);
 
-    [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
+    [self.session performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
         if ([self processAuthenticationResponse:responseString statusCode:statusCode]) {
             SPLogInfo(@"Simperium authentication success!");
             [self notifySignupDidSucceed];
