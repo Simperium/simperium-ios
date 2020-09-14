@@ -12,7 +12,9 @@
             responseString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         }
 
-        completionHandler(response.sp_statusCode, responseString, error);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completionHandler(response.sp_statusCode, responseString, error);
+        });
     }];
 
     [task resume];
