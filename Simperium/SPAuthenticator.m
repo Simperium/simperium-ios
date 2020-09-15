@@ -202,13 +202,13 @@ static NSString * SPUsername    = @"SPUsername";
     [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
         BOOL success = [self processAuthenticationResponse:responseString statusCode:statusCode];
         if (!success) {
-            SPLogError(@"Simperium authentication error (%d): %@", statusCode, error);
+            SPLogError(@"Simperium signup error (%d): %@", statusCode, error);
             failureHandler(statusCode, responseString, error);
             [self notifyAuthenticationDidFail];
             return;
         }
 
-        SPLogInfo(@"Simperium authentication success!");
+        SPLogInfo(@"Simperium signup success!");
         successHandler();
         [self notifySignupDidSucceed];
         [self notifyAuthenticationDidSucceed];
