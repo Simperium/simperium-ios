@@ -49,7 +49,7 @@
     NSString *username = dictionary[@"username"];
     NSString *token = dictionary[@"access_token"];
 
-    if (token.length == 0) {
+    if ([token isKindOfClass:[NSString class]] == NO || token.length == 0) {
         return nil;
     }
 
