@@ -59,6 +59,4 @@ typedef void(^FailureBlockType)(NSInteger responseCode, NSString *responseString
 - (void)reset;
 - (void)cancel;
 
-+ (BOOL)needsAuthenticationForAppWithID:(NSString *)appID;
-
 @end

@@ -296,18 +296,4 @@ static NSString * SPUsername    = @"SPUsername";
     }
 }
 
-
-#pragma mark - Static Helpers
-
-+ (BOOL)needsAuthenticationForAppWithID:(NSString *)appID {
-    NSString *username  = [[NSUserDefaults standardUserDefaults] objectForKey:SPUsername];
-    NSString *token     = nil;
-    
-    if (username) {
-        token = [SPKeychain passwordForService:appID account:username error:nil];
-    }
-    
-    return (username.length == 0 || token.length == 0);
-}
-
 @end
