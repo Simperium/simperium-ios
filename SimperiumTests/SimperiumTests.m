@@ -131,7 +131,7 @@
 	NSURLResponse* response = nil;
 
     // TODO:
-    // Let's overhaul the entire Integration Tests suite. Silencing NSURLConnection warning, for the itme being
+    // Let's overhaul the entire Integration Tests suite. Silencing NSURLConnection warning, for the time being
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     NSData* responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
