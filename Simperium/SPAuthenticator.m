@@ -144,7 +144,7 @@ static NSString * SPUsername    = @"SPUsername";
 
         SPLogError(@"Simperium authentication error (%d): %@", statusCode, error);
         [self notifyAuthenticationDidFail];
-        failureHandler(statusCode, responseString);
+        failureHandler(statusCode, responseString, error);
     }];
 }
 
@@ -176,7 +176,7 @@ static NSString * SPUsername    = @"SPUsername";
         }
 
         SPLogError(@"Simperium account validation error (%d): %@", statusCode, error);
-        failureHandler(statusCode, responseString);
+        failureHandler(statusCode, responseString, error);
     }];
 }
 
@@ -210,7 +210,7 @@ static NSString * SPUsername    = @"SPUsername";
 
         SPLogError(@"Simperium authentication error (%d): %@", statusCode, error);
         [self notifyAuthenticationDidFail];
-        failureHandler(statusCode, responseString);
+        failureHandler(statusCode, responseString, error);
     }];
 }
 

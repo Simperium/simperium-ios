@@ -10,7 +10,7 @@
 
 
 typedef void(^SuccessBlockType)(void);
-typedef void(^FailureBlockType)(NSInteger responseCode, NSString *responseString);
+typedef void(^FailureBlockType)(NSInteger responseCode, NSString *responseString, NSError *error);
 
 @class Simperium;
 

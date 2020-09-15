@@ -355,7 +355,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         [self stopLoginAnimation];
         [self setInterfaceEnabled:YES];
         [self presentPasswordResetAlert];
-    } failure:^(NSInteger responseCode, NSString *responseString) {
+    } failure:^(NSInteger responseCode, NSString *responseString, NSError *error) {
         [self showAuthenticationErrorForCode:responseCode];
         [self stopLoginAnimation];
         [self setInterfaceEnabled:YES];
@@ -368,7 +368,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
     [self.authenticator authenticateWithUsername:self.usernameText password:self.passwordText success:^{
         // NO-OP
-    } failure:^(NSInteger responseCode, NSString *responseString) {
+    } failure:^(NSInteger responseCode, NSString *responseString, NSError *error) {
         [self showAuthenticationErrorForCode:responseCode];
         [self stopLoginAnimation];
         [self setInterfaceEnabled:YES];
@@ -381,7 +381,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
     [self.authenticator signupWithUsername:self.usernameText password:self.passwordText success:^{
         // NO-OP
-    } failure:^(NSInteger responseCode, NSString *responseString) {
+    } failure:^(NSInteger responseCode, NSString *responseString, NSError *error) {
         [self showAuthenticationErrorForCode:responseCode];
         [self stopSignupAnimation];
         [self setInterfaceEnabled:YES];

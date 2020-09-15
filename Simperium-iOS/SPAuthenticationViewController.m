@@ -517,7 +517,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
                                             [self.progressView stopAnimating];
                                             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                                         }
-                                        failure: ^(NSInteger responseCode, NSString *responseString){
+                                        failure: ^(NSInteger responseCode, NSString *responseString, NSError *error){
                                             self.view.userInteractionEnabled = YES;
 
                                             [self.progressView setHidden:YES];
@@ -575,7 +575,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
                                       [self.progressView stopAnimating];
                                     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                                 }
-                                   failure:^(NSInteger responseCode, NSString *responseString){
+                                   failure:^(NSInteger responseCode, NSString *responseString, NSError *error){
                                        [self restoreCreationSettings];
 
                                        NSString *message = [self signupErrorForCode:responseCode];
