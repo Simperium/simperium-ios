@@ -135,16 +135,16 @@ static NSString * SPUsername    = @"SPUsername";
 
     [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
         BOOL success = [self processAuthenticationResponse:responseString statusCode:statusCode];
-        if (success) {
-            SPLogInfo(@"Simperium authentication success!");
-            successHandler();
-            [self notifyAuthenticationDidSucceed];
+        if (!success) {
+            SPLogError(@"Simperium authentication error (%d): %@", statusCode, error);
+            failureHandler(statusCode, responseString, error);
+            [self notifyAuthenticationDidFail];
             return;
         }
 
-        SPLogError(@"Simperium authentication error (%d): %@", statusCode, error);
-        failureHandler(statusCode, responseString, error);
-        [self notifyAuthenticationDidFail];
+        SPLogInfo(@"Simperium authentication success!");
+        successHandler();
+        [self notifyAuthenticationDidSucceed];
     }];
 }
 
@@ -169,14 +169,14 @@ static NSString * SPUsername    = @"SPUsername";
 
     [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
         SPUser *user = [SPUser parseUserFromResponseString:responseString];
-        if (user.authenticated) {
-            SPLogInfo(@"Simperium account validated!");
-            successHandler();
+        if (user.authenticated == NO) {
+            SPLogError(@"Simperium account validation error (%d): %@", statusCode, error);
+            failureHandler(statusCode, responseString, error);
             return;
         }
 
-        SPLogError(@"Simperium account validation error (%d): %@", statusCode, error);
-        failureHandler(statusCode, responseString, error);
+        SPLogInfo(@"Simperium account validated!");
+        successHandler();
     }];
 }
 
@@ -201,17 +201,17 @@ static NSString * SPUsername    = @"SPUsername";
 
     [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
         BOOL success = [self processAuthenticationResponse:responseString statusCode:statusCode];
-        if (success) {
-            SPLogInfo(@"Simperium authentication success!");
-            successHandler();
-            [self notifySignupDidSucceed];
-            [self notifyAuthenticationDidSucceed];
+        if (!success) {
+            SPLogError(@"Simperium authentication error (%d): %@", statusCode, error);
+            failureHandler(statusCode, responseString, error);
+            [self notifyAuthenticationDidFail];
             return;
         }
 
-        SPLogError(@"Simperium authentication error (%d): %@", statusCode, error);
-        failureHandler(statusCode, responseString, error);
-        [self notifyAuthenticationDidFail];
+        SPLogInfo(@"Simperium authentication success!");
+        successHandler();
+        [self notifySignupDidSucceed];
+        [self notifyAuthenticationDidSucceed];
     }];
 }
 
