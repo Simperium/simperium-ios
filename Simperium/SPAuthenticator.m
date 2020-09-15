@@ -204,6 +204,7 @@ static NSString * SPUsername    = @"SPUsername";
         if (success) {
             SPLogInfo(@"Simperium authentication success!");
             [self notifySignupDidSucceed];
+            [self notifyAuthenticationDidSucceed];
             successHandler();
             return;
         }
