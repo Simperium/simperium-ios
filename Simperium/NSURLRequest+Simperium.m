@@ -20,6 +20,7 @@
                                   provider:(NSString *)provider
                                   username:(NSString *)username
                                   password:(NSString *)password {
+    NSParameterAssert(appID);
     NSURL *requestURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, appID]];
     return [self sp_requestWithURL:requestURL appID:appID apiKey:apiKey provider:provider username:username password:password];
 }
@@ -29,6 +30,7 @@
                                    provider:(NSString *)provider
                                    username:(NSString *)username
                                    password:(NSString *)password {
+    NSParameterAssert(appID);
     NSURL *requestURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/create/", SPAuthURL, appID]];
     return [self sp_requestWithURL:requestURL appID:appID apiKey:apiKey provider:provider username:username password:password];
 }
