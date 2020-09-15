@@ -15,11 +15,11 @@
 
 @implementation NSURLRequest (Simperium)
 
-+ (NSURLRequest *)sp_authenticationRequestWithAppID:(NSString *)appID
-                                             apiKey:(NSString *)apiKey
-                                           provider:(NSString *)provider
-                                           username:(NSString *)username
-                                           password:(NSString *)password {
++ (NSURLRequest *)sp_loginRequestWithAppID:(NSString *)appID
+                                    apiKey:(NSString *)apiKey
+                                  provider:(NSString *)provider
+                                  username:(NSString *)username
+                                  password:(NSString *)password {
     NSURL *requestURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, appID]];
     return [self sp_requestWithURL:requestURL appID:appID apiKey:apiKey provider:provider username:username password:password];
 }
