@@ -3,37 +3,7 @@
 #import "SPEnvironment.h"
 
 
-@interface NSURLRequest (Internal)
-+ (NSURLRequest *)sp_requestWithURL:(NSURL *)url
-                              appID:(NSString *)appID
-                             apiKey:(NSString *)apiKey
-                           provider:(NSString *)provider
-                           username:(NSString *)username
-                           password:(NSString *)password;
-@end
-
-
 @implementation NSURLRequest (Simperium)
-
-+ (NSURLRequest *)sp_loginRequestWithAppID:(NSString *)appID
-                                    apiKey:(NSString *)apiKey
-                                  provider:(NSString *)provider
-                                  username:(NSString *)username
-                                  password:(NSString *)password {
-    NSParameterAssert(appID);
-    NSURL *requestURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, appID]];
-    return [self sp_requestWithURL:requestURL appID:appID apiKey:apiKey provider:provider username:username password:password];
-}
-
-+ (NSURLRequest *)sp_signupRequestWithAppID:(NSString *)appID
-                                     apiKey:(NSString *)apiKey
-                                   provider:(NSString *)provider
-                                   username:(NSString *)username
-                                   password:(NSString *)password {
-    NSParameterAssert(appID);
-    NSURL *requestURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/create/", SPAuthURL, appID]];
-    return [self sp_requestWithURL:requestURL appID:appID apiKey:apiKey provider:provider username:username password:password];
-}
 
 + (NSURLRequest *)sp_requestWithURL:(NSURL *)url
                               appID:(NSString *)appID
@@ -60,6 +30,26 @@
     request.HTTPBody = [[body sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
 
     return request;
+}
+
++ (NSURLRequest *)sp_loginRequestWithAppID:(NSString *)appID
+                                    apiKey:(NSString *)apiKey
+                                  provider:(NSString *)provider
+                                  username:(NSString *)username
+                                  password:(NSString *)password {
+    NSParameterAssert(appID);
+    NSURL *requestURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, appID]];
+    return [self sp_requestWithURL:requestURL appID:appID apiKey:apiKey provider:provider username:username password:password];
+}
+
++ (NSURLRequest *)sp_signupRequestWithAppID:(NSString *)appID
+                                     apiKey:(NSString *)apiKey
+                                   provider:(NSString *)provider
+                                   username:(NSString *)username
+                                   password:(NSString *)password {
+    NSParameterAssert(appID);
+    NSURL *requestURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/create/", SPAuthURL, appID]];
+    return [self sp_requestWithURL:requestURL appID:appID apiKey:apiKey provider:provider username:username password:password];
 }
 
 @end
