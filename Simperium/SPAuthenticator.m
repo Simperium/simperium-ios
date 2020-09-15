@@ -137,14 +137,14 @@ static NSString * SPUsername    = @"SPUsername";
         BOOL success = [self processAuthenticationResponse:responseString statusCode:statusCode];
         if (success) {
             SPLogInfo(@"Simperium authentication success!");
-            [self notifyAuthenticationDidSucceed];
             successHandler();
+            [self notifyAuthenticationDidSucceed];
             return;
         }
 
         SPLogError(@"Simperium authentication error (%d): %@", statusCode, error);
-        [self notifyAuthenticationDidFail];
         failureHandler(statusCode, responseString, error);
+        [self notifyAuthenticationDidFail];
     }];
 }
 
@@ -203,15 +203,15 @@ static NSString * SPUsername    = @"SPUsername";
         BOOL success = [self processAuthenticationResponse:responseString statusCode:statusCode];
         if (success) {
             SPLogInfo(@"Simperium authentication success!");
+            successHandler();
             [self notifySignupDidSucceed];
             [self notifyAuthenticationDidSucceed];
-            successHandler();
             return;
         }
 
         SPLogError(@"Simperium authentication error (%d): %@", statusCode, error);
-        [self notifyAuthenticationDidFail];
         failureHandler(statusCode, responseString, error);
+        [self notifyAuthenticationDidFail];
     }];
 }
 
