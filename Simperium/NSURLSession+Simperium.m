@@ -7,7 +7,7 @@
         completionHandler:(void (^)(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error))completionHandler
 {
     NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        NSString *responseString = @"";
+        NSString *responseString = nil;
         if ([data isKindOfClass:[NSData class]]) {
             responseString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         }

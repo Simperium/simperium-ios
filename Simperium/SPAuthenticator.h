@@ -10,10 +10,12 @@
 
 
 typedef void(^SuccessBlockType)(void);
-typedef void(^FailureBlockType)(NSInteger responseCode, NSString *responseString, NSError *error);
+typedef void(^FailureBlockType)(NSInteger responseCode, NSString * _Nullable responseString, NSError * _Nullable error);
 
 @class Simperium;
 
+
+NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark ====================================================================================
 #pragma mark SPAuthenticatorDelegate
@@ -60,3 +62,5 @@ typedef void(^FailureBlockType)(NSInteger responseCode, NSString *responseString
 - (void)cancel;
 
 @end
+
+NS_ASSUME_NONNULL_END
