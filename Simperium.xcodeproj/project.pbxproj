@@ -48,6 +48,10 @@
 		B565ECAA1832940B00D162FF /* XCTestCase+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B565ECA81832940B00D162FF /* XCTestCase+Simperium.m */; };
 		B5728F9C250FD4A700D1DA07 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5728F9B250FD4A700D1DA07 /* CoreServices.framework */; };
 		B5728F9D250FD4EA00D1DA07 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5728F9B250FD4A700D1DA07 /* CoreServices.framework */; };
+		B57421D42510FA67006F2A71 /* NSURLRequest+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B57421D22510FA67006F2A71 /* NSURLRequest+Simperium.h */; };
+		B57421D52510FA67006F2A71 /* NSURLRequest+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B57421D22510FA67006F2A71 /* NSURLRequest+Simperium.h */; };
+		B57421D62510FA67006F2A71 /* NSURLRequest+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B57421D32510FA67006F2A71 /* NSURLRequest+Simperium.m */; };
+		B57421D72510FA67006F2A71 /* NSURLRequest+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B57421D32510FA67006F2A71 /* NSURLRequest+Simperium.m */; };
 		B57FA3AE190052C800957205 /* MockStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = B57FA3AD190052C800957205 /* MockStorage.m */; };
 		B57FA3B21900568A00957205 /* SPRelationshipResolverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B57FA3B11900568A00957205 /* SPRelationshipResolverTests.m */; };
 		B585125A2485FE32002BD70C /* SPAuthenticationValidatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B58512592485FE32002BD70C /* SPAuthenticationValidatorTests.m */; };
@@ -597,6 +601,8 @@
 		B56819BC194F793400E0DC65 /* DiffMatchPatch+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DiffMatchPatch+Simperium.h"; sourceTree = "<group>"; };
 		B56819BD194F793400E0DC65 /* DiffMatchPatch+Simperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DiffMatchPatch+Simperium.m"; sourceTree = "<group>"; };
 		B5728F9B250FD4A700D1DA07 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.0.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
+		B57421D22510FA67006F2A71 /* NSURLRequest+Simperium.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLRequest+Simperium.h"; sourceTree = "<group>"; };
+		B57421D32510FA67006F2A71 /* NSURLRequest+Simperium.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLRequest+Simperium.m"; sourceTree = "<group>"; };
 		B57FA3AC190052C800957205 /* MockStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockStorage.h; sourceTree = "<group>"; };
 		B57FA3AD190052C800957205 /* MockStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MockStorage.m; sourceTree = "<group>"; };
 		B57FA3B11900568A00957205 /* SPRelationshipResolverTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPRelationshipResolverTests.m; sourceTree = "<group>"; };
@@ -1062,6 +1068,8 @@
 				B5F4C84418FC1B04009F8643 /* NSError+Simperium.m */,
 				46A16A7F17289FE2003AED55 /* NSString+Simperium.h */,
 				46A16A8017289FE2003AED55 /* NSString+Simperium.m */,
+				B57421D22510FA67006F2A71 /* NSURLRequest+Simperium.h */,
+				B57421D32510FA67006F2A71 /* NSURLRequest+Simperium.m */,
 				B5C91A0C1827E9CB0002D306 /* NSURLResponse+Simperium.h */,
 				B5C91A0D1827E9CB0002D306 /* NSURLResponse+Simperium.m */,
 				B5F6A4C0251024380001D7E3 /* NSURLSession+Simperium.h */,
@@ -1397,6 +1405,7 @@
 				B5CAA4EE1CAAB6FC006FE048 /* NSMutableDictionary+Simperium.h in Headers */,
 				B5CAA4EF1CAAB714006FE048 /* SPDiffer.h in Headers */,
 				B5CAA4F01CAAB71F006FE048 /* NSError+Simperium.h in Headers */,
+				B57421D42510FA67006F2A71 /* NSURLRequest+Simperium.h in Headers */,
 				B5CAA4F11CAAB727006FE048 /* SPJSONStorage.h in Headers */,
 				B5CAA4F21CAAB730006FE048 /* SPObject.h in Headers */,
 				B5CAA6591CAAF38E006FE048 /* UIViewController+Simperium.h in Headers */,
@@ -1454,6 +1463,7 @@
 				B5CAA5CD1CAAED3D006FE048 /* DiffMatchPatchCFUtilities.h in Headers */,
 				B5FC08B31D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.h in Headers */,
 				B5CAA5CE1CAAED3D006FE048 /* MinMaxMacros.h in Headers */,
+				B57421D52510FA67006F2A71 /* NSURLRequest+Simperium.h in Headers */,
 				B5FC08BB1D662D5300045DB9 /* TrustKit+Private.h in Headers */,
 				B5CAA5CF1CAAED3D006FE048 /* NSMutableDictionary+DMPExtensions.h in Headers */,
 				B5CAA5D01CAAED3D006FE048 /* NSDate+Simperium.h in Headers */,
@@ -1701,6 +1711,7 @@
 				B5CAA64F1CAAF2F8006FE048 /* SPAuthenticationButton.m in Sources */,
 				B5CAA5101CAAB9AD006FE048 /* DiffMatchPatch.m in Sources */,
 				B5CAA5111CAAB9B2006FE048 /* DiffMatchPatchCFUtilities.c in Sources */,
+				B57421D62510FA67006F2A71 /* NSURLRequest+Simperium.m in Sources */,
 				B5FC08B81D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.m in Sources */,
 				B5CAA5121CAAB9BC006FE048 /* NSMutableDictionary+DMPExtensions.m in Sources */,
 				B5CAA5131CAAB9C7006FE048 /* NSString+JavaSubstring.m in Sources */,
@@ -1784,6 +1795,7 @@
 				B5CAA5711CAAED3D006FE048 /* SPPersistentMutableSet.m in Sources */,
 				B5FC08B11D662D5300045DB9 /* TSKPinningValidator.m in Sources */,
 				B5FC08AD1D662D5300045DB9 /* ssl_pin_verifier.m in Sources */,
+				B57421D72510FA67006F2A71 /* NSURLRequest+Simperium.m in Sources */,
 				B5CAA5721CAAED3D006FE048 /* SPGhost.m in Sources */,
 				B5CAA5731CAAED3D006FE048 /* SPMember.m in Sources */,
 				B5CAA5741CAAED3D006FE048 /* DiffMatchPatch.m in Sources */,
@@ -2192,7 +2204,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = Simperium/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MARKETING_VERSION = 0.8.29;
@@ -2244,7 +2256,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = Simperium/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MARKETING_VERSION = 0.8.29;
