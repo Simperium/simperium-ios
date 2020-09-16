@@ -7,8 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SPStorageProvider.h"
-#import "SPNetworkInterface.h"
+#import <Simperium/SPStorageProvider.h>
+#import <Simperium/SPNetworkInterface.h>
 
 @class SPDiffer;
 @class SPSchema;
