@@ -10,17 +10,12 @@
 
 @implementation NSURLResponse (Simperium)
 
-- (NSStringEncoding)encoding {
-    NSStringEncoding encoding = NSUTF8StringEncoding;
-    
-    if (self.textEncodingName) {
-        CFStringEncoding cfStringEncoding = CFStringConvertIANACharSetNameToEncoding((__bridge CFStringRef)self.textEncodingName);
-        if (cfStringEncoding != kCFStringEncodingInvalidId) {
-            encoding = CFStringConvertEncodingToNSStringEncoding(cfStringEncoding);
-        }
+- (NSInteger)sp_statusCode {
+    if ([self isKindOfClass:[NSHTTPURLResponse class]] == false) {
+        return 501;
     }
-    
-    return encoding;
+
+    return [(NSHTTPURLResponse *)self statusCode];
 }
 
 @end
