@@ -163,10 +163,10 @@ static NSTimeInterval const SPStressTimeout     = 30;
             @autoreleasepool {
                 SPPersistentMutableDictionary *first = [SPPersistentMutableDictionary loadDictionaryWithLabel:@"Something"];
                 [first setObject:[NSString sp_makeUUID] forKey:[NSString sp_makeUUID]];
-                [first count];
-                
+                [first save];
+
                 SPPersistentMutableDictionary *second = [SPPersistentMutableDictionary loadDictionaryWithLabel:@"Something"];
-                [second count];
+                XCTAssertEqual(first.count, second.count);
             }
         }
         
