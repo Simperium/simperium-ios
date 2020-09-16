@@ -49,12 +49,27 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 @implementation SPChangeProcessorTests
 
 - (void)setUp {
+    [super setUp];
+
     self.simperium      = [MockSimperium mockSimperium];
     self.storage        = _simperium.coreDataStorage;
     self.configBucket   = [_simperium bucketForName:NSStringFromClass([Config class])];
     
     // Make sure that we're not picking up old enqueued changes
     [self.configBucket.changeProcessor reset];
+}
+
+- (void)tearDown {
+    [super tearDown];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Signout Expectation"];
+
+    [self.simperium signOutAndRemoveLocalData:false completion:^{
+        [expectation fulfill];
+    }];
+
+    NSLog(@"Logged Out");
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:nil];
 }
 
 - (void)testProcessRemoteChangeWithInvalidDelta {
