@@ -9,11 +9,13 @@
 #import <Foundation/Foundation.h>
 
 
-typedef void(^SucceededBlockType)(void);
-typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
+typedef void(^SuccessBlockType)(void);
+typedef void(^FailureBlockType)(NSInteger responseCode, NSString * _Nullable responseString, NSError * _Nullable error);
 
 @class Simperium;
 
+
+NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark ====================================================================================
 #pragma mark SPAuthenticatorDelegate
@@ -43,22 +45,22 @@ typedef void(^FailedBlockType)(int responseCode, NSString *responseString);
 
 - (void)authenticateWithUsername:(NSString *)username
                         password:(NSString *)password
-                         success:(SucceededBlockType)successBlock
-                         failure:(FailedBlockType)failureBlock;
+                         success:(SuccessBlockType)successHandler
+                         failure:(FailureBlockType)failureHandler;
 
 - (void)validateWithUsername:(NSString *)username
                     password:(NSString *)password
-                     success:(SucceededBlockType)successBlock
-                     failure:(FailedBlockType)failureBlock;
+                     success:(SuccessBlockType)successHandler
+                     failure:(FailureBlockType)failureHandler;
 
-- (void)createWithUsername:(NSString *)username
+- (void)signupWithUsername:(NSString *)username
                   password:(NSString *)password
-                   success:(SucceededBlockType)successBlock
-                   failure:(FailedBlockType)failureBlock;
+                   success:(SuccessBlockType)successHandler
+                   failure:(FailureBlockType)failureHandler;
 
 - (void)reset;
 - (void)cancel;
 
-+ (BOOL)needsAuthenticationForAppWithID:(NSString *)appID;
-
 @end
+
+NS_ASSUME_NONNULL_END

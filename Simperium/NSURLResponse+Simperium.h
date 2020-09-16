@@ -9,5 +9,5 @@
 #import <Foundation/Foundation.h>
 
 @interface NSURLResponse (Simperium)
-- (NSStringEncoding)encoding;
+- (NSInteger)sp_statusCode;
 @end

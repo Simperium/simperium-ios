@@ -8,7 +8,7 @@
 
 #import "SPUser.h"
 #import "NSString+Simperium.h"
-
+#import "JSONKit+Simperium.h"
 
 
 @implementation SPUser
@@ -38,6 +38,22 @@
 - (id)getCustomObjectForKey:(NSString *)key {
     // Return the JSON-deserializable object associated with a particular key
     return nil;
+}
+
++ (SPUser *)parseUserFromResponseString:(NSString *)string {
+    if (string == nil || [string isKindOfClass:[NSString class]] == false) {
+        return nil;
+    }
+
+    NSDictionary *dictionary = [string sp_objectFromJSONString];
+    NSString *username = dictionary[@"username"];
+    NSString *token = dictionary[@"access_token"];
+
+    if ([token isKindOfClass:[NSString class]] == NO || token.length == 0) {
+        return nil;
+    }
+
+    return [[SPUser alloc] initWithEmail:username token:token];
 }
 
 @end

@@ -67,7 +67,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 @implementation SPAuthenticationWindowController
 
 - (instancetype)init {
-    NSWindowStyleMask styleMask = NSBorderlessWindowMask | NSWindowStyleMaskClosable | NSWindowStyleMaskTitled | NSFullSizeContentViewWindowMask;
+    NSWindowStyleMask styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskClosable | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView;
     CGRect windowFrame = NSMakeRect(0, 0, SPAuthenticationWindowWidth, SPAuthenticationWindowHeight);
     SPAuthenticationWindow *window = [[SPAuthenticationWindow alloc] initWithContentRect:windowFrame styleMask:styleMask backing:NSBackingStoreBuffered defer:NO];
 
@@ -181,7 +181,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [field setSelectable:NO];
     [field setBordered:NO];
     [field setDrawsBackground:NO];
-    [field setAlignment:NSCenterTextAlignment];
+    [field setAlignment:NSTextAlignmentCenter];
     [field setFont:font];
     [field setTextColor:[NSColor colorWithCalibratedWhite:153.f/255.f alpha:1.0]];
     
@@ -194,7 +194,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [button setButtonType:NSMomentaryChangeButton];
     
     NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
-    [style setAlignment:NSCenterTextAlignment];
+    [style setAlignment:NSTextAlignmentCenter];
     NSColor *linkColor = [SPAuthenticationConfiguration sharedInstance].controlColor;
     
     NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].mediumFontName size:13];
@@ -355,7 +355,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
         [self stopLoginAnimation];
         [self setInterfaceEnabled:YES];
         [self presentPasswordResetAlert];
-    } failure:^(int responseCode, NSString *responseString) {
+    } failure:^(NSInteger responseCode, NSString *responseString, NSError *error) {
         [self showAuthenticationErrorForCode:responseCode];
         [self stopLoginAnimation];
         [self setInterfaceEnabled:YES];
@@ -368,7 +368,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 
     [self.authenticator authenticateWithUsername:self.usernameText password:self.passwordText success:^{
         // NO-OP
-    } failure:^(int responseCode, NSString *responseString) {
+    } failure:^(NSInteger responseCode, NSString *responseString, NSError *error) {
         [self showAuthenticationErrorForCode:responseCode];
         [self stopLoginAnimation];
         [self setInterfaceEnabled:YES];
@@ -379,9 +379,9 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
     [self startSignupAnimation];
     [self setInterfaceEnabled:NO];
 
-    [self.authenticator createWithUsername:self.usernameText password:self.passwordText success:^{
+    [self.authenticator signupWithUsername:self.usernameText password:self.passwordText success:^{
         // NO-OP
-    } failure:^(int responseCode, NSString *responseString) {
+    } failure:^(NSInteger responseCode, NSString *responseString, NSError *error) {
         [self showAuthenticationErrorForCode:responseCode];
         [self stopSignupAnimation];
         [self setInterfaceEnabled:YES];
@@ -553,7 +553,7 @@ static CGFloat const SPAuthenticationProgressSize       = 20.0f;
 - (void)controlTextDidChange:(NSNotification *)obj {
     // Intercept return and invoke actions
     NSEvent *currentEvent = [NSApp currentEvent];
-    if (currentEvent.type == NSKeyDown && [currentEvent.charactersIgnoringModifiers isEqualToString:@"\r"]) {
+    if (currentEvent.type == NSEventTypeKeyDown && [currentEvent.charactersIgnoringModifiers isEqualToString:@"\r"]) {
         if (_signingIn && [[obj object] isEqual:self.passwordField.textField]) {
             [self signInAction:nil];
         } else if (!_signingIn && [[obj object] isEqual:self.confirmField.textField]) {

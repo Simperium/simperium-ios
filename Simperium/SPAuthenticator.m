@@ -11,19 +11,12 @@
 #import "SPEnvironment.h"
 #import "SPUser.h"
 #import "SPAuthenticator.h"
-#import "JSONKit+Simperium.h"
 #import "SPKeychain.h"
 #import "SPReachability.h"
-#import "SPHttpRequest.h"
-#import "SPHttpRequestQueue.h"
 #import "SPLogger.h"
-
-
-#if TARGET_OS_IPHONE
-#import <UIKit/UIKit.h> // for UIDevice
-#else
-#import <AppKit/NSApplication.h>
-#endif
+#import "NSURLRequest+Simperium.h"
+#import "NSURLResponse+Simperium.h"
+#import "NSURLSession+Simperium.h"
 
 
 
@@ -43,8 +36,6 @@ static NSString * SPUsername    = @"SPUsername";
 @property (nonatomic, strong, readwrite) SPReachability                 *reachability;
 @property (nonatomic,   weak, readwrite) id<SPAuthenticatorDelegate>    delegate;
 @property (nonatomic,   weak, readwrite) Simperium                      *simperium;
-@property (nonatomic,   copy, readwrite) SucceededBlockType             succeededBlock;
-@property (nonatomic,   copy, readwrite) FailedBlockType                failedBlock;
 @property (nonatomic, assign, readwrite) BOOL                           connected;
 @end
 
@@ -123,172 +114,164 @@ static NSString * SPUsername    = @"SPUsername";
     return NO;
 }
 
-// Perform the actual authentication calls to Simperium
+
+#pragma mark - Authentication
+
 - (void)authenticateWithUsername:(NSString *)username
                         password:(NSString *)password
-                         success:(SucceededBlockType)successBlock
-                         failure:(FailedBlockType)failureBlock
-{
-    SPHttpRequest *request = [self authorizationRequestWithUsername:username password:password];
+                         success:(SuccessBlockType)successHandler
+                         failure:(FailureBlockType)failureHandler {
+    NSParameterAssert(username);
+    NSParameterAssert(password);
+    NSParameterAssert(successHandler);
+    NSParameterAssert(failureHandler);
 
-    // Selectors are for auth-related handling
-    request.selectorSuccess = @selector(authDidSucceed:);
-    request.selectorFailed = @selector(authDidFail:);
+    NSURLRequest *request = [NSURLRequest sp_loginRequestWithAppID:self.simperium.appID
+                                                            apiKey:self.simperium.APIKey
+                                                          provider:self.providerString
+                                                          username:username
+                                                          password:password];
+    SPLogInfo(@"Simperium Authenticating: %@", request.URL);
 
-    // Blocks are used here for UI tasks on iOS/OSX
-    self.succeededBlock = successBlock;
-    self.failedBlock = failureBlock;
+    [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
+        BOOL success = [self processAuthenticationResponse:responseString statusCode:statusCode];
+        if (!success) {
+            SPLogError(@"Simperium authentication error (%d): %@", statusCode, error);
+            failureHandler(statusCode, responseString, error);
+            [self notifyAuthenticationDidFail];
+            return;
+        }
 
-    [[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
-
+        SPLogInfo(@"Simperium authentication success!");
+        successHandler();
+        [self notifyAuthenticationDidSucceed];
+    }];
 }
+
+
+#pragma mark - Validation
 
 - (void)validateWithUsername:(NSString *)username
                     password:(NSString *)password
-                     success:(SucceededBlockType)successBlock
-                     failure:(FailedBlockType)failureBlock
-{
-    SPHttpRequest *request = [self authorizationRequestWithUsername:username password:password];
+                     success:(SuccessBlockType)successHandler
+                     failure:(FailureBlockType)failureHandler {
+    NSParameterAssert(username);
+    NSParameterAssert(password);
+    NSParameterAssert(successHandler);
+    NSParameterAssert(failureHandler);
 
-    // Selectors are for auth-related handling
-    request.selectorSuccess = @selector(validateDidSucceed:);
-    request.selectorFailed = @selector(validateDidFail:);
+    NSURLRequest *request = [NSURLRequest sp_loginRequestWithAppID:self.simperium.appID
+                                                            apiKey:self.simperium.APIKey
+                                                          provider:self.providerString
+                                                          username:username
+                                                          password:password];
+    SPLogInfo(@"Simperium Validating Credentials: %@", request.URL);
 
-    // Blocks are used here for UI tasks on iOS/OSX
-    self.succeededBlock = successBlock;
-    self.failedBlock = failureBlock;
+    [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
+        SPUser *user = [SPUser parseUserFromResponseString:responseString];
+        if (user.authenticated == NO) {
+            SPLogError(@"Simperium account validation error (%d): %@", statusCode, error);
+            failureHandler(statusCode, responseString, error);
+            return;
+        }
 
-    [[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
-
+        SPLogInfo(@"Simperium account validated!");
+        successHandler();
+    }];
 }
 
-- (SPHttpRequest *)authorizationRequestWithUsername:(NSString *)username password:(NSString *)password
-{
-    NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]];
-    SPLogInfo(@"Simperium authenticating: %@", [NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, self.simperium.appID]);
-    SPLogVerbose(@"Simperium username is %@", username);
-    
-    SPHttpRequest *request = [SPHttpRequest requestWithURL:tokenURL];
-    request.headers = @{
-        @"X-Simperium-API-Key"  : self.simperium.APIKey,
-        @"Content-Type"         : @"application/json"
-    };
-    
-    NSDictionary *authDict = @{
-        @"username" : username,
-        @"password" : password
-    };
 
-    request.method = SPHttpRequestMethodsPost;
-    request.postData = [[authDict sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
-    request.delegate = self;
-    request.timeout = 8;
+#pragma mark - Signup
 
-    return request;
+- (void)signupWithUsername:(NSString *)username
+                  password:(NSString *)password
+                   success:(SuccessBlockType)successHandler
+                   failure:(FailureBlockType)failureHandler {
+    NSParameterAssert(username);
+    NSParameterAssert(password);
+    NSParameterAssert(successHandler);
+    NSParameterAssert(failureHandler);
+
+    NSURLRequest *request = [NSURLRequest sp_signupRequestWithAppID:self.simperium.appID
+                                                             apiKey:self.simperium.APIKey
+                                                           provider:self.providerString
+                                                           username:username
+                                                           password:password];
+    SPLogInfo(@"Simperium Signup: %@", request.URL);
+
+    [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
+        BOOL success = [self processAuthenticationResponse:responseString statusCode:statusCode];
+        if (!success) {
+            SPLogError(@"Simperium signup error (%d): %@", statusCode, error);
+            failureHandler(statusCode, responseString, error);
+            [self notifyAuthenticationDidFail];
+            return;
+        }
+
+        SPLogInfo(@"Simperium signup success!");
+        successHandler();
+        [self notifySignupDidSucceed];
+        [self notifyAuthenticationDidSucceed];
+    }];
 }
 
-- (void)delayedAuthenticationDidFinish {
-    if (self.succeededBlock) {
-        self.succeededBlock();
-        [self resetCallbackBlocks];
+
+#pragma mark - Response Parsing
+
+- (BOOL)processAuthenticationResponse:(NSString *)responseString statusCode:(NSInteger)statusCode {
+    if (statusCode >= 400) {
+        return NO;
     }
-    
-    SPLogInfo(@"Simperium authentication success!");
 
+    SPUser *user = [SPUser parseUserFromResponseString:responseString];
+    if (!user) {
+        return NO;
+    }
+
+    [self saveCredentialsForUser:user];
+    self.simperium.user = user;
+
+    return YES;
+}
+
+
+#pragma mark - Keychain Helpers
+
+- (void)saveCredentialsForUser:(SPUser *)user {
+    [[NSUserDefaults standardUserDefaults] setObject:user.email forKey:SPUsername];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+
+    NSError *error = nil;
+    if ([SPKeychain setPassword:user.authToken forService:self.simperium.appID account:user.email error:&error]) {
+        return;
+    }
+
+    SPLogError(@"Simperium couldn't store token in the keychain. Error: %@", error);
+}
+
+
+#pragma mark - Delegate Wrappers
+
+- (void)notifyAuthenticationDidSucceed {
     if ([self.delegate respondsToSelector:@selector(authenticationDidSucceedForUsername:token:)]) {
         [self.delegate authenticationDidSucceedForUsername:self.simperium.user.email token:self.simperium.user.authToken];
     }
 }
 
-- (void)authDidSucceed:(SPHttpRequest *)request {
-    NSString *tokenResponse = request.responseString;
-    if (request.responseCode != 200) {
-        [self authDidFail:request];
-        return;
-    }
-    
-    NSDictionary *userDict  = [tokenResponse sp_objectFromJSONString];
-    NSString *username      = userDict[@"username"];
-    NSString *token         = userDict[@"access_token"];
-    
-    // Set the user's details
-    [[NSUserDefaults standardUserDefaults] setObject:username forKey:SPUsername];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-    
-    NSError *error = nil;
-    BOOL success = [SPKeychain setPassword:token forService:self.simperium.appID account:username error:&error];
-    
-    if (success == NO) {
-        SPLogError(@"Simperium couldn't store token in the keychain. Error: %@", error);
-    }
-    
-    // Set the Simperium user
-    self.simperium.user = [[SPUser alloc] initWithEmail:username token:token];
-    
-    [self performSelector:@selector(delayedAuthenticationDidFinish) withObject:nil afterDelay:0.1];
-}
-
-- (void)authWithCreationDidSucceed:(SPHttpRequest *)request
-{
-    [self authDidSucceed:request];
-
-    if ([self.delegate respondsToSelector:@selector(authenticationDidCreateAccount)]) {
-        [self.delegate authenticationDidCreateAccount];
-    }
-}
-
-- (void)authDidFail:(SPHttpRequest *)request {
-    if (self.failedBlock) {
-        self.failedBlock(request.responseCode, request.responseString);
-        [self resetCallbackBlocks];
-    }
-    
-    SPLogError(@"Simperium authentication error (%d): %@", request.responseCode, request.responseError);
-    
+- (void)notifyAuthenticationDidFail {
     if ([self.delegate respondsToSelector:@selector(authenticationDidFail)]) {
         [self.delegate authenticationDidFail];
     }
 }
 
-- (void)createWithUsername:(NSString *)username password:(NSString *)password success:(SucceededBlockType)successBlock failure:(FailedBlockType)failureBlock {
-    NSAssert(self.simperium.APIKey, @"Simperium Error: attempted user creation with no APIKey");
-    
-    if (!self.simperium.APIKey) {
-        SPLogError(@"Simperium Error: attempted user creation with no APIKey");
-        return;
+- (void)notifySignupDidSucceed {
+    if ([self.delegate respondsToSelector:@selector(authenticationDidCreateAccount)]) {
+        [self.delegate authenticationDidCreateAccount];
     }
-    
-    NSURL *tokenURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/create/", SPAuthURL, self.simperium.appID]];
-    
-    SPHttpRequest *request = [SPHttpRequest requestWithURL:tokenURL];
-    NSMutableDictionary *authData = [@{
-        @"username" : username,
-        @"password" : password
-    } mutableCopy];
-    
-    // Backend authentication may need extra data
-    if (self.providerString.length > 0) {
-        [authData setObject:self.providerString forKey:@"provider"];
-    }
-    
-    request.method = SPHttpRequestMethodsPost;
-    request.postData = [[authData sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
-    request.headers = @{
-        @"Content-Type"         : @"application/json",
-        @"X-Simperium-API-Key"  : self.simperium.APIKey
-    };
-    
-    // Blocks are used here for UI tasks on iOS/OSX
-    self.succeededBlock = successBlock;
-    self.failedBlock = failureBlock;
-    
-    // Selectors are for auth-related handling
-    request.delegate = self;
-    request.selectorSuccess = @selector(authWithCreationDidSucceed:);
-    request.selectorFailed = @selector(authDidFail:);
-
-    [[SPHttpRequestQueue sharedInstance] enqueueHttpRequest:request];
 }
+
+
+#pragma mark - Public API(s)
 
 - (void)reset {
     SPLogVerbose(@"Simperium Authenticator resetting credentials");
@@ -312,49 +295,6 @@ static NSString * SPUsername    = @"SPUsername";
     if ([self.delegate respondsToSelector:@selector(authenticationDidCancel)]) {
         [self.delegate authenticationDidCancel];
     }
-}
-
-#pragma mark - Validation Callbacks
-
-- (void)validateDidSucceed:(SPHttpRequest *)request {
-    SPLogInfo(@"Simperium account validated!");
-
-    if (self.succeededBlock) {
-        self.succeededBlock();
-    }
-
-    [self resetCallbackBlocks];
-}
-
-- (void)validateDidFail:(SPHttpRequest *)request {
-    SPLogInfo(@"Simperium account vaidation failure");
-
-    if (self.failedBlock) {
-        self.failedBlock(request.responseCode, request.responseString);
-    }
-
-    [self resetCallbackBlocks];
-}
-
-
-#pragma mark - Blocks Helpers
-
-- (void)resetCallbackBlocks {
-    self.succeededBlock = nil;
-    self.failedBlock = nil;
-}
-
-#pragma mark - Static Helpers
-
-+ (BOOL)needsAuthenticationForAppWithID:(NSString *)appID {
-    NSString *username  = [[NSUserDefaults standardUserDefaults] objectForKey:SPUsername];
-    NSString *token     = nil;
-    
-    if (username) {
-        token = [SPKeychain passwordForService:appID account:username error:nil];
-    }
-    
-    return (username.length == 0 || token.length == 0);
 }
 
 @end

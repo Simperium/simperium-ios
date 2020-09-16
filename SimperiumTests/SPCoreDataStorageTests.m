@@ -111,21 +111,25 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
     
 	dispatch_async(commentBucket.processorQueue, ^{
 		id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
-		[threadSafeStorage performSafeBlockAndWait:^{
-            
-            for (NSString* simperiumKey in postKeys) {
-                
+
+        for (NSString* simperiumKey in postKeys) {
+            [threadSafeStorage performSafeBlockAndWait:^{
+
                 Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
+                if (post == nil) {
+                    return;
+                }
+
                 for (NSInteger j = 0; ++j <= SPCommentsPerPost; ) {
                     PostComment* comment = [threadSafeStorage insertNewObjectForBucketName:commentBucket.name simperiumKey:nil];
                     comment.content = [NSString stringWithFormat:@"Comment [%ld]", (long)j];
                     [post addCommentsObject:comment];
                     [commentKeys addObject:comment.simperiumKey];
                 }
-            }
-            
-            [threadSafeStorage save];
-        }];
+
+                [threadSafeStorage save];
+            }];
+        }
         
         [insertExpectation fulfill];
 	});
@@ -136,16 +140,16 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
 	dispatch_async(postBucket.processorQueue, ^{
 		
 		id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
-		[threadSafeStorage performCriticalBlockAndWait:^{
-            NSEnumerator* enumerator = [postKeys reverseObjectEnumerator];
-            NSString* simperiumKey = nil;
-            
-            while (simperiumKey = (NSString*)[enumerator nextObject]) {
+        NSEnumerator* enumerator = [postKeys reverseObjectEnumerator];
+        NSString* simperiumKey = nil;
+
+        while (simperiumKey = (NSString*)[enumerator nextObject]) {
+            [threadSafeStorage performCriticalBlockAndWait:^{
                 Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
                 [threadSafeStorage deleteObject:post];
                 [threadSafeStorage save];
-            }
-        }];
+            }];
+        }
 		
         [deleteExpectation fulfill];
 	});

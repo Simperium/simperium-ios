@@ -22,4 +22,6 @@
 - (void)setCustomObject:(id)object forKey:(NSString *)key;
 - (id)getCustomObjectForKey:(NSString *)key;
 
++ (SPUser *)parseUserFromResponseString:(NSString *)string;
+
 @end
