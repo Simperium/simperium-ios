@@ -1,8 +1,7 @@
 /*
  * Diff Match and Patch
- *
- * Copyright 2010 geheimwerk.de.
- * http://code.google.com/p/google-diff-match-patch/
+ * Copyright 2018 The diff-match-patch Authors.
+ * https://github.com/google/diff-match-patch
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,17 +28,16 @@
  * Escape excluding selected chars for compatability with JavaScript's encodeURI.
  * This method produces uppercase hex.
  *
- * @param str The CFStringRef to escape.
  * @return The escaped CFStringRef.
  */
-- (NSString *)diff_stringByAddingPercentEscapesForEncodeUriCompatibility;
-{
-  CFStringRef urlString = CFURLCreateStringByAddingPercentEscapes(NULL,
-                                  (CFStringRef)self,
-                                  CFSTR(" !~*'();/?:@&=+$,#"),
-                                  NULL,
-                                  kCFStringEncodingUTF8);
-  return [NSMakeCollectable(urlString) autorelease];
+- (NSString *)diff_stringByAddingPercentEscapesForEncodeUriCompatibility {
+  NSMutableCharacterSet *allowedCharacters =
+      [NSMutableCharacterSet characterSetWithCharactersInString:@" !~*'();/?:@&=+$,#"];
+  [allowedCharacters formUnionWithCharacterSet:[NSCharacterSet URLQueryAllowedCharacterSet]];
+  NSString *URLString =
+      [self stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
+
+  return URLString;
 }
 
 /**
@@ -49,13 +47,9 @@
  *
  * @return The unescaped NSString.
  */
-- (NSString *)diff_stringByReplacingPercentEscapesForEncodeUriCompatibility;
-{
-  CFStringRef decodedString = CFURLCreateStringByReplacingPercentEscapesUsingEncoding(NULL, 
-                                            (CFStringRef)self, 
-                                            CFSTR(""), 
-                                            kCFStringEncodingUTF8);
-  return [NSMakeCollectable(decodedString) autorelease];
+- (NSString *)diff_stringByReplacingPercentEscapesForEncodeUriCompatibility {
+  NSString *decodedString = [self stringByRemovingPercentEncoding];
+  return decodedString;
 }
 
 @end
