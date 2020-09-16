@@ -107,14 +107,12 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
 	}
 
 	// Insert Comments
-    XCTestExpectation *commentsExpectation = [self expectationWithDescription:@"Comments Expectation"];
+    XCTestExpectation *insertExpectation = [self expectationWithDescription:@"Insert Expectation"];
     
 	dispatch_async(commentBucket.processorQueue, ^{
 		id<SPStorageProvider> threadSafeStorage = [self.storage threadSafeStorage];
 
         for (NSString* simperiumKey in postKeys) {
-            XCTestExpectation *expectation = [self expectationWithDescription:@"Insert Expectation"];
-
             [threadSafeStorage performSafeBlockAndWait:^{
 
                 Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
@@ -130,15 +128,14 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
                 }
 
                 [threadSafeStorage save];
-                [expectation fulfill];
             }];
         }
         
-        [commentsExpectation fulfill];
+        [insertExpectation fulfill];
 	});
 	
 	// Delete Posts
-    XCTestExpectation *postExpectation = [self expectationWithDescription:@"Delete Expectation"];
+    XCTestExpectation *deleteExpectation = [self expectationWithDescription:@"Delete Expectation"];
     
 	dispatch_async(postBucket.processorQueue, ^{
 		
@@ -147,17 +144,14 @@ static NSTimeInterval const SPExpectationTimeout         = 60.0;
         NSString* simperiumKey = nil;
 
         while (simperiumKey = (NSString*)[enumerator nextObject]) {
-            XCTestExpectation *expectation = [self expectationWithDescription:@"Insert Expectation"];
-
             [threadSafeStorage performCriticalBlockAndWait:^{
                 Post* post = [threadSafeStorage objectForKey:simperiumKey bucketName:postBucket.name];
                 [threadSafeStorage deleteObject:post];
                 [threadSafeStorage save];
-                [expectation fulfill];
             }];
         }
 		
-        [postExpectation fulfill];
+        [deleteExpectation fulfill];
 	});
 	
     [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:^(NSError *error) {
