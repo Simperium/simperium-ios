@@ -602,7 +602,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     // ===================================================================================================
     //
     
-    [storage refaultObjects:@[config]];
+    [self.storage refaultObjects:@[config]];
     
     XCTAssertEqualObjects(config.captainsLog, expectedLog,                  @"Invalid Log");
     XCTAssertEqualObjects(config.ghost.version, endVersion,                 @"Invalid Ghost Version");
