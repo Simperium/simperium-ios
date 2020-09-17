@@ -290,13 +290,14 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (void)deleteObject:(id<SPDiffable>)object {
     SPManagedObject *managedObject = (SPManagedObject *)object;
+    NSString *namespacedSimperiumKey = managedObject.namespacedSimperiumKey;
     [managedObject.managedObjectContext deleteObject:managedObject];
-    
+
     // NOTE:
     // 'mergeChangesFromContextDidSaveNotification' calls 'deleteObject' in the receiver context. As a result,
     // remote deletions will be posted as local deletions. Let's prevent that!
-    if (self.sibling) {
-        [self.sibling.remotelyDeletedKeys addObject:managedObject.namespacedSimperiumKey];
+    if (self.sibling != nil && namespacedSimperiumKey != nil) {
+        [self.sibling.remotelyDeletedKeys addObject:namespacedSimperiumKey];
     }
 }
 

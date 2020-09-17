@@ -9,10 +9,12 @@
 #import <XCTest/XCTest.h>
 #import "XCTestCase+Simperium.h"
 #import "MockSimperium.h"
+#import "Simperium+Internals.h"
 #import "SPBucket+Internals.h"
 #import "SPGhost.h"
 #import "SPIndexProcessor.h"
 #import "SPStorageProvider.h"
+#import "SPChangeProcessor.h"
 #import "SPCoreDataStorage+Mock.h"
 #import "Config.h"
 
@@ -36,10 +38,35 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 #pragma mark ====================================================================================
 
 @interface SPIndexProcessorTests : XCTestCase
-
+@property (nonatomic, strong) Simperium*            simperium;
+@property (nonatomic, strong) SPCoreDataStorage*    storage;
+@property (nonatomic, strong) SPBucket*             configBucket;
 @end
 
 @implementation SPIndexProcessorTests
+
+- (void)setUp {
+    [super setUp];
+
+    self.simperium      = [MockSimperium mockSimperium];
+    self.storage        = _simperium.coreDataStorage;
+    self.configBucket   = [self.simperium bucketForName:NSStringFromClass([Config class])];
+
+    // Make sure that we're not picking up old enqueued changes
+    [self.configBucket.changeProcessor reset];
+}
+
+- (void)tearDown {
+    [super tearDown];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Signout Expectation"];
+
+    [self.simperium signOutAndRemoveLocalData:false completion:^{
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:nil];
+}
 
 - (void)testProcessVersionsWithoutPreexistingObjects {
     
@@ -47,8 +74,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 	// Helpers
     // ===================================================================================================
     //
-	MockSimperium* s                = [MockSimperium mockSimperium];
-	SPBucket* bucket                = [s bucketForName:NSStringFromClass([Config class])];
+	SPBucket* bucket = self.configBucket;
     
     
     // ===================================================================================================
@@ -149,10 +175,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 	// Helpers
     // ===================================================================================================
     //
-	MockSimperium* s                = [MockSimperium mockSimperium];
-	SPBucket* bucket                = [s bucketForName:NSStringFromClass([Config class])];
-	id<SPStorageProvider> storage   = bucket.storage;
-    
+    SPBucket* bucket = self.configBucket;
     
     // ===================================================================================================
 	// Insert Configs
@@ -161,7 +184,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     NSMutableArray *configs = [NSMutableArray array];
     
     for (NSInteger i = 0; i < SPNumberOfEntities; ++i) {
-        Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+        Config* config                  = [self.storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
         config.captainsLog              = originalLog;
         config.warpSpeed                = originalWarp;
         config.cost                     = originalCost;
@@ -177,7 +200,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
         [configs addObject:config];
     }
     
-	[storage save];
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
     
     NSLog(@"<> Successfully inserted Config object");
     
@@ -232,7 +256,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     // Verify if the indexProcessor actually did its job
     // ===================================================================================================
     //
-    [storage refaultObjects:configs];
+    [self.storage refaultObjects:configs];
     
     for (Config *config in configs) {
         NSDictionary *versionData = versionMap[config.simperiumKey];
@@ -273,16 +297,14 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 	// Helpers
     // ===================================================================================================
     //
-	MockSimperium* s                    = [MockSimperium mockSimperium];
-	SPBucket* bucket                    = [s bucketForName:NSStringFromClass([Config class])];
-	id<SPStorageProvider> storage       = bucket.storage;
+    SPBucket* bucket = self.configBucket;
     
     
     // ===================================================================================================
 	// Insert Config
     // ===================================================================================================
     //
-    Config* config                      = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+    Config* config                      = [self.storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
     config.captainsLog                  = originalLog;
     config.warpSpeed                    = originalWarp;
     config.cost                         = originalCost;
@@ -299,8 +321,9 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.ghost                        = ghost;
     config.ghostData                    = [memberData sp_JSONString];
     
-	[storage save];
-    
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
+
     NSLog(@"<> Successfully inserted Config object");
     
     
@@ -329,8 +352,9 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.warpSpeed    = localPendingWarp;
     config.cost         = localPendingCost;
     
-    [storage save];
-    
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
+
     
     // ===================================================================================================
     // Process remote changes
@@ -359,7 +383,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     // ===================================================================================================
     //
     
-    [storage refaultObjects:@[config]];
+    [self.storage refaultObjects:@[config]];
     
     XCTAssertEqualObjects(config.captainsLog, expectedLog,                  @"Invalid Log");
     XCTAssertEqualObjects(config.cost, expectedCost,                        @"Invalid Cost");
@@ -384,16 +408,14 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 	// Helpers
     // ===================================================================================================
     //
-	MockSimperium* s                = [MockSimperium mockSimperium];
-	SPBucket* bucket                = [s bucketForName:NSStringFromClass([Config class])];
-	id<SPStorageProvider> storage   = bucket.storage;
+    SPBucket* bucket = self.configBucket;
     
     
     // ===================================================================================================
 	// Insert Config
     // ===================================================================================================
     //
-    Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+    Config* config                  = [self.storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
     config.captainsLog              = originalLog;
     
     NSString* configSimperiumKey    = config.simperiumKey;
@@ -409,8 +431,9 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.ghost                    = ghost;
     config.ghostData                = [memberData sp_JSONString];
     
-	[storage save];
-    
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
+
     NSLog(@"<> Successfully inserted Config object");
     
     
@@ -435,7 +458,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     //
     config.captainsLog  = localPendingLog;
     
-    [storage save];
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
     
     
     // ===================================================================================================
@@ -465,7 +489,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     // ===================================================================================================
     //
 
-    [storage refaultObjects:@[config]];
+    [self.storage refaultObjects:@[config]];
     
     XCTAssertEqualObjects(config.captainsLog, expectedLog,                  @"Invalid Log");
     XCTAssertEqualObjects(config.ghost.version, endVersion,                 @"Invalid Ghost Version");
@@ -488,16 +512,14 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 	// Helpers
     // ===================================================================================================
     //
-	MockSimperium* s                = [MockSimperium mockSimperium];
-	SPBucket* bucket                = [s bucketForName:NSStringFromClass([Config class])];
-	id<SPStorageProvider> storage   = bucket.storage;
+	SPBucket* bucket                = self.configBucket;
     
     
     // ===================================================================================================
 	// Insert Config
     // ===================================================================================================
     //
-    Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+    Config* config                  = [self.storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
     config.captainsLog              = originalLog;
     
     NSString* configSimperiumKey    = config.simperiumKey;
@@ -512,8 +534,9 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.ghost                    = ghost;
     config.ghostData                = [memberData sp_JSONString];
     
-	[storage save];
-    
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
+
     NSLog(@"<> Successfully inserted Config object");
     
     
@@ -538,8 +561,9 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     //
     config.captainsLog  = localPendingLog;
     
-    [storage save];
-    
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
+
 
     // ===================================================================================================
     // Disable Rebase
@@ -577,7 +601,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     // ===================================================================================================
     //
     
-    [storage refaultObjects:@[config]];
+    [self.storage refaultObjects:@[config]];
     
     XCTAssertEqualObjects(config.captainsLog, expectedLog,                  @"Invalid Log");
     XCTAssertEqualObjects(config.ghost.version, endVersion,                 @"Invalid Ghost Version");
