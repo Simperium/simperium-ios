@@ -519,7 +519,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 	// Insert Config
     // ===================================================================================================
     //
-    Config* config                  = [storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
+    Config* config                  = [self.storage insertNewObjectForBucketName:bucket.name simperiumKey:nil];
     config.captainsLog              = originalLog;
     
     NSString* configSimperiumKey    = config.simperiumKey;
