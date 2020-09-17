@@ -507,9 +507,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 	// Helpers
     // ===================================================================================================
     //
-	MockSimperium* s                = [MockSimperium mockSimperium];
-	SPBucket* bucket                = [s bucketForName:NSStringFromClass([Config class])];
-	id<SPStorageProvider> storage   = bucket.storage;
+	SPBucket* bucket                = self.configBucket;
+	id<SPStorageProvider> storage   = self.storage;
     
     
     // ===================================================================================================
