@@ -373,8 +373,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
         [keys addObject:config.simperiumKey];
     }
     
-    [_storage save];
-    [_storage test_waitUntilSaveCompletes];
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
     
     // ===================================================================================================
     // Process the changes
