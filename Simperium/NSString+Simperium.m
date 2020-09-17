@@ -129,13 +129,6 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
     return [NSURLConnection canHandleRequest:request];
 }
 
-- (NSString *)sp_urlEncodeString
-{
-    return (NSString *) CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)self,
-                                                                                  NULL, (CFStringRef)@";/?:@&=$+{}<>!*'()%#[],",
-                                                                                  CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding)));
-}  
-
 - (NSArray *)sp_componentsSeparatedByString:(NSString *)separator limit:(NSInteger)limit
 {
     NSMutableArray *components  = [NSMutableArray array];

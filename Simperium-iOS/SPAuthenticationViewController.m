@@ -13,7 +13,6 @@
 #import "SPAuthenticationButton.h"
 #import "SPAuthenticationConfiguration.h"
 #import "SPAuthenticationValidator.h"
-#import "SPHttpRequest.h"
 #import "SPWebViewController.h"
 
 #import "JSONKit+Simperium.h"
@@ -518,7 +517,7 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
                                             [self.progressView stopAnimating];
                                             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                                         }
-                                        failure: ^(int responseCode, NSString *responseString){
+                                        failure: ^(NSInteger responseCode, NSString *responseString, NSError *error){
                                             self.view.userInteractionEnabled = YES;
 
                                             [self.progressView setHidden:YES];
@@ -569,14 +568,14 @@ static NSString *SPAuthenticationConfirmCellIdentifier      = @"ConfirmCellIdent
     // Try to login and sync after entering password?
     [self.progressView setHidden: NO];
     [self.progressView startAnimating];
-    [self.authenticator createWithUsername:[self.usernameField.text sp_trim]
-                                password:self.passwordField.text
-                                  success:^{
+    [self.authenticator signupWithUsername:[self.usernameField.text sp_trim]
+                                  password:self.passwordField.text
+                                   success:^{
                                       [self.progressView setHidden: YES];
                                       [self.progressView stopAnimating];
                                     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
                                 }
-                                   failure:^(int responseCode, NSString *responseString){
+                                   failure:^(NSInteger responseCode, NSString *responseString, NSError *error){
                                        [self restoreCreationSettings];
 
                                        NSString *message = [self signupErrorForCode:responseCode];

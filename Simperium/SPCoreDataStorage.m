@@ -95,7 +95,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
         
         // Create an ephemeral, thread-safe context that will push its changes directly to the writer MOC,
         // and will also post the changes to the MainQueue
-        self.mainManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
+        self.mainManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
         self.mainManagedObjectContext.userInfo[SPCoreDataWorkerContext] = @(true);
         self.mainManagedObjectContext.persistentStoreCoordinator = aSibling.persistentStoreCoordinator;
         
@@ -290,13 +290,14 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
 - (void)deleteObject:(id<SPDiffable>)object {
     SPManagedObject *managedObject = (SPManagedObject *)object;
+    NSString *namespacedSimperiumKey = managedObject.namespacedSimperiumKey;
     [managedObject.managedObjectContext deleteObject:managedObject];
-    
+
     // NOTE:
     // 'mergeChangesFromContextDidSaveNotification' calls 'deleteObject' in the receiver context. As a result,
     // remote deletions will be posted as local deletions. Let's prevent that!
-    if (self.sibling) {
-        [self.sibling.remotelyDeletedKeys addObject:managedObject.namespacedSimperiumKey];
+    if (self.sibling != nil && namespacedSimperiumKey != nil) {
+        [self.sibling.remotelyDeletedKeys addObject:namespacedSimperiumKey];
     }
 }
 
@@ -513,7 +514,9 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
 
     // Obtain Permanent ID's!
     NSManagedObjectContext *childrenContext = (NSManagedObjectContext *)notification.object;
-    [self obtainPermanentIDsForInsertedObjectsInContext:childrenContext];
+    [childrenContext performBlockAndWait:^{
+        [self obtainPermanentIDsForInsertedObjectsInContext:childrenContext];
+    }];
     
     // Get the deleted ManagedObject ID's
     NSMutableSet *workerDeletedIds = [NSMutableSet set];
@@ -630,7 +633,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     NSParameterAssert(block);
     
     [self.mutex sp_increaseCondition];
-    block();
+    [self.mainManagedObjectContext performBlockAndWait:block];
     [self.mutex sp_decreaseCondition];
 }
 
@@ -640,7 +643,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     NSParameterAssert(block);
     
     [self.mutex lockWhenCondition:SPWorkersDone];
-    block();
+    [self.mainManagedObjectContext performBlockAndWait:block];
     [self.mutex unlock];
 }
 
@@ -653,6 +656,7 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     // Determine if a migration is needed
     NSDictionary *sourceMetadata = [NSPersistentStoreCoordinator metadataForPersistentStoreOfType:NSSQLiteStoreType
                                                                                               URL:storeURL
+                                                                                          options:nil
                                                                                             error:&error];
 
     // A migration is needed if the existing model isn't compatible with the given model

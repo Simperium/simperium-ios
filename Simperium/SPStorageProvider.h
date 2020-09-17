@@ -6,7 +6,7 @@
 //  Copyright (c) 2011 Simperium. All rights reserved.
 //
 
-#import "SPDiffable.h"
+#import <Simperium/SPDiffable.h>
 
 
 

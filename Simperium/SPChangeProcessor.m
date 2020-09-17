@@ -198,7 +198,8 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
 {
     id<SPStorageProvider> threadSafeStorage = [bucket.storage threadSafeStorage];
     __block BOOL success                    = NO;
-    
+    __block NSError *innerError             = nil;
+
     [threadSafeStorage performSafeBlockAndWait:^{
         success = [self _processRemoteModifyWithKey:simperiumKey
                                              bucket:bucket
@@ -206,8 +207,12 @@ static int const SPChangeProcessorMaxPendingChanges = 200;
                                              change:change
                                        acknowledged:acknowledged
                                       clientMatches:clientMatches
-                                              error:error];
+                                              error:&innerError];
     }];
+
+    if (innerError != nil && error != nil) {
+        *error = innerError;
+    }
     
     return success;
 }

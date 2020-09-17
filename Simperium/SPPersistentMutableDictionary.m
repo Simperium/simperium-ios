@@ -248,23 +248,30 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
         keyAttribute.name                       = @"key";
         keyAttribute.attributeType              = NSStringAttributeType;
         keyAttribute.optional                   = NO;
-        keyAttribute.indexed                    = YES;
-        
+
         NSAttributeDescription *valueAttribute  = [[NSAttributeDescription alloc] init];
         valueAttribute.name                     = @"value";
         valueAttribute.attributeType            = NSBinaryDataAttributeType;
         valueAttribute.optional                 = NO;
-        
+
+        // Indexes
+        NSFetchIndexElementDescription *elementDescription = [[NSFetchIndexElementDescription alloc] initWithProperty:keyAttribute
+                                                                                                        collationType:NSFetchIndexElementTypeBinary];
+
+        NSFetchIndexDescription *indexDescription = [[NSFetchIndexDescription alloc] initWithName:@"key_index"
+                                                                                         elements:@[ elementDescription ]];
+
         // SPMetadata Entity
         NSEntityDescription *entity             = [[NSEntityDescription alloc] init];
         entity.name                             = SPDictionaryEntityName;
         entity.managedObjectClassName           = NSStringFromClass([NSManagedObject class]);
         entity.properties                       = @[keyAttribute, valueAttribute];
+        entity.indexes                          = @[indexDescription];
         
         // Done!
         NSManagedObjectModel *model             = [[NSManagedObjectModel alloc] init];
         model.entities                          = @[entity];
-        
+
         _managedObjectModel = model;
     }
     

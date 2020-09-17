@@ -49,12 +49,27 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 @implementation SPChangeProcessorTests
 
 - (void)setUp {
+    [super setUp];
+
     self.simperium      = [MockSimperium mockSimperium];
     self.storage        = _simperium.coreDataStorage;
     self.configBucket   = [_simperium bucketForName:NSStringFromClass([Config class])];
     
     // Make sure that we're not picking up old enqueued changes
     [self.configBucket.changeProcessor reset];
+}
+
+- (void)tearDown {
+    [super tearDown];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Signout Expectation"];
+
+    [self.simperium signOutAndRemoveLocalData:false completion:^{
+        [expectation fulfill];
+    }];
+
+    NSLog(@"Logged Out");
+    [self waitForExpectationsWithTimeout:SPExpectationTimeout handler:nil];
 }
 
 - (void)testProcessRemoteChangeWithInvalidDelta {
@@ -84,8 +99,9 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 		[configs addObject:config];
 	}
     
-	[_storage save];
-    
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
+
     // ===================================================================================================
     // Prepare Remote Changes
     // ===================================================================================================
@@ -357,8 +373,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
         [keys addObject:config.simperiumKey];
     }
     
-    [_storage save];
-    [_storage test_waitUntilSaveCompletes];
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
     
     // ===================================================================================================
     // Process the changes
@@ -445,7 +461,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     }
     
     [_storage save];
-    
+    [self.storage test_waitUntilSaveCompletes];
+
     // ===================================================================================================
     // Verify the Enqueued Changes
     // ===================================================================================================
