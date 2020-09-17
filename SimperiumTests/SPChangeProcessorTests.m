@@ -99,7 +99,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 		[configs addObject:config];
 	}
     
-	[_storage save];
+    [self.storage save];
     [self.storage test_waitUntilSaveCompletes];
 
     // ===================================================================================================
@@ -462,7 +462,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     
     [_storage save];
     [self.storage test_waitUntilSaveCompletes];
-    
+
     // ===================================================================================================
     // Verify the Enqueued Changes
     // ===================================================================================================
