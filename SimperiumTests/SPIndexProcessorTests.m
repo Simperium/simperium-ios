@@ -431,8 +431,9 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.ghost                    = ghost;
     config.ghostData                = [memberData sp_JSONString];
     
-	[self.storage save];
-    
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
+
     NSLog(@"<> Successfully inserted Config object");
     
     
