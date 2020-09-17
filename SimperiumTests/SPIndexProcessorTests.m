@@ -200,7 +200,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
         [configs addObject:config];
     }
     
-	[self.storage save];
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
     
     NSLog(@"<> Successfully inserted Config object");
     
@@ -320,8 +321,9 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.ghost                        = ghost;
     config.ghostData                    = [memberData sp_JSONString];
     
-	[self.storage save];
-    
+    [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
+
     NSLog(@"<> Successfully inserted Config object");
     
     
@@ -351,7 +353,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.cost         = localPendingCost;
     
     [self.storage save];
-    
+    [self.storage test_waitUntilSaveCompletes];
+
     
     // ===================================================================================================
     // Process remote changes
@@ -455,6 +458,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.captainsLog  = localPendingLog;
     
     [self.storage save];
+    [self.storage test_waitUntilSaveCompletes];
     
     
     // ===================================================================================================
@@ -530,8 +534,9 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.ghost                    = ghost;
     config.ghostData                = [memberData sp_JSONString];
     
-	[storage save];
-    
+    [storage save];
+    [self.storage test_waitUntilSaveCompletes];
+
     NSLog(@"<> Successfully inserted Config object");
     
     
@@ -557,7 +562,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     config.captainsLog  = localPendingLog;
     
     [storage save];
-    
+    [self.storage test_waitUntilSaveCompletes];
+
 
     // ===================================================================================================
     // Disable Rebase
