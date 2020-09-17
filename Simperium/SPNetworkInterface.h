@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <Simperium/SPDiffable.h>
+#import "SPDiffable.h"
 
 
 @class SPBucket;
