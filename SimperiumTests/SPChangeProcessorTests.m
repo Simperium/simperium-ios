@@ -100,7 +100,8 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
 	}
     
 	[_storage save];
-    
+    [self.storage test_waitUntilSaveCompletes];
+
     // ===================================================================================================
     // Prepare Remote Changes
     // ===================================================================================================
@@ -460,6 +461,7 @@ static NSTimeInterval const SPExpectationTimeout    = 60.0;
     }
     
     [_storage save];
+    [self.storage test_waitUntilSaveCompletes];
     
     // ===================================================================================================
     // Verify the Enqueued Changes
