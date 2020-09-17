@@ -8,11 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
-#import <Simperium/SPBucket.h>
-#import <Simperium/SPManagedObject.h>
-#import <Simperium/SPAuthenticator.h>
-#import <Simperium/SPAuthenticationInterface.h>
-#import <Simperium/SPUser.h>
+#import "SPBucket.h"
+#import "SPManagedObject.h"
+#import "SPAuthenticator.h"
+#import "SPAuthenticationInterface.h"
+#import "SPUser.h"
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>

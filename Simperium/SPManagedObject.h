@@ -9,7 +9,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
-#import <Simperium/SPDiffable.h>
+#import "SPDiffable.h"
 
 @class SPMember;
 @class SPGhost;
