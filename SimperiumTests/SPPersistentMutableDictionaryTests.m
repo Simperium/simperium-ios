@@ -17,7 +17,7 @@
 #pragma mark ====================================================================================
 
 static NSUInteger const SPMetadataIterations    = 100;
-static NSUInteger const SPStressIterations      = 1000;
+static NSUInteger const SPStressIterations      = 500;
 static NSTimeInterval const SPStressTimeout     = 30;
 
 
