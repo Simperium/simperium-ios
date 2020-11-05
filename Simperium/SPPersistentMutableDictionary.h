@@ -17,6 +17,7 @@
 @interface SPPersistentMutableDictionary : NSObject
 
 @property (nonatomic, strong, readonly) NSString *label;
+@property (nonatomic, strong, readwrite) NSSet *supportedObjectTypes;
 
 - (NSInteger)count;
 - (BOOL)containsObjectForKey:(id)aKey;

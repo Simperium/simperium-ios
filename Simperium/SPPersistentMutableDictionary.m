@@ -48,6 +48,11 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
     if (self) {
         self.label = label;
         self.cache = [[NSCache alloc] init];
+        self.supportedObjectTypes = [NSSet setWithArray:@[
+            [NSDictionary class],
+            [NSArray class],
+            [NSString class]
+        ]];
     }
     
     return self;
