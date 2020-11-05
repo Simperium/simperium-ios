@@ -47,7 +47,8 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
     self = [super init];
     if (self) {
         self.label = label;
-        self.cache = [[NSCache alloc] init];
+        self.cache = [NSCache new];
+        self.requiringSecureCoding = YES;
         self.supportedObjectTypes = [NSSet setWithArray:@[
             [NSDictionary class],
             [NSArray class],
@@ -116,7 +117,9 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
             // Unarchive
             id archivedValue = [object valueForKey:SPDictionaryEntityValue];
             if (archivedValue) {
-                value = [NSKeyedUnarchiver unarchiveObjectWithData:archivedValue];
+                value = [NSKeyedUnarchiver unarchivedObjectOfClasses:self.supportedObjectTypes
+                                                            fromData:archivedValue
+                                                               error:nil];
             }
         }
     }];
@@ -136,6 +139,8 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
         return;
     }
 
+    NSAssert([self canStoreObject:anObject], @"Unsupported Object Type");
+
     [self.managedObjectContext performBlock:^{
         
         NSError *error = nil;
@@ -151,9 +156,11 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
             change = [NSEntityDescription insertNewObjectForEntityForName:SPDictionaryEntityName inManagedObjectContext:self.managedObjectContext];
             [change setValue:aKey forKey:SPDictionaryEntityKey];
         }
-        
+
         // Wrap up the value
-        id archivedValue = [NSKeyedArchiver archivedDataWithRootObject:anObject];
+        id archivedValue = [NSKeyedArchiver archivedDataWithRootObject:anObject
+                                                 requiringSecureCoding:self.requiringSecureCoding
+                                                                 error:nil];
         [change setValue:archivedValue forKey:SPDictionaryEntityValue];
     }];
     
@@ -439,7 +446,7 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
 }
 
 - (NSArray *)loadObjectsProperty:(NSString*)property unarchive:(BOOL)unarchive {
-    NSMutableArray *keys = [NSMutableArray array];
+    NSMutableArray *output = [NSMutableArray array];
     
     [self.managedObjectContext performBlockAndWait:^{
         
@@ -455,15 +462,31 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
                 continue;
             }
             
-            if (unarchive) {
-                [keys addObject:[NSKeyedUnarchiver unarchiveObjectWithData:value]];
-            } else {
-                [keys addObject:value];
+            if (!unarchive) {
+                [output addObject:value];
+                continue;;
+            }
+
+            id decodedValue = [NSKeyedUnarchiver unarchivedObjectOfClasses:self.supportedObjectTypes
+                                                                  fromData:value
+                                                                     error:nil];
+            if (decodedValue) {
+                [output addObject:decodedValue];
             }
         }
     }];
     
-    return keys;
+    return output;
+}
+
+- (BOOL)canStoreObject:(id)anObject {
+    for (Class supportedClass in self.supportedObjectTypes) {
+        if ([anObject isKindOfClass:supportedClass]) {
+            return YES;
+        }
+    }
+
+    return NO;
 }
 
 @end

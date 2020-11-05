@@ -21,8 +21,14 @@
 @property (nonatomic, strong, readonly) NSString *label;
 
 /// Specifies the Supported Types
+/// - Note: All classes specified here must conform to NSSecureCoding
 ///
-@property (nonatomic, strong, readwrite) NSSet *supportedObjectTypes;
+@property (nonatomic, strong, readwrite) NSSet<Class> *supportedObjectTypes;
+
+/// Indicates if the stored `Supported Object Types` should be required to conform to NSCoding. Defaults to YES
+///
+@property (nonatomic, assign, readwrite) BOOL requiringSecureCoding;
+
 
 /// Returns the total number of stored entities
 ///
