@@ -245,12 +245,12 @@ static SPLogLevels logLevel                 = SPLogLevelsError;
         
         // Dynamic Attributes
         NSAttributeDescription *keyAttribute    = [[NSAttributeDescription alloc] init];
-        keyAttribute.name                       = @"key";
+        keyAttribute.name                       = SPDictionaryEntityKey;
         keyAttribute.attributeType              = NSStringAttributeType;
         keyAttribute.optional                   = NO;
 
         NSAttributeDescription *valueAttribute  = [[NSAttributeDescription alloc] init];
-        valueAttribute.name                     = @"value";
+        valueAttribute.name                     = SPDictionaryEntityValue;
         valueAttribute.attributeType            = NSBinaryDataAttributeType;
         valueAttribute.optional                 = NO;
 
