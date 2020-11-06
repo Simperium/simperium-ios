@@ -26,6 +26,7 @@
 @property (nonatomic, strong, readwrite) NSSet<Class> *supportedObjectTypes;
 
 /// Indicates if the stored `Supported Object Types` should be required to conform to NSCoding. Defaults to YES
+/// - Important: Only used for Unit Testing purposes!
 ///
 @property (nonatomic, assign, readwrite) BOOL requiringSecureCoding;
 
