@@ -176,12 +176,34 @@ static NSTimeInterval const SPStressTimeout     = 30;
     [self waitForExpectationsWithTimeout:SPStressTimeout handler:nil];
 }
 
+- (void)testDictionaryStoredWithSecureCodingCanBeLoadedByDictionaryWithoutSecureCoding {
+    NSString *label = [NSString sp_makeUUID];
+    SPPersistentMutableDictionary *insecureStorage = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
+    insecureStorage.requiringSecureCoding = NO;
+
+    NSDictionary *samples = [self sampleKeyValues];
+    for (NSString *key in samples.allKeys) {
+        [insecureStorage setObject:samples[key] forKey:key];
+    }
+
+    [insecureStorage save];
+
+    SPPersistentMutableDictionary *secureStorage = [SPPersistentMutableDictionary loadDictionaryWithLabel:label];
+    insecureStorage.requiringSecureCoding = YES;
+    for (NSString *key in samples.allKeys) {
+        id retrievedValue = [secureStorage objectForKey:key];
+        id expectedValue = samples[key];
+
+        XCTAssertTrue([retrievedValue isEqual:expectedValue]);
+    }
+}
+
 
 #pragma mark ====================================================================================
 #pragma mark Helpers
 #pragma mark ====================================================================================
 
-- (NSDictionary*)randomContentObject {
+- (NSDictionary *)randomContentObject {
 	NSMutableDictionary *random = [NSMutableDictionary dictionary];
 	
 	for (NSInteger i = 0; ++i <= SPMetadataIterations; ) {
@@ -189,6 +211,14 @@ static NSTimeInterval const SPStressTimeout     = 30;
 	}
 	
 	return random;
+}
+
+- (NSDictionary *)sampleKeyValues {
+    return @{
+        @"1" : @"YO! Yosemite!",
+        @"2" : @{ @1234: @"567" },
+        @"3" : @[ @1, @"2" ]
+    };
 }
 
 @end
