@@ -10,7 +10,14 @@
 #import "SPGhost.h"
 #import "NSMutableDictionary+Simperium.h"
 
+
+@interface SPObject ()
+@property (nonatomic, strong) NSMutableDictionary *mutableStorage;
+@end
+
+
 @implementation SPObject
+
 @synthesize dict;
 @synthesize ghost;
 @synthesize bucket;
@@ -18,19 +25,14 @@
 @synthesize version;
 
 - (instancetype)init {
-    self = [self initWithDictionary:[NSMutableDictionary dictionary]];
-    if (self) {
-    }
-    return self;
+    return [self initWithDictionary:[NSMutableDictionary dictionary]];
 }
 
 - (instancetype)initWithDictionary:(NSMutableDictionary *)dictionary {
     self = [super init];
     if (self) {
-        self.dict = dictionary;
-        [self.dict associateObject:self];
-        SPGhost *newGhost = [[SPGhost alloc] init];
-        self.ghost = newGhost;
+        self.mutableStorage = dictionary;
+        self.ghost = [SPGhost new];
     }
     return self;    
 }
@@ -53,7 +55,7 @@
 // These are needed to compose a dict
 - (void)simperiumSetValue:(id)value forKey:(NSString *)key {
     dispatch_barrier_async(dispatch_get_main_queue(), ^{
-        [dict setObject:value forKey:key];
+        [self.mutableStorage setObject:value forKey:key];
     });
 }
 
@@ -61,7 +63,7 @@
     __block id obj;
 
     dispatch_block_t block = ^{
-        obj = [dict objectForKey: key];
+        obj = [self.mutableStorage objectForKey: key];
     };
     
     // Note: For thread safety reasons, let's use the dictionary just from the main thread
@@ -76,7 +78,7 @@
 
 - (void)loadMemberData:(NSDictionary *)data {
     dispatch_barrier_async(dispatch_get_main_queue(), ^{
-        [dict setValuesForKeysWithDictionary:data];
+        [self.mutableStorage setValuesForKeysWithDictionary:data];
     });
 }
 
@@ -85,12 +87,11 @@
 }
 
 - (NSDictionary *)dictionary {
-    return dict;
+    return [self.mutableStorage copy];
 }
 
 - (id)object {
-    return dict;
+    return [self.mutableStorage copy];
 }
-
 
 @end
