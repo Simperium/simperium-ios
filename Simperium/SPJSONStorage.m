@@ -292,15 +292,20 @@
     // triggered from the main thread and could take awhile
     
     // Sync all changes: Fake it for now by trying to send all objects
+
+    // TODO: JSONStorage is readonly at this stage.
+    // Local changes should be captured via `didChangeValue:forKey:`
+    /*
     NSMutableSet *updatedObjects = [NSMutableSet set];
     
     for (NSDictionary *objectDict in _objects.allValues) {
         NSArray *objectsAsList = [objectDict allValues];
         [updatedObjects addObjectsFromArray:objectsAsList];
     }
+    */
 
     [_delegate storageWillSave:self deletedObjects:nil];
-    [_delegate storageDidSave:self insertedObjects:nil updatedObjects:updatedObjects];
+    [_delegate storageDidSave:self insertedObjects:nil updatedObjects:nil];
     
     return NO;
 }
