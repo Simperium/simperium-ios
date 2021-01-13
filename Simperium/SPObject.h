@@ -11,12 +11,11 @@
 
 @interface SPObject : NSObject<SPDiffable>
 
-// Note: Readonly for now!
-@property (nonatomic, strong, readonly) NSDictionary *dict;
 @property (nonatomic, strong) SPGhost *ghost;
 @property (nonatomic, copy) NSString *ghostData;
 @property (nonatomic, copy) NSString *simperiumKey;
-@property (nonatomic, copy) NSString *version;
+@property (nonatomic, copy, readonly) NSString *version;
+@property (nonatomic, copy, readonly) NSDictionary *dictionary;
 
 - (instancetype)initWithDictionary:(NSMutableDictionary *)dictionary;
 

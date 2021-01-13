@@ -17,7 +17,6 @@
 
 @implementation SPObject
 
-@synthesize dict;
 @synthesize ghost;
 @synthesize bucket;
 @synthesize ghostData;
