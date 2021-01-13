@@ -87,11 +87,7 @@
         }
     });
     
-    if (!someObjects) {
-        someObjects = @[];
-    }
-    
-    return someObjects;
+    return someObjects ?: @[];
 }
 
 - (id)objectAtIndex:(NSUInteger)index bucketName:(NSString *)bucketName {
@@ -121,7 +117,7 @@
     NSMutableArray *keys = [NSMutableArray arrayWithCapacity:[bucketObjects count]];
     for (id<SPDiffable>object in bucketObjects) {
         if (object.simperiumKey) {
-            [keys addObject:[object simperiumKey]];
+            [keys addObject:object.simperiumKey];
         }
     }
          
