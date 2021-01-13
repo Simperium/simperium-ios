@@ -8,7 +8,6 @@
 
 #import "SPObject.h"
 #import "SPGhost.h"
-#import "NSMutableDictionary+Simperium.h"
 
 
 @interface SPObject ()
@@ -35,16 +34,6 @@
         self.ghost = [SPGhost new];
     }
     return self;    
-}
-
-- (NSString *)simperiumKey {
-    return simperiumKey;
-}
-
-- (void)setSimperiumKey:(NSString *)key {
-    simperiumKey = [key copy];
-    
-    [self.dict associateSimperiumKey:simperiumKey];
 }
 
 // TODO: need to swizzle setObject:forKey: to inform Simperium that data has changed
