@@ -111,17 +111,15 @@
     dispatch_sync(_storageQueue, ^{
         NSDictionary *objectDict = [_objects objectForKey:bucketName];
         if (objectDict) {
-            bucketObjects = [_objects allValues];
+            bucketObjects = [objectDict allValues];
             
-            if (predicate)
+            if (predicate) {
                 bucketObjects = [bucketObjects filteredArrayUsingPredicate:predicate];
+            }
         }
     });
-    
-    if (!bucketObjects) {
-        bucketObjects = @[];
-    }
-    return bucketObjects;
+
+    return bucketObjects ?: @[];
 }
 
 - (NSArray *)objectKeysForBucketName:(NSString *)bucketName {
