@@ -14,7 +14,6 @@
 #import "SPBucket+Internals.h"
 #import "SPSchema.h"
 #import "SPDiffer.h"
-#import "SPswizzle.h"
 
 
 @interface NSMutableDictionary ()
@@ -44,10 +43,6 @@
         
         NSString *queueLabel = @"com.simperium.JSONstorage";
         _storageQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
-        
-        NSError *error = nil;
-        [NSMutableDictionary sp_swizzleMethod:@selector(setObject:forKey:) withMethod:@selector(simperiumSetObject:forKey:) error:&error];
-        [NSMutableDictionary sp_swizzleMethod:@selector(setValue:forKey:) withMethod:@selector(simperiumSetValue:forKey:) error:&error];
     }
     
     return self;
@@ -58,8 +53,6 @@
     // Update the schema if applicable
     SPObject *spObject = [_allObjects objectForKey:simperiumKey];
     [spObject.bucket.differ.schema addMemberForObject:value key:key];
-    
-    // TODO: track the change here so saving can be smart    
 }
 
 - (SPStorage *)threadSafeStorage {
