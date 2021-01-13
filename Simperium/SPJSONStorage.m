@@ -337,6 +337,10 @@
     return nil;
 }
 
+- (BOOL)isEphemeral {
+    return YES;
+}
+
 - (void)stashUnsavedObjects {
     // NO-OP
 }

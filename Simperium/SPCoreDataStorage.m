@@ -400,6 +400,10 @@ typedef void (^SPCoreDataStorageSaveCallback)(void);
     return [self.privateStashedObjects copy];
 }
 
+- (BOOL)isEphemeral {
+    return NO;
+}
+
 
 #pragma mark - Stashing and unstashing entities
 
