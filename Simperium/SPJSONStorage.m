@@ -127,7 +127,9 @@
     
     NSMutableArray *keys = [NSMutableArray arrayWithCapacity:[bucketObjects count]];
     for (id<SPDiffable>object in bucketObjects) {
-        [keys addObject:[object simperiumKey]];
+        if (object.simperiumKey) {
+            [keys addObject:[object simperiumKey]];
+        }
     }
          
     return keys;
