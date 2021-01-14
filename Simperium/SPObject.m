@@ -10,10 +10,11 @@
 #import "SPGhost.h"
 #import "SPBucket+Internals.h"
 #import "SPSchema.h"
+#import "SPThreadsafeMutableDictionary.h"
 
 
 @interface SPObject ()
-@property (nonatomic, strong) NSMutableDictionary *mutableStorage;
+@property (nonatomic, strong) SPThreadsafeMutableDictionary *mutableStorage;
 @end
 
 
@@ -31,7 +32,7 @@
 - (instancetype)initWithDictionary:(NSMutableDictionary *)dictionary {
     self = [super init];
     if (self) {
-        self.mutableStorage = dictionary;
+        self.mutableStorage = [[SPThreadsafeMutableDictionary alloc] initWithDictionary:dictionary];
         self.ghost = [SPGhost new];
     }
     return self;    
@@ -42,34 +43,22 @@
 
 // TODO: getters and setters for ghost, ghostData, simperiumKey and version should probably be locked
 
-// These are needed to compose a dict
 - (void)simperiumSetValue:(id)value forKey:(NSString *)key {
+    [self.mutableStorage setObject:value forKey:key];
+
     dispatch_barrier_async(dispatch_get_main_queue(), ^{
-        [self.mutableStorage setObject:value forKey:key];
         [self.bucket.schema addMemberForObject:value key:key];
     });
 }
 
 - (id)simperiumValueForKey:(NSString *)key {
-    __block id obj;
-
-    dispatch_block_t block = ^{
-        obj = [self.mutableStorage objectForKey: key];
-    };
-    
-    // Note: For thread safety reasons, let's use the dictionary just from the main thread
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), block);
-    }
-
-    return obj;
+    return [self.mutableStorage objectForKey: key];
 }
 
 - (void)loadMemberData:(NSDictionary *)data {
+    [self.mutableStorage setValuesForKeysWithDictionary:data];
+
     dispatch_barrier_async(dispatch_get_main_queue(), ^{
-        [self.mutableStorage setValuesForKeysWithDictionary:data];
         [self ensureSchemaMembersAreAdded];
     });
 }
@@ -78,7 +67,11 @@
     NSAssert([NSThread isMainThread], @"Please invoke this API from the main thread only");
 
     for (NSString *key in self.mutableStorage.allKeys) {
-        id value = self.mutableStorage[key];
+        id value = [self.mutableStorage objectForKey:key];
+        if (value == nil) {
+            continue;
+        }
+
         [self.bucket.schema addMemberForObject:value key:key];
     }
 }
@@ -88,11 +81,11 @@
 }
 
 - (NSDictionary *)dictionary {
-    return [self.mutableStorage copy];
+    return [self.mutableStorage copyInternalStorage];
 }
 
 - (id)object {
-    return [self.mutableStorage copy];
+    return [self.mutableStorage copyInternalStorage];
 }
 
 @end
