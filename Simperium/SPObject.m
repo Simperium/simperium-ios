@@ -8,6 +8,8 @@
 
 #import "SPObject.h"
 #import "SPGhost.h"
+#import "SPBucket+Internals.h"
+#import "SPSchema.h"
 
 
 @interface SPObject ()
@@ -44,6 +46,7 @@
 - (void)simperiumSetValue:(id)value forKey:(NSString *)key {
     dispatch_barrier_async(dispatch_get_main_queue(), ^{
         [self.mutableStorage setObject:value forKey:key];
+        [self.bucket.schema addMemberForObject:value key:key];
     });
 }
 
@@ -67,7 +70,17 @@
 - (void)loadMemberData:(NSDictionary *)data {
     dispatch_barrier_async(dispatch_get_main_queue(), ^{
         [self.mutableStorage setValuesForKeysWithDictionary:data];
+        [self ensureSchemaMembersAreAdded];
     });
+}
+
+- (void)ensureSchemaMembersAreAdded {
+    NSAssert([NSThread isMainThread], @"Please invoke this API from the main thread only");
+
+    for (NSString *key in self.mutableStorage.allKeys) {
+        id value = self.mutableStorage[key];
+        [self.bucket.schema addMemberForObject:value key:key];
+    }
 }
 
 - (void)willBeRead {
