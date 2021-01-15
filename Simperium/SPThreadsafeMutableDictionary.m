@@ -26,7 +26,7 @@
     self = [super init];
     if (self) {
         self.contents = [NSMutableDictionary dictionary];
-        self.queue = dispatch_queue_create("com.simperium.SPThreadsafeMutableSet", NULL);
+        self.queue = dispatch_queue_create("com.simperium.SPThreadsafeMutableDictionary", NULL);
     }
 
     return self;
