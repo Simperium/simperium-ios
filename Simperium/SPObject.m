@@ -45,10 +45,7 @@
 
 - (void)simperiumSetValue:(id)value forKey:(NSString *)key {
     [self.mutableStorage setObject:value forKey:key];
-
-    dispatch_barrier_async(dispatch_get_main_queue(), ^{
-        [self.bucket.schema addMemberForObject:value key:key];
-    });
+    [self.bucket.schema addMemberForObject:value key:key];
 }
 
 - (id)simperiumValueForKey:(NSString *)key {
@@ -57,10 +54,7 @@
 
 - (void)loadMemberData:(NSDictionary *)data {
     [self.mutableStorage setValuesForKeysWithDictionary:data];
-
-    dispatch_barrier_async(dispatch_get_main_queue(), ^{
-        [self ensureSchemaMembersAreAdded];
-    });
+    [self ensureSchemaMembersAreAdded];
 }
 
 - (void)ensureSchemaMembersAreAdded {
