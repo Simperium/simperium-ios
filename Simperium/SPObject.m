@@ -45,7 +45,7 @@
 
 - (void)simperiumSetValue:(id)value forKey:(NSString *)key {
     [self.mutableStorage setObject:value forKey:key];
-    [self.bucket.schema addMemberForObject:value key:key];
+    [self.bucket.schema ensureDynamicMemberExistsForObject:value key:key];
 }
 
 - (id)simperiumValueForKey:(NSString *)key {
@@ -66,7 +66,7 @@
             continue;
         }
 
-        [self.bucket.schema addMemberForObject:value key:key];
+        [self.bucket.schema ensureDynamicMemberExistsForObject:value key:key];
     }
 }
 

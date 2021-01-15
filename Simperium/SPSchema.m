@@ -76,7 +76,7 @@
     return self;
 }
 
-- (void)addMemberForObject:(id)object key:(NSString *)key {
+- (void)ensureDynamicMemberExistsForObject:(id)object key:(NSString *)key {
     if (!_dynamic) {
         return;
     }

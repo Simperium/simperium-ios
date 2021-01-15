@@ -51,7 +51,7 @@
 - (void)object:(id)object forKey:(NSString *)simperiumKey didChangeValue:(id)value forKey:(NSString *)key {
     // Update the schema if applicable
     SPObject *spObject = [_allObjects objectForKey:simperiumKey];
-    [spObject.bucket.differ.schema addMemberForObject:value key:key];
+    [spObject.bucket.differ.schema ensureDynamicMemberExistsForObject:value key:key];
 }
 
 - (SPStorage *)threadSafeStorage {
