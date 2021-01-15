@@ -58,8 +58,6 @@
 }
 
 - (void)ensureSchemaMembersAreAdded {
-    NSAssert([NSThread isMainThread], @"Please invoke this API from the main thread only");
-
     for (NSString *key in self.mutableStorage.allKeys) {
         id value = [self.mutableStorage objectForKey:key];
         if (value == nil) {
