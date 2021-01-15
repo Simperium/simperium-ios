@@ -52,6 +52,10 @@
 
 - (void)setObject:(id)object forKey:(NSString *)key {
     dispatch_sync(self.queue, ^{
+        if (!object) {
+            [self.contents removeObjectForKey:key];
+            return;
+        }
         [self.contents setObject:object forKey:key];
     });
 }
