@@ -9,16 +9,13 @@
 #import <Foundation/Foundation.h>
 #import "SPDiffable.h"
 
-@interface SPObject : NSObject<SPDiffable> {
-    NSMutableDictionary *dict;
-    NSString *simperiumKey;
-}
+@interface SPObject : NSObject<SPDiffable>
 
-@property (nonatomic, strong) NSMutableDictionary *dict;
 @property (nonatomic, strong) SPGhost *ghost;
 @property (nonatomic, copy) NSString *ghostData;
 @property (nonatomic, copy) NSString *simperiumKey;
-@property (nonatomic, copy) NSString *version;
+@property (nonatomic, copy, readonly) NSString *version;
+@property (nonatomic, copy, readonly) NSDictionary *dictionary;
 
 - (instancetype)initWithDictionary:(NSMutableDictionary *)dictionary;
 

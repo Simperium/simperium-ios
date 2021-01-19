@@ -673,6 +673,14 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 #pragma mark Properties
 #pragma mark ====================================================================================
 
+- (SPJSONStorage *)JSONStorage {
+    if (!_JSONStorage) {
+        _JSONStorage = [[SPJSONStorage alloc] initWithDelegate:self];
+    }
+
+    return _JSONStorage;
+}
+
 - (NSManagedObjectContext *)managedObjectContext {
     return self.coreDataStorage.mainManagedObjectContext;
 }

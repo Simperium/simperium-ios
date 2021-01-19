@@ -10,13 +10,13 @@
 @property (nonatomic, copy) NSString *ghostData;
 @property (nonatomic, copy) NSString *simperiumKey;
 @property (nonatomic, weak) SPBucket *bucket;
+@property (nonatomic, copy, readonly) NSDictionary *dictionary;
+@property (nonatomic, copy, readonly) NSString *version;
 
 - (void)simperiumSetValue:(id)value forKey:(NSString *)key;
 - (id)simperiumValueForKey:(NSString *)key;
 - (void)loadMemberData:(NSDictionary *)data;
 - (void)willBeRead;
-- (NSDictionary *)dictionary;
-- (NSString *)version;
 - (id)object;
 
 @optional
