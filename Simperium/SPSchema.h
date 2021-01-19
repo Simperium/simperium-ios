@@ -23,6 +23,6 @@
 - (instancetype)initWithBucketName:(NSString *)name data:(NSDictionary *)definition;
 - (SPMember *)memberForKey:(NSString *)memberName;
 - (void)setDefaults:(id<SPDiffable>)object;
-- (void)addMemberForObject:(id)object key:(NSString *)key;
+- (void)ensureDynamicMemberExistsForObject:(id)object key:(NSString *)key;
 
 @end

@@ -19,6 +19,7 @@
 // Properties
 @property (nonatomic, copy, readwrite) NSDictionary *metadata;
 @property (nonatomic, copy,  readonly) NSSet        *stashedObjects;
+@property (nonatomic, assign, readonly) BOOL        isEphemeral;
 
 // Persistance
 - (BOOL)save;

@@ -10,11 +10,9 @@
 #import "SPObject.h"
 #import "SPGhost.h"
 #import "NSString+Simperium.h"
-#import "NSMutableDictionary+Simperium.h"
 #import "SPBucket+Internals.h"
 #import "SPSchema.h"
 #import "SPDiffer.h"
-#import "SPswizzle.h"
 
 
 @interface NSMutableDictionary ()
@@ -44,10 +42,6 @@
         
         NSString *queueLabel = @"com.simperium.JSONstorage";
         _storageQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
-        
-        NSError *error = nil;
-        [NSMutableDictionary sp_swizzleMethod:@selector(setObject:forKey:) withMethod:@selector(simperiumSetObject:forKey:) error:&error];
-        [NSMutableDictionary sp_swizzleMethod:@selector(setValue:forKey:) withMethod:@selector(simperiumSetValue:forKey:) error:&error];
     }
     
     return self;
@@ -57,9 +51,7 @@
 - (void)object:(id)object forKey:(NSString *)simperiumKey didChangeValue:(id)value forKey:(NSString *)key {
     // Update the schema if applicable
     SPObject *spObject = [_allObjects objectForKey:simperiumKey];
-    [spObject.bucket.differ.schema addMemberForObject:value key:key];
-    
-    // TODO: track the change here so saving can be smart    
+    [spObject.bucket.differ.schema ensureDynamicMemberExistsForObject:value key:key];
 }
 
 - (SPStorage *)threadSafeStorage {
@@ -94,11 +86,7 @@
         }
     });
     
-    if (!someObjects) {
-        someObjects = @[];
-    }
-    
-    return someObjects;
+    return someObjects ?: @[];
 }
 
 - (id)objectAtIndex:(NSUInteger)index bucketName:(NSString *)bucketName {
@@ -111,17 +99,15 @@
     dispatch_sync(_storageQueue, ^{
         NSDictionary *objectDict = [_objects objectForKey:bucketName];
         if (objectDict) {
-            bucketObjects = [_objects allValues];
+            bucketObjects = [objectDict allValues];
             
-            if (predicate)
+            if (predicate) {
                 bucketObjects = [bucketObjects filteredArrayUsingPredicate:predicate];
+            }
         }
     });
-    
-    if (!bucketObjects) {
-        bucketObjects = @[];
-    }
-    return bucketObjects;
+
+    return bucketObjects ?: @[];
 }
 
 - (NSArray *)objectKeysForBucketName:(NSString *)bucketName {
@@ -129,7 +115,9 @@
     
     NSMutableArray *keys = [NSMutableArray arrayWithCapacity:[bucketObjects count]];
     for (id<SPDiffable>object in bucketObjects) {
-        [keys addObject:[object simperiumKey]];
+        if (object.simperiumKey) {
+            [keys addObject:object.simperiumKey];
+        }
     }
          
     return keys;
@@ -303,15 +291,20 @@
     // triggered from the main thread and could take awhile
     
     // Sync all changes: Fake it for now by trying to send all objects
+
+    // TODO: JSONStorage is readonly at this stage.
+    // Local changes should be captured via `didChangeValue:forKey:`
+    /*
     NSMutableSet *updatedObjects = [NSMutableSet set];
     
     for (NSDictionary *objectDict in _objects.allValues) {
         NSArray *objectsAsList = [objectDict allValues];
         [updatedObjects addObjectsFromArray:objectsAsList];
     }
+    */
 
     [_delegate storageWillSave:self deletedObjects:nil];
-    [_delegate storageDidSave:self insertedObjects:nil updatedObjects:updatedObjects];
+    [_delegate storageDidSave:self insertedObjects:nil updatedObjects:nil];
     
     return NO;
 }
@@ -335,6 +328,10 @@
 
 - (NSSet *)stashedObjects {
     return nil;
+}
+
+- (BOOL)isEphemeral {
+    return YES;
 }
 
 - (void)stashUnsavedObjects {

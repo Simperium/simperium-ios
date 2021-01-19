@@ -158,19 +158,25 @@
 }
 
 - (NSString *)lastChangeSignature {
-    if (!_lastChangeSignature) {
-        // Load it
+    // Load it: Skip for Ephemeral Storage
+    if (!_lastChangeSignature && !_storage.isEphemeral) {
         NSString *sigKey = [NSString stringWithFormat:@"lastChangeSignature-%@", self.instanceLabel];
         NSString *signature = [[NSUserDefaults standardUserDefaults] objectForKey:sigKey];
         _lastChangeSignature = [signature copy];
     }
+
     return _lastChangeSignature;
 }
 
 - (void)setLastChangeSignature:(NSString *)signature {
+
     _lastChangeSignature = [signature copy];
     
-    // Persist it
+    // Persist it: Skip for Ephemeral Storage
+    if (self.storage.isEphemeral) {
+        return;
+    }
+
     NSString *sigKey = [NSString stringWithFormat:@"lastChangeSignature-%@", self.instanceLabel];
     [[NSUserDefaults standardUserDefaults] setObject:_lastChangeSignature forKey: sigKey];
     [[NSUserDefaults standardUserDefaults] synchronize];

@@ -35,6 +35,10 @@ static NSInteger const SPWorkersDone = 0;
     return self;
 }
 
+- (BOOL)isEphemeral {
+    return YES;
+}
+
 - (BOOL)save {
     // No-Op
     return YES;
