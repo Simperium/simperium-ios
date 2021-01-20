@@ -38,8 +38,7 @@
         _objects    = [NSMutableDictionary dictionaryWithCapacity:10];
         _ghosts     = [NSMutableDictionary dictionaryWithCapacity:10];
         _allObjects = [NSMutableDictionary dictionaryWithCapacity:10];
-        _objectList = [NSMutableArray arrayWithCapacity:10];
-        
+
         NSString *queueLabel = @"com.simperium.JSONstorage";
         _storageQueue = dispatch_queue_create([queueLabel cStringUsingEncoding:NSUTF8StringEncoding], NULL);
     }
@@ -140,7 +139,7 @@
     // Batch fault a bunch of objects for efficiency
     // All objects are already in memory, for now at least...
     NSArray *objectsAsList = [self objectsForKeys:[NSSet setWithArray:keys] bucketName:bucketName];
-    NSMutableDictionary *objectDict = [NSMutableDictionary dictionaryWithCapacity:_objectList.count];
+    NSMutableDictionary *objectDict = [NSMutableDictionary dictionary];
     for (id<SPDiffable>object in objectsAsList) {
         [objectDict setObject:object forKey:object.simperiumKey];
     }
