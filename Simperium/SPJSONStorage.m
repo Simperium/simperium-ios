@@ -208,22 +208,16 @@
 }
 
 - (void)deleteAllObjectsForBucketName:(NSString *)bucketName {
-//    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-//    NSEntityDescription *entity = [NSEntityDescription entityForName:entityName inManagedObjectContext:context];
-//    [fetchRequest setEntity:entity];
-//    
-//    // No need to fault everything
-//    [fetchRequest setIncludesPropertyValues:NO];
-//    
-//    NSError *error;
-//    NSArray *items = [context executeFetchRequest:fetchRequest error:&error];
-//    
-//    for (NSManagedObject *managedObject in items) {
-//        [context deleteObject:managedObject];
-//    }
-//    if (![context save:&error]) {
-//        NSLog(@"Simperium error deleting %@ - error:%@",entityName,error);
-//    }
+    dispatch_sync(self.storageQueue, ^{
+        // Nuke Bucket Entities from the `allObjects` collection
+        NSDictionary<NSString *, SPObject *> *bucket = [self.objects objectForKey:bucketName];
+        for (NSString *key in bucket.allKeys) {
+            [self.allObjects removeObjectForKey:key];
+        }
+
+        // And now nuke the entire bucket
+        [self.objects removeObjectForKey:bucketName];
+    });
 }
 
 - (void)validateObjectsForBucketName:(NSString *)bucketName
