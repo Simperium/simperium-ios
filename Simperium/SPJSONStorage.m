@@ -36,7 +36,6 @@
     if (self) {
         _delegate   = aDelegate;
         _objects    = [NSMutableDictionary dictionaryWithCapacity:10];
-        _ghosts     = [NSMutableDictionary dictionaryWithCapacity:10];
         _allObjects = [NSMutableDictionary dictionaryWithCapacity:10];
 
         NSString *queueLabel = @"com.simperium.JSONstorage";

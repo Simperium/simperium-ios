@@ -13,7 +13,6 @@
 @interface SPJSONStorage : SPStorage<SPStorageProvider>
 
 @property (nonatomic, strong) NSMutableDictionary   *objects;
-@property (nonatomic, strong) NSMutableDictionary   *ghosts;
 @property (nonatomic, strong) NSMutableDictionary   *allObjects;
 
 - (instancetype)initWithDelegate:(id<SPStorageObserver>)aDelegate;
