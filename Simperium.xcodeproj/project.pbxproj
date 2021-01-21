@@ -66,6 +66,10 @@
 		B5A8773422DCD37F00FC22C7 /* SPAuthenticationInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A8773322DCD37F00FC22C7 /* SPAuthenticationInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5A8773522DCD37F00FC22C7 /* SPAuthenticationInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A8773322DCD37F00FC22C7 /* SPAuthenticationInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5B69C0318325B2C001F0DE1 /* MockSimperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5B69C0218325B2C001F0DE1 /* MockSimperium.m */; };
+		B5C3694525B9B48400DD91DA /* SPMemberDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C3694325B9B48400DD91DA /* SPMemberDictionary.m */; };
+		B5C3694625B9B48400DD91DA /* SPMemberDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C3694325B9B48400DD91DA /* SPMemberDictionary.m */; };
+		B5C3694725B9B48400DD91DA /* SPMemberDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = B5C3694425B9B48400DD91DA /* SPMemberDictionary.h */; };
+		B5C3694825B9B48400DD91DA /* SPMemberDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = B5C3694425B9B48400DD91DA /* SPMemberDictionary.h */; };
 		B5C6300D186321E0008C42B7 /* DiffMatchPatchArrayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C6300C186321E0008C42B7 /* DiffMatchPatchArrayTests.m */; };
 		B5C7D7F9183411B900E9109C /* SPPersistentMutableDictionaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C7D7F8183411B900E9109C /* SPPersistentMutableDictionaryTests.m */; };
 		B5CAA4BC1CAAB3D5006FE048 /* Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD92A135DFE6D00C51BAD /* Simperium.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -628,6 +632,8 @@
 		B5AC545C1857917800608CAC /* SPBucket+Internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPBucket+Internals.h"; sourceTree = "<group>"; };
 		B5B69C0118325B2C001F0DE1 /* MockSimperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MockSimperium.h; sourceTree = "<group>"; };
 		B5B69C0218325B2C001F0DE1 /* MockSimperium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MockSimperium.m; sourceTree = "<group>"; };
+		B5C3694325B9B48400DD91DA /* SPMemberDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMemberDictionary.m; sourceTree = "<group>"; };
+		B5C3694425B9B48400DD91DA /* SPMemberDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMemberDictionary.h; sourceTree = "<group>"; };
 		B5C6300C186321E0008C42B7 /* DiffMatchPatchArrayTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DiffMatchPatchArrayTests.m; sourceTree = "<group>"; };
 		B5C7D7F8183411B900E9109C /* SPPersistentMutableDictionaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPersistentMutableDictionaryTests.m; sourceTree = "<group>"; };
 		B5C91A0C1827E9CB0002D306 /* NSURLResponse+Simperium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURLResponse+Simperium.h"; sourceTree = "<group>"; };
@@ -814,6 +820,8 @@
 				2622FD07147F249400C8EEB4 /* SPMemberText.m */,
 				2622FD0A147F24A700C8EEB4 /* SPMemberDate.h */,
 				2622FD0B147F24A700C8EEB4 /* SPMemberDate.m */,
+				B5C3694425B9B48400DD91DA /* SPMemberDictionary.h */,
+				B5C3694325B9B48400DD91DA /* SPMemberDictionary.m */,
 				2622FD0E147F24CC00C8EEB4 /* SPMemberInt.h */,
 				2622FD0F147F24CC00C8EEB4 /* SPMemberInt.m */,
 				2622FD12147F24D700C8EEB4 /* SPMemberDouble.h */,
@@ -1378,6 +1386,7 @@
 				B5CAA4CB1CAAB523006FE048 /* SPGhost.h in Headers */,
 				B5CAA4CC1CAAB52D006FE048 /* SPMember.h in Headers */,
 				B5CAA4CD1CAAB537006FE048 /* DiffMatchPatch.h in Headers */,
+				B5C3694725B9B48400DD91DA /* SPMemberDictionary.h in Headers */,
 				B5CAA4CF1CAAB54E006FE048 /* DiffMatchPatchCFUtilities.h in Headers */,
 				B526FA7322E00C4E00831994 /* SPAuthenticationNavigationController.h in Headers */,
 				B5CAA4D01CAAB557006FE048 /* MinMaxMacros.h in Headers */,
@@ -1473,6 +1482,7 @@
 				B5CAA5C91CAAED3D006FE048 /* SPGhost.h in Headers */,
 				B5CAA5CA1CAAED3D006FE048 /* SPMember.h in Headers */,
 				B5CAA5CB1CAAED3D006FE048 /* DiffMatchPatch.h in Headers */,
+				B5C3694825B9B48400DD91DA /* SPMemberDictionary.h in Headers */,
 				B5CAA5CD1CAAED3D006FE048 /* DiffMatchPatchCFUtilities.h in Headers */,
 				B5FC08B31D662D5300045DB9 /* TSKNSURLConnectionDelegateProxy.h in Headers */,
 				B5CAA5CE1CAAED3D006FE048 /* MinMaxMacros.h in Headers */,
@@ -1725,6 +1735,7 @@
 				B5CAA5101CAAB9AD006FE048 /* DiffMatchPatch.m in Sources */,
 				B5CAA5111CAAB9B2006FE048 /* DiffMatchPatchCFUtilities.c in Sources */,
 				B57421D62510FA67006F2A71 /* NSURLRequest+Simperium.m in Sources */,
+				B5C3694525B9B48400DD91DA /* SPMemberDictionary.m in Sources */,
 				B5FC08B81D662D5300045DB9 /* TSKNSURLSessionDelegateProxy.m in Sources */,
 				B5CAA5121CAAB9BC006FE048 /* NSMutableDictionary+DMPExtensions.m in Sources */,
 				B5CAA5131CAAB9C7006FE048 /* NSString+JavaSubstring.m in Sources */,
@@ -1810,6 +1821,7 @@
 				B5FC08B11D662D5300045DB9 /* TSKPinningValidator.m in Sources */,
 				B5FC08AD1D662D5300045DB9 /* ssl_pin_verifier.m in Sources */,
 				B57421D72510FA67006F2A71 /* NSURLRequest+Simperium.m in Sources */,
+				B5C3694625B9B48400DD91DA /* SPMemberDictionary.m in Sources */,
 				B5CAA5721CAAED3D006FE048 /* SPGhost.m in Sources */,
 				B5CAA5731CAAED3D006FE048 /* SPMember.m in Sources */,
 				B5CAA5741CAAED3D006FE048 /* DiffMatchPatch.m in Sources */,
