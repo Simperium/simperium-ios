@@ -11,6 +11,7 @@
 #import "SPMember.h"
 #import "SPMemberText.h"
 #import "SPMemberDate.h"
+#import "SPMemberDictionary.h"
 #import "SPMemberInt.h"
 #import "SPMemberFloat.h"
 #import "SPMemberDouble.h"
@@ -33,16 +34,17 @@
     }
     
     _memberMap = @{
-        @"text"     : NSStringFromClass([SPMemberText class]),
-        @"int"      : NSStringFromClass([SPMemberInt class]),
-        @"bool"     : NSStringFromClass([SPMemberInt class]),
-        @"date"     : NSStringFromClass([SPMemberDate class]),
-        @"entity"   : NSStringFromClass([SPMemberEntity class]),
-        @"double"   : NSStringFromClass([SPMemberDouble class]),
-        @"list"     : NSStringFromClass([SPMemberList class]),
-        @"json"     : NSStringFromClass([SPMemberJSON class]),
-        @"jsonlist" : NSStringFromClass([SPMemberJSONList class]),
-        @"base64"   : NSStringFromClass([SPMemberBase64 class])
+        @"text"         : NSStringFromClass([SPMemberText class]),
+        @"int"          : NSStringFromClass([SPMemberInt class]),
+        @"bool"         : NSStringFromClass([SPMemberInt class]),
+        @"date"         : NSStringFromClass([SPMemberDate class]),
+        @"dictionary"   : NSStringFromClass([SPMemberDictionary class]),
+        @"entity"       : NSStringFromClass([SPMemberEntity class]),
+        @"double"       : NSStringFromClass([SPMemberDouble class]),
+        @"list"         : NSStringFromClass([SPMemberList class]),
+        @"json"         : NSStringFromClass([SPMemberJSON class]),
+        @"jsonlist"     : NSStringFromClass([SPMemberJSONList class]),
+        @"base64"       : NSStringFromClass([SPMemberBase64 class])
     };
     
     return _memberMap;
@@ -90,6 +92,8 @@
         type = @"text";
     } else if ([object isKindOfClass:[NSNumber class]]) {
         type = @"double";
+    } else if ([object isKindOfClass:[NSDictionary class]]) {
+        type = @"dictionary";
     }
     
     NSDictionary *memberDict = @{ @"type" : type,

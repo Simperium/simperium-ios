@@ -124,7 +124,7 @@ static SPLogLevels logLevel = SPLogLevelsInfo;
 
         // Dynamic Schema: Ensure the Member is available
         // TODO: Implement Support for Dynamic Members with different encoding
-        [self.schema ensureDynamicMemberExistsForObject:key key:change[OP_VALUE]];
+        [self.schema ensureDynamicMemberExistsForObject:change[OP_VALUE] key:key];
 
         // Make sure the member exists and is tracked by Simperium
         SPMember *member = [self.schema memberForKey:key];
