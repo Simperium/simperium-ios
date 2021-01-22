@@ -188,7 +188,11 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
                                 relationshipResolver:self.relationshipResolver label:self.label remoteName:remoteName clientID:self.clientID];
 
             [self.buckets setObject:bucket forKey:name];
-            
+
+            // Refresh JSONStorage's Buckets References
+            [self refreshJSONStorageBuckets];
+
+            // Start Sync'ing!
             if (self.networkManagersStarted) {
                 [self.network start:bucket];
             }
@@ -196,6 +200,10 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
     
     return bucket;
+}
+
+- (void)refreshJSONStorageBuckets {
+    self.JSONStorage.buckets = [self.buckets copy];
 }
 
 

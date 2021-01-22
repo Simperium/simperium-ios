@@ -12,8 +12,9 @@
 
 @interface SPJSONStorage : SPStorage<SPStorageProvider>
 
-@property (nonatomic, strong) NSMutableDictionary   *objects;
-@property (nonatomic, strong) NSMutableDictionary   *allObjects;
+@property (nonatomic, strong) NSMutableDictionary                   *objects;
+@property (nonatomic, strong) NSMutableDictionary                   *allObjects;
+@property (nonatomic, strong) NSDictionary<NSString *, SPBucket *>  *buckets;
 
 - (instancetype)initWithDelegate:(id<SPStorageObserver>)aDelegate;
 

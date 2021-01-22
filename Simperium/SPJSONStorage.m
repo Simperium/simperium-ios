@@ -45,7 +45,6 @@
     return self;
 }
 
-
 - (void)object:(id)object forKey:(NSString *)simperiumKey didChangeValue:(id)value forKey:(NSString *)key {
     // Update the schema if applicable
     SPObject *spObject = [_allObjects objectForKey:simperiumKey];
@@ -166,6 +165,7 @@
             [_objects setObject:objectDict forKey:bucketName];
         }
         object.simperiumKey = key;
+        object.bucket = self.buckets[bucketName];
         [objectDict setObject:object forKey:key];
         [_allObjects setObject:object forKey:key];
     });
@@ -200,11 +200,21 @@
     return nil;
 }
 
-- (void)deleteObject:(id)dict
+- (void)deleteObject:(id)object
 {
-    // TODO: this is where an associative reference to simperiumKey on the dict will be needed
-//    SPManagedObject *managedObject = (SPManagedObject *)object;
-//    [managedObject.managedObjectContext deleteObject:managedObject];
+    if ([object isKindOfClass:[SPObject class]] == NO) {
+        return;
+    }
+
+    SPObject *theObject = (SPObject *)object;
+    NSString *simperiumKey = theObject.simperiumKey;
+    NSString *bucketName = theObject.bucket.name;
+
+    dispatch_sync(self.storageQueue, ^{
+        NSMutableDictionary<NSString *, SPObject *> *bucketDict = [_objects objectForKey:bucketName];
+        [bucketDict removeObjectForKey:simperiumKey];
+        [self.allObjects removeObjectForKey:simperiumKey];
+    });
 }
 
 - (void)deleteAllObjectsForBucketName:(NSString *)bucketName {
