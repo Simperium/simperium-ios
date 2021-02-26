@@ -16,6 +16,7 @@
 #pragma mark ====================================================================================
 
 static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirstResponder";
+static NSString *SPTextFieldSecureKey = @"secure";
 
 
 #pragma mark ====================================================================================
@@ -72,26 +73,28 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
 - (instancetype)initWithFrame:(NSRect)frame secure:(BOOL)secure {
     self = [super initWithFrame:frame];
     if (self) {
-        [self setupInterface];
+        [self setupInterface:secure];
     }
 
-    return self
+    return self;
 }
 
 
 - (instancetype)initWithCoder:(NSCoder *)coder {
     self = [super initWithCoder:coder];
     if (self) {
-        [self setupInterface];
+        BOOL secure = [[self valueForKey:SPTextFieldSecureKey] boolValue];
+        [self setupInterface:secure];
     }
 
     return self;
 }
 
-- (void)setupInterface {
+- (void)setupInterface:(BOOL)secure {
     // Center the textField vertically
-    int paddingX = 10;
-    int fontSize = 20;
+    NSRect frame = self.frame;
+    CGFloat paddingX = 10;
+    CGFloat fontSize = 20;
     CGFloat fieldHeight = [[SPAuthenticationConfiguration sharedInstance] regularFontHeightForSize:fontSize];
     CGFloat fieldY = (self.frame.size.height - fieldHeight) / 2;
     CGRect textFrame = NSMakeRect(paddingX, fieldY, frame.size.width-paddingX*2, fieldHeight);
