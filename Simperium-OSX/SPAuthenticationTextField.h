@@ -21,8 +21,3 @@
 - (void)setEnabled:(BOOL)enabled;
 
 @end
-
-
-@interface SPAuthenticationSecureTextField : SPAuthenticationTextField
-
-@end

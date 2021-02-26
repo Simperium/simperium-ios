@@ -59,6 +59,7 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
 
 @interface SPAuthenticationTextField()
 @property (nonatomic, assign) BOOL isWindowFistResponder;
+@property (nonatomic, assign) BOOL secure;
 @end
 
 @implementation SPAuthenticationTextField
@@ -76,14 +77,9 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
     return self;
 }
 
-- (instancetype)initWithCoder:(NSCoder *)coder {
-    self = [super initWithCoder:coder];
-    if (self) {
-        // TODO: Should probably read the mode from NSCoder. Falling back to unsecured by default
-        [self setupInterface:NO];
-    }
-
-    return self;
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    [self setupInterface:self.secure];
 }
 
 - (void)setupInterface:(BOOL)secure {
@@ -141,11 +137,11 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
 - (void)drawRect:(NSRect)dirtyRect {
     NSBezierPath *betterBounds = [NSBezierPath bezierPathWithRect:self.bounds];
     [betterBounds addClip];
-    
+
     if (self.isWindowFistResponder) {
         [[NSColor colorWithCalibratedWhite:0.9 alpha:1.0] setFill];
         [betterBounds fill];
-        
+
     } else {
         [[NSColor colorWithCalibratedWhite:250.f/255.f alpha:1.0] setFill];
         [betterBounds fill];
@@ -166,23 +162,6 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
 - (void)handleTextFieldDidFinishEditing:(NSNotification *)note {
     self.isWindowFistResponder = NO;
     [self setNeedsDisplay:YES];
-}
-
-@end
-
-
-
-#pragma mark - SPAuthenticationSecureTextField
-
-@implementation SPAuthenticationSecureTextField
-
-- (instancetype)initWithCoder:(NSCoder *)coder {
-    self = [super initWithCoder:coder];
-    if (self) {
-        [super setupInterface:YES];
-    }
-
-    return self;
 }
 
 @end
