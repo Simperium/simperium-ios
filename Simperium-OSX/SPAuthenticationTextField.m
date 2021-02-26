@@ -72,32 +72,46 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
 - (instancetype)initWithFrame:(NSRect)frame secure:(BOOL)secure {
     self = [super initWithFrame:frame];
     if (self) {
-        // Center the textField vertically
-        int paddingX = 10;
-        int fontSize = 20;
-        CGFloat fieldHeight = [[SPAuthenticationConfiguration sharedInstance] regularFontHeightForSize:fontSize];
-        CGFloat fieldY = (self.frame.size.height - fieldHeight) / 2;
-        CGRect textFrame = NSMakeRect(paddingX, fieldY, frame.size.width-paddingX*2, fieldHeight);
-
-        Class textFieldClass = secure ? [SPSecureTextField class] : [SPTextField class];
-        _textField = [[textFieldClass alloc] initWithFrame:textFrame];
-        NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
-        [_textField setFont:font];
-        [_textField setTextColor:[NSColor colorWithCalibratedWhite:0.1 alpha:1.0]];
-        [_textField setDrawsBackground:NO];
-        [_textField setBezeled:NO];
-        [_textField setBordered:NO];
-        [_textField setFocusRingType:NSFocusRingTypeNone];
-        [[_textField cell] setWraps:NO];
-        [[_textField cell] setScrollable:YES];
-        [self addSubview:_textField];
-        
-        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-        [nc addObserver:self selector:@selector(handleTextFieldDidBeginEditing:) name:SPTextFieldDidBecomeFirstResponder object:_textField];
-        [nc addObserver:self selector:@selector(handleTextFieldDidFinishEditing:) name:NSControlTextDidEndEditingNotification object:_textField];
+        [self setupInterface];
     }
-    
+
+    return self
+}
+
+
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self setupInterface];
+    }
+
     return self;
+}
+
+- (void)setupInterface {
+    // Center the textField vertically
+    int paddingX = 10;
+    int fontSize = 20;
+    CGFloat fieldHeight = [[SPAuthenticationConfiguration sharedInstance] regularFontHeightForSize:fontSize];
+    CGFloat fieldY = (self.frame.size.height - fieldHeight) / 2;
+    CGRect textFrame = NSMakeRect(paddingX, fieldY, frame.size.width-paddingX*2, fieldHeight);
+
+    Class textFieldClass = secure ? [SPSecureTextField class] : [SPTextField class];
+    _textField = [[textFieldClass alloc] initWithFrame:textFrame];
+    NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
+    [_textField setFont:font];
+    [_textField setTextColor:[NSColor colorWithCalibratedWhite:0.1 alpha:1.0]];
+    [_textField setDrawsBackground:NO];
+    [_textField setBezeled:NO];
+    [_textField setBordered:NO];
+    [_textField setFocusRingType:NSFocusRingTypeNone];
+    [[_textField cell] setWraps:NO];
+    [[_textField cell] setScrollable:YES];
+    [self addSubview:_textField];
+
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self selector:@selector(handleTextFieldDidBeginEditing:) name:SPTextFieldDidBecomeFirstResponder object:_textField];
+    [nc addObserver:self selector:@selector(handleTextFieldDidFinishEditing:) name:NSControlTextDidEndEditingNotification object:_textField];
 }
 
 - (void)setStringValue:(NSString *)string {
