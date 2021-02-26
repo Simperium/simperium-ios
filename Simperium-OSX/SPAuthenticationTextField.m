@@ -16,7 +16,6 @@
 #pragma mark ====================================================================================
 
 static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirstResponder";
-static NSString *SPTextFieldSecureKey = @"secure";
 
 
 #pragma mark ====================================================================================
@@ -56,9 +55,7 @@ static NSString *SPTextFieldSecureKey = @"secure";
 
 
 
-#pragma mark ====================================================================================
-#pragma mark SPAuthenticationTextField
-#pragma mark ====================================================================================
+#pragma mark - SPAuthenticationTextField
 
 @interface SPAuthenticationTextField()
 @property (nonatomic, assign) BOOL isWindowFistResponder;
@@ -79,12 +76,11 @@ static NSString *SPTextFieldSecureKey = @"secure";
     return self;
 }
 
-
 - (instancetype)initWithCoder:(NSCoder *)coder {
     self = [super initWithCoder:coder];
     if (self) {
-        BOOL secure = [[self valueForKey:SPTextFieldSecureKey] boolValue];
-        [self setupInterface:secure];
+        // TODO: Should probably read the mode from NSCoder. Falling back to unsecured by default
+        [self setupInterface:NO];
     }
 
     return self;
@@ -170,6 +166,23 @@ static NSString *SPTextFieldSecureKey = @"secure";
 - (void)handleTextFieldDidFinishEditing:(NSNotification *)note {
     self.isWindowFistResponder = NO;
     [self setNeedsDisplay:YES];
+}
+
+@end
+
+
+
+#pragma mark - SPAuthenticationSecureTextField
+
+@implementation SPAuthenticationSecureTextField
+
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    if (self) {
+        [super setupInterface:YES];
+    }
+
+    return self;
 }
 
 @end
