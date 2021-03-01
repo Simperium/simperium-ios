@@ -44,6 +44,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)authenticateIfNecessary;
 
 - (void)authenticateWithUsername:(NSString *)username
+                           token:(NSString *)token;
+
+- (void)authenticateWithUsername:(NSString *)username
                         password:(NSString *)password
                          success:(SuccessBlockType)successHandler
                          failure:(FailureBlockType)failureHandler;
