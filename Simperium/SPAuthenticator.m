@@ -118,6 +118,19 @@ static NSString * SPUsername    = @"SPUsername";
 #pragma mark - Authentication
 
 - (void)authenticateWithUsername:(NSString *)username
+                           token:(NSString *)token {
+    NSParameterAssert(username);
+    NSParameterAssert(token);
+
+    SPUser *user = [[SPUser alloc] initWithEmail:username token:token];
+    self.simperium.user = user;
+
+    [self saveCredentialsForUser:user];
+    [self notifySignupDidSucceed];
+    [self notifyAuthenticationDidSucceed];
+}
+
+- (void)authenticateWithUsername:(NSString *)username
                         password:(NSString *)password
                          success:(SuccessBlockType)successHandler
                          failure:(FailureBlockType)failureHandler {
