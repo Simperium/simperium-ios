@@ -55,12 +55,11 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
 
 
 
-#pragma mark ====================================================================================
-#pragma mark SPAuthenticationTextField
-#pragma mark ====================================================================================
+#pragma mark - SPAuthenticationTextField
 
 @interface SPAuthenticationTextField()
 @property (nonatomic, assign) BOOL isWindowFistResponder;
+@property (nonatomic, assign) BOOL secure;
 @end
 
 @implementation SPAuthenticationTextField
@@ -72,32 +71,42 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
 - (instancetype)initWithFrame:(NSRect)frame secure:(BOOL)secure {
     self = [super initWithFrame:frame];
     if (self) {
-        // Center the textField vertically
-        int paddingX = 10;
-        int fontSize = 20;
-        CGFloat fieldHeight = [[SPAuthenticationConfiguration sharedInstance] regularFontHeightForSize:fontSize];
-        CGFloat fieldY = (self.frame.size.height - fieldHeight) / 2;
-        CGRect textFrame = NSMakeRect(paddingX, fieldY, frame.size.width-paddingX*2, fieldHeight);
-
-        Class textFieldClass = secure ? [SPSecureTextField class] : [SPTextField class];
-        _textField = [[textFieldClass alloc] initWithFrame:textFrame];
-        NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
-        [_textField setFont:font];
-        [_textField setTextColor:[NSColor colorWithCalibratedWhite:0.1 alpha:1.0]];
-        [_textField setDrawsBackground:NO];
-        [_textField setBezeled:NO];
-        [_textField setBordered:NO];
-        [_textField setFocusRingType:NSFocusRingTypeNone];
-        [[_textField cell] setWraps:NO];
-        [[_textField cell] setScrollable:YES];
-        [self addSubview:_textField];
-        
-        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-        [nc addObserver:self selector:@selector(handleTextFieldDidBeginEditing:) name:SPTextFieldDidBecomeFirstResponder object:_textField];
-        [nc addObserver:self selector:@selector(handleTextFieldDidFinishEditing:) name:NSControlTextDidEndEditingNotification object:_textField];
+        [self setupInterface:secure];
     }
-    
+
     return self;
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    [self setupInterface:self.secure];
+}
+
+- (void)setupInterface:(BOOL)secure {
+    // Center the textField vertically
+    NSRect frame = self.frame;
+    CGFloat paddingX = 10;
+    CGFloat fontSize = 20;
+    CGFloat fieldHeight = [[SPAuthenticationConfiguration sharedInstance] regularFontHeightForSize:fontSize];
+    CGFloat fieldY = (self.frame.size.height - fieldHeight) / 2;
+    CGRect textFrame = NSMakeRect(paddingX, fieldY, frame.size.width-paddingX*2, fieldHeight);
+
+    Class textFieldClass = secure ? [SPSecureTextField class] : [SPTextField class];
+    _textField = [[textFieldClass alloc] initWithFrame:textFrame];
+    NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
+    [_textField setFont:font];
+    [_textField setTextColor:[NSColor colorWithCalibratedWhite:0.1 alpha:1.0]];
+    [_textField setDrawsBackground:NO];
+    [_textField setBezeled:NO];
+    [_textField setBordered:NO];
+    [_textField setFocusRingType:NSFocusRingTypeNone];
+    [[_textField cell] setWraps:NO];
+    [[_textField cell] setScrollable:YES];
+    [self addSubview:_textField];
+
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self selector:@selector(handleTextFieldDidBeginEditing:) name:SPTextFieldDidBecomeFirstResponder object:_textField];
+    [nc addObserver:self selector:@selector(handleTextFieldDidFinishEditing:) name:NSControlTextDidEndEditingNotification object:_textField];
 }
 
 - (void)setStringValue:(NSString *)string {
@@ -128,11 +137,11 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
 - (void)drawRect:(NSRect)dirtyRect {
     NSBezierPath *betterBounds = [NSBezierPath bezierPathWithRect:self.bounds];
     [betterBounds addClip];
-    
+
     if (self.isWindowFistResponder) {
         [[NSColor colorWithCalibratedWhite:0.9 alpha:1.0] setFill];
         [betterBounds fill];
-        
+
     } else {
         [[NSColor colorWithCalibratedWhite:250.f/255.f alpha:1.0] setFill];
         [betterBounds fill];

@@ -13,7 +13,8 @@
 @property (assign) id delegate;
 @property (strong) NSTextField *textField;
 
-- (id)initWithFrame:(NSRect)frame secure:(BOOL)secure;
+- (instancetype)initWithFrame:(NSRect)frame secure:(BOOL)secure;
+
 - (void)setPlaceholderString:(NSString *)string;
 - (NSString *)stringValue;
 - (void)setStringValue:(NSString *)string;
