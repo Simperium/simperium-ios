@@ -798,7 +798,6 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [self startNetworkManagers];
     
     [self closeAuthViewControllerAnimated:YES];
-    [self unscheduleOpenAuthViewController];
     
     if ([self.delegate respondsToSelector:@selector(simperiumDidLogin:)]) {
         [self.delegate simperiumDidLogin:self];
@@ -930,6 +929,8 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [[self.authenticationWindowController window] close];
     self.authenticationWindowController = nil;
 #endif
+
+    [self unscheduleOpenAuthViewController];
 }
 
 
