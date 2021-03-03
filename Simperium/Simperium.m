@@ -911,9 +911,15 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
     
     // Hide the main window and show the auth window instead
-    [self.window setIsVisible:NO];    
-    [[self.authenticationWindowController window] center];
-    [[self.authenticationWindowController window] makeKeyAndOrderFront:self];
+    [self.window setIsVisible:NO];
+
+    // Center the AuthWindow *only* when it wasn't previously onscreen (only after alloc!)
+    NSWindow *authWindow = self.authenticationWindowController.window;
+    if (!authWindow.isVisible) {
+        [authWindow center];
+    }
+
+    [authWindow makeKeyAndOrderFront:self];
 #endif
 }
 
