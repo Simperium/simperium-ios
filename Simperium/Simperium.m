@@ -837,7 +837,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     }
     
     // Delay it a touch to avoid issues with storyboard-driven UIs
-    [self performSelector:@selector(delayedOpenAuthViewController) withObject:nil afterDelay:0.1];
+    [self scheduleOpenAuthViewController];
 }
 
 - (BOOL)authenticateIfNecessary {
@@ -848,6 +848,14 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [self stopNetworkManagers];
     
     return [self.authenticator authenticateIfNecessary];    
+}
+
+- (void)scheduleOpenAuthViewController {
+    [self performSelector:@selector(delayedOpenAuthViewController) withObject:nil afterDelay:0.1];
+}
+
+- (void)unscheduleOpenAuthViewController {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(delayedOpenAuthViewController) object:nil];
 }
 
 - (void)delayedOpenAuthViewController {
@@ -921,6 +929,8 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [[self.authenticationWindowController window] close];
     self.authenticationWindowController = nil;
 #endif
+
+    [self unscheduleOpenAuthViewController];
 }
 
 
