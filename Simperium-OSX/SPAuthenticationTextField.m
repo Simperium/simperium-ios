@@ -11,50 +11,6 @@
 
 
 
-#pragma mark ====================================================================================
-#pragma mark Constants
-#pragma mark ====================================================================================
-
-static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirstResponder";
-
-
-#pragma mark ====================================================================================
-#pragma mark Private Helper: SPTextField
-#pragma mark ====================================================================================
-
-@interface SPTextField : NSTextField
-
-@end
-
-@implementation SPTextField
-
-- (BOOL)becomeFirstResponder {
-    [[NSNotificationCenter defaultCenter] postNotificationName:SPTextFieldDidBecomeFirstResponder object:self];
-    return [super becomeFirstResponder];
-}
-
-@end
-
-
-
-#pragma mark ====================================================================================
-#pragma mark Private Helper: SPSecureTextField
-#pragma mark ====================================================================================
-
-@interface SPSecureTextField : NSSecureTextField
-@end
-
-@implementation SPSecureTextField
-
-- (BOOL)becomeFirstResponder {
-    [[NSNotificationCenter defaultCenter] postNotificationName:SPTextFieldDidBecomeFirstResponder object:self];
-    return [super becomeFirstResponder];
-}
-
-@end
-
-
-
 #pragma mark - SPAuthenticationTextField
 
 @interface SPAuthenticationTextField()
@@ -91,7 +47,7 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
     CGFloat fieldY = (self.frame.size.height - fieldHeight) / 2;
     CGRect textFrame = NSMakeRect(paddingX, fieldY, frame.size.width-paddingX*2, fieldHeight);
 
-    Class textFieldClass = secure ? [SPSecureTextField class] : [SPTextField class];
+    Class textFieldClass = secure ? [NSSecureTextField class] : [NSTextField class];
     _textField = [[textFieldClass alloc] initWithFrame:textFrame];
     NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
     [_textField setFont:font];
@@ -105,8 +61,8 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
     [self addSubview:_textField];
 
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(handleTextFieldDidBeginEditing:) name:SPTextFieldDidBecomeFirstResponder object:_textField];
-    [nc addObserver:self selector:@selector(handleTextFieldDidFinishEditing:) name:NSControlTextDidEndEditingNotification object:_textField];
+    [nc addObserver:self selector:@selector(handleTextFieldDidBeginEditing:) name:NSTextDidBeginEditingNotification object:nil];
+    [nc addObserver:self selector:@selector(handleTextFieldDidFinishEditing:) name:NSTextDidEndEditingNotification object:nil];
 }
 
 - (void)setStringValue:(NSString *)string {
