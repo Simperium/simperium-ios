@@ -14,7 +14,7 @@
 @property (nonatomic,   weak, readwrite) id<NSTextFieldDelegate>    delegate;
 @property (nonatomic,   copy, readwrite) NSString                   *stringValue;
 @property (nonatomic,   copy, readwrite) NSString                   *placeholderString;
-@property (nonatomic, assign, readwrite) BOOL                       isEnabled;
+@property (nonatomic, assign, readwrite, getter=isEnabled) BOOL     enabled;
 
 - (instancetype)initWithFrame:(NSRect)frame secure:(BOOL)secure;
 
