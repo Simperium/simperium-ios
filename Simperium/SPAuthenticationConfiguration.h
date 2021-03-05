@@ -12,6 +12,8 @@
 #endif
 
 
+NS_ASSUME_NONNULL_BEGIN
+
 #pragma mark ====================================================================================
 #pragma mark SPAuthenticationConfiguration
 #pragma mark ====================================================================================
@@ -36,3 +38,5 @@
 - (float)regularFontHeightForSize:(float)size;
 
 @end
+
+NS_ASSUME_NONNULL_END
