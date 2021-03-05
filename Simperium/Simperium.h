@@ -21,6 +21,8 @@
 #endif
 
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class Simperium;
 
 #if TARGET_OS_IPHONE
@@ -79,7 +81,7 @@ typedef NS_ENUM(NSInteger, SPSimperiumErrors) {
                       context:(NSManagedObjectContext *)context
                   coordinator:(NSPersistentStoreCoordinator *)coordinator
                         label:(NSString *)label
-              bucketOverrides:(NSDictionary *)bucketOverrides;
+              bucketOverrides:(nullable NSDictionary *)bucketOverrides;
 
 #if TARGET_OS_IPHONE
 // Starts Simperium and displays the auth interface, if needed.
@@ -110,7 +112,7 @@ typedef void (^SimperiumBackgroundFetchCompletion)(UIBackgroundFetchResult resul
 
 // Get a particular bucket (which, for Core Data, corresponds to a particular Entity name in your model).
 // Once you have a bucket instance, you can set a SPBucketDelegate to react to changes.
-- (SPBucket *)bucketForName:(NSString *)name;
+- (nullable SPBucket *)bucketForName:(NSString *)name;
 
 // Convenience methods for accessing the Core Data stack.
 - (NSManagedObjectContext *)managedObjectContext;
@@ -132,7 +134,7 @@ typedef void (^SimperiumBackgroundFetchCompletion)(UIBackgroundFetchResult resul
 // Clears all locally stored data from the device. Can be used to perform a manual sign out.
 // Note: This method is now asynchronous. Please, listen to signout delegate calls, or implement a completion callback block.
 typedef void (^SimperiumSignoutCompletion)(void);
-- (void)signOutAndRemoveLocalData:(BOOL)remove completion:(SimperiumSignoutCompletion)completion;
+- (void)signOutAndRemoveLocalData:(BOOL)remove completion:(nullable SimperiumSignoutCompletion)completion;
 
 // Removes all of the sync'ing metadata. This helper method may be used after a faulty core data migration, to ensure
 // sync'ing consistency: next time Simperium is authenticated, it will resync the entire database again.
@@ -143,7 +145,7 @@ typedef void (^SimperiumSignoutCompletion)(void);
 
 // Alternative to setting delegates on each individual bucket (if you want a single handler for everything).
 // If you need to, call this after starting Simperium.
-- (void)setAllBucketDelegates:(id<SPBucketDelegate>)aDelegate;
+- (void)setAllBucketDelegates:(nullable id<SPBucketDelegate>)aDelegate;
 
 // Alternative to toggling propertyMismatchFailsafeE on each individual bucket (if you want the same behavior everywhere).
 // When enabled, Simperium will capture any exceptions thrown while setting property values, and log the error.
@@ -184,7 +186,7 @@ typedef void (^SimperiumSignoutCompletion)(void);
 @property (nonatomic, readwrite, assign) BOOL validatesObjects;
 
 // Returns the currently authenticated Simperium user.
-@property (nonatomic, readonly, strong) SPUser *user;
+@property (nonatomic, readonly, strong, nullable) SPUser *user;
 
 // The full URL used to communicate with Simperium.
 @property (nonatomic, readonly, copy) NSString *appURL;
@@ -202,7 +204,7 @@ typedef void (^SimperiumSignoutCompletion)(void);
 @property (nonatomic, readonly, copy) NSString *clientID;
 
 // Remote Bucket Name Overrides!
-@property (nonatomic, readonly, copy) NSDictionary *bucketOverrides;
+@property (nonatomic, readonly, nullable, copy) NSDictionary *bucketOverrides;
 
 // Returns the current SPAuthenticator instance.
 @property (nonatomic, readwrite, strong) SPAuthenticator *authenticator;
@@ -239,3 +241,5 @@ typedef void (^SimperiumSignoutCompletion)(void);
 #endif
 
 @end
+
+NS_ASSUME_NONNULL_END
