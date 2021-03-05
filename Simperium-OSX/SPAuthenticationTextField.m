@@ -39,7 +39,6 @@
 }
 
 - (void)setupInterface:(BOOL)secure {
-    // Center the textField vertically
     NSRect frame = self.frame;
     CGFloat paddingX = 10;
     CGFloat fontSize = 20;
@@ -94,7 +93,7 @@
     NSBezierPath *betterBounds = [NSBezierPath bezierPathWithRect:self.bounds];
     [betterBounds addClip];
 
-    if (self.isWindowFistResponder) {
+    if (self.sp_isFirstResponder) {
         [[NSColor colorWithCalibratedWhite:0.9 alpha:1.0] setFill];
         [betterBounds fill];
 
@@ -107,16 +106,24 @@
     }
 }
 
+- (BOOL)sp_isFirstResponder {
+    NSResponder *responder = [self.window firstResponder];
+    if (![responder isKindOfClass:[NSText class]]) {
+        return responder == self.textField;
+    }
+
+    NSText *fieldEditor = (NSText *)responder;
+    return fieldEditor.delegate == (id<NSTextDelegate>)self.textField;
+}
+
 
 #pragma mark - Notification Helpers
 
 - (void)handleTextFieldDidBeginEditing:(NSNotification *)note {
-    self.isWindowFistResponder = YES;
     [self setNeedsDisplay:YES];
 }
 
 - (void)handleTextFieldDidFinishEditing:(NSNotification *)note {
-    self.isWindowFistResponder = NO;
     [self setNeedsDisplay:YES];
 }
 
