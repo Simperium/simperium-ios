@@ -14,7 +14,6 @@
 #pragma mark - SPAuthenticationTextField
 
 @interface SPAuthenticationTextField()
-@property (nonatomic, assign) BOOL isWindowFistResponder;
 @property (nonatomic, assign) BOOL secure;
 @end
 
@@ -76,6 +75,10 @@
     [[_textField cell] setPlaceholderString:string];
 }
 
+- (NSString *)placeholderString {
+    return [[_textField cell] placeholderString];
+}
+
 - (void)setDelegate:(id)delegate {
     _textField.delegate = delegate;
 }
@@ -87,6 +90,10 @@
 - (void)setEnabled:(BOOL)enabled {
     [_textField setEnabled:enabled];
     [_textField setEditable:enabled];
+}
+
+- (BOOL)isEnabled {
+    return _textField.enabled;
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
