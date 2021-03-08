@@ -10,14 +10,12 @@
 
 @interface SPAuthenticationTextField : NSView
 
-@property (assign) id delegate;
-@property (strong) NSTextField *textField;
+@property (nonatomic,  strong, readonly) NSTextField                *textField;
+@property (nonatomic,   weak, readwrite) id<NSTextFieldDelegate>    delegate;
+@property (nonatomic,   copy, readwrite) NSString                   *stringValue;
+@property (nonatomic,   copy, readwrite) NSString                   *placeholderString;
+@property (nonatomic, assign, readwrite, getter=isEnabled) BOOL     enabled;
 
 - (instancetype)initWithFrame:(NSRect)frame secure:(BOOL)secure;
-
-- (void)setPlaceholderString:(NSString *)string;
-- (NSString *)stringValue;
-- (void)setStringValue:(NSString *)string;
-- (void)setEnabled:(BOOL)enabled;
 
 @end
