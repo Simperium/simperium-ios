@@ -11,54 +11,9 @@
 
 
 
-#pragma mark ====================================================================================
-#pragma mark Constants
-#pragma mark ====================================================================================
-
-static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirstResponder";
-
-
-#pragma mark ====================================================================================
-#pragma mark Private Helper: SPTextField
-#pragma mark ====================================================================================
-
-@interface SPTextField : NSTextField
-
-@end
-
-@implementation SPTextField
-
-- (BOOL)becomeFirstResponder {
-    [[NSNotificationCenter defaultCenter] postNotificationName:SPTextFieldDidBecomeFirstResponder object:self];
-    return [super becomeFirstResponder];
-}
-
-@end
-
-
-
-#pragma mark ====================================================================================
-#pragma mark Private Helper: SPSecureTextField
-#pragma mark ====================================================================================
-
-@interface SPSecureTextField : NSSecureTextField
-@end
-
-@implementation SPSecureTextField
-
-- (BOOL)becomeFirstResponder {
-    [[NSNotificationCenter defaultCenter] postNotificationName:SPTextFieldDidBecomeFirstResponder object:self];
-    return [super becomeFirstResponder];
-}
-
-@end
-
-
-
 #pragma mark - SPAuthenticationTextField
 
 @interface SPAuthenticationTextField()
-@property (nonatomic, assign) BOOL isWindowFistResponder;
 @property (nonatomic, assign) BOOL secure;
 @end
 
@@ -83,7 +38,6 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
 }
 
 - (void)setupInterface:(BOOL)secure {
-    // Center the textField vertically
     NSRect frame = self.frame;
     CGFloat paddingX = 10;
     CGFloat fontSize = 20;
@@ -91,7 +45,7 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
     CGFloat fieldY = (self.frame.size.height - fieldHeight) / 2;
     CGRect textFrame = NSMakeRect(paddingX, fieldY, frame.size.width-paddingX*2, fieldHeight);
 
-    Class textFieldClass = secure ? [SPSecureTextField class] : [SPTextField class];
+    Class textFieldClass = secure ? [NSSecureTextField class] : [NSTextField class];
     _textField = [[textFieldClass alloc] initWithFrame:textFrame];
     NSFont *font = [NSFont fontWithName:[SPAuthenticationConfiguration sharedInstance].regularFontName size:fontSize];
     [_textField setFont:font];
@@ -105,8 +59,8 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
     [self addSubview:_textField];
 
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(handleTextFieldDidBeginEditing:) name:SPTextFieldDidBecomeFirstResponder object:_textField];
-    [nc addObserver:self selector:@selector(handleTextFieldDidFinishEditing:) name:NSControlTextDidEndEditingNotification object:_textField];
+    [nc addObserver:self selector:@selector(handleTextFieldDidBeginEditing:) name:NSTextDidBeginEditingNotification object:nil];
+    [nc addObserver:self selector:@selector(handleTextFieldDidFinishEditing:) name:NSTextDidEndEditingNotification object:nil];
 }
 
 - (void)setStringValue:(NSString *)string {
@@ -119,6 +73,10 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
 
 - (void)setPlaceholderString:(NSString *)string {
     [[_textField cell] setPlaceholderString:string];
+}
+
+- (NSString *)placeholderString {
+    return [[_textField cell] placeholderString];
 }
 
 - (void)setDelegate:(id)delegate {
@@ -134,11 +92,15 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
     [_textField setEditable:enabled];
 }
 
+- (BOOL)isEnabled {
+    return _textField.enabled;
+}
+
 - (void)drawRect:(NSRect)dirtyRect {
     NSBezierPath *betterBounds = [NSBezierPath bezierPathWithRect:self.bounds];
     [betterBounds addClip];
 
-    if (self.isWindowFistResponder) {
+    if (self.sp_isFirstResponder) {
         [[NSColor colorWithCalibratedWhite:0.9 alpha:1.0] setFill];
         [betterBounds fill];
 
@@ -151,16 +113,24 @@ static NSString* SPTextFieldDidBecomeFirstResponder = @"SPTextFieldDidBecomeFirs
     }
 }
 
+- (BOOL)sp_isFirstResponder {
+    NSResponder *responder = [self.window firstResponder];
+    if (![responder isKindOfClass:[NSText class]]) {
+        return responder == self.textField;
+    }
+
+    NSText *fieldEditor = (NSText *)responder;
+    return fieldEditor.delegate == (id<NSTextDelegate>)self.textField;
+}
+
 
 #pragma mark - Notification Helpers
 
 - (void)handleTextFieldDidBeginEditing:(NSNotification *)note {
-    self.isWindowFistResponder = YES;
     [self setNeedsDisplay:YES];
 }
 
 - (void)handleTextFieldDidFinishEditing:(NSNotification *)note {
-    self.isWindowFistResponder = NO;
     [self setNeedsDisplay:YES];
 }
 
