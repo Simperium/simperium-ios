@@ -3,9 +3,26 @@
 #import "SPEnvironment.h"
 
 
+@interface NSURLRequest (Private)
+- (void)addHTTPHeaders:(NSDictionary *)HTTPHeaders;
+@end
+
+
+@implementation NSMutableURLRequest (Private)
+
+- (void)addHTTPHeaders:(NSDictionary *)HTTPHeaders {
+    for (NSString *key in HTTPHeaders.allKeys) {
+        [self setValue:HTTPHeaders[key] forHTTPHeaderField:key];
+    }
+}
+
+@end
+
+
 @implementation NSURLRequest (Simperium)
 
 + (NSURLRequest *)sp_requestWithURL:(NSURL *)url
+                  customHTTPHeaders:(NSDictionary *)customHTTPHeaders
                               appID:(NSString *)appID
                              apiKey:(NSString *)apiKey
                            provider:(NSString *)provider
@@ -21,10 +38,15 @@
         @"provider" : provider ?: @""
     };
 
+    NSDictionary *authHTTPHeaders = @{
+        @"Content-Type"         : @"application/json",
+        @"X-Simperium-API-Key"  : apiKey
+    };
+
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
-    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    [request setValue:apiKey forHTTPHeaderField:@"X-Simperium-API-Key"];
+    [request addHTTPHeaders:authHTTPHeaders];
+    [request addHTTPHeaders:customHTTPHeaders];
 
     request.HTTPMethod = @"POST";
     request.HTTPBody = [[body sp_JSONString] dataUsingEncoding:NSUTF8StringEncoding];
@@ -32,24 +54,41 @@
     return request;
 }
 
-+ (NSURLRequest *)sp_loginRequestWithAppID:(NSString *)appID
-                                    apiKey:(NSString *)apiKey
-                                  provider:(NSString *)provider
-                                  username:(NSString *)username
-                                  password:(NSString *)password {
++ (NSURLRequest *)sp_loginRequestWithBaseURL:(NSString *)baseURL
+                           customHTTPHeaders:(NSDictionary *)customHTTPHeaders
+                                       appID:(NSString *)appID
+                                      apiKey:(NSString *)apiKey
+                                    provider:(NSString *)provider
+                                    username:(NSString *)username
+                                    password:(NSString *)password {
     NSParameterAssert(appID);
-    NSURL *requestURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", SPAuthURL, appID]];
-    return [self sp_requestWithURL:requestURL appID:appID apiKey:apiKey provider:provider username:username password:password];
+    NSURL *requestURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/authorize/", baseURL, appID]];
+    return [self sp_requestWithURL:requestURL
+                 customHTTPHeaders:customHTTPHeaders
+                             appID:appID
+                            apiKey:apiKey
+                          provider:provider
+                          username:username
+                          password:password];
 }
 
-+ (NSURLRequest *)sp_signupRequestWithAppID:(NSString *)appID
-                                     apiKey:(NSString *)apiKey
-                                   provider:(NSString *)provider
-                                   username:(NSString *)username
-                                   password:(NSString *)password {
++ (NSURLRequest *)sp_signupRequestWithBaseURL:(NSString *)baseURL
+                            customHTTPHeaders:(NSDictionary *)customHTTPHeaders
+                                        appID:(NSString *)appID
+                                       apiKey:(NSString *)apiKey
+                                     provider:(NSString *)provider
+                                     username:(NSString *)username
+                                     password:(NSString *)password {
     NSParameterAssert(appID);
-    NSURL *requestURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/create/", SPAuthURL, appID]];
-    return [self sp_requestWithURL:requestURL appID:appID apiKey:apiKey provider:provider username:username password:password];
+    NSURL *requestURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@/create/", baseURL, appID]];
+    return [self sp_requestWithURL:requestURL
+                 customHTTPHeaders:customHTTPHeaders
+                             appID:appID
+                            apiKey:apiKey
+                          provider:provider
+                          username:username
+                          password:password];
 }
 
 @end
+
