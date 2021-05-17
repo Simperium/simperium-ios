@@ -55,7 +55,7 @@ static NSString * SPUsername    = @"SPUsername";
     if (self) {
         _delegate   = authDelegate;
         _simperium  = s;
-        _baseURL = SPBaseURL;
+        _authURL = SPAuthURL;
         
 #if TARGET_OS_IPHONE
         [SPKeychain setAccessibilityType:kSecAttrAccessibleAlways];
@@ -140,7 +140,7 @@ static NSString * SPUsername    = @"SPUsername";
     NSParameterAssert(successHandler);
     NSParameterAssert(failureHandler);
 
-    NSURLRequest *request = [NSURLRequest sp_loginRequestWithBaseURL:self.baseURL
+    NSURLRequest *request = [NSURLRequest sp_loginRequestWithBaseURL:self.authURL
                                                    customHTTPHeaders:self.customHTTPHeaders
                                                                appID:self.simperium.appID
                                                               apiKey:self.simperium.APIKey
@@ -176,7 +176,7 @@ static NSString * SPUsername    = @"SPUsername";
     NSParameterAssert(successHandler);
     NSParameterAssert(failureHandler);
 
-    NSURLRequest *request = [NSURLRequest sp_loginRequestWithBaseURL:self.baseURL
+    NSURLRequest *request = [NSURLRequest sp_loginRequestWithBaseURL:self.authURL
                                                    customHTTPHeaders:self.customHTTPHeaders
                                                                appID:self.simperium.appID
                                                               apiKey:self.simperium.APIKey
@@ -210,7 +210,7 @@ static NSString * SPUsername    = @"SPUsername";
     NSParameterAssert(successHandler);
     NSParameterAssert(failureHandler);
 
-    NSURLRequest *request = [NSURLRequest sp_signupRequestWithBaseURL:self.baseURL
+    NSURLRequest *request = [NSURLRequest sp_signupRequestWithBaseURL:self.authURL
                                                     customHTTPHeaders:self.customHTTPHeaders
                                                                 appID:self.simperium.appID
                                                                apiKey:self.simperium.APIKey
