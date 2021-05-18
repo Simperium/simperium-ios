@@ -55,6 +55,7 @@ static NSString * SPUsername    = @"SPUsername";
     if (self) {
         _delegate   = authDelegate;
         _simperium  = s;
+        _authURL = SPAuthURL;
         
 #if TARGET_OS_IPHONE
         [SPKeychain setAccessibilityType:kSecAttrAccessibleAlways];
@@ -139,11 +140,13 @@ static NSString * SPUsername    = @"SPUsername";
     NSParameterAssert(successHandler);
     NSParameterAssert(failureHandler);
 
-    NSURLRequest *request = [NSURLRequest sp_loginRequestWithAppID:self.simperium.appID
-                                                            apiKey:self.simperium.APIKey
-                                                          provider:self.providerString
-                                                          username:username
-                                                          password:password];
+    NSURLRequest *request = [NSURLRequest sp_loginRequestWithBaseURL:self.authURL
+                                                   customHTTPHeaders:self.customHTTPHeaders
+                                                               appID:self.simperium.appID
+                                                              apiKey:self.simperium.APIKey
+                                                            provider:self.providerString
+                                                            username:username
+                                                            password:password];
     SPLogInfo(@"Simperium Authenticating: %@", request.URL);
 
     [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
@@ -173,11 +176,13 @@ static NSString * SPUsername    = @"SPUsername";
     NSParameterAssert(successHandler);
     NSParameterAssert(failureHandler);
 
-    NSURLRequest *request = [NSURLRequest sp_loginRequestWithAppID:self.simperium.appID
-                                                            apiKey:self.simperium.APIKey
-                                                          provider:self.providerString
-                                                          username:username
-                                                          password:password];
+    NSURLRequest *request = [NSURLRequest sp_loginRequestWithBaseURL:self.authURL
+                                                   customHTTPHeaders:self.customHTTPHeaders
+                                                               appID:self.simperium.appID
+                                                              apiKey:self.simperium.APIKey
+                                                            provider:self.providerString
+                                                            username:username
+                                                            password:password];
     SPLogInfo(@"Simperium Validating Credentials: %@", request.URL);
 
     [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {
@@ -205,11 +210,13 @@ static NSString * SPUsername    = @"SPUsername";
     NSParameterAssert(successHandler);
     NSParameterAssert(failureHandler);
 
-    NSURLRequest *request = [NSURLRequest sp_signupRequestWithAppID:self.simperium.appID
-                                                             apiKey:self.simperium.APIKey
-                                                           provider:self.providerString
-                                                           username:username
-                                                           password:password];
+    NSURLRequest *request = [NSURLRequest sp_signupRequestWithBaseURL:self.authURL
+                                                    customHTTPHeaders:self.customHTTPHeaders
+                                                                appID:self.simperium.appID
+                                                               apiKey:self.simperium.APIKey
+                                                             provider:self.providerString
+                                                             username:username
+                                                             password:password];
     SPLogInfo(@"Simperium Signup: %@", request.URL);
 
     [[NSURLSession sharedSession] performURLRequest:request completionHandler:^(NSInteger statusCode, NSString * _Nullable responseString, NSError * _Nullable error) {

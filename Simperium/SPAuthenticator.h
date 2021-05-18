@@ -36,8 +36,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface SPAuthenticator : NSObject
 
-@property (nonatomic, copy,   readwrite) NSString   *providerString;
-@property (nonatomic, assign,  readonly) BOOL       connected;
+@property (nonatomic, copy,   readwrite) NSString       *authURL;
+@property (nonatomic, copy,   readwrite) NSDictionary   *customHTTPHeaders;
+@property (nonatomic, copy,   readwrite) NSString       *providerString;
+@property (nonatomic, assign,  readonly) BOOL           connected;
 
 - (instancetype)initWithDelegate:(id<SPAuthenticatorDelegate>)authDelegate simperium:(Simperium *)s;
 
