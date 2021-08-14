@@ -280,7 +280,7 @@ typedef void(^SPWebSocketSyncedBlockType)(void);
         if ([authPayload isKindOfClass:[NSDictionary class]]) {
             NSInteger errorCode = [authPayload[SPWebsocketErrorCodeKey] integerValue];
             if (errorCode == SPWebsocketAuthErrorTokenMalformed || errorCode == SPWebsocketAuthErrorTokenInvalid) {
-                [[NSNotificationCenter defaultCenter] postNotificationName:SPAuthenticationDidFail object:self];
+                [[NSNotificationCenter defaultCenter] postNotificationName:SPAuthenticationTokenInvalid object:self];
             }
         }
         return;

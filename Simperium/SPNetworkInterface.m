@@ -1,3 +1,3 @@
 #import "SPNetworkInterface.h"
 
-NSString * const SPAuthenticationDidFail = @"SPAuthenticationDidFail";
+NSString * const SPAuthenticationTokenInvalid = @"SPAuthenticationTokenInvalid";

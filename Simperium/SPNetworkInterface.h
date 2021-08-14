@@ -36,4 +36,4 @@ typedef void (^SPNetworkInterfaceResetCompletion)(void);
 
 @end
 
-extern NSString * const SPAuthenticationDidFail;
+extern NSString * const SPAuthenticationTokenInvalid;
