@@ -129,8 +129,8 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 #endif
     
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(authenticationDidFail) name:SPAuthenticationDidFail object:nil];
-    [nc addObserver:self selector:@selector(handleNetworkChange:)  name:kSPReachabilityChangedNotification object:nil];
+    [nc addObserver:self selector:@selector(handleTokenInvalid:) name:SPAuthenticationTokenInvalid object:nil];
+    [nc addObserver:self selector:@selector(handleNetworkChange:) name:kSPReachabilityChangedNotification object:nil];
 }
 
 - (void)setupCoreDataWithModel:(NSManagedObjectModel *)model
@@ -240,6 +240,14 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     } else if (self.user.authenticated) {
         [self startNetworkManagers];
     }
+}
+
+- (void)handleTokenInvalid:(NSNotification *)notification {
+    // Clear the token and user
+    [self resetAuthToken];
+
+    // Notify Delegate / Trigger reauth flow
+    [self authenticationDidFail];
 }
 
 - (void)setNetworkEnabled:(BOOL)enabled {
