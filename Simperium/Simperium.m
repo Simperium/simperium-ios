@@ -604,8 +604,9 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     [self stopNetworkManagers];
     
     // Clear the token and user
-    [self resetAuthToken];
-
+    [self.authenticator reset];
+    self.user = nil;
+    
     // Reset the network manager and processors; any enqueued tasks will get skipped
     self.logoutInProgress = YES;
     
@@ -812,7 +813,8 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 
 - (void)authenticationDidCancel {
     [self stopNetworkManagers];
-    [self resetAuthToken];
+    [self.authenticator reset];
+    self.user.authToken = nil;
     [self closeAuthViewControllerAnimated:YES];
     
     if ([self.delegate respondsToSelector:@selector(simperiumDidCancelLogin:)]) {
@@ -836,11 +838,6 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     
     // Delay it a touch to avoid issues with storyboard-driven UIs
     [self scheduleOpenAuthViewController];
-}
-
-- (void)resetAuthToken {
-    [self.authenticator reset];
-    self.user = nil;
 }
 
 - (BOOL)authenticateIfNecessary {
