@@ -587,12 +587,7 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 - (void)signOutAndRemoveLocalData:(BOOL)remove completion:(SimperiumSignoutCompletion)completion {
-    
-    // Don't proceed, if the user isn't logged in
-    if (!self.user.authenticated) {
-        return;
-    }
-    
+        
     if (self.logoutInProgress) {
         SPLogError(@"Error: Simperium is already logging out");
         return;
