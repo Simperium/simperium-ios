@@ -7,7 +7,7 @@ IOS_SCHEME := $(LIB_NAME)
 MACOS_SCHEME := $(LIB_NAME)-OSX
 
 define BUILD_XCFRAMEWORK
-build_xcframework_$(1): $(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework
+build_xcframework_$(1): $(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework.zip
 
 $(BUILD_DIR)/$(1).xcarchive:
 	xcodebuild archive \
@@ -22,6 +22,10 @@ $(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework: $(BUILD_DIR)/$(1).xcarchive
 	xcodebuild -create-xcframework \
 		-framework $(BUILD_DIR)/$(1).xcarchive/Products/Library/Frameworks/$(FRAMEWORK_NAME) \
 		-output $$@
+
+$(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework.zip: $(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework
+	@mkdir -p $(XCFRAMEWORKS_DIR)
+	zip -r $$@ $$<
 endef
 
 $(eval $(call BUILD_XCFRAMEWORK,ios))
