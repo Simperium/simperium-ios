@@ -34,7 +34,6 @@
 @property (nonatomic, strong) id<SPNetworkInterface>    network;
 @property (nonatomic, strong) SPRelationshipResolver    *relationshipResolver;
 @property (nonatomic, strong) SPReachability            *reachability;
-@property (nonatomic, strong) SPUser                    *user;
 @property (nonatomic,   copy) NSString                  *clientID;
 @property (nonatomic,   copy) NSString                  *appID;
 @property (nonatomic,   copy) NSString                  *APIKey;
