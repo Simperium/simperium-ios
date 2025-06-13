@@ -208,7 +208,7 @@
 		B5CAA5511CAAC237006FE048 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 264CD9B0135DFFFF00C51BAD /* CoreData.framework */; };
 		B5CAA5521CAAC23E006FE048 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 264CD8FE135DFD7A00C51BAD /* Foundation.framework */; };
 		B5CAA5541CAAC4B1006FE048 /* libicucore.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B5CAA5531CAAC4B1006FE048 /* libicucore.tbd */; };
-		B5CAA5581CAACC30006FE048 /* Simperium_iOS.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA5571CAACC30006FE048 /* Simperium_iOS.h */; };
+		B5CAA5581CAACC30006FE048 /* Simperium_iOS.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA5571CAACC30006FE048 /* Simperium_iOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5CAA56C1CAAED3D006FE048 /* Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD92B135DFE6D00C51BAD /* Simperium.m */; };
 		B5CAA56D1CAAED3D006FE048 /* SPLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B5EB86991822E34F007450FF /* SPLogger.m */; };
 		B5CAA56E1CAAED3D006FE048 /* JSONKit+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5E03D97182C115100412572 /* JSONKit+Simperium.m */; };
@@ -318,7 +318,6 @@
 		B5CAA5EA1CAAED3D006FE048 /* SPRelationship.h in Headers */ = {isa = PBXBuildFile; fileRef = B58B22E31905A1B200190E90 /* SPRelationship.h */; };
 		B5CAA5EB1CAAED3D006FE048 /* SPMemberList.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD22147F251100C8EEB4 /* SPMemberList.h */; };
 		B5CAA5EC1CAAED3D006FE048 /* SPMemberBase64.h in Headers */ = {isa = PBXBuildFile; fileRef = 2622FD26147F251C00C8EEB4 /* SPMemberBase64.h */; };
-		B5CAA5ED1CAAED3D006FE048 /* Simperium_iOS.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA5571CAACC30006FE048 /* Simperium_iOS.h */; };
 		B5CAA5EE1CAAED3D006FE048 /* NSMutableDictionary+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 267CE8EB156C0FD20028801C /* NSMutableDictionary+Simperium.h */; };
 		B5CAA5EF1CAAED3D006FE048 /* SPDiffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 267CE8F2156C0FD20028801C /* SPDiffer.h */; };
 		B5CAA5F01CAAED3D006FE048 /* NSError+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F4C84318FC1B04009F8643 /* NSError+Simperium.h */; };
@@ -362,7 +361,7 @@
 		B5CAA6461CAAF1D9006FE048 /* SPAuthenticationWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CAA63A1CAAF1D9006FE048 /* SPAuthenticationWindowController.m */; };
 		B5CAA64E1CAAF2F8006FE048 /* SPAuthenticationButton.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA6481CAAF2F8006FE048 /* SPAuthenticationButton.h */; };
 		B5CAA64F1CAAF2F8006FE048 /* SPAuthenticationButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CAA6491CAAF2F8006FE048 /* SPAuthenticationButton.m */; };
-		B5CAA6501CAAF2F8006FE048 /* SPAuthenticationViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA64A1CAAF2F8006FE048 /* SPAuthenticationViewController.h */; };
+		B5CAA6501CAAF2F8006FE048 /* SPAuthenticationViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA64A1CAAF2F8006FE048 /* SPAuthenticationViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5CAA6511CAAF2F8006FE048 /* SPAuthenticationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CAA64B1CAAF2F8006FE048 /* SPAuthenticationViewController.m */; };
 		B5CAA6521CAAF2F8006FE048 /* SPWebViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA64C1CAAF2F8006FE048 /* SPWebViewController.h */; };
 		B5CAA6531CAAF2F8006FE048 /* SPWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CAA64D1CAAF2F8006FE048 /* SPWebViewController.m */; };
@@ -570,6 +569,8 @@
 		26F4BBCD13DCFDA700B8AC56 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		26F4BBCF13DCFDB000B8AC56 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		26F4BBD313DCFDC100B8AC56 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		3F128CEB2DFC260300D1B006 /* ios.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = ios.modulemap; sourceTree = "<group>"; };
+		3F128CEC2DFC260F00D1B006 /* macos.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = macos.modulemap; sourceTree = "<group>"; };
 		460A505C17DE96350070F02B /* SPProcessorConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPProcessorConstants.m; sourceTree = "<group>"; };
 		460A505D17DE96350070F02B /* SPProcessorConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessorConstants.h; sourceTree = "<group>"; };
 		466EB41017BC45F5005F7599 /* SPAuthenticationConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAuthenticationConfiguration.h; sourceTree = "<group>"; };
@@ -996,6 +997,8 @@
 				265D80061475C2CE00002A19 /* Categories */,
 				B5F4FE6818A3D7B8006F50C5 /* Simperium.podspec */,
 				B5CAA65F1CAAF881006FE048 /* Simperium-OSX.podspec */,
+				3F128CEB2DFC260300D1B006 /* ios.modulemap */,
+				3F128CEC2DFC260F00D1B006 /* macos.modulemap */,
 			);
 			path = Simperium;
 			sourceTree = "<group>";
@@ -1520,7 +1523,6 @@
 				B5CAA5EB1CAAED3D006FE048 /* SPMemberList.h in Headers */,
 				B5CAA5EC1CAAED3D006FE048 /* SPMemberBase64.h in Headers */,
 				B5FC08BD1D662D5300045DB9 /* TrustKit.h in Headers */,
-				B5CAA5ED1CAAED3D006FE048 /* Simperium_iOS.h in Headers */,
 				B5CAA5EE1CAAED3D006FE048 /* NSMutableDictionary+Simperium.h in Headers */,
 				B5CAA5EF1CAAED3D006FE048 /* SPDiffer.h in Headers */,
 				B5CAA5F01CAAED3D006FE048 /* NSError+Simperium.h in Headers */,
@@ -2128,6 +2130,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MARKETING_VERSION = 1.1.7;
+				MODULEMAP_FILE = $SRCROOT/Simperium/ios.modulemap;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.automattic.simperium;
 				PRODUCT_NAME = Simperium;
@@ -2179,6 +2182,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MARKETING_VERSION = 1.1.7;
+				MODULEMAP_FILE = $SRCROOT/Simperium/ios.modulemap;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.automattic.simperium;
 				PRODUCT_NAME = Simperium;
@@ -2236,6 +2240,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MARKETING_VERSION = 1.1.7;
+				MODULEMAP_FILE = $SRCROOT/Simperium/macos.modulemap;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.automattic.simperium;
 				PRODUCT_NAME = Simperium;
@@ -2288,6 +2293,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MARKETING_VERSION = 1.1.7;
+				MODULEMAP_FILE = $SRCROOT/Simperium/macos.modulemap;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.automattic.simperium;
 				PRODUCT_NAME = Simperium;
