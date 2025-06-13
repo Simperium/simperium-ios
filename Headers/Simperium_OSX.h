@@ -6,7 +6,7 @@
 //  Copyright © 2016 Simperium. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 //! Project version number for Simperium-iOS.
 FOUNDATION_EXPORT double Simperium_iOSVersionNumber;
@@ -19,10 +19,13 @@ FOUNDATION_EXPORT const unsigned char Simperium_iOSVersionString[];
 #pragma mark Public Headers
 #pragma mark ====================================================================================
 
+#import <Simperium/NSDate+Simperium.h>
+
 #import <Simperium/Simperium.h>
 #import <Simperium/SPAuthenticationInterface.h>
-#import <Simperium/SPAuthenticationViewController.h>
 #import <Simperium/SPAuthenticationConfiguration.h>
+#import <Simperium/SPAuthenticationValidator.h>
+#import <Simperium/SPAuthenticationTextField.h>
 #import <Simperium/SPAuthenticator.h>
 #import <Simperium/SPBucket.h>
 #import <Simperium/SPCoreDataExporter.h>
@@ -32,3 +35,6 @@ FOUNDATION_EXPORT const unsigned char Simperium_iOSVersionString[];
 #import <Simperium/SPNetworkInterface.h>
 #import <Simperium/SPStorageProvider.h>
 #import <Simperium/SPUser.h>
+
+#import <Simperium/SPKeychain.h>
+#import <Simperium/SPKeychainQuery.h>

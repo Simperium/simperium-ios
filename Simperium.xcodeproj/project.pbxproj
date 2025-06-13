@@ -293,7 +293,7 @@
 		B5CAA5CD1CAAED3D006FE048 /* DiffMatchPatchCFUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD968135DFE7E00C51BAD /* DiffMatchPatchCFUtilities.h */; };
 		B5CAA5CE1CAAED3D006FE048 /* MinMaxMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD969135DFE7E00C51BAD /* MinMaxMacros.h */; };
 		B5CAA5CF1CAAED3D006FE048 /* NSMutableDictionary+DMPExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD96A135DFE7E00C51BAD /* NSMutableDictionary+DMPExtensions.h */; };
-		B5CAA5D01CAAED3D006FE048 /* NSDate+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 26E83DA81399D05D00195758 /* NSDate+Simperium.h */; };
+		B5CAA5D01CAAED3D006FE048 /* NSDate+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 26E83DA81399D05D00195758 /* NSDate+Simperium.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5CAA5D11CAAED3D006FE048 /* NSString+JavaSubstring.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD96C135DFE7E00C51BAD /* NSString+JavaSubstring.h */; };
 		B5CAA5D21CAAED3D006FE048 /* NSString+UnicharUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD96E135DFE7E00C51BAD /* NSString+UnicharUtilities.h */; };
 		B5CAA5D31CAAED3D006FE048 /* NSString+UriCompatibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 264CD970135DFE7E00C51BAD /* NSString+UriCompatibility.h */; };
@@ -337,7 +337,7 @@
 		B5CAA5FE1CAAED3D006FE048 /* NSArray+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = 1854D50D1799F6D2006C4211 /* NSArray+Simperium.h */; };
 		B5CAA5FF1CAAED3D006FE048 /* SPBucket+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5AC545C1857917800608CAC /* SPBucket+Internals.h */; };
 		B5CAA6001CAAED3D006FE048 /* SPMemberJSONList.h in Headers */ = {isa = PBXBuildFile; fileRef = 46DD15C8179A6F4B0093678C /* SPMemberJSONList.h */; };
-		B5CAA6011CAAED3D006FE048 /* SPAuthenticationValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */; };
+		B5CAA6011CAAED3D006FE048 /* SPAuthenticationValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5CAA6031CAAED3D006FE048 /* SPManagedObject+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F65F791847DE0100CEF48D /* SPManagedObject+Internals.h */; };
 		B5CAA6041CAAED3D006FE048 /* SPProcessorConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 460A505D17DE96350070F02B /* SPProcessorConstants.h */; };
 		B5CAA6051CAAED3D006FE048 /* SPKeychain.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FA19F1B72700DEF569 /* SPKeychain.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -351,7 +351,7 @@
 		B5CAA63C1CAAF1D9006FE048 /* SPAuthenticationButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CAA6301CAAF1D9006FE048 /* SPAuthenticationButton.m */; };
 		B5CAA63D1CAAF1D9006FE048 /* SPAuthenticationButtonCell.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA6311CAAF1D9006FE048 /* SPAuthenticationButtonCell.h */; };
 		B5CAA63E1CAAF1D9006FE048 /* SPAuthenticationButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CAA6321CAAF1D9006FE048 /* SPAuthenticationButtonCell.m */; };
-		B5CAA63F1CAAF1D9006FE048 /* SPAuthenticationTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA6331CAAF1D9006FE048 /* SPAuthenticationTextField.h */; };
+		B5CAA63F1CAAF1D9006FE048 /* SPAuthenticationTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA6331CAAF1D9006FE048 /* SPAuthenticationTextField.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5CAA6401CAAF1D9006FE048 /* SPAuthenticationTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CAA6341CAAF1D9006FE048 /* SPAuthenticationTextField.m */; };
 		B5CAA6411CAAF1D9006FE048 /* SPAuthenticationView.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA6351CAAF1D9006FE048 /* SPAuthenticationView.h */; };
 		B5CAA6421CAAF1D9006FE048 /* SPAuthenticationView.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CAA6361CAAF1D9006FE048 /* SPAuthenticationView.m */; };
@@ -365,7 +365,7 @@
 		B5CAA6511CAAF2F8006FE048 /* SPAuthenticationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CAA64B1CAAF2F8006FE048 /* SPAuthenticationViewController.m */; };
 		B5CAA6521CAAF2F8006FE048 /* SPWebViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA64C1CAAF2F8006FE048 /* SPWebViewController.h */; };
 		B5CAA6531CAAF2F8006FE048 /* SPWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CAA64D1CAAF2F8006FE048 /* SPWebViewController.m */; };
-		B5CAA6561CAAF354006FE048 /* Simperium_OSX.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA6551CAAF354006FE048 /* Simperium_OSX.h */; };
+		B5CAA6561CAAF354006FE048 /* Simperium_OSX.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA6551CAAF354006FE048 /* Simperium_OSX.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5CAA6591CAAF38E006FE048 /* UIViewController+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA6571CAAF38E006FE048 /* UIViewController+Simperium.h */; };
 		B5CAA65A1CAAF38E006FE048 /* UIViewController+Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CAA6581CAAF38E006FE048 /* UIViewController+Simperium.m */; };
 		B5CAA65D1CAAF3F6006FE048 /* UIDevice+Simperium.h in Headers */ = {isa = PBXBuildFile; fileRef = B5CAA65B1CAAF3F6006FE048 /* UIDevice+Simperium.h */; };
