@@ -1,6 +1,9 @@
 // swift-tools-version:5.10
 import PackageDescription
 
+let tag = "v1.9.1-beta.1"
+let baseArtifactURL = "https://github.com/Simperium/simperium-ios/releases/download/\(tag)"
+
 let package = Package(
     name: "Simperium",
     products: [
@@ -16,11 +19,13 @@ let package = Package(
         ),
         .binaryTarget(
             name: "Simperium",
-            path: ".build/xcframeworks/Simperium-ios.xcframework"
+            url: "\(baseArtifactURL)/Simperium-ios.xcframework.zip",
+            checksum: "0dd9f439a7c0f9af7ed42945eb0d83cdeb7cc9f3e8495e2604145c15896a9525"
         ),
         .binaryTarget(
             name: "Simperium_macOS",
-            path: ".build/xcframeworks/Simperium-macos.xcframework"
+            url: "\(baseArtifactURL)/Simperium-macos.xcframework.zip",
+            checksum: "ae4da609094c0679ddc80b06067e08555c5e1674cf68d16072c492d537d3f287"
         )
     ]
 )
