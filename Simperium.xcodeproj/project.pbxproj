@@ -137,8 +137,8 @@
 		B5CAA5011CAAB83D006FE048 /* SPAuthenticationValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */; };
 		B5CAA5031CAAB84F006FE048 /* SPManagedObject+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F65F791847DE0100CEF48D /* SPManagedObject+Internals.h */; };
 		B5CAA5041CAAB85C006FE048 /* SPProcessorConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 460A505D17DE96350070F02B /* SPProcessorConstants.h */; };
-		B5CAA5051CAAB865006FE048 /* SPKeychain.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FA19F1B72700DEF569 /* SPKeychain.h */; };
-		B5CAA5061CAAB869006FE048 /* SPKeychainQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FC19F1B72700DEF569 /* SPKeychainQuery.h */; };
+		B5CAA5051CAAB865006FE048 /* SPKeychain.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FA19F1B72700DEF569 /* SPKeychain.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		B5CAA5061CAAB869006FE048 /* SPKeychainQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FC19F1B72700DEF569 /* SPKeychainQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5CAA5071CAAB8DE006FE048 /* SPStorageObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 265D80131476461800002A19 /* SPStorageObserver.h */; };
 		B5CAA5081CAAB95D006FE048 /* Simperium.m in Sources */ = {isa = PBXBuildFile; fileRef = 264CD92B135DFE6D00C51BAD /* Simperium.m */; };
 		B5CAA5091CAAB961006FE048 /* SPLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B5EB86991822E34F007450FF /* SPLogger.m */; };
@@ -340,8 +340,8 @@
 		B5CAA6011CAAED3D006FE048 /* SPAuthenticationValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 466EB41217BC45F5005F7599 /* SPAuthenticationValidator.h */; };
 		B5CAA6031CAAED3D006FE048 /* SPManagedObject+Internals.h in Headers */ = {isa = PBXBuildFile; fileRef = B5F65F791847DE0100CEF48D /* SPManagedObject+Internals.h */; };
 		B5CAA6041CAAED3D006FE048 /* SPProcessorConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 460A505D17DE96350070F02B /* SPProcessorConstants.h */; };
-		B5CAA6051CAAED3D006FE048 /* SPKeychain.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FA19F1B72700DEF569 /* SPKeychain.h */; };
-		B5CAA6061CAAED3D006FE048 /* SPKeychainQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FC19F1B72700DEF569 /* SPKeychainQuery.h */; };
+		B5CAA6051CAAED3D006FE048 /* SPKeychain.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FA19F1B72700DEF569 /* SPKeychain.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		B5CAA6061CAAED3D006FE048 /* SPKeychainQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 797D26FC19F1B72700DEF569 /* SPKeychainQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B5CAA60E1CAAEE30006FE048 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5CAA60D1CAAEE30006FE048 /* AppKit.framework */; };
 		B5CAA6101CAAEE4E006FE048 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5CAA60F1CAAEE4E006FE048 /* Cocoa.framework */; };
 		B5CAA6121CAAEE7F006FE048 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5CAA6111CAAEE7F006FE048 /* CoreServices.framework */; };
