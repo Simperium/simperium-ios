@@ -9,6 +9,14 @@ MACOS_SCHEME := $(LIB_NAME)-OSX
 define BUILD_XCFRAMEWORK
 build_xcframework_$(1): $(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework.zip
 
+$(BUILD_DIR)/simulator.xcarchive:
+	xcodebuild archive \
+		-scheme "Simperium iOS" \
+		-destination "generic/platform=iOS Simulator" \
+		-archivePath $$@ \
+		SKIP_INSTALL=NO \
+		BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+
 $(BUILD_DIR)/$(1).xcarchive:
 	xcodebuild archive \
 		-scheme "Simperium $(if $(filter ios,$(1)),iOS,OSX)" \
@@ -17,10 +25,26 @@ $(BUILD_DIR)/$(1).xcarchive:
 		SKIP_INSTALL=NO \
 		BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 
+$(BUILD_DIR)/ios_all.xcarchive: $(BUILD_DIR)/ios.xcarchive $(BUILD_DIR)/simulator.xcarchive
+	@touch $$@
+
 $(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework: $(BUILD_DIR)/$(1).xcarchive
 	@mkdir -p $(XCFRAMEWORKS_DIR)
 	xcodebuild -create-xcframework \
 		-framework $(BUILD_DIR)/$(1).xcarchive/Products/Library/Frameworks/$(FRAMEWORK_NAME) \
+		-output $$@
+
+$(XCFRAMEWORKS_DIR)/$(LIB_NAME)-ios.xcframework: $(BUILD_DIR)/ios_all.xcarchive
+	@mkdir -p $(XCFRAMEWORKS_DIR)
+	xcodebuild -create-xcframework \
+		-framework $(BUILD_DIR)/ios.xcarchive/Products/Library/Frameworks/$(FRAMEWORK_NAME) \
+		-framework $(BUILD_DIR)/simulator.xcarchive/Products/Library/Frameworks/$(FRAMEWORK_NAME) \
+		-output $$@
+
+$(XCFRAMEWORKS_DIR)/$(LIB_NAME)-macos.xcframework: $(BUILD_DIR)/macos.xcarchive
+	@mkdir -p $(XCFRAMEWORKS_DIR)
+	xcodebuild -create-xcframework \
+		-framework $(BUILD_DIR)/macos.xcarchive/Products/Library/Frameworks/$(FRAMEWORK_NAME) \
 		-output $$@
 
 $(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework.zip: $(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework
