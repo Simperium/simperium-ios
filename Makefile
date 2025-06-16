@@ -1,58 +1,63 @@
+# See:
+#
+# - https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle
+# - https://developer.apple.com/documentation/xcode/distributing-binary-frameworks-as-swift-packages
+
 LIB_NAME := Simperium
 BUILD_DIR := .build/xcarchives
 FRAMEWORK_NAME := $(LIB_NAME).framework
 XCFRAMEWORKS_DIR := .build/xcframeworks
+CODE_SIGNING_IDENTITY ?= "Apple Distribution: Automattic, Inc. (PZYM8XX95Q)"
 
 IOS_SCHEME := $(LIB_NAME)
 MACOS_SCHEME := $(LIB_NAME)-OSX
 
-define BUILD_XCFRAMEWORK
-build_xcframework_$(1): $(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework.zip
+.PHONY: all clean
+all: create_xcframework
 
-$(BUILD_DIR)/simulator.xcarchive:
+clean:
+	rm -rf $(BUILD_DIR)
+	rm -rf $(XCFRAMEWORKS_DIR)
+
+archive_simulator:
 	xcodebuild archive \
 		-scheme "Simperium iOS" \
 		-destination "generic/platform=iOS Simulator" \
-		-archivePath $$@ \
+		-archivePath $(BUILD_DIR)/simulator.xcarchive \
 		SKIP_INSTALL=NO \
 		BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 
-$(BUILD_DIR)/$(1).xcarchive:
+archive_ios:
 	xcodebuild archive \
-		-scheme "Simperium $(if $(filter ios,$(1)),iOS,OSX)" \
-		-destination "generic/platform=$(if $(filter ios,$(1)),iOS,macOS)" \
-		-archivePath $$@ \
+		-scheme "Simperium iOS" \
+		-destination "generic/platform=iOS" \
+		-archivePath $(BUILD_DIR)/ios.xcarchive \
 		SKIP_INSTALL=NO \
 		BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 
-$(BUILD_DIR)/ios_all.xcarchive: $(BUILD_DIR)/ios.xcarchive $(BUILD_DIR)/simulator.xcarchive
-	@touch $$@
+archive_macos:
+	xcodebuild archive \
+		-scheme "Simperium OSX" \
+		-destination "generic/platform=macOS" \
+		-archivePath $(BUILD_DIR)/macos.xcarchive \
+		SKIP_INSTALL=NO \
+		BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 
-$(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework: $(BUILD_DIR)/$(1).xcarchive
-	@mkdir -p $(XCFRAMEWORKS_DIR)
-	xcodebuild -create-xcframework \
-		-framework $(BUILD_DIR)/$(1).xcarchive/Products/Library/Frameworks/$(FRAMEWORK_NAME) \
-		-output $$@
+archive_all: archive_simulator archive_ios archive_macos
 
-$(XCFRAMEWORKS_DIR)/$(LIB_NAME)-ios.xcframework: $(BUILD_DIR)/ios_all.xcarchive
+$(XCFRAMEWORKS_DIR)/$(LIB_NAME).xcframework: archive_all
 	@mkdir -p $(XCFRAMEWORKS_DIR)
 	xcodebuild -create-xcframework \
 		-framework $(BUILD_DIR)/ios.xcarchive/Products/Library/Frameworks/$(FRAMEWORK_NAME) \
 		-framework $(BUILD_DIR)/simulator.xcarchive/Products/Library/Frameworks/$(FRAMEWORK_NAME) \
-		-output $$@
-
-$(XCFRAMEWORKS_DIR)/$(LIB_NAME)-macos.xcframework: $(BUILD_DIR)/macos.xcarchive
-	@mkdir -p $(XCFRAMEWORKS_DIR)
-	xcodebuild -create-xcframework \
 		-framework $(BUILD_DIR)/macos.xcarchive/Products/Library/Frameworks/$(FRAMEWORK_NAME) \
-		-output $$@
+		-output $@
 
-$(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework.zip: $(XCFRAMEWORKS_DIR)/$(LIB_NAME)-$(1).xcframework
+$(XCFRAMEWORKS_DIR)/$(LIB_NAME).xcframework.zip: $(XCFRAMEWORKS_DIR)/$(LIB_NAME).xcframework
 	@mkdir -p $(XCFRAMEWORKS_DIR)
-	zip -r $$@ $$<
-endef
+	codesign --timestamp -s $(CODE_SIGNING_IDENTITY) $<
+	zip -r $@ $<
+	@echo "Checksum for $(LIB_NAME).xcframework.zip:"
+	@swift package compute-checksum $@
 
-$(eval $(call BUILD_XCFRAMEWORK,ios))
-$(eval $(call BUILD_XCFRAMEWORK,macos))
-
-build_all: build_xcframework_ios build_xcframework_macos
+create_xcframework: clean $(XCFRAMEWORKS_DIR)/$(LIB_NAME).xcframework.zip
