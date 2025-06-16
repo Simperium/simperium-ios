@@ -56,7 +56,7 @@ $(XCFRAMEWORKS_DIR)/$(LIB_NAME).xcframework: archive_all
 $(XCFRAMEWORKS_DIR)/$(LIB_NAME).xcframework.zip: $(XCFRAMEWORKS_DIR)/$(LIB_NAME).xcframework
 	@mkdir -p $(XCFRAMEWORKS_DIR)
 	codesign --timestamp -s $(CODE_SIGNING_IDENTITY) $<
-	zip -r $@ $<
+	ditto -c -k --keepParent $< $@
 	@echo "Checksum for $(LIB_NAME).xcframework.zip:"
 	@swift package compute-checksum $@
 
