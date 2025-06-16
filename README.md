@@ -21,9 +21,9 @@ Everything works pretty much the same on OSX. Some changes are noted [in the onl
 
 Releases
 --------
-The master branch always has the latest stable release, and is tagged. Simperium is used by hundreds of thousands of people across many different apps and devices, and is considered production-ready.
+The `main` branch always has the latest stable release, and is tagged. Simperium is used by hundreds of thousands of people across many different apps and devices, and is considered production-ready.
 
-The develop branch has an ongoing development build (not intended for production use).
+The `develop` branch has an ongoing development build (not intended for production use).
 
 Folder structure
 ----------------
