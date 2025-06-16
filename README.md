@@ -11,7 +11,27 @@ You can [sign up](http://simperium.com) for a hosted version of Simperium. There
 
 Adding Simperium to your project
 --------------------------------
-The easiest way to add Simperium is to [download the latest release](https://github.com/Simperium/simperium-ios/releases/latest). Unzip the source code somewhere convenient.
+
+### Swift Package Manager
+
+From version 1.9.1, the project support integrating via Swift Package Manager.
+This is the recommended mode of integration.
+
+```swift
+.package(url: "https://github.com/Simperium/simperium-ios", from: "1.9.1-beta.2")
+```
+
+Notice that Simperium is distributed as a binary target and that only tagged versions have the binary attached.
+As such **you must point to a tagged version**.
+If you point to a commit or branch, SwiftPM will checkout the source for it without issue, but the binary it will download will be the one for the tag specified in the `Package.swift` it checks out; SwiftPM does not build the binary target for you.
+
+### CocoaPods
+
+There are two pods: `Simperium` for iOS and `Simperium-OSX` for macOS.
+
+### Manually
+
+[Download the latest release](https://github.com/Simperium/simperium-ios/releases/latest). Unzip the source code somewhere convenient.
 
 Then, drag and drop Simperium.xcodeproj into your application's project, and add Simperium.framework in your target's Build Phase tab (under Link Binary with Libraries). You'll still need to [add some dependencies](http://simperium.com/docs/ios/#add).
 
