@@ -74,13 +74,13 @@ Building a new release
 The release process is not yet automated.
 
 1. Ensure `SPLibraryVersion` in `Simperium/SPEnvironment.m` has the version number of the new release you want to publish.
-1. Ensure the `tag` in `Package.swift` has the same value.
-1. Run `make` to create the XCFramework for SwiftPM, notice the checksum value it prints in the output.
+1. Ensure the `version` in `Package.swift` has the same value.
+1. Run `make` to create the XCFramework ZIP archive for SwiftPM, notice the checksum value it prints in the output.
 1. Update the `checksum` in `Package.swift` with the checksum value from the step above.
 1. Validate the CocoaPods specs with `pod lib lint --allow-warnings`.
-1. Commit, tag the repo, and push.
-1. Create a new GitHub release from the tag and add the ZIP at `.build/xcframework/Simperium.xcframework.zip` as an artifact.
-1. Publish the GitHub release. This will make the new version available via Swift Package Manager.
+1. Commit and push the changes, ideally via a PR title "Release x.y.z"
+1. Create a new GitHub Release, set it up to create a tag with the same name as the new version number, and add the ZIP at `.build/xcframework/Simperium.xcframework.zip` as an artifact.
+1. Publish the GitHub release. This will create the Git tag and make the new version available via Swift Package Manager.
 1. Publish a new CocoaPods version for iOS with `pod trunk push Simperium.podspec` and for macOS with `pod trunk push Simperium-OSX.podspec`.
 
 License
