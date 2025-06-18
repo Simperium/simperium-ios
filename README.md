@@ -28,6 +28,8 @@ This is the recommended mode of integration.
 
 ### CocoaPods
 
+Simperium still supports integrating with CocoaPods, though [because CocoaPods is going to be read-only soon and not accept new pod versions](https://blog.cocoapods.org/CocoaPods-Specs-Repo/) we anticipate this support won't last in the long run and if possible we don't recommend using it to integrate Simperium anymore.
+
 There are two pods: `Simperium` for iOS and `Simperium-OSX` for macOS.
 
 ### Manually
