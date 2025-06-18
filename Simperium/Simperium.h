@@ -186,7 +186,7 @@ typedef void (^SimperiumSignoutCompletion)(void);
 @property (nonatomic, readwrite, assign) BOOL validatesObjects;
 
 // Returns the currently authenticated Simperium user.
-@property (nonatomic, readonly, strong, nullable) SPUser *user;
+@property (nonatomic, readwrite, strong, nullable) SPUser *user;
 
 // The full URL used to communicate with Simperium.
 @property (nonatomic, readonly, copy) NSString *appURL;
@@ -239,6 +239,9 @@ typedef void (^SimperiumSignoutCompletion)(void);
 #else
 @property (nonatomic, readwrite, weak) NSWindow *window;
 #endif
+
+- (void)authenticationDidSucceedForUsername:(NSString *)username
+                                      token:(NSString *)token;
 
 @end
 

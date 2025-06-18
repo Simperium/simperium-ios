@@ -1,0 +1,5 @@
+framework module Simperium {
+    umbrella header "Simperium_iOS.h"
+    export *
+    module * { export * }
+}

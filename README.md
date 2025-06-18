@@ -11,7 +11,30 @@ You can [sign up](http://simperium.com) for a hosted version of Simperium. There
 
 Adding Simperium to your project
 --------------------------------
-The easiest way to add Simperium is to [download the latest release](https://github.com/Simperium/simperium-ios/releases/latest). Unzip the source code somewhere convenient.
+
+### Swift Package Manager
+
+From version 1.9.1, the project support integrating via Swift Package Manager.
+This is the recommended mode of integration.
+
+```swift
+.package(url: "https://github.com/Simperium/simperium-ios", from: "1.9.1-beta.2")
+```
+
+> [!IMPORTANT]
+> Notice that Simperium is distributed as a binary target and that only tagged versions have the binary attached.
+> As such **you must point to a tagged version**.
+> If you point to a commit or branch, SwiftPM will checkout the source for it without issue, but the binary it will download will be the one for the tag specified in the `Package.swift` it checks out; SwiftPM does not build the binary target for you.
+
+### CocoaPods
+
+Simperium still supports integrating with CocoaPods, though [because CocoaPods is going to be read-only soon and not accept new pod versions](https://blog.cocoapods.org/CocoaPods-Specs-Repo/) we anticipate this support won't last in the long run and if possible we don't recommend using it to integrate Simperium anymore.
+
+There are two pods: `Simperium` for iOS and `Simperium-OSX` for macOS.
+
+### Manually
+
+[Download the latest release](https://github.com/Simperium/simperium-ios/releases/latest). Unzip the source code somewhere convenient.
 
 Then, drag and drop Simperium.xcodeproj into your application's project, and add Simperium.framework in your target's Build Phase tab (under Link Binary with Libraries). You'll still need to [add some dependencies](http://simperium.com/docs/ios/#add).
 
@@ -21,9 +44,9 @@ Everything works pretty much the same on OSX. Some changes are noted [in the onl
 
 Releases
 --------
-The master branch always has the latest stable release, and is tagged. Simperium is used by hundreds of thousands of people across many different apps and devices, and is considered production-ready.
+The `main` branch always has the latest stable release, and is tagged. Simperium is used by hundreds of thousands of people across many different apps and devices, and is considered production-ready.
 
-The develop branch has an ongoing development build (not intended for production use).
+The `develop` branch has an ongoing development build (not intended for production use).
 
 Folder structure
 ----------------
@@ -44,6 +67,21 @@ Folder structure
 **User**. Basic access to a user's data. In the future this will hold custom properties and presence information.
 
 **Helpers**. Exporter, keychain, etc.
+
+Building a new release
+----------------------
+
+The release process is not yet automated.
+
+1. Ensure `SPLibraryVersion` in `Simperium/SPEnvironment.m` has the version number of the new release you want to publish.
+1. Ensure the `version` in `Package.swift` has the same value.
+1. Run `make` to create the XCFramework ZIP archive for SwiftPM, notice the checksum value it prints in the output.
+1. Update the `checksum` in `Package.swift` with the checksum value from the step above.
+1. Validate the CocoaPods specs with `pod lib lint --allow-warnings`.
+1. Commit and push the changes, ideally via a PR title "Release x.y.z"
+1. Create a new GitHub Release, set it up to create a tag with the same name as the new version number, and add the ZIP at `.build/xcframework/Simperium.xcframework.zip` as an artifact.
+1. Publish the GitHub release. This will create the Git tag and make the new version available via Swift Package Manager.
+1. Publish a new CocoaPods version for iOS with `pod trunk push Simperium.podspec` and for macOS with `pod trunk push Simperium-OSX.podspec`.
 
 License
 -------

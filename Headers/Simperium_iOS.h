@@ -32,3 +32,6 @@ FOUNDATION_EXPORT const unsigned char Simperium_OSXVersionString[];
 #import <Simperium/SPNetworkInterface.h>
 #import <Simperium/SPStorageProvider.h>
 #import <Simperium/SPUser.h>
+
+#import <Simperium/SPKeychain.h>
+#import <Simperium/SPKeychainQuery.h>
