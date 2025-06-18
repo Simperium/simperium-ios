@@ -21,9 +21,10 @@ This is the recommended mode of integration.
 .package(url: "https://github.com/Simperium/simperium-ios", from: "1.9.1-beta.2")
 ```
 
-Notice that Simperium is distributed as a binary target and that only tagged versions have the binary attached.
-As such **you must point to a tagged version**.
-If you point to a commit or branch, SwiftPM will checkout the source for it without issue, but the binary it will download will be the one for the tag specified in the `Package.swift` it checks out; SwiftPM does not build the binary target for you.
+> [!IMPORTANT]
+> Notice that Simperium is distributed as a binary target and that only tagged versions have the binary attached.
+> As such **you must point to a tagged version**.
+> If you point to a commit or branch, SwiftPM will checkout the source for it without issue, but the binary it will download will be the one for the tag specified in the `Package.swift` it checks out; SwiftPM does not build the binary target for you.
 
 ### CocoaPods
 
