@@ -1,6 +1,6 @@
 # Simperium iOS
 
-The iOS and macOS client library for Simperium, written in Objective-C.
+The Simperium client library for Apple plaforms, written in Objective-C.
 
 ## Running the tests
 
@@ -20,7 +20,7 @@ The scheme's test action runs `UnitTests` and skips `IntegrationTests`, which ta
 There is no macOS equivalent: the `Simperium OSX` scheme has an empty test action.
 
 **Nothing runs this suite for you.**
-The repository has no CI, and `.travis.yml` — the only other place this command is written down — is stale, pinning Xcode 12 and an iPhone 11 simulator.
+The repository has no CI. The `.travis.yml` configuration is dead.
 Run the tests locally before pushing.
 
 ## Integration is a prebuilt binary, not source
@@ -39,7 +39,7 @@ Two consequences, both of which bite when reasoning about how a change reaches a
 
 To exercise an unreleased change in a host app, build the XCFramework locally with `make` and point the app at that artifact, or integrate `Simperium.xcodeproj` directly.
 
-CocoaPods integration does build from source, and is being wound down.
+CocoaPods integration does build from source, but no client uses it.
 
 ## Releases
 
