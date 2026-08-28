@@ -30,6 +30,7 @@
 
 @interface MockWebSocketInterface()
 @property (nonatomic, strong, readwrite) NSMutableSet* mutableSentMessages;
+@property (nonatomic, strong, readwrite) NSMutableArray* mutableStartedBucketNames;
 @end
 
 
@@ -52,6 +53,14 @@
 	[super webSocket:nil didReceiveMessage:message];
 }
 
+- (NSArray*)mockStartedBucketNames {
+	return self.mutableStartedBucketNames;
+}
+
+- (void)mockClearStartedBucketNames {
+	[self.mutableStartedBucketNames removeAllObjects];
+}
+
 
 #pragma mark ====================================================================================
 #pragma mark Overriden Methods
@@ -66,6 +75,15 @@
 
 - (void)openWebSocket {
 	// Do not open a SPRWebSocket instance
+}
+
+- (void)start:(SPBucket*)bucket {
+	if (self.mutableStartedBucketNames == nil) {
+		self.mutableStartedBucketNames = [NSMutableArray array];
+	}
+
+	[self.mutableStartedBucketNames addObject:bucket.name];
+	[super start:bucket];
 }
 
 - (BOOL)open {
