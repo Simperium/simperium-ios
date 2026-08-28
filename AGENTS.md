@@ -1,6 +1,6 @@
 # Simperium iOS
 
-The Simperium client library for Apple plaforms, written in Objective-C.
+The Simperium client library for Apple platforms, written in Objective-C.
 
 ## Running the tests
 
