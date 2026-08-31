@@ -36,8 +36,7 @@ end
 platform :mac do
   # Builds the framework.
   #
-  # The `Simperium OSX` scheme has no tests; building is all CI can do to catch
-  # breakage in the macOS-only sources.
+  # The `Simperium OSX` scheme has no tests at present.
   #
   # @param clean [Boolean] Build from a clean checkout.
   #
