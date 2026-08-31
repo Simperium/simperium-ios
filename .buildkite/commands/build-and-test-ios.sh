@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+# The pipeline's `env` block does not reach here: the command runs inside a VM, and the host
+# agent forwards only `BUILDKITE_*` variables across that boundary.
+source .buildkite/shared-pipeline-vars
+
 echo "--- :rubygems: Setting up Gems"
 install_gems
 
