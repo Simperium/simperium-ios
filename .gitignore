@@ -19,3 +19,7 @@ DerivedData
 
 # XCFramework build
 .build
+
+# fastlane
+fastlane/README.md
+fastlane/report.xml

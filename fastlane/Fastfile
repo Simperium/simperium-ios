@@ -1,0 +1,53 @@
+# frozen_string_literal: true
+
+REPO_ROOT = File.expand_path('..', __dir__)
+BUILD_FOLDER = File.join(REPO_ROOT, '.build')
+BUILD_LOG_PATH = File.join(BUILD_FOLDER, 'logs')
+DERIVED_DATA_PATH = File.join(BUILD_FOLDER, 'derived-data')
+TEST_RESULTS_PATH = File.join(BUILD_FOLDER, 'test-results')
+PROJECT_PATH = File.join(REPO_ROOT, 'Simperium.xcodeproj')
+IOS_SCHEME = 'Simperium iOS'
+MACOS_SCHEME = 'Simperium OSX'
+IOS_TEST_DEVICE = 'iPhone 17'
+
+default_platform(:ios)
+
+platform :ios do
+  # Builds the framework and runs the unit tests.
+  #
+  # @param clean [Boolean] Build from a clean checkout.
+  #
+  lane :test do |clean: false|
+    run_tests(
+      project: PROJECT_PATH,
+      scheme: IOS_SCHEME,
+      devices: [IOS_TEST_DEVICE],
+      prelaunch_simulator: true,
+      clean:,
+      buildlog_path: BUILD_LOG_PATH,
+      derived_data_path: DERIVED_DATA_PATH,
+      output_directory: TEST_RESULTS_PATH
+    )
+  end
+end
+
+platform :mac do
+  # Builds the framework.
+  #
+  # The `Simperium OSX` scheme has no tests; building is all CI can do to catch
+  # breakage in the macOS-only sources.
+  #
+  # @param clean [Boolean] Build from a clean checkout.
+  #
+  lane :build do |clean: false|
+    xcodebuild(
+      project: PROJECT_PATH,
+      scheme: MACOS_SCHEME,
+      destination: 'generic/platform=macOS',
+      clean:,
+      build: true,
+      buildlog_path: BUILD_LOG_PATH,
+      derivedDataPath: DERIVED_DATA_PATH
+    )
+  end
+end
