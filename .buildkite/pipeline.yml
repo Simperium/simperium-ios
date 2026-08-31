@@ -8,6 +8,7 @@ agents:
 
 env:
   IMAGE_ID: $IMAGE_ID
+  TEST_RESULTS_DIR: $TEST_RESULTS_DIR
 
 steps:
   - label: "🧪 Build and Test iOS"
@@ -16,7 +17,7 @@ steps:
     plugins: [$CI_TOOLKIT_PLUGIN]
     artifact_paths:
       - .build/logs/*.log
-      - .build/test-results/*
+      - $TEST_RESULTS_DIR/*
     notify:
       - github_commit_status:
           context: Build and Test iOS

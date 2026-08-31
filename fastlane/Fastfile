@@ -16,8 +16,10 @@ platform :ios do
   # Builds the framework and runs the unit tests.
   #
   # @param clean [Boolean] Build from a clean checkout.
+  # @param output_directory [String] Where to write the test reports.
+  #   CI passes the same value it hands to `annotate_test_failures`.
   #
-  lane :test do |clean: false|
+  lane :test do |clean: false, output_directory: TEST_RESULTS_PATH|
     run_tests(
       project: PROJECT_PATH,
       scheme: IOS_SCHEME,
@@ -26,7 +28,7 @@ platform :ios do
       clean:,
       buildlog_path: BUILD_LOG_PATH,
       derived_data_path: DERIVED_DATA_PATH,
-      output_directory: TEST_RESULTS_PATH
+      output_directory:
     )
   end
 end
