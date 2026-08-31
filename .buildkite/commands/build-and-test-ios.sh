@@ -5,7 +5,7 @@ set -euo pipefail
 echo "--- :rubygems: Setting up Gems"
 install_gems
 
-echo "--- :test_tube: Building and Running Tests"
+echo "--- 🧪 Building and Running Tests"
 set +e
 bundle exec fastlane ios test output_directory:"$TEST_RESULTS_DIR"
 TESTS_EXIT_STATUS=$?

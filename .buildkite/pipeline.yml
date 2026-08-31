@@ -22,7 +22,7 @@ steps:
       - github_commit_status:
           context: Build and Test iOS
 
-  - label: "🛠 Build macOS"
+  - label: "🛠️ Build macOS"
     key: build_macos
     command: |
       install_gems
