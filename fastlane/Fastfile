@@ -28,7 +28,9 @@ platform :ios do
       clean:,
       buildlog_path: BUILD_LOG_PATH,
       derived_data_path: DERIVED_DATA_PATH,
-      output_directory:
+      output_directory:,
+      output_types: 'junit',
+      output_files: 'report.junit'
     )
   end
 end
