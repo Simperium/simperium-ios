@@ -12,7 +12,12 @@ env:
 steps:
   - label: "🧪 Build and Test iOS"
     key: test_ios
-    command: .buildkite/commands/build-and-test-ios.sh
+    command: |
+      # This env var is provided at pipeline-upload time via `shared-pipeline-vars`, but wouldn't be visible
+      # at job runtime. Using `env:` to propagate it is not an option on `mac` queue due to
+      # https://linear.app/a8c/issue/AINFRA-332.
+      export TEST_RESULTS_DIR="$TEST_RESULTS_DIR"
+      .buildkite/commands/build-and-test-ios.sh
     plugins: [$CI_TOOLKIT_PLUGIN]
     artifact_paths:
       - .build/logs/*.log
