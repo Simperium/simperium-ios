@@ -7,4 +7,3 @@ XCODE_VERSION=$(cat .xcode-version)
 
 export IMAGE_ID="xcode-$XCODE_VERSION"
 export CI_TOOLKIT_PLUGIN="automattic/a8c-ci-toolkit#6.3.0"
-export TEST_RESULTS_DIR=.build/test-results
