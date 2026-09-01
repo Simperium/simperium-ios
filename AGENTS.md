@@ -5,23 +5,16 @@ The Simperium client library for Apple platforms, written in Objective-C.
 ## Running the tests
 
 ```sh
-xcodebuild \
-  -project Simperium.xcodeproj \
-  -scheme "Simperium iOS" \
-  -sdk iphonesimulator \
-  -destination 'platform=iOS Simulator,name=iPhone 17' \
-  build test
+bundle exec fastlane ios test
 ```
 
-Substitute a simulator that exists on your machine; `xcrun simctl list devices available` lists them.
-Narrow a run with `-only-testing:UnitTests/SPWebSocketInterfaceTests`.
+The lane targets the simulator named in `fastlane/Fastfile`; `xcrun simctl list devices available` lists what your machine has.
+To narrow a run, call `xcodebuild` directly with `-only-testing:UnitTests/SPWebSocketInterfaceTests`.
 
 The scheme's test action runs `UnitTests` and skips `IntegrationTests`, which talk to a live Simperium account.
-There is no macOS equivalent: the `Simperium OSX` scheme has an empty test action.
+There is no macOS equivalent: the `Simperium OSX` scheme has an empty test action, so `bundle exec fastlane mac build` only compiles it.
 
-**Nothing runs this suite for you.**
-The repository has no CI. The `.travis.yml` configuration is dead.
-Run the tests locally before pushing.
+Buildkite runs both lanes on every pull request, on the Xcode version pinned in `.xcode-version`.
 
 ## Integration is a prebuilt binary, not source
 

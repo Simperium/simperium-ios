@@ -1,0 +1,56 @@
+# frozen_string_literal: true
+
+REPO_ROOT = File.expand_path('..', __dir__)
+BUILD_FOLDER = File.join(REPO_ROOT, '.build')
+BUILD_LOG_PATH = File.join(BUILD_FOLDER, 'logs')
+DERIVED_DATA_PATH = File.join(BUILD_FOLDER, 'derived-data')
+TEST_RESULTS_PATH = File.join(BUILD_FOLDER, 'test-results')
+PROJECT_PATH = File.join(REPO_ROOT, 'Simperium.xcodeproj')
+IOS_SCHEME = 'Simperium iOS'
+MACOS_SCHEME = 'Simperium OSX'
+IOS_TEST_DEVICE = 'iPhone 17'
+
+default_platform(:ios)
+
+platform :ios do
+  # Builds the framework and runs the unit tests.
+  #
+  # @param clean [Boolean] Build from a clean checkout.
+  # @param output_directory [String] Where to write the test reports.
+  # @param output_files [String] Filename of the JUnit report written into `output_directory`.
+  #
+  lane :test do |clean: false, output_directory: TEST_RESULTS_PATH, output_files: 'report.junit'|
+    run_tests(
+      project: PROJECT_PATH,
+      scheme: IOS_SCHEME,
+      devices: [IOS_TEST_DEVICE],
+      prelaunch_simulator: true,
+      clean: clean,
+      buildlog_path: BUILD_LOG_PATH,
+      derived_data_path: DERIVED_DATA_PATH,
+      output_directory: output_directory,
+      output_types: 'junit',
+      output_files: output_files
+    )
+  end
+end
+
+platform :mac do
+  # Builds the framework.
+  #
+  # The `Simperium OSX` scheme has no tests at present.
+  #
+  # @param clean [Boolean] Build from a clean checkout.
+  #
+  lane :build do |clean: false|
+    xcodebuild(
+      project: PROJECT_PATH,
+      scheme: MACOS_SCHEME,
+      destination: 'generic/platform=macOS',
+      clean: clean,
+      build: true,
+      buildlog_path: BUILD_LOG_PATH,
+      derivedDataPath: DERIVED_DATA_PATH
+    )
+  end
+end

@@ -19,3 +19,10 @@ DerivedData
 
 # XCFramework build
 .build
+
+# Ruby tooling
+vendor/bundle/
+
+# fastlane
+fastlane/README.md
+fastlane/report.xml

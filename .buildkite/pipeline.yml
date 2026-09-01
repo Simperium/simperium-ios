@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+---
+
+# Variables used in this pipeline are defined in `shared-pipeline-vars`, which is `source`'d before calling `buildkite-agent pipeline upload`
+
+agents:
+  queue: mac
+
+env:
+  IMAGE_ID: $IMAGE_ID
+
+steps:
+  - label: "🧪 Build and Test iOS"
+    key: test_ios
+    command: .buildkite/commands/build-and-test-ios.sh .build/test-results
+    plugins: [$CI_TOOLKIT_PLUGIN]
+    artifact_paths:
+      - .build/logs/*.log
+      - .build/test-results/*
+    notify:
+      - github_commit_status:
+          context: Build and Test iOS
+
+  - label: "🛠️ Build macOS"
+    key: build_macos
+    command: |
+      install_gems
+      bundle exec fastlane mac build
+    plugins: [$CI_TOOLKIT_PLUGIN]
+    artifact_paths:
+      - .build/logs/*.log
+    notify:
+      - github_commit_status:
+          context: Build macOS
