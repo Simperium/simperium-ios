@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+TEST_RESULTS_DIR="${1:?test results directory}"
+
 echo "--- :rubygems: Setting up Gems"
 install_gems
 
