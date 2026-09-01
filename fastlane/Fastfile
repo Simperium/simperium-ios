@@ -17,9 +17,9 @@ platform :ios do
   #
   # @param clean [Boolean] Build from a clean checkout.
   # @param output_directory [String] Where to write the test reports.
-  #   CI passes the same value it hands to `annotate_test_failures`.
+  # @param output_files [String] Filename of the JUnit report written into `output_directory`.
   #
-  lane :test do |clean: false, output_directory: TEST_RESULTS_PATH|
+  lane :test do |clean: false, output_directory: TEST_RESULTS_PATH, output_files: 'report.junit'|
     run_tests(
       project: PROJECT_PATH,
       scheme: IOS_SCHEME,
@@ -30,7 +30,7 @@ platform :ios do
       derived_data_path: DERIVED_DATA_PATH,
       output_directory:,
       output_types: 'junit',
-      output_files: 'report.junit'
+      output_files:
     )
   end
 end
