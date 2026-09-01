@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-TEST_RESULTS_DIR="${1:?test results directory}"
+TEST_RESULTS_DIR="$1"
 JUNIT_REPORT='report.junit'
 
 echo "--- :rubygems: Setting up Gems"
