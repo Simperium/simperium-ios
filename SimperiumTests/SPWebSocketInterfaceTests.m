@@ -316,6 +316,26 @@ extern NSTimeInterval const SPWebSocketReconnectionDelay;
 	XCTAssertEqual(interface.sentMessages.count, (NSUInteger)1, @"Restarting an authenticated channel must not re-authenticate it");
 }
 
+- (void)testReleasingSimperiumOffTheMainThreadDoesNotCrash {
+	// SPLogger reads its weak delegate on its own queue, so a log message in flight can hold the
+	// last reference to a Simperium and free it there. Network teardown asserts the main thread.
+	__block MockSimperium* s = nil;
+	@autoreleasepool {
+		s = [MockSimperium mockSimperium];
+		[s bucketForName:NSStringFromClass([Config class])];
+	}
+
+	XCTestExpectation* released = [self expectationWithDescription:@"Released off the main thread"];
+	dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+		@autoreleasepool {
+			s = nil;
+		}
+		[released fulfill];
+	});
+
+	[self waitForExpectationsWithTimeout:5.0 handler:nil];
+}
+
 
 #pragma mark ====================================================================================
 #pragma mark Helpers
