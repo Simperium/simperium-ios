@@ -23,7 +23,11 @@
 #pragma mark Constants
 #pragma mark ====================================================================================
 
-static NSTimeInterval const SPReconnectionDelay = 2.5;
+extern NSTimeInterval const SPWebSocketReconnectionDelay;
+
+// Long enough for a scheduled reconnection to have fired, so that asserting it did *not* fire means
+// something.
+#define SPReconnectionWait (SPWebSocketReconnectionDelay + 0.5)
 
 
 #pragma mark ====================================================================================
@@ -186,7 +190,7 @@ static NSTimeInterval const SPReconnectionDelay = 2.5;
 	interface.open = NO;
 	[interface webSocket:nil didCloseWithCode:1006 reason:@"connection dropped mid-handshake" wasClean:NO];
 
-	[self waitFor:SPReconnectionDelay];
+	[self waitFor:SPReconnectionWait];
 	XCTAssertTrue(interface.openAttempts > 0, @"A close during connection setup must schedule a reconnection");
 }
 
@@ -197,7 +201,7 @@ static NSTimeInterval const SPReconnectionDelay = 2.5;
 	interface.open = YES;
 	[interface webSocket:nil didCloseWithCode:1006 reason:@"connection dropped" wasClean:NO];
 
-	[self waitFor:SPReconnectionDelay];
+	[self waitFor:SPReconnectionWait];
 	XCTAssertTrue(interface.openAttempts > 0, @"An unexpected close must schedule a reconnection");
 }
 
@@ -209,7 +213,7 @@ static NSTimeInterval const SPReconnectionDelay = 2.5;
 	interface.open = NO;
 	[interface webSocket:nil didCloseWithCode:1006 reason:@"connection dropped" wasClean:NO];
 
-	[self waitFor:SPReconnectionDelay];
+	[self waitFor:SPReconnectionWait];
 	XCTAssertTrue(interface.openAttempts == 0, @"No reconnection should be attempted while networking is disabled");
 }
 
@@ -222,7 +226,7 @@ static NSTimeInterval const SPReconnectionDelay = 2.5;
 	[interface webSocket:nil didCloseWithCode:1006 reason:@"connection dropped" wasClean:NO];
 	[interface stop:bucket];
 
-	[self waitFor:SPReconnectionDelay];
+	[self waitFor:SPReconnectionWait];
 	XCTAssertTrue(interface.openAttempts == 0, @"An intentional stop must cancel any pending reconnection");
 }
 
@@ -248,7 +252,7 @@ static NSTimeInterval const SPReconnectionDelay = 2.5;
 	interface.open = YES;
 	[interface webSocket:nil didCloseWithCode:1006 reason:@"connection dropped" wasClean:NO];
 
-	[self waitFor:SPReconnectionDelay];
+	[self waitFor:SPReconnectionWait];
 	XCTAssertEqual(interface.openAttempts, (NSUInteger)1, @"A close must schedule one reconnection, not a burst of them");
 }
 
@@ -263,7 +267,7 @@ static NSTimeInterval const SPReconnectionDelay = 2.5;
 
 	[interface stop:bucket];
 
-	[self waitFor:SPReconnectionDelay];
+	[self waitFor:SPReconnectionWait];
 	XCTAssertEqual(interface.openAttempts, (NSUInteger)0, @"An intentional stop must cancel the pending reconnection");
 	XCTAssertEqual(interface.bystanderInvocations, (NSUInteger)1, @"An intentional stop must not cancel unrelated delayed work on the interface");
 }
