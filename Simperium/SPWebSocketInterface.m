@@ -232,9 +232,10 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     // Mark it closed so it doesn't reopen
     self.open               = NO;
     
-    // Cleanup
-    [self.webSocket close];
+    // Detach before closing: -webSocket:didCloseWithCode: treats every close it receives as
+    // unexpected and schedules a reconnection.
     self.webSocket.delegate = nil;
+    [self.webSocket close];
     self.webSocket          = nil;
     
     // Prevent any pending retries
