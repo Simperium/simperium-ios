@@ -45,14 +45,39 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 
 
 #pragma mark ====================================================================================
+#pragma mark Network Manager Teardown
+#pragma mark ====================================================================================
+
+// Takes the buckets rather than a Simperium, so that -dealloc can hand it work without capturing
+// self in a block.
+static void SPStopNetworkManagersForBuckets(NSArray *buckets) {
+    for (SPBucket *bucket in buckets) {
+        [bucket.network stop:bucket];
+    }
+}
+
+
+#pragma mark ====================================================================================
 #pragma mark Simperium
 #pragma mark ====================================================================================
 
 @implementation Simperium
 
 - (void)dealloc {
-    [self stopNetworkManagers];
-    
+    // The last release can land on any thread — SPLogger reads its weak delegate on its own queue,
+    // so a log message in flight can be the one that frees us. Tearing the network down asserts the
+    // main thread, so hand the buckets over rather than doing it here.
+    if (self.networkManagersStarted) {
+        NSArray *buckets = [self.buckets allValues];
+        if ([NSThread isMainThread]) {
+            SPStopNetworkManagersForBuckets(buckets);
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                SPStopNetworkManagersForBuckets(buckets);
+            });
+        }
+    }
+
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
 #if !TARGET_OS_IPHONE
@@ -230,11 +255,9 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
     if (!self.networkManagersStarted) {
         return;
     }
-    
-    for (SPBucket *bucket in [self.buckets allValues]) {
-        [bucket.network stop:bucket];
-    }
-    
+
+    SPStopNetworkManagersForBuckets([self.buckets allValues]);
+
     self.networkManagersStarted = NO;
 }
 

@@ -25,6 +25,7 @@
 #pragma mark ====================================================================================
 
 NSTimeInterval const SPWebSocketHeartbeatInterval   = 30;
+NSTimeInterval const SPWebSocketReconnectionDelay   = 2;
 
 NSString * const COM_AUTH                           = @"auth";
 NSString * const COM_INDEX                          = @"i";
@@ -231,9 +232,10 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     // Mark it closed so it doesn't reopen
     self.open               = NO;
     
-    // Cleanup
-    [self.webSocket close];
+    // Detach before closing: -webSocket:didCloseWithCode: treats every close it receives as
+    // unexpected and schedules a reconnection.
     self.webSocket.delegate = nil;
+    [self.webSocket close];
     self.webSocket          = nil;
     
     // Prevent any pending retries
@@ -322,7 +324,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     // Network enabled = YES: There was a networking glitch, yet, reachability flags are OK. We should retry
     if (self.simperium.networkEnabled) {
         SPLogVerbose(@"Simperium websocket failed (will retry) with error %@", error);
-        [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
+        [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:SPWebSocketReconnectionDelay];
     // Otherwise, the device lost reachability, and the interfaces were shut down by the framework
     } else {
         SPLogVerbose(@"Simperium websocket failed (will NOT retry) with error %@", error);
@@ -392,7 +394,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     // That includes a close arriving before webSocketDidOpen (self.open == NO) — failing to retry
     // there left the interface with no socket and nothing scheduled to rebuild it.
     if (self.simperium.networkEnabled) {
-        [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
+        [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:SPWebSocketReconnectionDelay];
         SPLogVerbose(@"Simperium connection closed (will retry): %ld, %@", (long)code, reason);
     } else {
         SPLogInfo(@"Simperium connection closed");
