@@ -237,7 +237,7 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
     self.webSocket          = nil;
     
     // Prevent any pending retries
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(openWebSocket) object:nil];
 }
 
 - (void)reset:(SPBucket *)bucket completion:(SPNetworkInterfaceResetCompletion)completion {
@@ -388,12 +388,13 @@ typedef NS_ENUM(NSInteger, SPMessageIndex) {
 }
 
 - (void)webSocket:(SPWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
-    if (self.open) {
-        // Closed unexpectedly, retry
+    // Any close that reaches us is unexpected: an intentional stop nils the delegate before closing.
+    // That includes a close arriving before webSocketDidOpen (self.open == NO) — failing to retry
+    // there left the interface with no socket and nothing scheduled to rebuild it.
+    if (self.simperium.networkEnabled) {
         [self performSelector:@selector(openWebSocket) withObject:nil afterDelay:2];
         SPLogVerbose(@"Simperium connection closed (will retry): %ld, %@", (long)code, reason);
     } else {
-        // Closed on purpose
         SPLogInfo(@"Simperium connection closed");
     }
 

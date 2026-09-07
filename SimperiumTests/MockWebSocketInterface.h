@@ -19,4 +19,7 @@
 - (NSSet*)mockSentMessages;
 - (void)mockReceiveMessage:(NSString*)message;
 
+- (NSArray*)mockStartedBucketNames;
+- (void)mockClearStartedBucketNames;
+
 @end

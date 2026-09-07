@@ -10,10 +10,57 @@
 #import "XCTestCase+Simperium.h"
 #import "MockSimperium.h"
 #import "MockWebSocketInterface.h"
+#import "Simperium+Internals.h"
 #import "SPLogger.h"
 #import "JSONKit+Simperium.h"
 #import "Config.h"
 
+
+
+#pragma mark ====================================================================================
+#pragma mark Constants
+#pragma mark ====================================================================================
+
+static NSTimeInterval const SPReconnectionDelay = 2.5;
+
+
+#pragma mark ====================================================================================
+#pragma mark SPWebSocketInterface: Exposing Private Methods
+#pragma mark ====================================================================================
+
+@interface SPWebSocketInterface ()
+@property (nonatomic, assign, readwrite) BOOL open;
+- (instancetype)initWithSimperium:(Simperium *)s;
+- (void)openWebSocket;
+- (void)webSocket:(SPWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean;
+@end
+
+
+#pragma mark ====================================================================================
+#pragma mark Simperium: Exposing Private Methods
+#pragma mark ====================================================================================
+
+@interface Simperium ()
+- (void)startNetworkManagers;
+@end
+
+
+#pragma mark ====================================================================================
+#pragma mark CountingWebSocketInterface
+#pragma mark ====================================================================================
+
+// Counts reconnection attempts without ever touching the network
+@interface CountingWebSocketInterface : SPWebSocketInterface
+@property (nonatomic, assign, readwrite) NSUInteger openAttempts;
+@end
+
+@implementation CountingWebSocketInterface
+
+- (void)openWebSocket {
+    self.openAttempts++;
+}
+
+@end
 
 
 #pragma mark ====================================================================================
@@ -107,6 +154,71 @@
 	}
 	
 	XCTAssertTrue(responseSent, @"Index Request-Response wasn't sent!!");
+}
+
+- (void)testSocketClosedBeforeFinishingHandshakeSchedulesReconnection {
+	// A close that arrives before webSocketDidOpen (open == NO) used to be treated as an
+	// intentional close, wedging the interface: no socket, no retry, and nothing upstream
+	// notices. See SIMPL-75.
+	MockSimperium* s = [MockSimperium mockSimperium];
+	CountingWebSocketInterface* interface = [[CountingWebSocketInterface alloc] initWithSimperium:s];
+
+	interface.open = NO;
+	[interface webSocket:nil didCloseWithCode:1006 reason:@"connection dropped mid-handshake" wasClean:NO];
+
+	[self waitFor:SPReconnectionDelay];
+	XCTAssertTrue(interface.openAttempts > 0, @"A close during connection setup must schedule a reconnection");
+}
+
+- (void)testSocketClosedAfterOpeningSchedulesReconnection {
+	MockSimperium* s = [MockSimperium mockSimperium];
+	CountingWebSocketInterface* interface = [[CountingWebSocketInterface alloc] initWithSimperium:s];
+
+	interface.open = YES;
+	[interface webSocket:nil didCloseWithCode:1006 reason:@"connection dropped" wasClean:NO];
+
+	[self waitFor:SPReconnectionDelay];
+	XCTAssertTrue(interface.openAttempts > 0, @"An unexpected close must schedule a reconnection");
+}
+
+- (void)testSocketClosedWhileNetworkDisabledDoesNotReconnect {
+	MockSimperium* s = [MockSimperium mockSimperium];
+	CountingWebSocketInterface* interface = [[CountingWebSocketInterface alloc] initWithSimperium:s];
+	s.networkEnabled = NO;
+
+	interface.open = NO;
+	[interface webSocket:nil didCloseWithCode:1006 reason:@"connection dropped" wasClean:NO];
+
+	[self waitFor:SPReconnectionDelay];
+	XCTAssertTrue(interface.openAttempts == 0, @"No reconnection should be attempted while networking is disabled");
+}
+
+- (void)testStopCancelsPendingReconnection {
+	MockSimperium* s = [MockSimperium mockSimperium];
+	SPBucket* bucket = [s bucketForName:NSStringFromClass([Config class])];
+	CountingWebSocketInterface* interface = [[CountingWebSocketInterface alloc] initWithSimperium:s];
+
+	interface.open = YES;
+	[interface webSocket:nil didCloseWithCode:1006 reason:@"connection dropped" wasClean:NO];
+	[interface stop:bucket];
+
+	[self waitFor:SPReconnectionDelay];
+	XCTAssertTrue(interface.openAttempts == 0, @"An intentional stop must cancel any pending reconnection");
+}
+
+- (void)testStartNetworkManagersRestartsBucketsEvenWhenAlreadyFlaggedAsStarted {
+	// The networkManagersStarted flag only records that start was called once; the websocket
+	// may have been dropped since. Restarting must reach the network interface regardless,
+	// since SPWebSocketInterface's start: is idempotent for healthy connections.
+	MockSimperium* s = [MockSimperium mockSimperium];
+	[s bucketForName:NSStringFromClass([Config class])];
+	XCTAssertTrue(s.networkManagersStarted, @"Expected network managers to be started after authentication");
+
+	[s.mockWebSocketInterface mockClearStartedBucketNames];
+	[s startNetworkManagers];
+
+	XCTAssertTrue(s.mockWebSocketInterface.mockStartedBucketNames.count > 0,
+				  @"Restarting network managers must restart the buckets' network interface");
 }
 
 @end

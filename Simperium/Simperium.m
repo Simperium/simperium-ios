@@ -204,12 +204,16 @@ static SPLogLevels logLevel                     = SPLogLevelsInfo;
 #pragma mark ====================================================================================
 
 - (void)startNetworkManagers {
-    if (!self.networkEnabled || self.networkManagersStarted || !self.appID) {
+    if (!self.networkEnabled || !self.appID) {
         return;
     }
-    
+
+    // Note: networkManagersStarted only records that this ran once; the websocket may have been
+    // dropped since (e.g. it closed before completing its handshake). Don't early-return on it:
+    // the network interface's start: is idempotent for healthy connections, and re-running it is
+    // the only automatic path that rebuilds a dead one.
     SPLogInfo(@"Simperium starting network managers...");
-    
+
     // If this gets executed before a logout is complete, make sure this gets logged
     if (self.logoutInProgress) {
         SPLogError(@"Simperium Error: there is a pending logout operation that hasn't been fulfilled");
