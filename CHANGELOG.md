@@ -42,11 +42,17 @@ _None._
 
 ### Bug Fixes
 
-- Fix the SwiftPM XCFramework failing Xcode's signature verification, which stopped apps from building against 1.9.1.
+_None._
 
 ### Internal Changes
 
 _None._
+
+## 1.9.2
+
+### Bug Fixes
+
+- Fix the XCFramework failing Xcode's signature verification, which stopped apps from building against 1.9.1 via Swift Package Manager. This is the first release that delivers the 1.9.1 websocket fix to those apps.
 
 ## 1.9.1
 
