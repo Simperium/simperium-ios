@@ -1,7 +1,7 @@
 // swift-tools-version:5.10
 import PackageDescription
 
-let version = "v1.9.1"
+let version = "v1.9.2"
 
 let package = Package(
     name: "Simperium",
@@ -14,7 +14,7 @@ let package = Package(
         .binaryTarget(
             name: "Simperium",
             url: "https://github.com/Simperium/simperium-ios/releases/download/\(version)/Simperium.xcframework.zip",
-            checksum: "50f70027230524a08f7de4742cb27737430e058c38f25a37ac1a0a5eba3444f0"
+            checksum: "ed949d8bad6a02d5b13bc85e067542c06720000c671f2f9e6310116ccb02e6e6"
         )
     ]
 )
