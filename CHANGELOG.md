@@ -42,7 +42,7 @@ _None._
 
 ### Bug Fixes
 
-_None._
+- Fix the SwiftPM XCFramework failing Xcode's signature verification, which stopped apps from building against 1.9.1.
 
 ### Internal Changes
 
