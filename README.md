@@ -18,7 +18,7 @@ From version 1.9.1, the project support integrating via Swift Package Manager.
 This is the recommended mode of integration.
 
 ```swift
-.package(url: "https://github.com/Simperium/simperium-ios", from: "1.9.1-beta.2")
+.package(url: "https://github.com/Simperium/simperium-ios", from: "1.9.1")
 ```
 
 > [!IMPORTANT]
