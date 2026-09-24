@@ -57,7 +57,3 @@ _None._
 ### Bug Fixes
 
 - Retry websocket connections that drop before completing the handshake, instead of leaving the client stuck offline. [#628]
-
-### Internal Changes
-
-- Build and test on Buildkite. [#627]
