@@ -56,9 +56,9 @@
         [config simperiumSetValue:date      forKey:NSStringFromSelector(@selector(date))];
     }];
     
-    XCTAssertEqual(config.warpSpeed, warpSpeed, @"Invalid WarpSpeed");
-    XCTAssertEqual(config.cost, cost,           @"Invalid WarpSpeed");
-    XCTAssertEqual(config.date, date,           @"Invalid Date");
+    XCTAssertEqualObjects(config.warpSpeed, warpSpeed, @"Invalid WarpSpeed");
+    XCTAssertEqualObjects(config.cost, cost,           @"Invalid Cost");
+    XCTAssertEqualObjects(config.date, date,           @"Invalid Date");
 }
 
 - (void)testSafeSetValueWithInvalidValues {
